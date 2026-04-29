@@ -1,0 +1,488 @@
+{
+  "production_id": "the-last-marker",
+  "version": "1.0.0",
+  "total_scenes": 4,
+  "target_runtime_seconds": 180,
+  "total_dialogue_lines": 1,
+  "characters": [
+    {
+      "character_id": "miguel-vega",
+      "name": "Miguel Vega",
+      "description": "30 years old. Mexican. Lean. Sun-darkened skin, deep lines around the eyes from years of squinting into wind and light. Ranch hand from outside Tecate. Wears white cotton shirt, brown leather vest, khaki pants, boots resoled twice. Goggles pushed up on forehead when not riding. No helmet. Brown leather gloves worn smooth at the palms. Breitling Top Time on left wrist with black reverse panda dial on worn brown leather rally strap.",
+      "appears_in_scenes": [1, 2, 3, 4]
+    }
+  ],
+  "scenes": [
+    {
+      "scene_number": 1,
+      "scene_id": "s01-open-desert",
+      "heading": "EXT. BAJA CALIFORNIA - OPEN DESERT - LATE AFTERNOON",
+      "location": "Baja California - Open Desert",
+      "time_of_day": "late afternoon",
+      "target_duration_seconds": 45,
+      "color_notes": "Amber and ochre. Low sun angle from the west. Long shadows stretching east across the desert floor. Dust in the air catches the light and turns it gold. Heat shimmer on the horizon. The palette of a Kodachrome slide left on a dashboard for thirty years.",
+      "sound_notes": "Engine enters from distance and dominates. Triumph single-cylinder thumping heartbeat — deep, rhythmic, steady, healthy. Mixed with wind noise and hiss of tires on hardpan. No music. At scene end, a subtle engine skip — single missed beat in otherwise steady rhythm. Foreshadowing through sound.",
+      "characters_present": ["miguel-vega"],
+      "props_visible": [
+        {
+          "prop_id": "breitling-top-time",
+          "context": "Visible on left wrist below glove cuff during detail shot of hands on handlebars. Watch appears because the hands appear — do not adjust framing to feature it. Dust-caked black dial and worn leather strap, same pale dust as everything else on the bike.",
+          "visibility_seconds": 1
+        }
+      ],
+      "vehicles_present": ["triumph-tr6sc"],
+      "action_blocks": [
+        {
+          "block_id": "s01-b01",
+          "type": "action",
+          "content": "FADE IN. EXTREME WIDE. The Baja desert. Flat hardpan stretching to a mountain range on the horizon. Cardon cacti scattered across the landscape like sentries. The sky is enormous. The sun is low in the west, turning everything amber. Hold this frame for four seconds. Empty. Still.",
+          "suggested_shot_type": "EXTREME WIDE",
+          "production_notes": []
+        },
+        {
+          "block_id": "s01-b02",
+          "type": "action",
+          "content": "A dust trail appears at the far left of the frame. Moving right. Tiny. A white line drawn across the brown landscape. It takes three full seconds for the source to become visible: a motorcycle. A man on a machine, crossing the desert alone.",
+          "suggested_shot_type": "EXTREME WIDE",
+          "production_notes": [
+            "The scale is critical here. The motorcycle should be barely visible for the first two seconds. A speck. The dust trail is larger than the rider. The landscape dwarfs everything. This establishes the central visual thesis of the film: the desert is in charge."
+          ]
+        },
+        {
+          "block_id": "s01-b03",
+          "type": "action",
+          "content": "MEDIUM TRACKING SHOT. Closer now. Miguel Vega on a 1965 Triumph TR6SC. The bike is coated in pale dust. The chrome exhaust is brown. The tank, originally silver, is the color of sand. Vega rides in a low crouch, elbows out, weight forward over the handlebars. His goggles are down. His white shirt is dark with sweat at the collar and under the arms. The leather vest is bleached by sun. He has been riding for hours.",
+          "suggested_shot_type": "MEDIUM TRACKING",
+          "production_notes": []
+        },
+        {
+          "block_id": "s01-b04",
+          "type": "action",
+          "content": "DETAIL SHOT. Vega's hands on the handlebars. Brown leather gloves worn smooth at the palms. His right hand rolls the throttle with small, constant adjustments. His grip is loose. Experienced. On his left wrist, below the cuff of the glove, the Top Time is visible. The black dial and worn leather strap are caked with the same pale dust as everything else on the bike. The watch is one detail among many in a frame full of texture: glove leather, handlebar rubber, throttle cable, dust. It belongs here the way the boots belong on the pegs.",
+          "suggested_shot_type": "DETAIL SHOT",
+          "production_notes": [
+            "Watch visibility: 1 second. The watch appears because the hands appear. Do not adjust framing to feature it. The Top Time is part of the rider's equipment, no different from the goggles or the gloves."
+          ]
+        },
+        {
+          "block_id": "s01-b05",
+          "type": "action",
+          "content": "LOW ANGLE. The Triumph passing camera at speed. The front tire kicks up a spray of sand and pebbles. The engine note rises as it approaches and drops as it recedes. The dust trail lingers in the air behind, golden in the low sun.",
+          "suggested_shot_type": "LOW ANGLE",
+          "production_notes": []
+        },
+        {
+          "block_id": "s01-b06",
+          "type": "action",
+          "content": "Vega's face. Through the goggles, his eyes scan the terrain ahead. Steady. Then: a micro-flinch. Something in the engine note has changed. A skip. A hesitation in the rhythm. Brief. The engine recovers. But Vega heard it. His jaw tightens.",
+          "suggested_shot_type": "CLOSE",
+          "production_notes": [
+            "The engine skip should be subtle. A single missed beat in an otherwise steady rhythm. The audience may not consciously notice it. Vega does. This is foreshadowing through sound."
+          ]
+        },
+        {
+          "block_id": "s01-b07",
+          "type": "transition",
+          "content": "CUT TO"
+        }
+      ],
+      "dialogue_extractions": [],
+      "editorial_notes": "Scene 1 is fluid. Longer shots. The camera follows and observes. The pace says: this has been going on for a while."
+    },
+    {
+      "scene_number": 2,
+      "scene_id": "s02-rocky-wash-breakdown",
+      "heading": "EXT. BAJA CALIFORNIA - ROCKY WASH - MOMENTS LATER",
+      "location": "Baja California - Rocky Wash",
+      "time_of_day": "pre-dusk",
+      "target_duration_seconds": 45,
+      "color_notes": "The amber is deepening. Sun dropping fast. Shadows are longer. The warmth is leaving the air. The transition from afternoon to pre-dusk. The light is beautiful and it is running out.",
+      "sound_notes": "Engine skip returns, more frequent. Every fourth or fifth cycle, then every third. Rhythm breaking down — mechanical heartbeat developing an arrhythmia. Engine coughs — hard, wet sound. Sputters, fires unevenly for three seconds, dies. Then: SILENCE. Sudden and complete. After ninety seconds of constant engine noise, the absence is enormous. Hold silence for three full seconds. Then: wind, tick of cooling exhaust pipe, sand grains hitting rock, Vega's breathing.",
+      "characters_present": ["miguel-vega"],
+      "props_visible": [],
+      "vehicles_present": ["triumph-tr6sc"],
+      "action_blocks": [
+        {
+          "block_id": "s02-b01",
+          "type": "action",
+          "content": "The terrain has changed. The flat hardpan gives way to a rocky wash. Larger stones. Uneven footing. The Triumph picks its way through, Vega standing on the pegs, letting the bike move underneath him.",
+          "suggested_shot_type": "MEDIUM",
+          "production_notes": []
+        },
+        {
+          "block_id": "s02-b02",
+          "type": "action",
+          "content": "The engine coughs. A hard, wet sound. Vega blips the throttle. The engine catches. Coughs again. He pulls in the clutch. Coasts. Tries the throttle again. The engine sputters, fires unevenly for three seconds, and dies.",
+          "production_notes": []
+        },
+        {
+          "block_id": "s02-b03",
+          "type": "action",
+          "content": "The Triumph rolls to a stop. Vega puts both boots on the ground. Sits on the bike for a moment. Still. Processing. Then he swings his leg off and lowers the kickstand onto a flat rock.",
+          "production_notes": []
+        },
+        {
+          "block_id": "s02-b04",
+          "type": "action",
+          "content": "He kneels beside the engine. Pulls off his gloves and lays them on the tank. His bare hands move over the motor with the familiarity of a doctor examining a patient. He checks the fuel petcock. Open. He unscrews the float bowl drain on the carburetor. A thin stream of fuel dribbles onto the sand. Not empty. He checks the spark plug wire. Seated. He pulls the plug itself. Studies the electrode. Fouled. Black with carbon. The porcelain insulator is cracked.",
+          "suggested_shot_type": "CLOSE",
+          "production_notes": [
+            "The mechanical detail matters. These close shots of hands on engine components need to be specific and accurate. A Triumph TR6SC has a single Amal Monobloc carburetor, a single spark plug, and a right-side kick starter. The fouled plug should look correct: black, oily deposit on the electrode, hairline crack visible in the porcelain."
+          ]
+        },
+        {
+          "block_id": "s02-b05",
+          "type": "action",
+          "content": "Vega holds the dead plug between his fingers. Looks at it. Looks at the desert around him. The mountains are still far away. The sun is still dropping. He has no spare. The plug is finished.",
+          "production_notes": []
+        },
+        {
+          "block_id": "s02-b06",
+          "type": "action",
+          "content": "He stands. Removes his goggles and pushes them up onto his forehead. Scans the horizon in every direction. Three hundred and sixty degrees of nothing. No road. No marker. No other rider's dust trail. Just desert and fading light and a broken machine.",
+          "suggested_shot_type": "MEDIUM",
+          "production_notes": []
+        },
+        {
+          "block_id": "s02-b07",
+          "type": "action",
+          "content": "WIDE SHOT. Vega standing beside the Triumph in the rocky wash. Small. The landscape is indifferent. The sky is enormous overhead. A man with a problem that the desert does not care about.",
+          "suggested_shot_type": "WIDE",
+          "production_notes": []
+        },
+        {
+          "block_id": "s02-b08",
+          "type": "transition",
+          "content": "CUT TO"
+        }
+      ],
+      "dialogue_extractions": [],
+      "editorial_notes": "Scene 2 slows down. The engine death creates a hard stop. The pace decelerates with the bike."
+    },
+    {
+      "scene_number": 3,
+      "scene_id": "s03-cairn-discovery",
+      "heading": "EXT. BAJA CALIFORNIA - ROCKY WASH - MOMENTS LATER",
+      "location": "Baja California - Rocky Wash",
+      "time_of_day": "pre-dusk, sun touching western ridge",
+      "target_duration_seconds": 50,
+      "color_notes": "Pre-dusk. The amber is cooling to bronze and rose. Shadows are purple. The sun is touching the western ridge. Fifteen minutes of usable light remain. The palette is shifting from warm to cool. Time made visible through color.",
+      "sound_notes": "Desert ambient only. Footsteps on rocky ground. Wind. Sand on rock. Total absence of engine. The silence should feel heavy.",
+      "characters_present": ["miguel-vega"],
+      "props_visible": [
+        {
+          "prop_id": "breitling-top-time",
+          "context": "Vega glances at his left wrist to confirm remaining daylight. Not to read the hour — to confirm what the sun already told him. The light and the watch agree. He has fifteen minutes of day left. Maybe less. The gesture is quick and unsentimental. The sun is the primary clock. The watch is the backup.",
+          "visibility_seconds": 2
+        }
+      ],
+      "vehicles_present": [],
+      "action_blocks": [
+        {
+          "block_id": "s03-b01",
+          "type": "action",
+          "content": "Vega walks. He has left the bike. He carries nothing. His boots crunch on the rocky ground. He is walking in the direction he was riding, following the faint tire tracks of riders who came through here before him. Looking for something. Any sign of the course. Any marker.",
+          "suggested_shot_type": "MEDIUM",
+          "production_notes": []
+        },
+        {
+          "block_id": "s03-b02",
+          "type": "action",
+          "content": "DETAIL SHOT: His boots on the ground. Worn leather. The sole of the left boot is separating at the toe. Each step kicks up a small cloud of dust that the low sun turns pink.",
+          "suggested_shot_type": "DETAIL SHOT",
+          "production_notes": []
+        },
+        {
+          "block_id": "s03-b03",
+          "type": "action",
+          "content": "He crests a low rise and stops.",
+          "production_notes": []
+        },
+        {
+          "block_id": "s03-b04",
+          "type": "action",
+          "content": "VEGA'S POV: Ahead, fifty meters, a pile of stacked rocks. A cairn. Three feet tall. Built by human hands. On top of the cairn, wedged between the top stones, a piece of sheet metal cut from a tin can. The metal has been bent into an arrow shape. Crude. Handmade. It points to the right, toward a narrow canyon mouth in the rock face. Beside the arrow, scratched into the face of the tin with a nail or a knife, a single word: AGUA.",
+          "suggested_shot_type": "POV",
+          "production_notes": [
+            "The cairn should look real and weathered. Stacked desert stones, stable but clearly hand-built. The tin arrow is a piece of a food can, cut and bent, the raw metal edges visible. The scratched word AGUA should be legible but rough. This was made by a rider who stopped here, built this, and kept going. A gift from a stranger to the next stranger."
+          ]
+        },
+        {
+          "block_id": "s03-b05",
+          "type": "action",
+          "content": "Vega approaches the cairn. Studies it. He looks right, toward the canyon. Then he looks straight ahead, where the tire tracks continue into the open desert toward the distant mountains. Two directions. One has water. The other has the course.",
+          "production_notes": []
+        },
+        {
+          "block_id": "s03-b06",
+          "type": "action",
+          "content": "He looks west. The sun is sitting on the ridge. Then he glances at his left wrist. The Top Time. Not to read the hour. To confirm what the sun already told him. The light and the watch agree. He has fifteen minutes of day left. Maybe less.",
+          "suggested_shot_type": "MEDIUM",
+          "production_notes": [
+            "Watch visibility: 2 seconds. Vega checks the watch the way a pilot checks an instrument he already knows the reading of. Confirmation, not discovery. The gesture is quick and unsentimental. The sun is the primary clock. The watch is the backup."
+          ]
+        },
+        {
+          "block_id": "s03-b07",
+          "type": "action",
+          "content": "CLOSE on Vega's face. He is doing math. Not numbers. Odds. If he follows the canyon, he finds water but loses the course. If he stays on the course, he may not find water before dark. His tongue runs across cracked lips. Decision is a physical thing. You can see it happen in the muscles around his eyes.",
+          "suggested_shot_type": "CLOSE",
+          "production_notes": []
+        },
+        {
+          "block_id": "s03-b08",
+          "type": "action",
+          "content": "He looks at the tin arrow one more time. Then he looks at the open desert ahead. The tire tracks. The mountains. The last light. He turns back toward his bike.",
+          "production_notes": []
+        },
+        {
+          "block_id": "s03-b09",
+          "type": "transition",
+          "content": "CUT TO"
+        }
+      ],
+      "dialogue_extractions": [],
+      "editorial_notes": "Scene 3 is the slowest. Walking pace. Contemplation. The cairn discovery is a beat of stillness."
+    },
+    {
+      "scene_number": 4,
+      "scene_id": "s04-choice",
+      "heading": "EXT. BAJA CALIFORNIA - ROCKY WASH - CONTINUOUS",
+      "location": "Baja California - Rocky Wash",
+      "time_of_day": "last golden light, sun half below western ridge, transitioning to dusk",
+      "target_duration_seconds": 40,
+      "color_notes": "The last five minutes of golden light. The sun is half below the western ridge. Everything is lit from the side. Long horizontal light that turns Vega's face into a landscape of shadow and warmth. This is the most cinematic light of the day. Use every second of it. Final shots transition to cool blue dusk as sun disappears.",
+      "sound_notes": "Three kick attempts — each sounds different. First is dry and empty. Second has a hint of ignition, a tease. Third: engine turns, fires, misses, fires again, catches. Engine sound is a resurrection — imperfect, fragile, compromised but choosing to function. Not the healthy rhythm of opening. Dialogue line mixed under engine sound, barely audible. Engine fades into distance: thump, skip, thump, thump, skip. Growing smaller. At 2:56 guitar enters — nylon strings, three notes, simple Mexican folk phrase, not a melody but a question. Played once, pause, once more. Fades. Silence. Total. Four seconds.",
+      "characters_present": ["miguel-vega"],
+      "props_visible": [
+        {
+          "prop_id": "breitling-top-time",
+          "context": "Visible on left wrist as left hand steadies handlebars over loose rock. Dust-caked. Crystal scratched. Brown leather strap dark with sweat. The watch looks like it has been through exactly what he has been through. Vibrating with the rough engine. One texture in a frame full of textures: leather, steel, dust, skin, knuckle. Not the subject. Part of the surface of a man's life.",
+          "visibility_seconds": 1
+        }
+      ],
+      "vehicles_present": ["triumph-tr6sc"],
+      "action_blocks": [
+        {
+          "block_id": "s04-b01",
+          "type": "action",
+          "content": "Vega walks back to the Triumph. He kneels beside the engine one more time. Pulls the fouled plug. Holds it up. Studies it. Then he does something unexpected. He places the plug on a flat rock. Picks up a smaller stone. Carefully, precisely, he taps the cracked porcelain insulator with the stone. Once. Twice. On the third tap, the loose fragment of cracked porcelain falls away, exposing clean insulator underneath. Not repaired. But the short circuit caused by the crack is eliminated. The plug might fire now. Once. Maybe twice. Maybe long enough.",
+          "production_notes": [
+            "This detail is mechanically accurate. A cracked spark plug insulator can cause misfiring because the spark tracks across the crack instead of jumping the electrode gap. Removing the cracked section can temporarily restore function. It is not a real fix. It is a desert fix. The kind of thing a man who has lived with machines his entire life would know."
+          ]
+        },
+        {
+          "block_id": "s04-b02",
+          "type": "action",
+          "content": "He threads the plug back into the cylinder head. Finger-tight. Reconnects the wire. Swings his leg over the bike. Stands on the left peg. Reaches down with his right foot and finds the kick starter.",
+          "production_notes": []
+        },
+        {
+          "block_id": "s04-b03",
+          "type": "action",
+          "content": "DETAIL SHOT: His boot on the kick lever. The worn sole. The exposed stitching at the toe. The lever is steel, polished smooth by a thousand kicks.",
+          "suggested_shot_type": "DETAIL SHOT",
+          "production_notes": []
+        },
+        {
+          "block_id": "s04-b04",
+          "type": "action",
+          "content": "He kicks. The engine turns over but does not catch. He kicks again. A cough. Nothing.",
+          "production_notes": [
+            "Each kick should sound different. The first is dry and empty. The second has a hint of ignition. A tease. The audience needs to feel the engine almost catching."
+          ]
+        },
+        {
+          "block_id": "s04-b05",
+          "type": "action",
+          "content": "CLOSE on Vega's face. He breathes. Looks west. The sun is a sliver above the ridge. He has minutes.",
+          "suggested_shot_type": "CLOSE",
+          "production_notes": []
+        },
+        {
+          "block_id": "s04-b06",
+          "type": "action",
+          "content": "He kicks a third time. Hard. The engine turns. Fires. Misses. Fires again. Catches. The single-cylinder heartbeat returns. Uneven. Rough. Skipping every few beats. But running.",
+          "production_notes": [
+            "The engine sound should feel like a resurrection. Imperfect and fragile. Not the healthy rhythm of the opening. Something compromised that is choosing to function anyway."
+          ]
+        },
+        {
+          "block_id": "s04-b07",
+          "type": "action",
+          "content": "Vega pulls his goggles down over his eyes. Rolls the throttle gently. Nurses it. The engine steadies slightly. Still rough. Still skipping. But alive. He looks toward the open desert. The tire tracks leading south. The mountains catching the last horizontal light. The course. Then he turns the handlebars to the right. Toward the canyon. Toward the water. Away from the course.",
+          "suggested_shot_type": "MEDIUM",
+          "production_notes": []
+        },
+        {
+          "block_id": "s04-b08",
+          "type": "action",
+          "content": "DETAIL SHOT: His left hand on the grip, steadying the handlebars as the Triumph rolls over loose rock. The Top Time is visible on his wrist. Dust-caked. The crystal scratched. The brown leather strap dark with sweat. The watch looks like it has been through exactly what he has been through. It is vibrating with the rough engine. One second. Then the camera pulls to the wide.",
+          "suggested_shot_type": "DETAIL SHOT",
+          "production_notes": [
+            "Watch visibility: 1 second. This is the last close detail before the final wide shot. The watch is one texture in a frame full of textures: leather, steel, dust, skin, knuckle. It is not the subject. It is part of the surface of a man's life."
+          ]
+        },
+        {
+          "block_id": "s04-b09",
+          "type": "dialogue",
+          "content": "Primero llegas. Despues compites.",
+          "character_id": "miguel-vega",
+          "parenthetical": "to himself, barely audible over the engine",
+          "production_notes": [
+            "Translation: 'First you arrive. Then you compete.' This is the only dialogue in the film. It should be almost inaudible. Mixed under the engine sound. The audience hears it the way Vega says it: to himself, a private decision spoken aloud to make it real."
+          ]
+        },
+        {
+          "block_id": "s04-b10",
+          "type": "action",
+          "content": "He rolls forward. The Triumph picks its way over the rocks toward the canyon mouth. The engine thumps and skips. The dust trail is thin. Pink in the last light.",
+          "production_notes": []
+        },
+        {
+          "block_id": "s04-b11",
+          "type": "action",
+          "content": "EXTREME WIDE. The same framing as the opening shot. The desert. The mountains. The vast, indifferent landscape. But now the motorcycle is moving to the right, toward the narrow shadow of the canyon. Away from the course. Toward survival. A man who chose to live over a man who chose to win.",
+          "suggested_shot_type": "EXTREME WIDE",
+          "production_notes": []
+        },
+        {
+          "block_id": "s04-b12",
+          "type": "action",
+          "content": "When the engine sound has faded to almost nothing, a single acoustic guitar enters. Nylon strings. Three notes. A simple Mexican folk phrase. Not a melody. A question. The guitar plays the phrase once. Pauses. Plays it once more. HOLD on the wide shot. The motorcycle is a speck now. The dust trail is a pink thread. The sun disappears below the ridge. The amber drains from the landscape. The desert goes cool and blue and still. The guitar fades. Silence.",
+          "suggested_shot_type": "EXTREME WIDE",
+          "production_notes": []
+        },
+        {
+          "block_id": "s04-b13",
+          "type": "action",
+          "content": "TITLE CARD over the blue dusk landscape. Same vintage pulp typography. 'THE LAST MARKER'. Hold for three seconds. FADE TO BLACK.",
+          "production_notes": [
+            "Silence. Total. Four seconds. Then the film is over."
+          ]
+        }
+      ],
+      "dialogue_extractions": [
+        {
+          "character_id": "miguel-vega",
+          "line": "Primero llegas. Despues compites.",
+          "language": "es",
+          "translation": "First you arrive. Then you compete.",
+          "direction": "to himself, barely audible over the engine, a private decision spoken aloud to make it real",
+          "mix_level": "under"
+        }
+      ],
+      "editorial_notes": "Scene 4 accelerates. The kicks are percussive. Quick cuts between boot and face. When the engine catches, the pace lifts. The final wide shot holds long and lets the tension release."
+    }
+  ],
+  "color_progression": [
+    {
+      "scene_number": 1,
+      "description": "Full amber. High saturation. Late afternoon at its warmest."
+    },
+    {
+      "scene_number": 2,
+      "description": "Amber cooling to bronze. Shadows lengthening. Warmth starting to drain."
+    },
+    {
+      "scene_number": 3,
+      "description": "Bronze to rose. Purple shadows. Sun on the western ridge. Transitional."
+    },
+    {
+      "scene_number": 4,
+      "description": "Last horizontal gold. Side-lit. Maximum contrast. Then rapid fade to cool blue dusk."
+    }
+  ],
+  "sound_design_timeline": [
+    {
+      "start_seconds": 0,
+      "end_seconds": 4,
+      "description": "Silence. Desert wind. Empty frame."
+    },
+    {
+      "start_seconds": 4,
+      "end_seconds": 45,
+      "description": "Engine enters and dominates. Healthy rhythm. Wind. Tire on hardpan."
+    },
+    {
+      "start_seconds": 45,
+      "end_seconds": 55,
+      "description": "Engine faltering. Rhythm breaking down. Coughs. Dies."
+    },
+    {
+      "start_seconds": 55,
+      "end_seconds": 58,
+      "description": "CRITICAL SILENCE. Three seconds. No sound. Then wind, ticking metal."
+    },
+    {
+      "start_seconds": 58,
+      "end_seconds": 90,
+      "description": "Desert ambient only. Footsteps. Wind. Sand on rock. Total absence of engine."
+    },
+    {
+      "start_seconds": 90,
+      "end_seconds": 140,
+      "description": "Same desert ambient. Footsteps. The silence should feel heavy."
+    },
+    {
+      "start_seconds": 140,
+      "end_seconds": 158,
+      "description": "Three kick attempts. Each with distinct engine response. Building tension."
+    },
+    {
+      "start_seconds": 158,
+      "end_seconds": 170,
+      "description": "Engine running rough. Fragile heartbeat. Dialogue line mixed underneath."
+    },
+    {
+      "start_seconds": 170,
+      "end_seconds": 176,
+      "description": "Engine fading into distance. Thump. Skip. Thump. Growing smaller."
+    },
+    {
+      "start_seconds": 176,
+      "end_seconds": 180,
+      "description": "Guitar enters. Three notes twice. Fades. Silence. End."
+    }
+  ],
+  "editorial_rhythm": "The overall shape is: cruising, decelerating, still, erupting, releasing. A heartbeat that stops and restarts. Scene 1 is fluid with longer shots — the camera follows and observes. Scene 2 slows down — the engine death creates a hard stop. Scene 3 is the slowest — walking pace, contemplation, stillness. Scene 4 accelerates — percussive kicks, quick cuts, then the final wide shot holds long and releases tension.",
+  "generation_priorities": [
+    {
+      "priority": 1,
+      "category": "Character Consistency",
+      "description": "Vega must look like the same man in every shot. Same face, same build, same wardrobe. This is the hardest thing to get right and the first thing the audience will notice if it fails."
+    },
+    {
+      "priority": 2,
+      "category": "Motorcycle Accuracy",
+      "description": "The Triumph TR6SC is a specific machine. Single cylinder. Right-side exhaust. Distinct tank shape. If the bike changes between shots, the illusion breaks."
+    },
+    {
+      "priority": 3,
+      "category": "Landscape Continuity",
+      "description": "The desert must feel like one continuous location even though it will be generated shot by shot. Same mountain range on the horizon. Same geological character. Same quality of light in adjacent shots."
+    },
+    {
+      "priority": 4,
+      "category": "Mechanical Detail",
+      "description": "The spark plug scene requires close-up accuracy. The carburetor, the plug, the electrode, the cracked porcelain. This is where the audience either believes the world or does not."
+    },
+    {
+      "priority": 5,
+      "category": "Light Progression",
+      "description": "The color must shift consistently from amber to bronze to rose to blue across the four scenes. No shot should feel like it belongs to a different time of day than the shots around it."
+    },
+    {
+      "priority": 6,
+      "category": "Lip Sync",
+      "description": "One line. Five words. Spanish. Mixed under engine sound. Low difficulty but must be correct."
+    },
+    {
+      "priority": 7,
+      "category": "Prop Consistency",
+      "description": "The Breitling Top Time must be identifiable across three shots in three different scenes. Same watch. Same strap. Same wrist. Total visibility: 4 seconds (2.2% of runtime). The watch is never the subject of a shot — it appears because the hand appears."
+    }
+  ],
+  "created_at": "2026-04-29T12:30:00Z",
+  "updated_at": "2026-04-29T12:30:00Z"
+}
