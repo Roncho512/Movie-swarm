@@ -1,0 +1,927 @@
+{
+  "production_id": "the-last-marker",
+  "version": "1.0.0",
+  "total_shots": 22,
+  "shots": [
+    {
+      "shot_id": "s01-sh01",
+      "scene_number": 1,
+      "shot_number": 1,
+      "sequence_position": 1,
+      "source_block_ids": ["s01-b01"],
+      "shot_type": "extreme-wide",
+      "camera_movement": "static",
+      "framing_notes": "Anamorphic 2.39:1. The desert fills the entire frame. Empty. Still. Hold for 4 seconds before the dust trail appears.",
+      "description": "Opening shot. The Baja desert. Flat hardpan stretching to mountains on the horizon. Cardon cacti. Enormous sky. Empty and still. Then a dust trail appears at the far left, moving right — tiny, a speck.",
+      "target_duration_seconds": 7,
+      "generation_prompt": "Extreme wide shot of Baja California desert. 16mm Ektachrome film stock, heavy grain, warm color bleed at frame edges, anamorphic 2.39:1. Flat hardpan stretching to a mountain range on the horizon. Cardon cacti scattered like sentries. Enormous sky. Late afternoon, low sun from the west turning everything amber and ochre. Long shadows stretching east. Dust in the air catching golden light. Heat shimmer on the horizon. A tiny dust trail appears at the far left of frame, moving right — a motorcycle barely visible as a speck. The landscape dwarfs everything. Charcoal blacks, bone whites. No modern elements.",
+      "negative_prompt": "No buildings, no roads, no power lines, no modern vehicles, no people in foreground.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "Opening shot sets the visual standard. Needs full quality for landscape detail and the slow reveal of the dust trail.",
+        "requires_native_audio": true,
+        "iteration_first": true
+      },
+      "reference_assets": [
+        {
+          "asset_type": "environment-ref",
+          "asset_id": "env-amber",
+          "path": "visual-assets/environment-refs/baja-desert-amber-late-afternoon.png",
+          "usage_note": "Match this landscape composition, color temperature, and mountain range."
+        }
+      ],
+      "characters_in_shot": [],
+      "props_in_shot": [],
+      "vehicles_in_shot": ["triumph-tr6sc"],
+      "transition_in": "fade-in",
+      "transition_out": "cut",
+      "continuity_notes": "This establishes the mountain range, desert floor character, and amber light. Every subsequent Scene 1 shot must match this landscape. The dust trail at frame end connects to s01-sh02.",
+      "sound_notes": "Silence for first 4 seconds. Desert wind. Then distant engine sound enters — small, growing.",
+      "color_notes": "Full amber. High saturation. Late afternoon at its warmest."
+    },
+    {
+      "shot_id": "s01-sh02",
+      "scene_number": 1,
+      "shot_number": 2,
+      "sequence_position": 2,
+      "source_block_ids": ["s01-b03"],
+      "shot_type": "tracking",
+      "camera_movement": "slow tracking right to left, matching rider speed",
+      "framing_notes": "Medium framing. Vega fills the center third of the frame. Desert scrolls behind him.",
+      "description": "Medium tracking shot. Miguel Vega on the Triumph TR6SC. Bike coated in dust. Vega in low crouch, goggles down, white shirt dark with sweat. He has been riding for hours.",
+      "target_duration_seconds": 4,
+      "generation_prompt": "Medium tracking shot of a motorcycle rider crossing Baja desert. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man, lean, sun-darkened skin, deep eye lines, riding a dusty 1965 Triumph TR6SC. He rides in a low crouch, elbows out, weight forward. Goggles down over eyes. White cotton shirt dark with sweat at collar and under arms. Brown leather vest sun-bleached. Khaki pants. The motorcycle is coated in pale desert dust — tank sand-colored, chrome exhaust brown. Late afternoon amber light from the left. Desert hardpan background with distant mountains. Camera tracks alongside at riding speed. Charcoal blacks, bone whites.",
+      "negative_prompt": "No helmet, no modern gear, no clean clothing, no second exhaust pipe.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "First clear view of character and motorcycle. Consistency anchor. Needs full quality.",
+        "requires_native_audio": true,
+        "iteration_first": true
+      },
+      "reference_assets": [
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-riding-pose",
+          "path": "visual-assets/character-refs/miguel-vega-riding-pose.png",
+          "usage_note": "Match this rider pose, wardrobe, and face."
+        },
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-flow-ref",
+          "path": "visual-assets/character-refs/miguel-vega-flow-ref.jpeg",
+          "usage_note": "Video-ready face reference for Veo."
+        },
+        {
+          "asset_type": "vehicle-ref",
+          "asset_id": "tr6-right-side",
+          "path": "visual-assets/prop-refs/triumph-tr6sc-right-side.png",
+          "usage_note": "Match this motorcycle — single exhaust, dust coating, tank shape."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": ["triumph-tr6sc"],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Same amber light as s01-sh01. Same desert background. This is the first clear view of Vega — his appearance here defines him for the audience. Connects to s01-sh03 detail of hands.",
+      "sound_notes": "Triumph engine dominates. Deep rhythmic thump. Steady. Healthy. Wind noise and tire hiss on hardpan.",
+      "color_notes": "Full amber. Same as s01-sh01."
+    },
+    {
+      "shot_id": "s01-sh03",
+      "scene_number": 1,
+      "shot_number": 3,
+      "sequence_position": 3,
+      "source_block_ids": ["s01-b04"],
+      "shot_type": "detail",
+      "camera_movement": "static, slight vibration from motorcycle movement",
+      "framing_notes": "Tight on hands and handlebars. Watch visible on left wrist below glove cuff for approximately 1 second. Do not reframe to feature the watch.",
+      "description": "Detail shot of Vega's hands on the handlebars. Brown leather gloves worn smooth. Right hand rolls throttle. Top Time visible on left wrist below glove cuff — one detail among many textures.",
+      "target_duration_seconds": 3,
+      "generation_prompt": "Extreme close-up detail shot of a man's hands gripping motorcycle handlebars. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. Brown leather gloves worn smooth at the palms. Right hand on throttle grip making small adjustments. Left hand steadying the handlebar. On the left wrist below the glove cuff, a vintage watch with black dial on worn brown leather strap — dust-caked, one detail among many. Frame full of texture: glove leather, handlebar rubber, throttle cable, dust, metal. Late afternoon amber light. Shallow depth of field. Desert background is a warm blur. The hands move with experienced confidence.",
+      "negative_prompt": "No modern watch, no digital display, no clean gloves.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "Detail shot with prop consistency requirement (Top Time). Needs full quality for texture accuracy.",
+        "requires_native_audio": true,
+        "iteration_first": true
+      },
+      "reference_assets": [
+        {
+          "asset_type": "prop-ref",
+          "asset_id": "tt-in-context",
+          "path": "visual-assets/prop-refs/top-time-in-context.png",
+          "usage_note": "Match this watch placement — on left wrist, below glove cuff, dust-caked."
+        },
+        {
+          "asset_type": "prop-ref",
+          "asset_id": "tt-dusty",
+          "path": "visual-assets/prop-refs/top-time-dusty.png",
+          "usage_note": "Watch condition reference — dust-caked but identifiable."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [
+        {
+          "prop_id": "breitling-top-time",
+          "visibility_note": "1 second visibility. Watch appears because hands appear. Not featured, not centered."
+        }
+      ],
+      "vehicles_in_shot": ["triumph-tr6sc"],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Same gloves, same handlebars as s01-sh02. Watch must be on LEFT wrist. Connects to s01-sh04 low angle pass.",
+      "sound_notes": "Engine thump continues steady. Close mic perspective — louder, more mechanical detail.",
+      "color_notes": "Full amber. Same light as previous shots."
+    },
+    {
+      "shot_id": "s01-sh04",
+      "scene_number": 1,
+      "shot_number": 4,
+      "sequence_position": 4,
+      "source_block_ids": ["s01-b05"],
+      "shot_type": "low-angle",
+      "camera_movement": "static, bike passes through frame",
+      "framing_notes": "Camera low to the ground. Triumph enters frame left, crosses, exits frame right. Dust and pebbles spray toward camera.",
+      "description": "Low angle. The Triumph passes camera at speed. Front tire kicks up sand and pebbles. Engine note rises approaching, drops receding. Dust trail lingers golden in the low sun.",
+      "target_duration_seconds": 3,
+      "generation_prompt": "Low angle shot from ground level of a motorcycle passing at speed. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A dusty 1965 Triumph TR6SC crosses frame from left to right. Front tire kicks up spray of sand and pebbles toward camera. The rider is in a low crouch. Dust trail lingers in the air behind the bike, golden in the low afternoon sun. Late afternoon amber light. The bike is close and fast — a moment of kinetic energy. Desert hardpan. Charcoal shadows on the ground.",
+      "negative_prompt": "No second exhaust pipe, no modern motorcycle, no paved road.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "Vehicle in motion with dust dynamics. Needs quality for mechanical accuracy and particle effects.",
+        "requires_native_audio": true,
+        "iteration_first": true
+      },
+      "reference_assets": [
+        {
+          "asset_type": "vehicle-ref",
+          "asset_id": "tr6-right-side",
+          "path": "visual-assets/prop-refs/triumph-tr6sc-right-side.png",
+          "usage_note": "Match this motorcycle."
+        },
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-riding-pose",
+          "path": "visual-assets/character-refs/miguel-vega-riding-pose.png",
+          "usage_note": "Rider posture reference."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": ["triumph-tr6sc"],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Same bike, same rider, same amber light. Dust behavior must be consistent with the hardpan terrain. Connects to s01-sh05 close on face.",
+      "sound_notes": "Engine note rises as bike approaches, drops as it recedes. Doppler effect. Tire on hardpan. Pebble spray.",
+      "color_notes": "Full amber. Dust trail is golden."
+    },
+    {
+      "shot_id": "s01-sh05",
+      "scene_number": 1,
+      "shot_number": 5,
+      "sequence_position": 5,
+      "source_block_ids": ["s01-b06"],
+      "shot_type": "close",
+      "camera_movement": "static or slight tracking, matched to rider movement",
+      "framing_notes": "Face fills the frame. Through goggles, eyes scan terrain. The micro-flinch at the engine skip is the key moment.",
+      "description": "Close on Vega's face. Through goggles, eyes scan terrain. Steady. Then a micro-flinch — something in the engine note changed. A skip. Brief. The engine recovers. But Vega heard it. His jaw tightens.",
+      "target_duration_seconds": 4,
+      "generation_prompt": "Close-up of a man's face while riding a motorcycle. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man, lean, sun-darkened skin, deep lines around the eyes. Goggles down over his eyes. Through the goggles his eyes scan the terrain ahead, steady and focused. Wind blows dust across his face. Then a subtle reaction — a micro-flinch, jaw tightening. Something he heard. Late afternoon amber light from the left, side-lighting his face. Desert background blurred behind him. Charcoal shadows on the right side of his face.",
+      "negative_prompt": "No helmet, no sunglasses, no clean skin, no smiling.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "Facial expression is critical. The micro-flinch drives the scene. Needs best face quality.",
+        "requires_native_audio": true,
+        "iteration_first": true
+      },
+      "reference_assets": [
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-face-front",
+          "path": "visual-assets/character-refs/miguel-vega-face-front.png",
+          "usage_note": "Face consistency anchor."
+        },
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-three-quarter-left",
+          "path": "visual-assets/character-refs/miguel-vega-three-quarter-left.png",
+          "usage_note": "Three-quarter face reference with goggles."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": [],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Same goggles-down state as s01-sh02. Same amber light. The engine skip sound is the narrative hinge — Vega's reaction must be visible but subtle. Last shot of Scene 1.",
+      "sound_notes": "Engine steady thump, then a single missed beat — a skip in the rhythm. Engine recovers. Subtle. Foreshadowing.",
+      "color_notes": "Full amber. Side-lit from the west."
+    },
+    {
+      "shot_id": "s02-sh01",
+      "scene_number": 2,
+      "shot_number": 1,
+      "sequence_position": 6,
+      "source_block_ids": ["s02-b01", "s02-b02"],
+      "shot_type": "medium",
+      "camera_movement": "slight tracking following the bike as it slows",
+      "framing_notes": "Vega standing on pegs, navigating rocky terrain. The bike slows, sputters, dies.",
+      "description": "Rocky wash terrain. Vega stands on pegs navigating uneven ground. Engine skip returns, more frequent. Engine coughs, sputters, fires unevenly, dies. Bike rolls to a stop.",
+      "target_duration_seconds": 8,
+      "generation_prompt": "Medium shot of a motorcycle rider navigating a rocky desert wash. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man standing on the foot pegs of a dusty 1965 Triumph TR6SC, letting the bike move underneath him over uneven rocky terrain. Larger stones and rough ground. The bike slows — the engine sputters and coughs. The rider sits down on the seat, puts both boots on the ground as the bike rolls to a stop. Pre-dusk light — amber deepening to bronze. Shadows longer than Scene 1. The warmth is leaving the air. Distant mountains on the horizon.",
+      "negative_prompt": "No paved road, no other vehicles, no modern elements, no second exhaust pipe.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "Extended shot with vehicle motion transitioning to stillness. Engine death is the key moment. Needs native audio for engine sound degradation.",
+        "requires_native_audio": true,
+        "iteration_first": true
+      },
+      "reference_assets": [
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-riding-pose",
+          "path": "visual-assets/character-refs/miguel-vega-riding-pose.png",
+          "usage_note": "Standing-on-pegs rider posture."
+        },
+        {
+          "asset_type": "vehicle-ref",
+          "asset_id": "tr6-flow-ref",
+          "path": "visual-assets/prop-refs/triumph-tr6sc-flow-ref.jpeg",
+          "usage_note": "Video-ready motorcycle reference."
+        },
+        {
+          "asset_type": "environment-ref",
+          "asset_id": "env-bronze",
+          "path": "visual-assets/environment-refs/baja-desert-bronze-predusk.png",
+          "usage_note": "Match this rocky wash terrain and bronze light."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": ["triumph-tr6sc"],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Light shifts from amber to bronze — this is a new scene with later light. Terrain changes from flat hardpan to rocky wash. Same rider, same bike, same wardrobe but dustier. The engine death is the central event.",
+      "sound_notes": "Engine skipping every third cycle. Hard wet cough. Sputters. Fires unevenly for 3 seconds. Dies. Then SILENCE — sudden and complete. Hold silence.",
+      "color_notes": "Amber deepening to bronze. Shadows longer. Warmth leaving."
+    },
+    {
+      "shot_id": "s02-sh02",
+      "scene_number": 2,
+      "shot_number": 2,
+      "sequence_position": 7,
+      "source_block_ids": ["s02-b04"],
+      "shot_type": "close",
+      "camera_movement": "static, slight handheld drift",
+      "framing_notes": "Tight on hands working the engine. Mechanical detail must be accurate.",
+      "description": "Vega kneels beside the engine. Bare hands check fuel petcock, carburetor float bowl, spark plug wire. Pulls the plug — fouled, black with carbon, cracked porcelain insulator.",
+      "target_duration_seconds": 8,
+      "generation_prompt": "Close-up of a man's bare hands working on a motorcycle engine. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. Sun-darkened hands moving over a single-cylinder engine with the familiarity of a doctor examining a patient. He checks a fuel petcock, unscrews a carburetor float bowl drain — thin fuel stream dribbles onto sand. Checks spark plug wire. Pulls the spark plug — the electrode is fouled black with carbon, the porcelain insulator has a visible hairline crack. The engine is a single-cylinder with an Amal Monobloc carburetor. Pre-dusk bronze light. Rocky ground. Brown leather gloves laid on the tank nearby.",
+      "negative_prompt": "No modern engine, no multi-cylinder engine, no clean parts, no tools other than hands.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "Mechanical detail accuracy is generation priority #4. The audience believes the world or doesn't based on this shot.",
+        "requires_native_audio": false,
+        "iteration_first": true
+      },
+      "reference_assets": [
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-kneeling-engine",
+          "path": "visual-assets/character-refs/miguel-vega-kneeling-engine.png",
+          "usage_note": "Pose and hand position reference."
+        },
+        {
+          "asset_type": "vehicle-ref",
+          "asset_id": "tr6-engine-detail",
+          "path": "visual-assets/prop-refs/triumph-tr6sc-engine-detail.png",
+          "usage_note": "Engine detail accuracy reference — carburetor, plug, cylinder head."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": ["triumph-tr6sc"],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Gloves are OFF — they're laid on the tank. Bare hands. Same bronze light as s02-sh01. The fouled plug is the key story detail.",
+      "sound_notes": "Desert silence. Wind. The tick of cooling metal. Hands on metal. Fuel dribbling on sand.",
+      "color_notes": "Bronze. Pre-dusk."
+    },
+    {
+      "shot_id": "s02-sh03",
+      "scene_number": 2,
+      "shot_number": 3,
+      "sequence_position": 8,
+      "source_block_ids": ["s02-b05", "s02-b06"],
+      "shot_type": "medium",
+      "camera_movement": "static",
+      "framing_notes": "Vega stands, pushes goggles up, scans horizon. 360 degrees of nothing.",
+      "description": "Vega holds the dead plug, looks at it, looks at the desert. Stands. Pushes goggles up to forehead. Scans the horizon in every direction. Nothing.",
+      "target_duration_seconds": 5,
+      "generation_prompt": "Medium shot of a man standing beside a stopped motorcycle in a rocky desert wash. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man, lean, sun-darkened, wearing white cotton shirt and brown leather vest. He pushes riding goggles up onto his forehead. He scans the horizon — turning slowly. The desert stretches in every direction. No road. No marker. No other riders. Just desert and fading light. Pre-dusk bronze light. The mountains are far away. The sky is enormous. A man with a problem the desert does not care about.",
+      "negative_prompt": "No other people, no buildings, no roads, no modern elements.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1-fast",
+        "fallback_tool": "veo-3.1",
+        "rationale": "Medium shot, no fine detail required. Fast tier is sufficient.",
+        "requires_native_audio": false,
+        "iteration_first": false
+      },
+      "reference_assets": [
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-full-front",
+          "path": "visual-assets/character-refs/miguel-vega-full-front.png",
+          "usage_note": "Full body wardrobe reference. Goggles now on forehead."
+        },
+        {
+          "asset_type": "environment-ref",
+          "asset_id": "env-bronze",
+          "path": "visual-assets/environment-refs/baja-desert-bronze-predusk.png",
+          "usage_note": "Match this environment and light."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": ["triumph-tr6sc"],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Goggles now ON FOREHEAD — they were down over eyes in Scene 1. This is a continuity change point. Gloves still off. Same bronze light.",
+      "sound_notes": "Desert silence. Wind. Sand shifting. Vega's breathing.",
+      "color_notes": "Bronze. Pre-dusk."
+    },
+    {
+      "shot_id": "s02-sh04",
+      "scene_number": 2,
+      "shot_number": 4,
+      "sequence_position": 9,
+      "source_block_ids": ["s02-b07"],
+      "shot_type": "wide",
+      "camera_movement": "static",
+      "framing_notes": "Vega and the Triumph small in the frame. The landscape dominates. Visual echo of the opening wide shot but now the man is still, not moving.",
+      "description": "Wide shot. Vega standing beside the Triumph in the rocky wash. Small. The landscape is indifferent. The sky is enormous. A man with a problem the desert does not care about.",
+      "target_duration_seconds": 4,
+      "generation_prompt": "Wide shot of a man standing beside a stopped motorcycle in a vast rocky desert wash. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. The man and motorcycle are small in the frame — the landscape dominates. Rocky terrain, distant mountain range, enormous sky. Pre-dusk bronze light, long purple-edged shadows. The man stands still. The bike is on its kickstand. The desert is indifferent. This is isolation made visible.",
+      "negative_prompt": "No other people, no buildings, no movement except wind.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1-fast",
+        "fallback_tool": "veo-3.1",
+        "rationale": "Wide shot with small figures. Less demanding on character detail. Fast tier sufficient.",
+        "requires_native_audio": false,
+        "iteration_first": false
+      },
+      "reference_assets": [
+        {
+          "asset_type": "environment-ref",
+          "asset_id": "env-bronze",
+          "path": "visual-assets/environment-refs/baja-desert-bronze-predusk.png",
+          "usage_note": "Match this environment."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": ["triumph-tr6sc"],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Same rocky wash, same mountains, same bronze light. Last shot of Scene 2. Connects to Scene 3 — same location but Vega is now walking, having left the bike.",
+      "sound_notes": "Wind. Silence. Total absence of engine.",
+      "color_notes": "Bronze. Long purple-edged shadows."
+    },
+    {
+      "shot_id": "s03-sh01",
+      "scene_number": 3,
+      "shot_number": 1,
+      "sequence_position": 10,
+      "source_block_ids": ["s03-b01"],
+      "shot_type": "medium",
+      "camera_movement": "slow tracking, walking pace, following from behind or beside",
+      "framing_notes": "Vega walks. No bike. Carries nothing. Following faint tire tracks.",
+      "description": "Vega walks the desert. He has left the bike. He carries nothing. Boots crunch on rocky ground. Following faint tire tracks. Looking for any sign of the course.",
+      "target_duration_seconds": 5,
+      "generation_prompt": "Medium shot of a man walking alone through a rocky desert wash. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man, lean, sun-darkened, wearing white cotton shirt, brown leather vest, khaki pants, worn boots. Goggles on forehead. He carries nothing. He walks with purpose, following faint tire tracks in the rocky ground. Camera tracks alongside at walking pace. Pre-dusk light shifting from bronze to rose. Purple shadows. The sun is touching the western ridge. Fifteen minutes of usable light remain.",
+      "negative_prompt": "No motorcycle in frame, no other people, no modern elements.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1-fast",
+        "fallback_tool": "veo-3.1",
+        "rationale": "Walking medium shot. Character consistency matters but no fine detail. Fast tier.",
+        "requires_native_audio": false,
+        "iteration_first": false
+      },
+      "reference_assets": [
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-full-side-walking",
+          "path": "visual-assets/character-refs/miguel-vega-full-side-walking.png",
+          "usage_note": "Walking pose and wardrobe reference."
+        },
+        {
+          "asset_type": "environment-ref",
+          "asset_id": "env-rose",
+          "path": "visual-assets/environment-refs/baja-desert-rose-sunset.png",
+          "usage_note": "Match this light — bronze to rose transition."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": [],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Light shifts from bronze to rose — new scene. No motorcycle visible. Vega has left it behind. Goggles on forehead. Gloves off (or back on — screenplay doesn't specify, choose one and hold). Connects to s03-sh02 boot detail.",
+      "sound_notes": "Footsteps on rocky ground. Wind. Sand on rock. No engine. The silence is heavy.",
+      "color_notes": "Bronze cooling to rose. Purple shadows. Sun on the western ridge."
+    },
+    {
+      "shot_id": "s03-sh02",
+      "scene_number": 3,
+      "shot_number": 2,
+      "sequence_position": 11,
+      "source_block_ids": ["s03-b02"],
+      "shot_type": "detail",
+      "camera_movement": "tracking at ground level, matched to walking pace",
+      "framing_notes": "Tight on boots. The separating sole on the left boot is a key detail.",
+      "description": "Detail shot. Vega's boots on the ground. Worn leather. The sole of the left boot is separating at the toe. Each step kicks up a small cloud of dust that the low sun turns pink.",
+      "target_duration_seconds": 3,
+      "generation_prompt": "Detail shot at ground level of worn leather boots walking on rocky desert ground. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. The boots are old — the sole of the left boot is separating at the toe, stitching exposed. Each step kicks up a small cloud of fine dust. The low sun turns the dust clouds pink. Rocky terrain. Pre-dusk rose light. Camera tracks alongside at walking pace, staying tight on the boots and ground.",
+      "negative_prompt": "No modern shoes, no clean boots, no paved surface.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "Detail shot requiring specific prop accuracy — the separating sole. Needs quality.",
+        "requires_native_audio": false,
+        "iteration_first": true
+      },
+      "reference_assets": [],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": [],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Same boots as all previous shots. The separating sole on the LEFT boot is a new detail that should be visible in any subsequent boot shots. Pink dust matches the rose light of Scene 3.",
+      "sound_notes": "Boot crunches on rock. Dust. Close perspective.",
+      "color_notes": "Rose. Pink-tinged dust."
+    },
+    {
+      "shot_id": "s03-sh03",
+      "scene_number": 3,
+      "shot_number": 3,
+      "sequence_position": 12,
+      "source_block_ids": ["s03-b03", "s03-b04"],
+      "shot_type": "pov",
+      "camera_movement": "static, as if seen from Vega's eyes after cresting a rise",
+      "framing_notes": "Vega's POV. The cairn is 50 meters ahead. The tin arrow and AGUA text should be suggested at this distance, not legible.",
+      "description": "Vega's POV. He crests a low rise and sees a cairn — a pile of stacked rocks, three feet tall. On top, a piece of tin bent into an arrow pointing right toward a canyon mouth. Scratched into the tin: AGUA.",
+      "target_duration_seconds": 4,
+      "generation_prompt": "POV shot looking across rocky desert terrain at a hand-built stone cairn approximately 50 meters away. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A pile of stacked desert rocks, three feet tall, clearly built by human hands. On top, a piece of sheet metal bent into an arrow shape, pointing right toward a narrow canyon mouth in a rock face. The word AGUA scratched into the tin — rough, handmade. Pre-dusk rose light. Purple shadows. The canyon mouth is a dark narrow opening in the rock. The open desert with tire tracks continues straight ahead toward distant mountains. Two directions.",
+      "negative_prompt": "No modern signs, no painted markers, no people.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "The cairn is a key narrative prop. Needs quality for the tin arrow detail and AGUA text. Text rendering is generation priority #4 via environment.",
+        "requires_native_audio": false,
+        "iteration_first": true
+      },
+      "reference_assets": [
+        {
+          "asset_type": "environment-ref",
+          "asset_id": "env-rose",
+          "path": "visual-assets/environment-refs/baja-desert-rose-sunset.png",
+          "usage_note": "Match this light and terrain."
+        }
+      ],
+      "characters_in_shot": [],
+      "props_in_shot": [],
+      "vehicles_in_shot": [],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "The canyon mouth must be to the RIGHT of frame. The tire tracks continuing straight must be visible. These two directions are the central choice. Same rose light. Connects to s03-sh04 close on cairn.",
+      "sound_notes": "Wind. Silence. The stillness of discovery.",
+      "color_notes": "Rose. Purple shadows."
+    },
+    {
+      "shot_id": "s03-sh04",
+      "scene_number": 3,
+      "shot_number": 4,
+      "sequence_position": 13,
+      "source_block_ids": ["s03-b04"],
+      "shot_type": "close",
+      "camera_movement": "static",
+      "framing_notes": "Close on the cairn top. The tin arrow and AGUA text fill the frame. Detail must be legible.",
+      "description": "Close on the cairn. The tin arrow — a piece of a food can, cut and bent, raw metal edges visible. AGUA scratched with a nail or knife. Legible but rough. A gift from a stranger to the next stranger.",
+      "target_duration_seconds": 3,
+      "generation_prompt": "Close-up of the top of a hand-built stone cairn in the desert. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. Wedged between the top stones, a piece of sheet metal cut from a tin food can, bent into an arrow shape. The raw cut metal edges are visible. The arrow points to the right. Scratched into the face of the tin with a nail or knife, the word AGUA — rough, handmade lettering. The cairn stones are weathered desert rock. Pre-dusk rose light. This was made by someone who stopped here, built this, and kept going.",
+      "negative_prompt": "No modern materials, no printed text, no paint.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "Text rendering required — AGUA must be legible. This is a text accuracy test.",
+        "requires_native_audio": false,
+        "iteration_first": true
+      },
+      "reference_assets": [],
+      "characters_in_shot": [],
+      "props_in_shot": [],
+      "vehicles_in_shot": [],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Same cairn as s03-sh03 but closer. The arrow must point the same direction (right). AGUA must be legible. Same rose light.",
+      "sound_notes": "Wind across stone. Silence.",
+      "color_notes": "Rose."
+    },
+    {
+      "shot_id": "s03-sh05",
+      "scene_number": 3,
+      "shot_number": 5,
+      "sequence_position": 14,
+      "source_block_ids": ["s03-b05", "s03-b06"],
+      "shot_type": "medium",
+      "camera_movement": "static",
+      "framing_notes": "Vega at the cairn. He looks right (canyon), then ahead (open desert/course). Then glances at his wrist. Watch visible for 2 seconds.",
+      "description": "Vega at the cairn. Studies it. Looks right toward the canyon. Looks ahead where tire tracks continue to mountains. Looks west at the sun on the ridge. Glances at his wrist — the Top Time. Confirmation, not discovery. Fifteen minutes of day left.",
+      "target_duration_seconds": 6,
+      "generation_prompt": "Medium shot of a man standing beside a stone cairn in the desert. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man, lean, sun-darkened, white cotton shirt, brown leather vest, goggles on forehead. He studies the cairn, then looks to his right toward a narrow canyon mouth, then looks straight ahead into the open desert where tire tracks lead to distant mountains. He looks west — the sun sits on the ridge. Then a quick glance down at his left wrist — a vintage watch with black dial on brown leather strap. The gesture is quick, unsentimental. Pre-dusk rose light. Purple shadows. The sun is touching the western ridge.",
+      "negative_prompt": "No modern watch, no other people, no modern elements.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "Watch visibility moment #2. Character acting with subtle gesture. Needs quality.",
+        "requires_native_audio": false,
+        "iteration_first": true
+      },
+      "reference_assets": [
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-full-front",
+          "path": "visual-assets/character-refs/miguel-vega-full-front.png",
+          "usage_note": "Wardrobe and posture reference."
+        },
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-flow-ref",
+          "path": "visual-assets/character-refs/miguel-vega-flow-ref.jpeg",
+          "usage_note": "Face reference for Veo."
+        },
+        {
+          "asset_type": "prop-ref",
+          "asset_id": "tt-dusty",
+          "path": "visual-assets/prop-refs/top-time-dusty.png",
+          "usage_note": "Watch condition — dusty, on left wrist."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [
+        {
+          "prop_id": "breitling-top-time",
+          "visibility_note": "2 seconds. Quick glance at wrist. Confirmation gesture — the sun is the primary clock, the watch is backup."
+        }
+      ],
+      "vehicles_in_shot": [],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Canyon must be to Vega's RIGHT. Open desert/mountains straight ahead. Sun to his LEFT (west). Watch on LEFT wrist. Same cairn as previous shots. Same rose light.",
+      "sound_notes": "Wind. Silence. Maybe the faintest sound of Vega's breathing.",
+      "color_notes": "Rose. Sun on ridge."
+    },
+    {
+      "shot_id": "s03-sh06",
+      "scene_number": 3,
+      "shot_number": 6,
+      "sequence_position": 15,
+      "source_block_ids": ["s03-b07", "s03-b08"],
+      "shot_type": "close",
+      "camera_movement": "static",
+      "framing_notes": "Tight on face. The decision happens in the muscles around his eyes. Tongue on cracked lips.",
+      "description": "Close on Vega's face. He is calculating odds. Tongue runs across cracked lips. The decision is visible in the muscles around his eyes. He looks at the tin arrow one more time. Then the open desert. Then he turns back toward his bike.",
+      "target_duration_seconds": 5,
+      "generation_prompt": "Close-up of a weathered man's face making a decision. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man, sun-darkened skin, deep lines around the eyes. Goggles pushed up on forehead. His tongue runs across cracked, dry lips. His eyes move — calculating, weighing options. The decision happens in the muscles around his eyes. Then resolve. He turns his head slightly. Pre-dusk rose light from the west, side-lighting his face. Purple shadows on one side. This is the pivotal moment of the film.",
+      "negative_prompt": "No smiling, no tears, no exaggerated expression. Subtle and internal.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "The emotional climax. Facial expression carries the entire narrative turn. Best quality required.",
+        "requires_native_audio": false,
+        "iteration_first": true
+      },
+      "reference_assets": [
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-face-front",
+          "path": "visual-assets/character-refs/miguel-vega-face-front.png",
+          "usage_note": "Face consistency — this must be the same man."
+        },
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-three-quarter-left",
+          "path": "visual-assets/character-refs/miguel-vega-three-quarter-left.png",
+          "usage_note": "Angle reference."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": [],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Same goggles-on-forehead state. Same rose light. Same cracked, dry lips. Last shot of Scene 3. He turns back toward the bike — connecting to Scene 4 where he returns to the Triumph.",
+      "sound_notes": "Wind. Absolute silence otherwise. The audience hears the decision in the quiet.",
+      "color_notes": "Rose. Side-lit. Purple shadows."
+    },
+    {
+      "shot_id": "s04-sh01",
+      "scene_number": 4,
+      "shot_number": 1,
+      "sequence_position": 16,
+      "source_block_ids": ["s04-b01"],
+      "shot_type": "close",
+      "camera_movement": "static, slight handheld",
+      "framing_notes": "Hands on the spark plug and a flat rock. The desert fix. Precise taps with a stone.",
+      "description": "Vega back at the Triumph. Kneels. Places the fouled plug on a flat rock. Picks up a smaller stone. Taps the cracked porcelain carefully. Once. Twice. Third tap — the cracked fragment falls away. Not repaired. But the short circuit is eliminated.",
+      "target_duration_seconds": 6,
+      "generation_prompt": "Close-up of a man's hands performing a delicate repair on a spark plug on a flat desert rock. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. Sun-darkened hands holding a fouled spark plug against a flat stone. He picks up a smaller stone and taps the cracked porcelain insulator carefully, precisely. A fragment of cracked porcelain falls away, exposing clean insulator underneath. The plug electrode is fouled black with carbon. Last golden light — the sun is half below the western ridge. Everything side-lit with long horizontal light. Rocky ground. This is a desert fix — not a real repair, but it might work.",
+      "negative_prompt": "No modern tools, no clean hands, no workshop setting.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "Mechanical detail accuracy critical. The porcelain repair is narratively important and must look believable.",
+        "requires_native_audio": false,
+        "iteration_first": true
+      },
+      "reference_assets": [
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-kneeling-engine",
+          "path": "visual-assets/character-refs/miguel-vega-kneeling-engine.png",
+          "usage_note": "Hand and kneeling pose reference."
+        },
+        {
+          "asset_type": "vehicle-ref",
+          "asset_id": "tr6-engine-detail",
+          "path": "visual-assets/prop-refs/triumph-tr6sc-engine-detail.png",
+          "usage_note": "Engine and spark plug reference."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": ["triumph-tr6sc"],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Light shifts to last golden light — side-lit, maximum contrast. Same fouled plug from s02-sh02 but now being worked on. Bare hands — gloves still off.",
+      "sound_notes": "Stone tapping on porcelain. Small precise sounds in enormous silence. The tap sounds should be distinct.",
+      "color_notes": "Last horizontal gold. Side-lit. Maximum contrast."
+    },
+    {
+      "shot_id": "s04-sh02",
+      "scene_number": 4,
+      "shot_number": 2,
+      "sequence_position": 17,
+      "source_block_ids": ["s04-b03"],
+      "shot_type": "detail",
+      "camera_movement": "static",
+      "framing_notes": "Tight on boot on kick lever. The worn sole, exposed stitching at toe.",
+      "description": "Detail shot. Boot on the kick lever. Worn sole. Exposed stitching at the toe. The lever is steel, polished smooth.",
+      "target_duration_seconds": 2,
+      "generation_prompt": "Detail shot of a worn leather boot on a motorcycle kick starter lever. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. The boot sole is separating at the toe with exposed stitching. The kick lever is steel, polished smooth by a thousand kicks. Last golden side-light. The textures are everything — worn leather, polished steel, dust, stitching.",
+      "negative_prompt": "No modern boot, no electric start.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1-fast",
+        "fallback_tool": "veo-3.1",
+        "rationale": "Short detail shot. Fast tier for initial generation. Upgrade if boot detail isn't sharp enough.",
+        "requires_native_audio": false,
+        "iteration_first": false
+      },
+      "reference_assets": [],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": ["triumph-tr6sc"],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Same boot with separating sole from s03-sh02. Kick lever is on the RIGHT side of the bike. Same golden side-light.",
+      "sound_notes": "The kick — a mechanical lever sound, then engine turning over. Does not catch.",
+      "color_notes": "Last horizontal gold."
+    },
+    {
+      "shot_id": "s04-sh03",
+      "scene_number": 4,
+      "shot_number": 3,
+      "sequence_position": 18,
+      "source_block_ids": ["s04-b04"],
+      "shot_type": "detail",
+      "camera_movement": "static",
+      "framing_notes": "Same framing as s04-sh02. Second kick. The engine almost catches.",
+      "description": "Second kick. Boot on lever again. The engine turns over, coughs, nothing.",
+      "target_duration_seconds": 2,
+      "generation_prompt": "Detail shot of a worn leather boot kicking a motorcycle kick starter lever a second time. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. Same boot, same lever, same golden side-light. The kick is harder this time. The engine almost catches — a hint of ignition.",
+      "negative_prompt": "No modern boot, no electric start.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1-fast",
+        "fallback_tool": "veo-3.1",
+        "rationale": "Repeated detail shot. Fast tier. Must match s04-sh02.",
+        "requires_native_audio": true,
+        "iteration_first": false
+      },
+      "reference_assets": [],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": ["triumph-tr6sc"],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Same framing and elements as s04-sh02. The audio difference tells the story — this kick almost catches.",
+      "sound_notes": "Kick lever. Engine turns. A cough — a hint of ignition. Then nothing. A tease.",
+      "color_notes": "Last horizontal gold."
+    },
+    {
+      "shot_id": "s04-sh04",
+      "scene_number": 4,
+      "shot_number": 4,
+      "sequence_position": 19,
+      "source_block_ids": ["s04-b05"],
+      "shot_type": "close",
+      "camera_movement": "static",
+      "framing_notes": "Face between kicks. Breathing. Looking west. The sun is a sliver. He has minutes.",
+      "description": "Close on Vega's face between kick attempts. He breathes. Looks west. The sun is a sliver above the ridge. He has minutes.",
+      "target_duration_seconds": 3,
+      "generation_prompt": "Close-up of a weathered man's face in the last golden light of day. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man, sun-darkened, deep eye lines. Goggles on forehead. He breathes. Looks west. The last sliver of sun is on the ridge behind him, casting long horizontal side-light across his face. Maximum contrast — one side lit gold, the other in deep shadow. Resolve and exhaustion in equal measure.",
+      "negative_prompt": "No smiling, no panic. Controlled intensity.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "Character emotion in the most cinematic light of the film. Needs best quality.",
+        "requires_native_audio": false,
+        "iteration_first": true
+      },
+      "reference_assets": [
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-face-front",
+          "path": "visual-assets/character-refs/miguel-vega-face-front.png",
+          "usage_note": "Face consistency."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": [],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Same face, same goggles position. The light is the most dramatic of the film — use it. Connects to s04-sh05 third kick.",
+      "sound_notes": "Breathing. Wind. Silence between kicks.",
+      "color_notes": "Last horizontal gold. Maximum contrast side-light."
+    },
+    {
+      "shot_id": "s04-sh05",
+      "scene_number": 4,
+      "shot_number": 5,
+      "sequence_position": 20,
+      "source_block_ids": ["s04-b06", "s04-b07"],
+      "shot_type": "medium",
+      "camera_movement": "static, then slight pan as bike turns right",
+      "framing_notes": "Third kick. Engine catches. Vega pulls goggles down, nurses throttle. Turns the handlebars RIGHT — toward the canyon. Away from the course.",
+      "description": "Third kick. Hard. Engine fires, misses, fires, catches. Rough heartbeat. Vega pulls goggles down. Nurses the throttle. Looks at the open desert ahead. Then turns the handlebars right. Toward the canyon. Toward water. Away from the course.",
+      "target_duration_seconds": 6,
+      "generation_prompt": "Medium shot of a man on a motorcycle that just started after a difficult kick-start. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man on a dusty 1965 Triumph TR6SC. He pulls goggles down over his eyes. Rolls the throttle gently — nursing a rough-running engine. The engine thumps unevenly, skipping beats, but alive. He looks ahead at the open desert, then deliberately turns the handlebars to the right. The bike begins to roll toward a narrow canyon mouth in the rock face. Last golden side-light. Rocky terrain. He chose survival over the race.",
+      "negative_prompt": "No second exhaust pipe, no smooth engine sound, no modern elements.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "The narrative turn. Character on motorcycle with engine start and directional choice. Needs quality and native audio for the rough engine sound.",
+        "requires_native_audio": true,
+        "iteration_first": true
+      },
+      "reference_assets": [
+        {
+          "asset_type": "character-ref",
+          "asset_id": "mv-riding-pose",
+          "path": "visual-assets/character-refs/miguel-vega-riding-pose.png",
+          "usage_note": "Rider on bike reference."
+        },
+        {
+          "asset_type": "vehicle-ref",
+          "asset_id": "tr6-flow-ref",
+          "path": "visual-assets/prop-refs/triumph-tr6sc-flow-ref.jpeg",
+          "usage_note": "Video-ready motorcycle reference."
+        },
+        {
+          "asset_type": "environment-ref",
+          "asset_id": "env-rose",
+          "path": "visual-assets/environment-refs/baja-desert-rose-sunset.png",
+          "usage_note": "Canyon mouth must be visible to the right."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": ["triumph-tr6sc"],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Goggles go DOWN over eyes — they were on forehead since Scene 2. Canyon is to the RIGHT. Open desert is AHEAD. He turns right. Engine is rough and skipping, not healthy.",
+      "sound_notes": "Third kick: engine turns, fires, misses, fires, catches. Rough heartbeat — uneven, skipping every few beats. Not the healthy rhythm of the opening. Something compromised choosing to function.",
+      "color_notes": "Last gold transitioning to rose."
+    },
+    {
+      "shot_id": "s04-sh06",
+      "scene_number": 4,
+      "shot_number": 6,
+      "sequence_position": 21,
+      "source_block_ids": ["s04-b08", "s04-b09"],
+      "shot_type": "detail",
+      "camera_movement": "static, then pulls to wide",
+      "framing_notes": "Left hand on grip. Top Time visible for 1 second. Dust-caked, crystal scratched, strap dark with sweat. Then camera pulls to the wide.",
+      "description": "Detail shot. Left hand on grip steadying the handlebars over loose rock. Top Time visible on wrist — dust-caked, crystal scratched, strap dark with sweat. Vibrating with the rough engine. Then Vega speaks: 'Primero llegas. Despues compites.' Barely audible under the engine.",
+      "target_duration_seconds": 4,
+      "generation_prompt": "Detail shot of a man's left hand gripping a motorcycle handlebar as it rolls over loose rocky ground. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. Sun-darkened hand steadying the bars. On the left wrist, a vintage watch — dust-caked, crystal scratched, brown leather strap dark with sweat. The watch vibrates with the rough-running engine. Frame full of textures: leather, steel, dust, skin, knuckle. Last golden side-light. The camera holds on the detail for a moment, then pulls back to a wider view.",
+      "negative_prompt": "No modern watch, no clean hand, no smooth road.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "Watch visibility moment #3 (final). Dialogue line. Needs quality for prop detail and native audio for dialogue under engine.",
+        "requires_native_audio": true,
+        "iteration_first": true
+      },
+      "reference_assets": [
+        {
+          "asset_type": "prop-ref",
+          "asset_id": "tt-worn",
+          "path": "visual-assets/prop-refs/top-time-worn.png",
+          "usage_note": "Watch condition — most worn state. Crystal scratched, strap sweaty."
+        },
+        {
+          "asset_type": "prop-ref",
+          "asset_id": "tt-in-context",
+          "path": "visual-assets/prop-refs/top-time-in-context.png",
+          "usage_note": "Watch-on-handlebar framing reference."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [
+        {
+          "prop_id": "breitling-top-time",
+          "visibility_note": "1 second. Final watch appearance. Most worn condition. One texture among many — not the subject."
+        }
+      ],
+      "vehicles_in_shot": ["triumph-tr6sc"],
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "continuity_notes": "Watch in most worn state — dustier and more scratched than Scene 1 or 3. Left wrist. Same rough engine vibration. The dialogue line is the only spoken words in the film.",
+      "sound_notes": "Rough engine thump. Under it, barely audible: 'Primero llegas. Despues compites.' A private decision spoken aloud.",
+      "color_notes": "Last gold. Transitioning."
+    },
+    {
+      "shot_id": "s04-sh07",
+      "scene_number": 4,
+      "shot_number": 7,
+      "sequence_position": 22,
+      "source_block_ids": ["s04-b10", "s04-b11", "s04-b12", "s04-b13"],
+      "shot_type": "extreme-wide",
+      "camera_movement": "static — same framing as opening shot",
+      "framing_notes": "Bookend with s01-sh01. Same landscape framing. But now the motorcycle moves RIGHT toward the canyon, not left-to-right across the frame. Hold as bike becomes a speck. Guitar enters. Sun disappears. Blue dusk. Title card.",
+      "description": "Extreme wide. Same framing as the opening shot. The desert. The mountains. But now the motorcycle moves right toward the canyon shadow. Engine fades. Guitar enters — three notes, nylon strings, a question. The sun disappears. Amber drains. Blue dusk. Title card: THE LAST MARKER. Fade to black.",
+      "target_duration_seconds": 12,
+      "generation_prompt": "Extreme wide shot of Baja California desert — same composition as the film's opening. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. Flat hardpan, mountain range on horizon, cardon cacti. A motorcycle moves to the right, toward a narrow canyon shadow in the rock face — away from the open desert, away from the course. The dust trail is thin, pink in the last light. The bike grows smaller. The engine sound fades. The sun drops below the western ridge. The amber drains from the landscape. The desert goes cool and blue and still. The motorcycle is a speck. The dust trail is a pink thread. Then blue dusk settles over everything. Title card appears: THE LAST MARKER in vintage pulp typography over the blue dusk landscape.",
+      "negative_prompt": "No modern elements, no other vehicles, no bright colors after sunset.",
+      "tool_routing": {
+        "primary_tool": "veo-3.1",
+        "fallback_tool": "veo-3.1-fast",
+        "rationale": "Final shot. Extended duration. Color transition from gold to blue dusk. Must bookend the opening. Needs the best quality and longest generation capability.",
+        "requires_native_audio": true,
+        "iteration_first": true
+      },
+      "reference_assets": [
+        {
+          "asset_type": "environment-ref",
+          "asset_id": "env-amber",
+          "path": "visual-assets/environment-refs/baja-desert-amber-late-afternoon.png",
+          "usage_note": "Match the opening shot composition."
+        },
+        {
+          "asset_type": "environment-ref",
+          "asset_id": "env-dusk",
+          "path": "visual-assets/environment-refs/baja-desert-blue-dusk.png",
+          "usage_note": "The end state — this is what the landscape looks like after the sun goes."
+        }
+      ],
+      "characters_in_shot": ["miguel-vega"],
+      "props_in_shot": [],
+      "vehicles_in_shot": ["triumph-tr6sc"],
+      "transition_in": "cut",
+      "transition_out": "fade-to-black",
+      "continuity_notes": "MUST match s01-sh01 landscape composition — same mountain range, same framing. The motorcycle moves RIGHT toward the canyon (not left-to-right as in opening). Color transitions from last gold through rose to blue dusk within this single shot. Title card may need to be composited in post.",
+      "sound_notes": "Rough engine fading: thump, skip, thump, thump, skip. Growing smaller and fainter. When almost gone, guitar enters — nylon strings, three notes, Mexican folk phrase. A question. Played once. Pause. Once more. Guitar fades. Silence. Total. Four seconds. End.",
+      "color_notes": "Starts in last gold. Transitions through rose to cool blue dusk. The color arc of the entire film compressed into one shot."
+    }
+  ],
+  "multi_shot_groups": [
+    {
+      "group_id": "kick-sequence",
+      "shot_ids": ["s04-sh02", "s04-sh03", "s04-sh04"],
+      "tool": "seedance-2.0",
+      "rationale": "Three connected shots — boot on kick lever, boot on kick lever again, face between kicks. Consistent framing, lighting, and boot detail across the sequence. Seedance multi-shot generation could produce these as connected clips with locked consistency.",
+      "combined_prompt": "A sequence of three connected shots in a rocky desert. 16mm Ektachrome, heavy grain. Last golden side-light. Shot 1: Detail of worn boot on motorcycle kick lever, kick happens, engine turns but doesn't catch. Shot 2: Same framing, second kick, engine almost catches — a cough, a hint. Shot 3: Close on the rider's face between kicks — weathered, 30, Mexican, goggles on forehead. He breathes. Looks west at the last sliver of sun. Resolve and exhaustion."
+    }
+  ],
+  "created_at": "2026-04-29T16:00:00Z",
+  "updated_at": "2026-04-29T16:00:00Z"
+}
