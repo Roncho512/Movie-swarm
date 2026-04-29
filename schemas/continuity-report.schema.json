@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "continuity-report.schema.json",
+  "title": "Continuity Report",
+  "description": "Produced by the QA agent after reviewing an assembled cut. Consumed by the Executive Producer (Orchestrator) to route fixes to the appropriate agent. The feedback loop continues until this report returns an overall 'approved' verdict or max iterations are reached.",
+  "type": "object",
+  "required": ["production_id", "version", "review_pass", "verdict", "issues", "reviewed_at"],
+  "properties": {
+    "production_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "review_pass": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Which review iteration this is. Increments each time QA reviews a revised cut."
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["approved", "revisions-required", "major-rework"],
+      "description": "Overall verdict. 'approved' means the cut is ready for final export."
+    },
+    "summary": {
+      "type": "string",
+      "description": "High-level summary of the review findings."
+    },
+    "scores": {
+      "type": "object",
+      "description": "Category scores from 1 (poor) to 10 (perfect).",
+      "properties": {
+        "character_consistency": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "vehicle_consistency": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "prop_consistency": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "lighting_continuity": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "style_adherence": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "audio_sync": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "narrative_coherence": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "pacing": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "overall": { "type": "integer", "minimum": 1, "maximum": 10 }
+      }
+    },
+    "issues": {
+      "type": "array",
+      "description": "Specific issues found. Each issue routes to an agent for resolution.",
+      "items": {
+        "type": "object",
+        "required": ["issue_id", "severity", "category", "description", "route_to_agent"],
+        "properties": {
+          "issue_id": {
+            "type": "string",
+            "examples": ["qa-001", "qa-002"]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "major", "minor", "suggestion"],
+            "description": "Critical: breaks the film. Major: noticeable to audience. Minor: subtle. Suggestion: improvement opportunity."
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "character-consistency", "vehicle-consistency", "prop-consistency",
+              "lighting-continuity", "color-continuity", "style-adherence",
+              "audio-sync", "audio-quality", "audio-missing",
+              "narrative-gap", "pacing", "transition",
+              "technical-defect", "other"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "What the issue is."
+          },
+          "location": {
+            "type": "object",
+            "description": "Where in the film the issue occurs.",
+            "properties": {
+              "scene_number": { "type": "integer" },
+              "shot_id": { "type": "string" },
+              "clip_id": { "type": "string" },
+              "timecode_start": { "type": "string", "examples": ["01:23"] },
+              "timecode_end": { "type": "string" }
+            }
+          },
+          "route_to_agent": {
+            "type": "string",
+            "enum": [
+              "art-director", "cinematographer", "production",
+              "sound-designer", "editor", "screenwriter"
+            ],
+            "description": "Which agent should fix this issue."
+          },
+          "fix_instruction": {
+            "type": "string",
+            "description": "Specific instruction for the responsible agent."
+          },
+          "reference_frame_path": {
+            "type": "string",
+            "description": "Path to a screenshot or frame showing the issue."
+          },
+          "reviewed_by": {
+            "type": "string",
+            "examples": ["claude-api", "gpt-5.5-vision", "human"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["open", "in-progress", "resolved", "wont-fix"],
+            "default": "open"
+          }
+        }
+      }
+    },
+    "reviewed_by": {
+      "type": "array",
+      "description": "Models/humans that participated in this review.",
+      "items": { "type": "string" }
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

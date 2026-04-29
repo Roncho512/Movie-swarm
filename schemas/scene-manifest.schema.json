@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scene-manifest.schema.json",
+  "title": "Scene Manifest",
+  "description": "Machine-readable breakdown of the screenplay. Produced by the Screenwriter agent. Consumed by every downstream agent. This is the central data structure of the pipeline.",
+  "type": "object",
+  "required": ["production_id", "version", "total_scenes", "target_runtime_seconds", "scenes", "characters", "created_at"],
+  "properties": {
+    "production_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version of this manifest. Increment on any change.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": ["1.0.0"]
+    },
+    "total_scenes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "target_runtime_seconds": {
+      "type": "integer"
+    },
+    "total_dialogue_lines": {
+      "type": "integer",
+      "description": "Count of spoken dialogue lines across all scenes."
+    },
+    "characters": {
+      "type": "array",
+      "description": "All characters appearing in the film with their identifiers.",
+      "items": {
+        "type": "object",
+        "required": ["character_id", "name"],
+        "properties": {
+          "character_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "appears_in_scenes": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "description": "Scene numbers where this character appears."
+          }
+        }
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scene_number", "scene_id", "heading", "location", "time_of_day", "target_duration_seconds", "color_notes", "sound_notes", "action_blocks"],
+        "properties": {
+          "scene_number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "scene_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$",
+            "description": "Unique slug for this scene.",
+            "examples": ["s01-open-desert"]
+          },
+          "heading": {
+            "type": "string",
+            "description": "Standard screenplay scene heading.",
+            "examples": ["EXT. BAJA CALIFORNIA - OPEN DESERT - LATE AFTERNOON"]
+          },
+          "location": {
+            "type": "string",
+            "examples": ["Baja California - Open Desert"]
+          },
+          "time_of_day": {
+            "type": "string",
+            "examples": ["late afternoon", "pre-dusk", "dusk"]
+          },
+          "target_duration_seconds": {
+            "type": "integer",
+            "description": "Target screen time for this scene."
+          },
+          "color_notes": {
+            "type": "string",
+            "description": "Color and lighting directives from the screenplay. Verbatim from production notes."
+          },
+          "sound_notes": {
+            "type": "string",
+            "description": "Sound design directives from the screenplay."
+          },
+          "characters_present": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "character_id values for characters in this scene."
+          },
+          "props_visible": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["prop_id", "context"],
+              "properties": {
+                "prop_id": { "type": "string" },
+                "context": {
+                  "type": "string",
+                  "description": "How and when the prop appears in this scene."
+                },
+                "visibility_seconds": {
+                  "type": "number",
+                  "description": "Estimated screen time for this prop in this scene."
+                }
+              }
+            }
+          },
+          "vehicles_present": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "vehicle_id values for vehicles in this scene."
+          },
+          "action_blocks": {
+            "type": "array",
+            "description": "Sequential blocks of action/description within the scene. Each block maps to one or more shots.",
+            "items": {
+              "type": "object",
+              "required": ["block_id", "type", "content"],
+              "properties": {
+                "block_id": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]+$",
+                  "examples": ["s01-b01"]
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["action", "dialogue", "transition", "production_note"],
+                  "description": "Block type. Action is visual description. Dialogue is spoken lines. Transition is CUT TO, FADE, etc."
+                },
+                "content": {
+                  "type": "string",
+                  "description": "The text content of this block."
+                },
+                "character_id": {
+                  "type": "string",
+                  "description": "For dialogue blocks, which character speaks."
+                },
+                "parenthetical": {
+                  "type": "string",
+                  "description": "For dialogue blocks, the parenthetical direction.",
+                  "examples": ["to himself, barely audible over the engine"]
+                },
+                "production_notes": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Production notes attached to this block from the screenplay."
+                },
+                "suggested_shot_type": {
+                  "type": "string",
+                  "description": "Shot type suggested in the screenplay, if any.",
+                  "examples": ["EXTREME WIDE", "MEDIUM TRACKING", "DETAIL SHOT", "CLOSE", "LOW ANGLE", "POV"]
+                }
+              }
+            }
+          },
+          "dialogue_extractions": {
+            "type": "array",
+            "description": "All dialogue lines in this scene, extracted for the Sound Designer.",
+            "items": {
+              "type": "object",
+              "required": ["character_id", "line", "language"],
+              "properties": {
+                "character_id": { "type": "string" },
+                "line": { "type": "string" },
+                "language": { "type": "string", "examples": ["es", "en"] },
+                "translation": { "type": "string" },
+                "direction": {
+                  "type": "string",
+                  "description": "Performance direction for the voice actor / TTS.",
+                  "examples": ["barely audible, under engine sound, private self-talk"]
+                },
+                "mix_level": {
+                  "type": "string",
+                  "enum": ["foreground", "background", "under"],
+                  "description": "How the dialogue sits in the mix relative to other sound."
+                }
+              }
+            }
+          },
+          "editorial_notes": {
+            "type": "string",
+            "description": "Pacing and editorial rhythm notes for this scene."
+          }
+        }
+      }
+    },
+    "color_progression": {
+      "type": "array",
+      "description": "Scene-by-scene color arc for the entire film.",
+      "items": {
+        "type": "object",
+        "required": ["scene_number", "description"],
+        "properties": {
+          "scene_number": { "type": "integer" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "sound_design_timeline": {
+      "type": "array",
+      "description": "Time-coded sound design breakdown for the entire film.",
+      "items": {
+        "type": "object",
+        "required": ["start_seconds", "end_seconds", "description"],
+        "properties": {
+          "start_seconds": { "type": "number" },
+          "end_seconds": { "type": "number" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "editorial_rhythm": {
+      "type": "string",
+      "description": "Overall editorial pacing philosophy for the film."
+    },
+    "generation_priorities": {
+      "type": "array",
+      "description": "AI generation priorities in order of difficulty/importance.",
+      "items": {
+        "type": "object",
+        "required": ["priority", "category", "description"],
+        "properties": {
+          "priority": { "type": "integer", "minimum": 1 },
+          "category": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

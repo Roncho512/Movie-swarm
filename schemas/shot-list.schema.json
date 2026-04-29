@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "shot-list.schema.json",
+  "title": "Shot List",
+  "description": "Produced by the Cinematographer. Consumed by Production (for generation) and Editor (for assembly). Each shot has a generation prompt, tool routing, and reference asset links.",
+  "type": "object",
+  "required": ["production_id", "version", "total_shots", "shots", "created_at"],
+  "properties": {
+    "production_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "total_shots": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "shots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["shot_id", "scene_number", "shot_number", "shot_type", "description", "generation_prompt", "tool_routing", "target_duration_seconds"],
+        "properties": {
+          "shot_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$",
+            "description": "Unique identifier. Format: s{scene}-sh{shot}.",
+            "examples": ["s01-sh01", "s01-sh02"]
+          },
+          "scene_number": {
+            "type": "integer"
+          },
+          "shot_number": {
+            "type": "integer",
+            "description": "Sequential shot number within the scene."
+          },
+          "sequence_position": {
+            "type": "integer",
+            "description": "Global position in the film's shot sequence."
+          },
+          "source_block_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Which action blocks from the scene manifest this shot covers."
+          },
+          "shot_type": {
+            "type": "string",
+            "enum": [
+              "extreme-wide", "wide", "medium-wide", "medium", "medium-close",
+              "close", "extreme-close", "detail", "pov",
+              "tracking", "pan", "tilt", "dolly", "crane",
+              "static", "handheld", "low-angle", "high-angle", "over-shoulder"
+            ]
+          },
+          "camera_movement": {
+            "type": "string",
+            "description": "Describe any camera movement.",
+            "examples": ["static", "slow tracking right to left", "push in", "pull back to wide"]
+          },
+          "framing_notes": {
+            "type": "string",
+            "description": "Specific framing instructions."
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of what happens in this shot."
+          },
+          "target_duration_seconds": {
+            "type": "number",
+            "minimum": 0.5,
+            "description": "How long this shot should be in the final edit."
+          },
+          "generation_prompt": {
+            "type": "string",
+            "description": "The actual prompt to send to the video generation tool. This is the Cinematographer's primary output. Should include style directives, framing, action, and character references."
+          },
+          "negative_prompt": {
+            "type": "string",
+            "description": "What to exclude from generation. Tool-dependent."
+          },
+          "tool_routing": {
+            "type": "object",
+            "required": ["primary_tool", "rationale"],
+            "description": "Which generation tool to use and why.",
+            "properties": {
+              "primary_tool": {
+                "type": "string",
+                "enum": ["veo-3.1", "veo-3.1-fast", "veo-3.1-lite", "seedance-2.0", "runway-gen-4.5", "runway-kling-3.0"],
+                "description": "Primary generation tool."
+              },
+              "fallback_tool": {
+                "type": "string",
+                "description": "Fallback if primary fails or produces inadequate results."
+              },
+              "rationale": {
+                "type": "string",
+                "description": "Why this tool was selected for this shot."
+              },
+              "requires_native_audio": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether this shot needs native audio from the video generator."
+              },
+              "iteration_first": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, generate with Lite/Fast first for validation before committing to full quality."
+              }
+            }
+          },
+          "reference_assets": {
+            "type": "array",
+            "description": "Reference images to include with the generation call.",
+            "items": {
+              "type": "object",
+              "required": ["asset_type", "asset_id", "path"],
+              "properties": {
+                "asset_type": {
+                  "type": "string",
+                  "enum": ["character-ref", "vehicle-ref", "prop-ref", "environment-ref", "style-frame", "previous-clip-frame"]
+                },
+                "asset_id": { "type": "string" },
+                "path": { "type": "string" },
+                "usage_note": {
+                  "type": "string",
+                  "description": "How this reference should be used in the generation."
+                }
+              }
+            }
+          },
+          "characters_in_shot": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "character_id values for characters visible in this shot."
+          },
+          "props_in_shot": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "prop_id": { "type": "string" },
+                "visibility_note": { "type": "string" }
+              }
+            }
+          },
+          "vehicles_in_shot": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "transition_in": {
+            "type": "string",
+            "description": "How we arrive at this shot.",
+            "examples": ["cut", "fade-in", "dissolve"]
+          },
+          "transition_out": {
+            "type": "string",
+            "description": "How we leave this shot.",
+            "examples": ["cut", "fade-to-black", "dissolve"]
+          },
+          "continuity_notes": {
+            "type": "string",
+            "description": "What must match the previous and next shots for continuity."
+          },
+          "sound_notes": {
+            "type": "string",
+            "description": "What the audience should hear during this shot."
+          },
+          "color_notes": {
+            "type": "string",
+            "description": "Lighting / color specific to this shot."
+          }
+        }
+      }
+    },
+    "multi_shot_groups": {
+      "type": "array",
+      "description": "Groups of shots that should be generated together (e.g., Seedance multi-shot). Reduces consistency issues across connected shots.",
+      "items": {
+        "type": "object",
+        "required": ["group_id", "shot_ids", "tool", "rationale"],
+        "properties": {
+          "group_id": { "type": "string" },
+          "shot_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "tool": { "type": "string" },
+          "rationale": { "type": "string" },
+          "combined_prompt": { "type": "string" }
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

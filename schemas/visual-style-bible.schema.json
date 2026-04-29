@@ -1,0 +1,268 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "visual-style-bible.schema.json",
+  "title": "Visual Style Bible",
+  "description": "Produced by the Art Director. The visual consistency anchor for the entire production. Every visual generation agent references this document.",
+  "type": "object",
+  "required": ["production_id", "version", "style_summary", "character_references", "color_system", "created_at"],
+  "properties": {
+    "production_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "style_summary": {
+      "type": "object",
+      "description": "Top-level visual language definition.",
+      "required": ["description", "film_stock", "aspect_ratio"],
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Prose summary of the visual language."
+        },
+        "film_stock": {
+          "type": "string",
+          "description": "Simulated film stock / look.",
+          "examples": ["16mm Ektachrome"]
+        },
+        "grain": {
+          "type": "string",
+          "enum": ["none", "light", "moderate", "heavy"],
+          "examples": ["heavy"]
+        },
+        "aspect_ratio": {
+          "type": "string",
+          "examples": ["2.39:1"]
+        },
+        "lens_characteristics": {
+          "type": "string",
+          "description": "Lens flare, distortion, bokeh characteristics.",
+          "examples": ["Lens flare on direct sun. Warm color bleed at frame edges."]
+        },
+        "black_level": {
+          "type": "string",
+          "description": "How blacks render.",
+          "examples": ["charcoal — never true black"]
+        },
+        "white_level": {
+          "type": "string",
+          "description": "How whites render.",
+          "examples": ["bone — never pure white"]
+        }
+      }
+    },
+    "color_system": {
+      "type": "object",
+      "description": "Color palette and progression rules.",
+      "required": ["palette", "scene_progression"],
+      "properties": {
+        "palette": {
+          "type": "array",
+          "description": "Core color palette. Hex codes with descriptive names.",
+          "items": {
+            "type": "object",
+            "required": ["name", "hex", "usage"],
+            "properties": {
+              "name": { "type": "string" },
+              "hex": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+              "usage": { "type": "string" }
+            }
+          }
+        },
+        "scene_progression": {
+          "type": "array",
+          "description": "How color shifts scene by scene. Maps to the color arc in the screenplay.",
+          "items": {
+            "type": "object",
+            "required": ["scene_number", "dominant_color", "description"],
+            "properties": {
+              "scene_number": { "type": "integer" },
+              "dominant_color": { "type": "string" },
+              "shadow_color": { "type": "string" },
+              "highlight_color": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "lighting": {
+      "type": "object",
+      "description": "Lighting philosophy and scene-specific direction.",
+      "properties": {
+        "philosophy": {
+          "type": "string",
+          "description": "Overall lighting approach."
+        },
+        "scene_lighting": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["scene_number", "description"],
+            "properties": {
+              "scene_number": { "type": "integer" },
+              "sun_position": { "type": "string" },
+              "key_light_direction": { "type": "string" },
+              "shadow_quality": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "character_references": {
+      "type": "array",
+      "description": "Reference image sets for each character. The consistency anchor.",
+      "items": {
+        "type": "object",
+        "required": ["character_id", "reference_images"],
+        "properties": {
+          "character_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "reference_images": {
+            "type": "array",
+            "description": "Set of reference images. Minimum 4 angles for lead characters.",
+            "items": {
+              "type": "object",
+              "required": ["image_id", "path", "angle", "description"],
+              "properties": {
+                "image_id": { "type": "string" },
+                "path": {
+                  "type": "string",
+                  "description": "Relative path within the production directory."
+                },
+                "angle": {
+                  "type": "string",
+                  "enum": ["front", "profile-left", "profile-right", "three-quarter-left", "three-quarter-right", "back", "full-body-front", "full-body-side", "action-pose"],
+                  "description": "Camera angle / view."
+                },
+                "description": { "type": "string" },
+                "generation_tool": {
+                  "type": "string",
+                  "description": "Tool used to generate this reference.",
+                  "examples": ["chatgpt-images-2.0", "nano-banana-pro", "midjourney"]
+                },
+                "generation_prompt": {
+                  "type": "string",
+                  "description": "The prompt used to generate this image. Stored for reproducibility."
+                }
+              }
+            }
+          },
+          "consistency_notes": {
+            "type": "string",
+            "description": "What must stay consistent about this character across all shots."
+          }
+        }
+      }
+    },
+    "vehicle_references": {
+      "type": "array",
+      "description": "Reference images for vehicles.",
+      "items": {
+        "type": "object",
+        "required": ["vehicle_id", "reference_images"],
+        "properties": {
+          "vehicle_id": { "type": "string" },
+          "reference_images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["image_id", "path", "angle", "description"],
+              "properties": {
+                "image_id": { "type": "string" },
+                "path": { "type": "string" },
+                "angle": { "type": "string" },
+                "description": { "type": "string" },
+                "generation_tool": { "type": "string" },
+                "generation_prompt": { "type": "string" }
+              }
+            }
+          },
+          "consistency_notes": { "type": "string" }
+        }
+      }
+    },
+    "prop_references": {
+      "type": "array",
+      "description": "Reference images for props that require cross-shot consistency.",
+      "items": {
+        "type": "object",
+        "required": ["prop_id", "reference_images"],
+        "properties": {
+          "prop_id": { "type": "string" },
+          "reference_images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["image_id", "path", "description"],
+              "properties": {
+                "image_id": { "type": "string" },
+                "path": { "type": "string" },
+                "description": { "type": "string" },
+                "generation_tool": { "type": "string" },
+                "generation_prompt": { "type": "string" }
+              }
+            }
+          },
+          "consistency_notes": { "type": "string" }
+        }
+      }
+    },
+    "environment_references": {
+      "type": "array",
+      "description": "Reference images for key environments / locations.",
+      "items": {
+        "type": "object",
+        "required": ["environment_id", "name", "reference_images"],
+        "properties": {
+          "environment_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "name": { "type": "string" },
+          "appears_in_scenes": {
+            "type": "array",
+            "items": { "type": "integer" }
+          },
+          "reference_images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["image_id", "path", "description"],
+              "properties": {
+                "image_id": { "type": "string" },
+                "path": { "type": "string" },
+                "time_of_day": { "type": "string" },
+                "description": { "type": "string" },
+                "generation_tool": { "type": "string" },
+                "generation_prompt": { "type": "string" }
+              }
+            }
+          },
+          "consistency_notes": { "type": "string" }
+        }
+      }
+    },
+    "composition_rules": {
+      "type": "object",
+      "description": "Framing and composition philosophy.",
+      "properties": {
+        "wide_shots": { "type": "string" },
+        "close_shots": { "type": "string" },
+        "detail_shots": { "type": "string" },
+        "general_philosophy": { "type": "string" }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

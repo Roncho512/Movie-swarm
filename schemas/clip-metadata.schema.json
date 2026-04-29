@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "clip-metadata.schema.json",
+  "title": "Clip Metadata",
+  "description": "Produced by the Production agent for each generated video clip. Consumed by Editor (for assembly) and QA (for validation). Tracks generation details, validation status, and file references.",
+  "type": "object",
+  "required": ["production_id", "version", "clips", "created_at"],
+  "properties": {
+    "production_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "total_clips": {
+      "type": "integer"
+    },
+    "total_generation_cost_usd": {
+      "type": "number",
+      "description": "Running cost total for all clip generations (including retries)."
+    },
+    "clips": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["clip_id", "shot_id", "status", "file_path"],
+        "properties": {
+          "clip_id": {
+            "type": "string",
+            "description": "Unique clip identifier. A shot may have multiple clips from retries.",
+            "examples": ["s01-sh01-v1", "s01-sh01-v2"]
+          },
+          "shot_id": {
+            "type": "string",
+            "description": "Links back to the shot list."
+          },
+          "attempt_number": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Which generation attempt this is for this shot."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["generated", "validated", "selected", "rejected", "needs-regen"],
+            "description": "Lifecycle status. 'selected' means this is the clip chosen for the final edit."
+          },
+          "file_path": {
+            "type": "string",
+            "description": "Relative path to the clip file within the production directory."
+          },
+          "upscaled_path": {
+            "type": "string",
+            "description": "Path to the upscaled version, if upscaling was applied."
+          },
+          "generation": {
+            "type": "object",
+            "description": "Details about how this clip was generated.",
+            "properties": {
+              "tool": {
+                "type": "string",
+                "examples": ["veo-3.1", "veo-3.1-lite", "seedance-2.0"]
+              },
+              "prompt": {
+                "type": "string",
+                "description": "Exact prompt used for generation."
+              },
+              "reference_images_used": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Paths to reference images passed to the generator."
+              },
+              "generation_time_seconds": {
+                "type": "number"
+              },
+              "cost_usd": {
+                "type": "number"
+              },
+              "generated_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "technical": {
+            "type": "object",
+            "description": "Technical properties of the generated clip.",
+            "properties": {
+              "duration_seconds": { "type": "number" },
+              "resolution_width": { "type": "integer" },
+              "resolution_height": { "type": "integer" },
+              "fps": { "type": "number" },
+              "has_audio": { "type": "boolean" },
+              "audio_channels": { "type": "integer" },
+              "file_size_bytes": { "type": "integer" },
+              "codec": { "type": "string" }
+            }
+          },
+          "validation": {
+            "type": "object",
+            "description": "Results of consistency validation against the style bible and character refs.",
+            "properties": {
+              "character_consistency": {
+                "type": "string",
+                "enum": ["pass", "fail", "marginal", "not-applicable"],
+                "description": "Does the character look correct?"
+              },
+              "vehicle_consistency": {
+                "type": "string",
+                "enum": ["pass", "fail", "marginal", "not-applicable"]
+              },
+              "prop_consistency": {
+                "type": "string",
+                "enum": ["pass", "fail", "marginal", "not-applicable"]
+              },
+              "lighting_consistency": {
+                "type": "string",
+                "enum": ["pass", "fail", "marginal"],
+                "description": "Does the lighting match the scene's color/light directives?"
+              },
+              "style_consistency": {
+                "type": "string",
+                "enum": ["pass", "fail", "marginal"],
+                "description": "Does the visual style match the style bible?"
+              },
+              "audio_quality": {
+                "type": "string",
+                "enum": ["pass", "fail", "marginal", "not-applicable", "needs-replacement"],
+                "description": "Is the native audio usable?"
+              },
+              "overall": {
+                "type": "string",
+                "enum": ["pass", "fail", "marginal"]
+              },
+              "notes": {
+                "type": "string",
+                "description": "Specific issues found during validation."
+              },
+              "validated_by": {
+                "type": "string",
+                "description": "Which model or human performed the validation.",
+                "examples": ["claude-api", "gpt-5.5-vision", "human"]
+              },
+              "validated_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "rejection_reason": {
+            "type": "string",
+            "description": "If rejected, why."
+          },
+          "regen_instructions": {
+            "type": "string",
+            "description": "If needs-regen, what to change in the next attempt."
+          }
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

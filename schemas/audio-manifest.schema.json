@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "audio-manifest.schema.json",
+  "title": "Audio Manifest",
+  "description": "Produced by the Sound Designer. Consumed by the Editor for final mix. Tracks all audio assets: dialogue, SFX, ambience, and score.",
+  "type": "object",
+  "required": ["production_id", "version", "layers", "created_at"],
+  "properties": {
+    "production_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "mix_notes": {
+      "type": "string",
+      "description": "Overall mixing philosophy and instructions for the Editor."
+    },
+    "layers": {
+      "type": "object",
+      "description": "Audio organized by layer type. Each layer contains time-coded assets.",
+      "properties": {
+        "dialogue": {
+          "type": "array",
+          "description": "Spoken dialogue tracks.",
+          "items": {
+            "type": "object",
+            "required": ["asset_id", "file_path", "character_id", "start_seconds", "duration_seconds"],
+            "properties": {
+              "asset_id": { "type": "string" },
+              "file_path": { "type": "string" },
+              "character_id": { "type": "string" },
+              "line": { "type": "string" },
+              "language": { "type": "string" },
+              "start_seconds": {
+                "type": "number",
+                "description": "Where in the film timeline this audio begins."
+              },
+              "duration_seconds": { "type": "number" },
+              "target_shot_id": {
+                "type": "string",
+                "description": "Which shot this dialogue aligns with."
+              },
+              "mix_level": {
+                "type": "string",
+                "enum": ["foreground", "background", "under"],
+                "description": "Relative prominence in the mix."
+              },
+              "generation_tool": {
+                "type": "string",
+                "examples": ["elevenlabs", "veo-native", "seedance-native"]
+              },
+              "source": {
+                "type": "string",
+                "enum": ["generated", "native-from-clip", "replaced"],
+                "description": "Whether this was freshly generated, taken from the video clip's native audio, or generated to replace inadequate native audio."
+              },
+              "voice_profile_id": {
+                "type": "string",
+                "description": "ElevenLabs voice ID or voice profile reference, if applicable."
+              }
+            }
+          }
+        },
+        "sfx": {
+          "type": "array",
+          "description": "Sound effects.",
+          "items": {
+            "type": "object",
+            "required": ["asset_id", "file_path", "description", "start_seconds", "duration_seconds"],
+            "properties": {
+              "asset_id": { "type": "string" },
+              "file_path": { "type": "string" },
+              "description": { "type": "string" },
+              "start_seconds": { "type": "number" },
+              "duration_seconds": { "type": "number" },
+              "target_shot_id": { "type": "string" },
+              "mix_level": { "type": "string", "enum": ["foreground", "background", "under"] },
+              "generation_tool": { "type": "string" },
+              "source": {
+                "type": "string",
+                "enum": ["generated", "native-from-clip", "library"]
+              },
+              "loop": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether this SFX should loop for its duration."
+              }
+            }
+          }
+        },
+        "ambience": {
+          "type": "array",
+          "description": "Ambient sound beds. Continuous background audio.",
+          "items": {
+            "type": "object",
+            "required": ["asset_id", "file_path", "description", "start_seconds", "end_seconds"],
+            "properties": {
+              "asset_id": { "type": "string" },
+              "file_path": { "type": "string" },
+              "description": {
+                "type": "string",
+                "examples": ["desert wind, sand on rock, total silence punctuated by cooling metal ticks"]
+              },
+              "start_seconds": { "type": "number" },
+              "end_seconds": { "type": "number" },
+              "fade_in_seconds": { "type": "number", "default": 0 },
+              "fade_out_seconds": { "type": "number", "default": 0 },
+              "mix_level": { "type": "string", "enum": ["foreground", "background", "under"] },
+              "generation_tool": { "type": "string" },
+              "loop": { "type": "boolean", "default": true }
+            }
+          }
+        },
+        "score": {
+          "type": "array",
+          "description": "Musical score elements.",
+          "items": {
+            "type": "object",
+            "required": ["asset_id", "file_path", "description", "start_seconds", "duration_seconds"],
+            "properties": {
+              "asset_id": { "type": "string" },
+              "file_path": { "type": "string" },
+              "description": {
+                "type": "string",
+                "examples": ["nylon string acoustic guitar, three-note Mexican folk phrase, played twice with pause"]
+              },
+              "start_seconds": { "type": "number" },
+              "duration_seconds": { "type": "number" },
+              "fade_in_seconds": { "type": "number", "default": 0 },
+              "fade_out_seconds": { "type": "number", "default": 0 },
+              "mix_level": { "type": "string", "enum": ["foreground", "background", "under"] },
+              "generation_tool": {
+                "type": "string",
+                "examples": ["suno-v5", "elevenlabs-music", "lyria-3"]
+              },
+              "licensing": {
+                "type": "string",
+                "enum": ["fully-licensed", "check-required", "personal-use-only"],
+                "description": "Commercial licensing status of this music asset."
+              }
+            }
+          }
+        },
+        "engine_sound": {
+          "type": "array",
+          "description": "Vehicle/machine sound. Separated because it is the dominant sound element in some productions and requires its own mix control.",
+          "items": {
+            "type": "object",
+            "required": ["asset_id", "file_path", "description", "start_seconds", "end_seconds"],
+            "properties": {
+              "asset_id": { "type": "string" },
+              "file_path": { "type": "string" },
+              "description": {
+                "type": "string",
+                "examples": ["Triumph single-cylinder engine, healthy rhythm, steady thump"]
+              },
+              "start_seconds": { "type": "number" },
+              "end_seconds": { "type": "number" },
+              "engine_state": {
+                "type": "string",
+                "enum": ["healthy", "faltering", "dying", "dead", "restarting", "rough-running", "fading"],
+                "description": "Narrative state of the engine sound."
+              },
+              "mix_level": { "type": "string", "enum": ["foreground", "background", "under"] },
+              "source": {
+                "type": "string",
+                "enum": ["generated", "native-from-clip", "library"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "native_audio_decisions": {
+      "type": "array",
+      "description": "Log of decisions about native audio from video clips: keep, replace, or augment.",
+      "items": {
+        "type": "object",
+        "required": ["clip_id", "decision"],
+        "properties": {
+          "clip_id": { "type": "string" },
+          "decision": {
+            "type": "string",
+            "enum": ["keep", "replace", "augment", "discard"]
+          },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

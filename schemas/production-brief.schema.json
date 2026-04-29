@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "production-brief.schema.json",
+  "title": "Production Brief",
+  "description": "Entry point to the pipeline. Provided by a human or the Signal Intelligence Platform. Contains everything the Executive Producer needs to kick off a production.",
+  "type": "object",
+  "required": ["production_id", "title", "concept", "target_runtime_seconds", "visual_style", "created_at"],
+  "properties": {
+    "production_id": {
+      "type": "string",
+      "description": "Unique identifier for this production. Slug format.",
+      "pattern": "^[a-z0-9-]+$",
+      "examples": ["the-last-marker"]
+    },
+    "title": {
+      "type": "string",
+      "description": "Display title of the film.",
+      "examples": ["The Last Marker"]
+    },
+    "concept": {
+      "type": "string",
+      "description": "Narrative concept. One to three paragraphs. What the film is about."
+    },
+    "genre": {
+      "type": "string",
+      "description": "Primary genre.",
+      "examples": ["drama", "thriller", "sci-fi", "western", "noir", "adventure"]
+    },
+    "tone": {
+      "type": "string",
+      "description": "Tonal direction. How the film should feel.",
+      "examples": ["sparse, existential, quiet intensity"]
+    },
+    "target_runtime_seconds": {
+      "type": "integer",
+      "minimum": 30,
+      "maximum": 900,
+      "description": "Target runtime in seconds. MVP range: 180-900."
+    },
+    "aspect_ratio": {
+      "type": "string",
+      "description": "Target aspect ratio.",
+      "enum": ["16:9", "2.39:1", "1.85:1", "4:3", "1:1", "9:16"],
+      "default": "16:9"
+    },
+    "visual_style": {
+      "type": "object",
+      "description": "Visual language directives for the Art Director.",
+      "required": ["description"],
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Prose description of the visual language. Film stock, grain, color palette, lighting philosophy."
+        },
+        "reference_films": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Films or visual works to reference for style."
+        },
+        "color_palette": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Hex codes or color descriptions for the dominant palette."
+        },
+        "period": {
+          "type": "string",
+          "description": "Historical period for production design accuracy.",
+          "examples": ["1966", "near-future", "contemporary"]
+        }
+      }
+    },
+    "sound_design": {
+      "type": "object",
+      "description": "Sound philosophy for the Sound Designer.",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Prose description of the sound world."
+        },
+        "music_approach": {
+          "type": "string",
+          "description": "How music should be used.",
+          "examples": ["no music until final 10 seconds", "continuous ambient score", "diegetic only"]
+        },
+        "dialogue_density": {
+          "type": "string",
+          "enum": ["none", "minimal", "moderate", "dialogue-heavy"],
+          "description": "How much spoken dialogue the film contains."
+        }
+      }
+    },
+    "characters": {
+      "type": "array",
+      "description": "Character descriptions for the Screenwriter and Art Director.",
+      "items": {
+        "type": "object",
+        "required": ["character_id", "name", "description"],
+        "properties": {
+          "character_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$",
+            "examples": ["miguel-vega"]
+          },
+          "name": {
+            "type": "string",
+            "examples": ["Miguel Vega"]
+          },
+          "description": {
+            "type": "string",
+            "description": "Full character description. Physical appearance, wardrobe, backstory, mannerisms."
+          },
+          "props": {
+            "type": "array",
+            "description": "Key props associated with this character that require consistency tracking.",
+            "items": {
+              "type": "object",
+              "required": ["prop_id", "name", "description"],
+              "properties": {
+                "prop_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+                "name": { "type": "string" },
+                "description": { "type": "string" },
+                "consistency_priority": {
+                  "type": "string",
+                  "enum": ["critical", "high", "standard"],
+                  "description": "How important visual consistency is for this prop across shots."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "vehicles": {
+      "type": "array",
+      "description": "Vehicles or machines that require visual consistency.",
+      "items": {
+        "type": "object",
+        "required": ["vehicle_id", "name", "description"],
+        "properties": {
+          "vehicle_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "name": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "screenplay_path": {
+      "type": "string",
+      "description": "Relative path to the screenplay file within the production directory."
+    },
+    "test_objectives": {
+      "type": "array",
+      "description": "Specific capabilities this production is designed to test.",
+      "items": { "type": "string" }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

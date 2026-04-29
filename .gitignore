@@ -1,0 +1,40 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+
+# Generated media (track in LFS or exclude)
+# Uncomment these if not using Git LFS for media files:
+# productions/*/clips/raw/*.mp4
+# productions/*/clips/raw/*.webm
+# productions/*/audio/mix/*.wav
+# productions/*/audio/mix/*.mp3
+# productions/*/edit/export/*.mp4
+
+# API keys and secrets
+.env
+.env.local
+*.key
+
+# Logs
+*.log
+logs/
+
+# Temp
+tmp/
+temp/
