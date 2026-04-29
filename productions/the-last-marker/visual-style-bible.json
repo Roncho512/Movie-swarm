@@ -1,0 +1,310 @@
+{
+  "production_id": "the-last-marker",
+  "version": "1.0.0",
+  "style_summary": {
+    "description": "16mm Ektachrome stock. Heavy grain. Lens flare on direct sun. Warm color bleed at frame edges. Blacks are charcoal, never true black. Whites are bone, never pure white. The desert palette shifts with the sun angle across four scenes: late afternoon amber, pre-dusk bronze, sunset rose, post-sunset blue dusk. Every wide shot makes the man and machine look insignificant against the landscape. Every close shot makes the man and machine feel like the only things that exist.",
+    "film_stock": "16mm Ektachrome",
+    "grain": "heavy",
+    "aspect_ratio": "2.39:1",
+    "lens_characteristics": "Lens flare on direct sun. Warm color bleed at frame edges. Period-appropriate 1960s anamorphic look.",
+    "black_level": "charcoal — never true black",
+    "white_level": "bone — never pure white"
+  },
+  "color_system": {
+    "palette": [
+      { "name": "amber", "hex": "#D4A24E", "usage": "Scene 1 dominant. Late afternoon desert light." },
+      { "name": "ochre", "hex": "#8B7355", "usage": "Desert floor, hardpan, dust." },
+      { "name": "bronze", "hex": "#B8864E", "usage": "Scene 2 dominant. Pre-dusk transition." },
+      { "name": "rose", "hex": "#C27A6E", "usage": "Scene 3 dominant. Sun on western ridge." },
+      { "name": "blue dusk", "hex": "#4A5D7A", "usage": "Scene 4 end. Post-sunset cool." },
+      { "name": "charcoal", "hex": "#3D3D3D", "usage": "Shadow tone throughout. Never true black." },
+      { "name": "bone", "hex": "#E8DCC8", "usage": "Highlight tone throughout. Never pure white." },
+      { "name": "worn leather", "hex": "#7A5C3E", "usage": "Wardrobe, equipment, vest, gloves, strap." }
+    ],
+    "scene_progression": [
+      {
+        "scene_number": 1,
+        "dominant_color": "#D4A24E",
+        "shadow_color": "#3D3D3D",
+        "highlight_color": "#E8DCC8",
+        "description": "Full amber. High saturation. Late afternoon at its warmest."
+      },
+      {
+        "scene_number": 2,
+        "dominant_color": "#B8864E",
+        "shadow_color": "#4A3D3D",
+        "highlight_color": "#DDD0BC",
+        "description": "Amber cooling to bronze. Shadows lengthening. Warmth starting to drain."
+      },
+      {
+        "scene_number": 3,
+        "dominant_color": "#C27A6E",
+        "shadow_color": "#5A4565",
+        "highlight_color": "#D4C0B8",
+        "description": "Bronze to rose. Purple shadows. Sun on the western ridge. Transitional."
+      },
+      {
+        "scene_number": 4,
+        "dominant_color": "#C27A6E",
+        "shadow_color": "#4A5D7A",
+        "highlight_color": "#B8A898",
+        "description": "Last horizontal gold, side-lit, maximum contrast. Then rapid fade to cool blue dusk."
+      }
+    ]
+  },
+  "lighting": {
+    "philosophy": "The sun is the only light source. No fill. No bounce. The color arc tells time without a clock. The audience should feel the sun setting across the four scenes.",
+    "scene_lighting": [
+      {
+        "scene_number": 1,
+        "sun_position": "Low in the west, approximately 15-20 degrees above horizon",
+        "key_light_direction": "From the west (screen left in wide shots)",
+        "shadow_quality": "Long shadows stretching east. Warm. Defined edges.",
+        "description": "Late afternoon amber. Dust in the air catches the light and turns it gold. Heat shimmer on the horizon."
+      },
+      {
+        "scene_number": 2,
+        "sun_position": "Dropping fast, approximately 8-12 degrees above horizon",
+        "key_light_direction": "From the west, lower angle than Scene 1",
+        "shadow_quality": "Longer shadows. Purple edges appearing. Warmth leaving.",
+        "description": "Pre-dusk. The light is beautiful and it is running out."
+      },
+      {
+        "scene_number": 3,
+        "sun_position": "Touching the western ridge, approximately 2-5 degrees",
+        "key_light_direction": "Nearly horizontal from the west",
+        "shadow_quality": "Purple shadows. Long and dramatic. Cool tones creeping in.",
+        "description": "Fifteen minutes of usable light remain. The palette is shifting from warm to cool."
+      },
+      {
+        "scene_number": 4,
+        "sun_position": "Half below western ridge, then gone",
+        "key_light_direction": "Horizontal side light, then ambient only",
+        "shadow_quality": "Maximum contrast side-lit faces, then flat blue ambient after sunset.",
+        "description": "The most cinematic light of the day — use every second of it. Then rapid transition to cool blue dusk."
+      }
+    ]
+  },
+  "character_references": [
+    {
+      "character_id": "miguel-vega",
+      "reference_images": [
+        {
+          "image_id": "mv-face-front",
+          "path": "visual-assets/character-refs/miguel-vega-face-front.png",
+          "angle": "front",
+          "description": "Front face, direct eye contact. Head and shoulders. Goggles on forehead, white shirt, brown leather vest.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Photorealistic portrait of Miguel Vega, 30 years old, Mexican, lean build. Sun-darkened skin with deep lines around the eyes from years of squinting into wind and light. Short dark hair. Strong jaw. Weathered but not old — the wear comes from sun and wind, not age. Wardrobe: White cotton shirt (sweat-stained at collar and under arms), brown leather vest (sun-bleached), riding goggles pushed up on forehead. Front face, direct eye contact with camera. Head and shoulders framing. Shot on 16mm Ektachrome film stock. Heavy film grain. Warm amber light from the left suggesting late afternoon desert sun. Charcoal shadows, bone highlights. Color bleed at frame edges. Period: 1966. No modern elements. No helmet, no sunglasses, no clean or new clothing."
+        },
+        {
+          "image_id": "mv-profile-left",
+          "path": "visual-assets/character-refs/miguel-vega-profile-left.png",
+          "angle": "profile-left",
+          "description": "Left profile view. Same wardrobe, same lighting, same film stock.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same man from the previous image — same face, same wardrobe, same film stock look. Now show him in left profile view. Same lighting and Ektachrome treatment."
+        },
+        {
+          "image_id": "mv-three-quarter-left",
+          "path": "visual-assets/character-refs/miguel-vega-three-quarter-left.png",
+          "angle": "three-quarter-left",
+          "description": "Three-quarter view from the left. Same wardrobe, same lighting.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same man. Three-quarter view from the left. Same lighting, same film stock."
+        },
+        {
+          "image_id": "mv-three-quarter-right",
+          "path": "visual-assets/character-refs/miguel-vega-three-quarter-right.png",
+          "angle": "three-quarter-right",
+          "description": "Three-quarter view from the right. Same wardrobe, same lighting.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same man. Three-quarter view from the right. Same lighting, same film stock."
+        },
+        {
+          "image_id": "mv-full-front",
+          "path": "visual-assets/character-refs/miguel-vega-full-front.png",
+          "angle": "full-body-front",
+          "description": "Full body front. Standing, weight on one leg. White shirt, brown vest, khaki pants, resoled boots. Watch visible on left wrist.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same man — Miguel Vega. Full body front view, standing, weight on one leg, relaxed but alert. Wardrobe: White cotton shirt (sweat-stained), brown leather vest (sun-bleached), khaki pants, boots that have been resoled twice. Brown leather gloves. Goggles on forehead. Vintage watch with black dial on worn brown leather strap on left wrist. Shot on 16mm Ektachrome. Heavy grain. Warm amber light. Desert background. Period: 1966."
+        },
+        {
+          "image_id": "mv-full-side-walking",
+          "path": "visual-assets/character-refs/miguel-vega-full-side-walking.png",
+          "angle": "full-body-side",
+          "description": "Full body side view. Walking. Boots kicking up dust.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same man. Full body side view, walking, boots kicking up dust. Same wardrobe, same desert background, same Ektachrome film look."
+        },
+        {
+          "image_id": "mv-kneeling-engine",
+          "path": "visual-assets/character-refs/miguel-vega-kneeling-engine.png",
+          "angle": "action-pose",
+          "description": "Crouching/kneeling beside motorcycle engine. Bare hands on the motor.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same man. Crouching/kneeling beside a motorcycle engine, bare hands on the motor. Same wardrobe, same desert, same film stock."
+        },
+        {
+          "image_id": "mv-riding-pose",
+          "path": "visual-assets/character-refs/miguel-vega-riding-pose.png",
+          "angle": "action-pose",
+          "description": "Standing on motorcycle foot pegs in riding position. Low crouch, elbows out, weight forward.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same man. Standing on motorcycle foot pegs in riding position, low crouch, elbows out, weight forward. Same wardrobe, same desert, same Ektachrome look."
+        },
+        {
+          "image_id": "mv-flow-ref",
+          "path": "visual-assets/character-refs/miguel-vega-flow-ref.jpeg",
+          "angle": "three-quarter-left",
+          "description": "Video-ready Nano Banana reference for Veo generation. Based on best three-quarter face reference.",
+          "generation_tool": "nano-banana-pro",
+          "generation_prompt": "Portrait of this man in late afternoon desert light. 16mm Ektachrome film stock. Heavy grain. Amber warm tones. Anamorphic cinematic framing."
+        }
+      ],
+      "consistency_notes": "Miguel Vega must be recognizable across all shots. Key identifiers: sun-darkened skin, deep eye lines, short dark hair, strong jaw, white cotton shirt, brown leather vest, goggles on forehead when not riding. The Breitling Top Time is always on his left wrist. Wardrobe does not change — it accumulates dust and sweat across scenes."
+    }
+  ],
+  "vehicle_references": [
+    {
+      "vehicle_id": "triumph-tr6sc",
+      "reference_images": [
+        {
+          "image_id": "tr6-right-side",
+          "path": "visual-assets/prop-refs/triumph-tr6sc-right-side.png",
+          "angle": "right side profile",
+          "description": "Right side profile — exhaust side. Shows single cylinder engine, single exhaust pipe, tank shape, knobby tires. Coated in pale desert dust.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "1965 Triumph TR6SC Trophy, desert-modified. Right side profile. Single cylinder engine, single exhaust pipe on right side, single Amal Monobloc carburetor, right-side kick starter. Knobby tires, stripped fairing. Coated in pale desert dust. Chrome exhaust is brown. Tank originally silver now sand-colored. Shot on 16mm Ektachrome. Heavy grain. Warm amber light."
+        },
+        {
+          "image_id": "tr6-left-side",
+          "path": "visual-assets/prop-refs/triumph-tr6sc-left-side.png",
+          "angle": "left side profile",
+          "description": "Left side profile — kick starter side. No exhaust visible on this side.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same motorcycle. Left side profile showing the kick starter side. Same dust, same desert, same Ektachrome look."
+        },
+        {
+          "image_id": "tr6-three-quarter",
+          "path": "visual-assets/prop-refs/triumph-tr6sc-three-quarter.png",
+          "angle": "three-quarter front-right",
+          "description": "Three-quarter front-right view. Handlebars, front wheel, tank. Single exhaust partially visible on right side only.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same Triumph TR6SC. Three-quarter front-right view showing the handlebars, front wheel, and tank. Only ONE exhaust pipe partially visible on the right side. Single-cylinder bike with single right-side exhaust only. Same dust, same desert, same Ektachrome film look."
+        },
+        {
+          "image_id": "tr6-engine-detail",
+          "path": "visual-assets/prop-refs/triumph-tr6sc-engine-detail.png",
+          "angle": "engine close-up",
+          "description": "Engine detail. Carburetor, spark plug, cylinder head. Single cylinder. Dusty and worn.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same motorcycle. Engine close-up showing the Amal Monobloc carburetor, single spark plug, and cylinder head. Single cylinder. Dusty and worn. Same Ektachrome film look."
+        },
+        {
+          "image_id": "tr6-flow-ref",
+          "path": "visual-assets/prop-refs/triumph-tr6sc-flow-ref.jpeg",
+          "angle": "right side profile",
+          "description": "Video-ready Nano Banana reference for Veo generation.",
+          "generation_tool": "nano-banana-pro",
+          "generation_prompt": "Vintage motorcycle in Baja desert. 16mm Ektachrome film stock. Heavy grain. Amber late afternoon light. Dusty and weathered."
+        }
+      ],
+      "consistency_notes": "CRITICAL: This is a SINGLE cylinder motorcycle with ONE exhaust pipe on the right side only. No left-side exhaust. Single Amal Monobloc carburetor. Single spark plug. Right-side kick starter. Drum brakes. Spoke wheels. Tank shape is distinctive Triumph. The entire bike is coated in pale desert dust — nothing is clean or chrome-bright."
+    }
+  ],
+  "prop_references": [
+    {
+      "prop_id": "breitling-top-time",
+      "reference_images": [
+        {
+          "image_id": "tt-clean-ref",
+          "path": "visual-assets/prop-refs/top-time-clean-ref.png",
+          "description": "Clean identification reference. Black reverse panda dial clearly visible. White subdials. Stainless steel case. Worn brown leather rally strap with perforations. Mid-1960s manual wind. Acrylic crystal.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Vintage Breitling Top Time wristwatch. Black reverse panda dial with white subdials. Stainless steel case approximately 38mm. Worn brown leather rally strap with perforations. Mid-1960s. Manual wind. Acrylic crystal. Clean reference on dark surface. Dial clearly visible. Shot on 16mm Ektachrome. Heavy grain. Macro detail photography."
+        },
+        {
+          "image_id": "tt-dusty",
+          "path": "visual-assets/prop-refs/top-time-dusty.png",
+          "description": "Dust-caked version on left wrist below leather glove cuff. Dial partially obscured by dust.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same Breitling Top Time covered in pale desert dust, on a man's left wrist below a leather glove cuff. Dial partially obscured by dust. Strap dusty. Same Ektachrome look."
+        },
+        {
+          "image_id": "tt-worn",
+          "path": "visual-assets/prop-refs/top-time-worn.png",
+          "description": "Worn and scratched. Crystal scratched, strap dark with sweat, dust in case edges. End-of-ride condition.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same Breitling Top Time with scratched crystal, strap dark with sweat, dust in case edges. The watch at the end of a long desert ride. Same Ektachrome look."
+        },
+        {
+          "image_id": "tt-in-context",
+          "path": "visual-assets/prop-refs/top-time-in-context.png",
+          "description": "On left wrist gripping motorcycle handlebar. Other textures in frame: leather glove, rubber grip, throttle cable, dust.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same Breitling Top Time on a left wrist gripping a motorcycle handlebar. Sun-darkened wrist. Glove cuff pulled back. Other textures: leather glove, rubber grip, throttle cable, dust. Same Ektachrome look. Period: 1966."
+        }
+      ],
+      "consistency_notes": "Black reverse panda dial (black main dial, white subdials). Stainless steel case. Worn brown leather rally strap with perforations. Always on the LEFT wrist. The watch accumulates dust and wear across the film — clean in concept, dusty in Scene 1, dust-caked and scratched by Scene 4. Never the subject of a shot — appears because the hand appears. Total screen time: 4 seconds across 3 scenes."
+    }
+  ],
+  "environment_references": [
+    {
+      "environment_id": "baja-desert-open",
+      "name": "Baja California Open Desert",
+      "appears_in_scenes": [1, 2, 3, 4],
+      "reference_images": [
+        {
+          "image_id": "env-amber",
+          "path": "visual-assets/environment-refs/baja-desert-amber-late-afternoon.png",
+          "time_of_day": "late afternoon",
+          "description": "Scene 1 light. Full amber. Flat hardpan to mountain range. Cardon cacti. Enormous sky. Low sun from west turning everything gold.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Photorealistic wide landscape. Baja California desert. Flat hardpan stretching to a mountain range on the horizon. Cardon cacti scattered across the landscape. The sky is enormous. Light: Late afternoon. Low sun angle from the west. Everything is amber and ochre. Long shadows stretching east. Dust in the air catches the light. Heat shimmer on the horizon. Shot on 16mm Ektachrome film stock. Heavy grain. Warm color bleed at frame edges. Lens flare from the low sun. Blacks are charcoal. Whites are bone. Anamorphic 2.39:1 aspect ratio."
+        },
+        {
+          "image_id": "env-bronze",
+          "path": "visual-assets/environment-refs/baja-desert-bronze-predusk.png",
+          "time_of_day": "pre-dusk",
+          "description": "Scene 2 light. Amber deepening to bronze. Rocky wash terrain. Shadows longer and turning purple at edges.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same Baja California desert. Terrain transitions to rocky wash with larger stones. Light: Pre-dusk. Amber deepening to bronze. Sun dropping fast. Shadows longer and turning purple. Warmth leaving the air. Shot on 16mm Ektachrome. Heavy grain. Anamorphic 2.39:1."
+        },
+        {
+          "image_id": "env-rose",
+          "path": "visual-assets/environment-refs/baja-desert-rose-sunset.png",
+          "time_of_day": "sunset",
+          "description": "Scene 3 light. Bronze to rose. Purple shadows. Sun touching western ridge. Fifteen minutes of usable light.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same Baja California rocky wash. Same distant mountain range. Light: Sun touching western ridge. Amber cooled to bronze and rose. Shadows are purple. Palette shifting warm to cool. Time made visible through color. Shot on 16mm Ektachrome. Heavy grain. Anamorphic 2.39:1."
+        },
+        {
+          "image_id": "env-dusk",
+          "path": "visual-assets/environment-refs/baja-desert-blue-dusk.png",
+          "time_of_day": "dusk",
+          "description": "Scene 4 end light. Sun gone below ridge. Cool blue and still. Canyon mouth visible in rock face to the right.",
+          "generation_tool": "chatgpt-images-2.0",
+          "generation_prompt": "Same Baja California desert. Mountain range silhouetted on horizon. Narrow canyon mouth visible in rock face to the right. Light: Sun just disappeared below western ridge. Amber fully drained. Everything cool blue and still. Dusk. Faint warm glow at horizon but land is blue-gray. Shot on 16mm Ektachrome. Heavy grain. Anamorphic 2.39:1."
+        },
+        {
+          "image_id": "env-amber-flow",
+          "path": "visual-assets/environment-refs/baja-desert-amber-flow-ref.jpeg",
+          "time_of_day": "late afternoon",
+          "description": "Video-ready Nano Banana reference for Veo generation. Late afternoon amber.",
+          "generation_tool": "nano-banana-pro",
+          "generation_prompt": "Baja California desert landscape. 16mm Ektachrome film stock. Heavy grain. Late afternoon amber light. Vast and empty. Anamorphic 2.39:1."
+        }
+      ],
+      "consistency_notes": "The desert must feel like one continuous location across all four scenes. Same mountain range on the horizon. Same geological character — flat hardpan transitioning to rocky wash. The only thing that changes is the light. Cardon cacti (not saguaro) throughout. Canyon mouth appears in Scenes 3-4."
+    }
+  ],
+  "composition_rules": {
+    "wide_shots": "Every wide shot makes the man and machine look insignificant against the landscape. The desert is in charge. The motorcycle should be a speck in the earliest wide shots.",
+    "close_shots": "Every close shot makes the man and machine feel like the only things that exist. Texture is everything — leather, rubber, metal, dust, skin.",
+    "detail_shots": "Mechanically accurate. The audience believes the world or doesn't based on these shots. Hands on engine components, boot on kick lever, watch on wrist — all must be specific and correct.",
+    "general_philosophy": "The landscape dwarfs the human in wide shots. The human fills the frame in close shots. There is no middle ground emotionally — either the desert is the subject or the man is."
+  },
+  "created_at": "2026-04-29T15:00:00Z",
+  "updated_at": "2026-04-29T15:00:00Z"
+}
