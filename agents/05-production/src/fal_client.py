@@ -64,47 +64,14 @@ def _upload_headers() -> dict[str, str]:
 
 
 def upload_file(file_path: str | Path) -> str:
-    """
-    Upload a local file to fal's storage and return the hosted URL.
-
-    This is needed because Seedance endpoints expect publicly-accessible
-    URLs for reference images/videos/audio.
-    """
+    """Upload a local file to fal storage via the fal-client SDK."""
     file_path = Path(file_path)
     if not file_path.exists():
-        raise FileNotFoundError(f"Cannot upload — file not found: {file_path}")
-
-    # Determine content type
-    suffix = file_path.suffix.lower()
-    content_types = {
-        ".jpg": "image/jpeg",
-        ".jpeg": "image/jpeg",
-        ".png": "image/png",
-        ".webp": "image/webp",
-        ".mp4": "video/mp4",
-        ".mov": "video/quicktime",
-        ".mp3": "audio/mpeg",
-        ".wav": "audio/wav",
-    }
-    ct = content_types.get(suffix, "application/octet-stream")
-
-    with open(file_path, "rb") as f:
-        resp = requests.post(
-            FAL_UPLOAD_URL,
-            headers=_upload_headers(),
-            files={"file": (file_path.name, f, ct)},
-            timeout=120,
-        )
-    resp.raise_for_status()
-    data = resp.json()
-
-    url = data.get("url") or data.get("file_url") or data.get("access_url", "")
-    if not url:
-        raise RuntimeError(f"Upload succeeded but no URL in response: {data}")
-
-    logger.info("Uploaded %s → %s", file_path.name, url)
+        raise FileNotFoundError(f"Cannot upload - file not found: {file_path}")
+    import fal_client as _fal
+    url = _fal.upload_file(file_path)
+    logger.info("Uploaded %s -> %s", file_path.name, url)
     return url
-
 
 def ensure_url(path_or_url: str) -> str:
     """If it's a local path, upload it. If it's already a URL, return as-is."""
@@ -123,7 +90,7 @@ def submit_generation(endpoint: str, payload: dict[str, Any]) -> str:
     Submit a generation request to fal's async queue.
     Returns the request_id for polling.
     """
-    url = f"{FAL_QUEUE_BASE}/{endpoint}"
+    url = f"{FAL_QUEUE_BASE}/{endpoint.value if hasattr(endpoint, 'value') else endpoint}"
     resp = requests.post(url, headers=_headers(), json={"input": payload}, timeout=30)
     resp.raise_for_status()
     data = resp.json()
@@ -136,7 +103,7 @@ def submit_generation(endpoint: str, payload: dict[str, Any]) -> str:
 
 def poll_status(endpoint: str, request_id: str) -> dict[str, Any]:
     """Poll the queue for request status. Returns the status payload."""
-    url = f"{FAL_QUEUE_BASE}/{endpoint}/requests/{request_id}/status"
+    url = f"{FAL_QUEUE_BASE}/{endpoint.value if hasattr(endpoint, 'value') else endpoint}/requests/{request_id}/status"
     resp = requests.get(url, headers=_headers(), params={"logs": "true"}, timeout=15)
     resp.raise_for_status()
     return resp.json()
@@ -144,7 +111,7 @@ def poll_status(endpoint: str, request_id: str) -> dict[str, Any]:
 
 def fetch_result(endpoint: str, request_id: str) -> dict[str, Any]:
     """Fetch the completed result from the queue."""
-    url = f"{FAL_QUEUE_BASE}/{endpoint}/requests/{request_id}"
+    url = f"{FAL_QUEUE_BASE}/{endpoint.value if hasattr(endpoint, 'value') else endpoint}/requests/{request_id}"
     resp = requests.get(url, headers=_headers(), timeout=30)
     resp.raise_for_status()
     return resp.json()
@@ -222,17 +189,21 @@ def generate_shot(
     timeout: int = 300,
 ) -> dict[str, Any]:
     """
-    End-to-end: submit → poll → download.
-
-    Returns dict with keys: video_url, local_path, seed, duration_actual.
+    End-to-end: submit, poll, download using the fal-client SDK.
+    Returns dict with keys: video_url, local_path, seed.
     """
-    request_id = submit_generation(endpoint, payload)
-    result = wait_for_completion(
-        endpoint,
-        request_id,
-        timeout=timeout,
-        on_log=lambda msg: logger.debug("[fal] %s", msg),
-    )
+    import fal_client as _fal
+
+    ep = endpoint.value if hasattr(endpoint, "value") else endpoint
+    logger.info("Calling fal_client.subscribe(%s)", ep)
+
+    def on_update(update):
+        if hasattr(update, "logs") and update.logs:
+            for log in update.logs:
+                msg = log.get("message", "") if isinstance(log, dict) else str(log)
+                logger.debug("[fal] %s", msg)
+
+    result = _fal.subscribe(ep, arguments=payload, with_logs=True, on_queue_update=on_update)
 
     video_info = result.get("video", {})
     video_url = video_info.get("url", "")

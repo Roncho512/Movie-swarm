@@ -43,6 +43,54 @@ logger = logging.getLogger("production.pipeline")
 # ---------------------------------------------------------------------------
 
 
+def _parse_reference_assets(refs_raw) -> dict[str, list[str]]:
+    """
+    Parse reference_assets from the shot list.
+
+    The shot list stores refs as an array of objects:
+        [{"asset_type": "character-ref", "path": "visual-assets/...", ...}, ...]
+
+    We bucket them by type and return paths/URLs grouped:
+        {"character_refs": [...], "environment_refs": [...], "prop_refs": [...],
+         "vehicle_refs": [...], "audio_refs": [], "video_refs": []}
+    """
+    buckets: dict[str, list[str]] = {
+        "character_refs": [],
+        "environment_refs": [],
+        "prop_refs": [],
+        "vehicle_refs": [],
+        "audio_refs": [],
+        "video_refs": [],
+    }
+
+    if isinstance(refs_raw, dict):
+        # Legacy format: {"character_refs": [...], "environment_refs": [...]}
+        for key in buckets:
+            buckets[key] = refs_raw.get(key, [])
+        return buckets
+
+    if not isinstance(refs_raw, list):
+        return buckets
+
+    type_map = {
+        "character-ref": "character_refs",
+        "environment-ref": "environment_refs",
+        "prop-ref": "prop_refs",
+        "vehicle-ref": "vehicle_refs",
+        "audio-ref": "audio_refs",
+        "video-ref": "video_refs",
+    }
+
+    for ref in refs_raw:
+        asset_type = ref.get("asset_type", "")
+        path = ref.get("path", ref.get("url", ""))
+        bucket = type_map.get(asset_type)
+        if bucket and path:
+            buckets[bucket].append(path)
+
+    return buckets
+
+
 def load_shot_list(path: str | Path) -> list[ShotSpec]:
     """Parse a shot-list.schema.json file into ShotSpec objects."""
     raw = json.loads(Path(path).read_text())
@@ -50,7 +98,12 @@ def load_shot_list(path: str | Path) -> list[ShotSpec]:
     specs = []
     for s in shots_raw:
         routing = s.get("tool_routing", {})
-        refs = s.get("reference_assets", {})
+        refs = _parse_reference_assets(s.get("reference_assets", []))
+        # Combine character + vehicle + prop refs as image references
+        # (Seedance treats them all as image inputs)
+        image_refs = refs["character_refs"] + refs["vehicle_refs"] + refs["prop_refs"]
+        env_refs = refs["environment_refs"]
+
         specs.append(ShotSpec(
             shot_id=s["shot_id"],
             scene_number=s["scene_number"],
@@ -63,12 +116,12 @@ def load_shot_list(path: str | Path) -> list[ShotSpec]:
             primary_tool=routing.get("primary_tool", "seedance-2.0"),
             fallback_tool=routing.get("fallback_tool"),
             tool_rationale=routing.get("rationale"),
-            character_ref_urls=refs.get("character_refs", []),
-            environment_ref_urls=refs.get("environment_refs", []),
-            audio_ref_urls=refs.get("audio_refs", []),
-            video_ref_urls=refs.get("video_refs", []),
-            start_frame_url=refs.get("start_frame"),
-            end_frame_url=refs.get("end_frame"),
+            character_ref_urls=image_refs,
+            environment_ref_urls=env_refs,
+            audio_ref_urls=refs["audio_refs"],
+            video_ref_urls=refs["video_refs"],
+            start_frame_url=None,
+            end_frame_url=None,
             continuity_notes=s.get("continuity_notes"),
             from_previous_shot=s.get("from_previous_shot"),
             to_next_shot=s.get("to_next_shot"),
@@ -128,8 +181,19 @@ def build_payload(
     shot: ShotSpec,
     endpoint: str,
     resolution: Resolution,
+    resolve_refs: bool = True,
 ) -> dict[str, Any]:
-    """Build the fal.ai request payload for a given shot and endpoint."""
+    """
+    Build the fal.ai request payload for a given shot and endpoint.
+
+    If resolve_refs is False, local paths are included as-is (for dry-run
+    inspection) rather than being uploaded to fal storage.
+    """
+    def ref(path_or_url: str) -> str:
+        if resolve_refs:
+            return ensure_url(path_or_url)
+        return path_or_url
+
     payload: dict[str, Any] = {
         "prompt": shot.generation_prompt,
         "resolution": resolution.value,
@@ -141,31 +205,25 @@ def build_payload(
     ep_type = _endpoint_type(endpoint)
 
     if ep_type == "image-to-video":
-        # image-to-video needs image_url (and optionally end_image_url)
         if shot.start_frame_url:
-            payload["image_url"] = ensure_url(shot.start_frame_url)
+            payload["image_url"] = ref(shot.start_frame_url)
         elif shot.character_ref_urls:
-            payload["image_url"] = ensure_url(shot.character_ref_urls[0])
+            payload["image_url"] = ref(shot.character_ref_urls[0])
         if shot.end_frame_url:
-            payload["end_image_url"] = ensure_url(shot.end_frame_url)
+            payload["end_image_url"] = ref(shot.end_frame_url)
 
     elif ep_type == "reference-to-video":
-        # reference-to-video takes image_urls, video_urls, audio_urls arrays
         all_image_urls = []
         for url in shot.character_ref_urls + shot.environment_ref_urls:
-            all_image_urls.append(ensure_url(url))
+            all_image_urls.append(ref(url))
         if all_image_urls:
-            payload["image_urls"] = all_image_urls[:9]  # max 9
+            payload["image_urls"] = all_image_urls[:9]
 
         if shot.video_ref_urls:
-            payload["video_urls"] = [
-                ensure_url(u) for u in shot.video_ref_urls[:3]
-            ]
+            payload["video_urls"] = [ref(u) for u in shot.video_ref_urls[:3]]
 
         if shot.audio_ref_urls:
-            payload["audio_urls"] = [
-                ensure_url(u) for u in shot.audio_ref_urls[:3]
-            ]
+            payload["audio_urls"] = [ref(u) for u in shot.audio_ref_urls[:3]]
 
     return payload
 
@@ -307,7 +365,7 @@ class ProductionPipeline:
             )
 
             endpoint = select_endpoint(shot, tier)
-            payload = build_payload(shot, endpoint, resolution)
+            payload = build_payload(shot, endpoint, resolution, resolve_refs=not dry_run)
             ep_type = _endpoint_type(endpoint)
 
             cost_est = estimate_cost(

@@ -1,0 +1,30 @@
+{
+  "production_id": "seedance-output",
+  "generated_at": "2026-04-30T20:57:02.227775+00:00",
+  "clips": [
+    {
+      "shot_id": "s01-sh01",
+      "scene_number": 1,
+      "shot_number": 1,
+      "sequence_position": 1,
+      "source_prompt": "Extreme wide shot of Baja California desert. 16mm Ektachrome film stock, heavy grain, warm color bleed at frame edges, anamorphic 2.39:1. Flat hardpan stretching to a mountain range on the horizon. Cardon cacti scattered like sentries. Enormous sky. Late afternoon, low sun from the west turning everything amber and ochre. Long shadows stretching east. Dust in the air catching golden light. Heat shimmer on the horizon. A tiny dust trail appears at the far left of frame, moving right \u2014 a motorcycle barely visible as a speck. The landscape dwarfs everything. Charcoal blacks, bone whites. No modern elements.",
+      "endpoint_used": "bytedance/seedance-2.0/fast/reference-to-video",
+      "tier": "fast",
+      "resolution": "480p",
+      "duration_seconds": 7,
+      "aspect_ratio": "16:9",
+      "video_url": "https://v3b.fal.media/files/b/0a986036/KHo0Ungz0lmWRJ3gH0Ejs_video.mp4",
+      "local_path": "seedance-output/clips/preview/s01-sh01_preview.mp4",
+      "seed": 1541575833,
+      "has_native_audio": true,
+      "cost_usd": 0.84,
+      "generation_attempts": 1,
+      "status": "preview",
+      "reference_assets_used": [
+        "visual-assets/environment-refs/baja-desert-amber-late-afternoon.png"
+      ],
+      "validation_notes": "ffprobe not available, skipping deep validation",
+      "generated_at": "2026-04-30T20:57:02.227667+00:00"
+    }
+  ]
+}

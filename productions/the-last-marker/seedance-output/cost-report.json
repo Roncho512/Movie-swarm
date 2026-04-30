@@ -1,0 +1,16 @@
+{
+  "entries": [
+    {
+      "shot_id": "s01-sh01",
+      "endpoint": "bytedance/seedance-2.0/fast/reference-to-video",
+      "tier": "fast",
+      "resolution": "480p",
+      "duration_seconds": 7,
+      "cost_usd": 0.84,
+      "pass_type": "preview",
+      "timestamp": "2026-04-30T20:57:02.222738+00:00"
+    }
+  ],
+  "total_usd": 0.84,
+  "generated_at": "2026-04-30T20:57:02.228291+00:00"
+}

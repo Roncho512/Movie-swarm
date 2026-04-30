@@ -41,7 +41,14 @@ SAMPLE_SHOT_LIST = {
             "target_duration_seconds": 8,
             "aspect_ratio": "16:9",
             "tool_routing": {"primary_tool": "seedance-2.0"},
-            "reference_assets": {},
+            "reference_assets": [
+                {
+                    "asset_type": "environment-ref",
+                    "asset_id": "env-amber",
+                    "path": "visual-assets/environment-refs/baja-desert-amber.png",
+                    "usage_note": "Match landscape."
+                }
+            ],
         },
         {
             "shot_id": "s01-sh02",
@@ -52,22 +59,31 @@ SAMPLE_SHOT_LIST = {
             "target_duration_seconds": 10,
             "aspect_ratio": "16:9",
             "tool_routing": {"primary_tool": "seedance-2.0"},
-            "reference_assets": {
-                "character_refs": ["https://example.com/miguel-front.png"],
-            },
+            "reference_assets": [
+                {
+                    "asset_type": "character-ref",
+                    "asset_id": "mv-riding",
+                    "path": "https://example.com/miguel-front.png",
+                    "usage_note": "Match rider."
+                },
+                {
+                    "asset_type": "vehicle-ref",
+                    "asset_id": "tr6-side",
+                    "path": "https://example.com/triumph-side.png",
+                    "usage_note": "Match motorcycle."
+                }
+            ],
         },
         {
             "shot_id": "s02-sh01",
             "scene_number": 2,
             "shot_number": 1,
             "sequence_position": 3,
-            "generation_prompt": "Camera pans across the starting frame image.",
+            "generation_prompt": "Camera pans across rocky terrain.",
             "target_duration_seconds": 6,
             "aspect_ratio": "16:9",
             "tool_routing": {"primary_tool": "seedance-2.0"},
-            "reference_assets": {
-                "start_frame": "https://example.com/starting-frame.png",
-            },
+            "reference_assets": [],
         },
     ],
 }
@@ -94,6 +110,12 @@ def test_load_shot_list():
     assert shots[0].shot_id == "s01-sh01"
     assert shots[1].generation_prompt.startswith("@Image1")
     assert shots[2].target_duration_seconds == 6
+    # s01-sh01 has one environment ref
+    assert len(shots[0].environment_ref_urls) == 1
+    # s01-sh02 has character + vehicle ref merged into character_ref_urls
+    assert len(shots[1].character_ref_urls) == 2
+    # s02-sh01 has no refs at all
+    assert len(shots[2].character_ref_urls) == 0
 
 
 def test_shots_sorted_by_sequence_position():
@@ -131,14 +153,14 @@ def test_character_refs_selects_reference_to_video():
     assert select_endpoint(shot, Tier.FAST) == Endpoint.FAST_REFERENCE_TO_VIDEO
 
 
-def test_start_frame_selects_image_to_video():
+def test_text_only_no_refs_selects_text_to_video():
+    """Shot with empty reference_assets array → text-to-video."""
     shot = ShotSpec(
         shot_id="test", scene_number=1, shot_number=1,
-        sequence_position=1, generation_prompt="Animate this frame.",
-        target_duration_seconds=6,
-        start_frame_url="https://example.com/frame.png",
+        sequence_position=1, generation_prompt="Desert wide shot.",
+        target_duration_seconds=8,
     )
-    assert select_endpoint(shot, Tier.STANDARD) == Endpoint.IMAGE_TO_VIDEO
+    assert select_endpoint(shot, Tier.STANDARD) == Endpoint.TEXT_TO_VIDEO
 
 
 def test_audio_refs_selects_reference_to_video():
@@ -232,6 +254,29 @@ def test_video_input_multiplier():
     without = estimate_cost(Tier.STANDARD, Resolution.P720, "reference-to-video", 10)
     with_vid = estimate_cost(Tier.STANDARD, Resolution.P720, "reference-to-video", 10, has_video_inputs=True)
     assert abs(with_vid - without * 0.6) < 0.01
+
+
+# ---------------------------------------------------------------------------
+# Tests: Load real shot list
+# ---------------------------------------------------------------------------
+
+
+def test_load_real_shot_list():
+    """Verify loader handles the actual The Last Marker shot list."""
+    real_path = Path(__file__).parent.parent.parent.parent.parent / \
+        "productions" / "the-last-marker" / "shot-lists" / "shot-list.json"
+    if not real_path.exists():
+        # Skip if running outside the full repo
+        return
+    shots = load_shot_list(real_path)
+    assert len(shots) == 22
+    # s01-sh01 has one environment ref
+    assert len(shots[0].environment_ref_urls) >= 1
+    # s01-sh02 has character + vehicle refs
+    assert len(shots[1].character_ref_urls) >= 2
+    # All shots sorted by sequence position
+    positions = [s.sequence_position for s in shots]
+    assert positions == sorted(positions)
 
 
 # ---------------------------------------------------------------------------
