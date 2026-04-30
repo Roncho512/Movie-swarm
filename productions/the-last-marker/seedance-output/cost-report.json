@@ -1,16 +1,26 @@
 {
   "entries": [
     {
-      "shot_id": "s01-sh01",
+      "shot_id": "s01-sh02",
       "endpoint": "bytedance/seedance-2.0/fast/reference-to-video",
       "tier": "fast",
       "resolution": "480p",
-      "duration_seconds": 7,
-      "cost_usd": 0.84,
+      "duration_seconds": 4,
+      "cost_usd": 0.0,
       "pass_type": "preview",
-      "timestamp": "2026-04-30T20:57:02.222738+00:00"
+      "timestamp": "2026-04-30T21:06:41.863688+00:00"
+    },
+    {
+      "shot_id": "s02-sh01",
+      "endpoint": "bytedance/seedance-2.0/fast/reference-to-video",
+      "tier": "fast",
+      "resolution": "480p",
+      "duration_seconds": 8,
+      "cost_usd": 0.96,
+      "pass_type": "preview",
+      "timestamp": "2026-04-30T21:08:28.619726+00:00"
     }
   ],
-  "total_usd": 0.84,
-  "generated_at": "2026-04-30T20:57:02.228291+00:00"
+  "total_usd": 0.96,
+  "generated_at": "2026-04-30T21:08:28.625617+00:00"
 }

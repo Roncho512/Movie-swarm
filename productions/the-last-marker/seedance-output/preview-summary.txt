@@ -1,9 +1,10 @@
 Production Pass: PREVIEW
-Timestamp: 2026-04-30T20:57:02.228504+00:00
-Total shots: 1
+Timestamp: 2026-04-30T21:08:28.625902+00:00
+Total shots: 2
 Succeeded: 1
-Failed: 0
-Total cost: $0.84
+Failed: 1
+Total cost: $0.96
 
 --- Per-Shot Results ---
-  s01-sh01: OK | Endpoint.FAST_REFERENCE_TO_VIDEO | $0.84 | attempts=1
+  s01-sh02: FAILED (Failed after 3 attempts) | Endpoint.FAST_REFERENCE_TO_VIDEO | $0.00 | attempts=3
+  s02-sh01: OK | Endpoint.FAST_REFERENCE_TO_VIDEO | $0.96 | attempts=1

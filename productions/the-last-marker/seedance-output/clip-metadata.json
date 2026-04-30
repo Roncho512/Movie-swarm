@@ -1,30 +1,32 @@
 {
   "production_id": "seedance-output",
-  "generated_at": "2026-04-30T20:57:02.227775+00:00",
+  "generated_at": "2026-04-30T21:08:28.624918+00:00",
   "clips": [
     {
-      "shot_id": "s01-sh01",
-      "scene_number": 1,
+      "shot_id": "s02-sh01",
+      "scene_number": 2,
       "shot_number": 1,
-      "sequence_position": 1,
-      "source_prompt": "Extreme wide shot of Baja California desert. 16mm Ektachrome film stock, heavy grain, warm color bleed at frame edges, anamorphic 2.39:1. Flat hardpan stretching to a mountain range on the horizon. Cardon cacti scattered like sentries. Enormous sky. Late afternoon, low sun from the west turning everything amber and ochre. Long shadows stretching east. Dust in the air catching golden light. Heat shimmer on the horizon. A tiny dust trail appears at the far left of frame, moving right \u2014 a motorcycle barely visible as a speck. The landscape dwarfs everything. Charcoal blacks, bone whites. No modern elements.",
+      "sequence_position": 6,
+      "source_prompt": "Medium shot of a motorcycle rider navigating a rocky desert wash. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man standing on the foot pegs of a dusty 1965 Triumph TR6SC, letting the bike move underneath him over uneven rocky terrain. Larger stones and rough ground. The bike slows \u2014 the engine sputters and coughs. The rider sits down on the seat, puts both boots on the ground as the bike rolls to a stop. Pre-dusk light \u2014 amber deepening to bronze. Shadows longer than Scene 1. The warmth is leaving the air. Distant mountains on the horizon.",
       "endpoint_used": "bytedance/seedance-2.0/fast/reference-to-video",
       "tier": "fast",
       "resolution": "480p",
-      "duration_seconds": 7,
+      "duration_seconds": 8,
       "aspect_ratio": "16:9",
-      "video_url": "https://v3b.fal.media/files/b/0a986036/KHo0Ungz0lmWRJ3gH0Ejs_video.mp4",
-      "local_path": "seedance-output/clips/preview/s01-sh01_preview.mp4",
-      "seed": 1541575833,
+      "video_url": "https://v3b.fal.media/files/b/0a98607a/RRezcSO821_ZPw_FehVPj_video.mp4",
+      "local_path": "seedance-output/clips/preview/s02-sh01_preview.mp4",
+      "seed": 1456215972,
       "has_native_audio": true,
-      "cost_usd": 0.84,
+      "cost_usd": 0.96,
       "generation_attempts": 1,
       "status": "preview",
       "reference_assets_used": [
-        "visual-assets/environment-refs/baja-desert-amber-late-afternoon.png"
+        "visual-assets/character-refs/miguel-vega-riding-pose.png",
+        "visual-assets/prop-refs/triumph-tr6sc-flow-ref.jpeg",
+        "visual-assets/environment-refs/baja-desert-bronze-predusk.png"
       ],
       "validation_notes": "ffprobe not available, skipping deep validation",
-      "generated_at": "2026-04-30T20:57:02.227667+00:00"
+      "generated_at": "2026-04-30T21:08:28.624771+00:00"
     }
   ]
 }
