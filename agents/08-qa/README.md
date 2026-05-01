@@ -1,47 +1,76 @@
-# 08. Continuity / QA Agent
+# Agent 08: Continuity / QA
 
-Reviews the assembled cut and drives the fix loop.
+Quality assurance agent for the AI Movie Production Swarm. Extracts frames from assembled cuts, sends them to Claude for visual analysis, and produces structured QA reports with continuity findings and shot grades.
 
-## Role
+## Setup
 
-- Watch the assembled cut
-- Compare every shot against character refs, style bible, and scene manifest
-- Check audio sync and quality
-- Check narrative coherence and pacing
-- Score the cut across multiple dimensions
-- Produce a continuity report with specific fix requests routed to the responsible agent
-- The Orchestrator uses this report to drive the feedback loop
+```bash
+cd agents/08-qa
+pip3 install -r requirements.txt
+export ANTHROPIC_API_KEY="your-key"
+```
 
-## Inputs
+Requires FFmpeg for frame extraction (already installed if you built the Editor agent).
 
-- Assembled cut (from Editor)
-- Scene manifest (`scene-manifest.schema.json`)
-- Visual style bible (`visual-style-bible.schema.json`)
-- Character / vehicle / prop reference images
+## Usage
 
-## Outputs
+### Extract frames only (no API call, for manual review)
 
-- `continuity-report.schema.json`
+```bash
+python3 -m src.cli frames ../../productions/the-last-marker
+open ../../productions/the-last-marker/qa-reports/frames/
+```
 
-## Primary Tools
+Extracts start/mid/end frames for each shot. Review them yourself without spending API credits.
 
-- Claude API (visual analysis, frame-by-frame comparison)
-- GPT-5.5 vision (second-pass review, self-verification)
+### Full QA review (Claude vision analysis)
 
-## Dual-Model Review
+```bash
+python3 -m src.cli review ../../productions/the-last-marker
+```
 
-Two-model QA catches more issues than either alone:
-1. Claude reviews first, produces initial report
-2. GPT-5.5 reviews independently, adds findings
-3. Reports merge into final continuity report
+Extracts frames, sends them to Claude with the shot list context, and generates a structured QA report. Costs ~$0.10-0.20 per review depending on frame count.
 
-## Status
+### Review a specific cut
 
-- [ ] Skill file written
-- [ ] Review checklist defined
-- [ ] Frame extraction script written
-- [ ] Dual-model review workflow tested
+```bash
+python3 -m src.cli review ../../productions/the-last-marker --cut rough-cut-v2.mp4
+```
 
-## Build Order
+## Output
 
-Build in Phase 2, after an assembled cut exists.
+```
+productions/the-last-marker/qa-reports/
+├── qa-report-v1.json      # Structured findings (machine-readable)
+├── qa-summary-v1.txt      # Human-readable summary
+└── frames/                # Extracted evidence frames
+    ├── s01-sh01-start.png
+    ├── s01-sh01-mid.png
+    ├── s01-sh01-end.png
+    ├── s01-sh02-start.png
+    └── ...
+```
+
+## Review Dimensions
+
+The agent evaluates across seven categories:
+1. Visual continuity (character, vehicle, environment)
+2. Temporal continuity (time of day, lighting)
+3. Spatial continuity (screen direction, 180-degree rule)
+4. Audio continuity (engine state matches visual)
+5. Narrative continuity (story beats, emotional arc)
+6. Technical quality (artifacts, resolution, frame rate)
+7. Style adherence (vintage film look, color palette, period accuracy)
+
+## Severity Ratings
+
+- **Critical**: Must fix. Breaks immersion immediately.
+- **Major**: Should fix. Noticeable on careful viewing.
+- **Minor**: Fix if time allows. Only noticeable if looking.
+- **Note**: Observation for future reference.
+
+## Integration Points
+
+- **Upstream**: Rough cut from Editor; style bible from Art Director; shot list from Cinematographer
+- **Downstream**: QA report routes back to Orchestrator, which assigns fixes to the appropriate agent
+- **Feedback loop**: QA → Orchestrator → Production/Editor → QA (iterate until approved)

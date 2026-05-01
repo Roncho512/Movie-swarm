@@ -1,0 +1,17 @@
+QA REVIEW — the-last-marker
+Cut: rough-cut-v1.mp4
+Date: 2026-05-01T18:07:28.138836+00:00
+Verdict: ERROR
+
+Notes: Failed to parse QA analysis
+
+--- Statistics ---
+Total findings: 0
+  Critical: 0
+  Major: 0
+  Minor: 0
+  Notes: 0
+
+--- Shot Grades ---
+
+--- Findings ---
