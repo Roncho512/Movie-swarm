@@ -1,0 +1,82 @@
+{
+  "overall_verdict": "revise",
+  "overall_notes": "Strong visual style consistency with authentic 16mm Ektachrome look, but critical lighting and continuity issues require revision",
+  "findings": [
+    {
+      "finding_id": "F001",
+      "severity": "critical",
+      "category": "temporal_continuity",
+      "shots_affected": ["s01-sh01", "s01-sh02", "s01-sh03", "s01-sh04", "s01-sh05", "s02-sh01"],
+      "timestamp": "15.1s",
+      "description": "Major lighting inconsistency - s01-sh01 shows golden sunset light, but s01-sh02 through s02-sh01 appear to be filmed in midday/cooler light despite being a continuous sequence. The warm golden hour lighting from the establishing shot is lost.",
+      "evidence_frames": ["s01-sh02-start.png", "s01-sh05-start.png", "s02-sh01-start.png"],
+      "recommendation": "Color grade shots s01-sh02 through s02-sh01 to match the warm golden hour lighting established in s01-sh01, or reshoot with consistent lighting",
+      "assigned_to": "art_director"
+    },
+    {
+      "finding_id": "F002",
+      "severity": "major",
+      "category": "visual_continuity",
+      "shots_affected": ["s01-sh02", "s01-sh05"],
+      "timestamp": "35.3s",
+      "description": "Character appearance inconsistency - the rider's goggles position changes between shots without motivation. In s01-sh02 goggles are over eyes, in s01-sh05 they're pushed up on forehead",
+      "evidence_frames": ["s01-sh02-start.png", "s01-sh05-start.png"],
+      "recommendation": "Add transitional moment showing character adjusting goggles or maintain consistent goggle position",
+      "assigned_to": "editor"
+    },
+    {
+      "finding_id": "F003",
+      "severity": "minor",
+      "category": "style_adherence",
+      "shots_affected": ["s01-sh01", "s01-sh02", "s01-sh03"],
+      "timestamp": "0.1s",
+      "description": "Aspect ratio inconsistency - s01-sh01 appears to be 4:3 with film edge bleed while s01-sh02 and s01-sh03 show anamorphic 2.39:1 formatting",
+      "evidence_frames": ["s01-sh01-start.png", "s01-sh02-start.png"],
+      "recommendation": "Standardize aspect ratio across all shots - either maintain 2.39:1 anamorphic throughout or adjust opening shot",
+      "assigned_to": "editor"
+    },
+    {
+      "finding_id": "F004",
+      "severity": "note",
+      "category": "technical_quality",
+      "shots_affected": ["s01-sh04"],
+      "timestamp": "32.6s",
+      "description": "Motion blur in mid-frame creates slight AI generation artifacts around the motorcycle subject",
+      "evidence_frames": ["s01-sh04-mid.png"],
+      "recommendation": "Consider subtle stabilization or replacement of problematic frames",
+      "assigned_to": "production"
+    }
+  ],
+  "shot_grades": [
+    {
+      "shot_id": "s01-sh01",
+      "grade": "A-",
+      "notes": "Excellent establishing shot with perfect 16mm Ektachrome aesthetic and beautiful golden hour lighting. Aspect ratio needs standardization."
+    },
+    {
+      "shot_id": "s01-sh02",
+      "grade": "C+",
+      "notes": "Good tracking shot but lighting doesn't match established golden hour mood. Character and motorcycle details are well-rendered."
+    },
+    {
+      "shot_id": "s01-sh03",
+      "grade": "B+",
+      "notes": "Excellent detail work on hands and handlebars. Film grain and color grading authentic. Lighting somewhat inconsistent with sequence."
+    },
+    {
+      "shot_id": "s01-sh04",
+      "grade": "B-",
+      "notes": "Dynamic low angle shot with good motion blur effects. Some AI artifacts visible in motion frames. Lighting closer to sequence opener."
+    },
+    {
+      "shot_id": "s01-sh05",
+      "grade": "B",
+      "notes": "Strong character close-up with good detail and weathering. Goggle continuity issue and lighting inconsistent with golden hour mood."
+    },
+    {
+      "shot_id": "s02-sh01",
+      "grade": "B+",
+      "notes": "Well-composed medium shot with good character positioning. Lighting continues to be inconsistent with opening sequence mood."
+    }
+  ]
+}

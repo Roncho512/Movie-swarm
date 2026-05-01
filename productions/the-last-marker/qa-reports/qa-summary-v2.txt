@@ -1,0 +1,47 @@
+QA REVIEW — the-last-marker
+Cut: rough-cut-v1.mp4
+Date: 2026-05-01T19:22:50.202720+00:00
+Verdict: REVISE
+
+Notes: Strong visual style consistency with authentic 16mm Ektachrome look, but critical lighting and continuity issues require revision
+
+--- Statistics ---
+Total findings: 4
+  Critical: 1
+  Major: 1
+  Minor: 1
+  Notes: 0
+
+--- Shot Grades ---
+  s01-sh01: A- — Excellent establishing shot with perfect 16mm Ektachrome aesthetic and beautiful golden hour lighting. Aspect ratio needs standardization.
+  s01-sh02: C+ — Good tracking shot but lighting doesn't match established golden hour mood. Character and motorcycle details are well-rendered.
+  s01-sh03: B+ — Excellent detail work on hands and handlebars. Film grain and color grading authentic. Lighting somewhat inconsistent with sequence.
+  s01-sh04: B- — Dynamic low angle shot with good motion blur effects. Some AI artifacts visible in motion frames. Lighting closer to sequence opener.
+  s01-sh05: B — Strong character close-up with good detail and weathering. Goggle continuity issue and lighting inconsistent with golden hour mood.
+  s02-sh01: B+ — Well-composed medium shot with good character positioning. Lighting continues to be inconsistent with opening sequence mood.
+
+--- Findings ---
+
+  [F001] CRITICAL — temporal_continuity
+  Shots: s01-sh01, s01-sh02, s01-sh03, s01-sh04, s01-sh05, s02-sh01
+  Major lighting inconsistency - s01-sh01 shows golden sunset light, but s01-sh02 through s02-sh01 appear to be filmed in midday/cooler light despite being a continuous sequence. The warm golden hour lighting from the establishing shot is lost.
+  Fix: Color grade shots s01-sh02 through s02-sh01 to match the warm golden hour lighting established in s01-sh01, or reshoot with consistent lighting
+  Assign to: art_director
+
+  [F002] MAJOR — visual_continuity
+  Shots: s01-sh02, s01-sh05
+  Character appearance inconsistency - the rider's goggles position changes between shots without motivation. In s01-sh02 goggles are over eyes, in s01-sh05 they're pushed up on forehead
+  Fix: Add transitional moment showing character adjusting goggles or maintain consistent goggle position
+  Assign to: editor
+
+  [F003] MINOR — style_adherence
+  Shots: s01-sh01, s01-sh02, s01-sh03
+  Aspect ratio inconsistency - s01-sh01 appears to be 4:3 with film edge bleed while s01-sh02 and s01-sh03 show anamorphic 2.39:1 formatting
+  Fix: Standardize aspect ratio across all shots - either maintain 2.39:1 anamorphic throughout or adjust opening shot
+  Assign to: editor
+
+  [F004] NOTE — technical_quality
+  Shots: s01-sh04
+  Motion blur in mid-frame creates slight AI generation artifacts around the motorcycle subject
+  Fix: Consider subtle stabilization or replacement of problematic frames
+  Assign to: production

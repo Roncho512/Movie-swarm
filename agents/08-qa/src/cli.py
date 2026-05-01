@@ -8,13 +8,10 @@ Examples:
   python3 -m src.cli review ../../productions/the-last-marker
 
   # Review a specific cut:
-  python3 -m src.cli review ../../productions/the-last-marker --cut rough-cut-v1.mp4
+  python3 -m src.cli review ../../productions/the-last-marker --cut rough-cut-v2.mp4
 
   # Extract frames only (no API call, for manual review):
   python3 -m src.cli frames ../../productions/the-last-marker
-
-  # Extract frames from a specific cut:
-  python3 -m src.cli frames ../../productions/the-last-marker --cut rough-cut-v1.mp4
 """
 
 from __future__ import annotations

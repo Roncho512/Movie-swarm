@@ -8,9 +8,7 @@ a structured QA report.
 Usage:
     from src.pipeline import QAPipeline
     qa = QAPipeline(production_dir="productions/the-last-marker")
-    qa.extract_frames("edit/rough-cut-v1.mp4")
-    qa.review()
-    qa.write_report()
+    report = qa.review()
 """
 
 from __future__ import annotations
@@ -19,6 +17,7 @@ import base64
 import json
 import logging
 import os
+import re
 import subprocess
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
@@ -69,6 +68,123 @@ class QAReport:
 
 
 # ---------------------------------------------------------------------------
+# JSON parsing — robust extraction from LLM responses
+# ---------------------------------------------------------------------------
+
+
+def parse_json_from_llm(response_text: str) -> dict:
+    """
+    Extract JSON from an LLM response that may contain:
+      - Preamble text before JSON ("Here's my analysis:\n```json\n{...}")
+      - Trailing commentary after JSON ("```\nLet me know if...")
+      - Multiple markdown code fences
+      - Raw JSON with no fences
+      - JSON split across multiple text blocks
+
+    Strategy (in order):
+      1. Try the whole response as raw JSON
+      2. Extract content from ```json ... ``` fences
+      3. Extract content from ``` ... ``` fences (no language tag)
+      4. Find the largest { ... } block via brace-matching
+      5. Give up and return an error structure
+    """
+    clean = response_text.strip()
+
+    # ------------------------------------------------------------------
+    # Strategy 1: Raw JSON (model obeyed the prompt perfectly)
+    # ------------------------------------------------------------------
+    if clean.startswith("{"):
+        try:
+            return json.loads(clean)
+        except json.JSONDecodeError:
+            pass  # Has trailing text, fall through
+
+    # ------------------------------------------------------------------
+    # Strategy 2: ```json ... ``` fenced block
+    # ------------------------------------------------------------------
+    fenced = re.findall(r"```json\s*\n(.*?)```", clean, re.DOTALL)
+    for block in fenced:
+        try:
+            return json.loads(block.strip())
+        except json.JSONDecodeError:
+            continue
+
+    # ------------------------------------------------------------------
+    # Strategy 3: ``` ... ``` fenced block (no language tag)
+    # ------------------------------------------------------------------
+    fenced_plain = re.findall(r"```\s*\n(.*?)```", clean, re.DOTALL)
+    for block in fenced_plain:
+        stripped = block.strip()
+        if stripped.startswith("{"):
+            try:
+                return json.loads(stripped)
+            except json.JSONDecodeError:
+                continue
+
+    # ------------------------------------------------------------------
+    # Strategy 4: Brace-matched extraction
+    # Find the first '{' and walk forward counting braces until balanced.
+    # This handles preamble + trailing text with no fences.
+    # ------------------------------------------------------------------
+    first_brace = clean.find("{")
+    if first_brace != -1:
+        depth = 0
+        in_string = False
+        escape_next = False
+        end_pos = -1
+
+        for i in range(first_brace, len(clean)):
+            ch = clean[i]
+
+            if escape_next:
+                escape_next = False
+                continue
+
+            if ch == "\\":
+                if in_string:
+                    escape_next = True
+                continue
+
+            if ch == '"' and not escape_next:
+                in_string = not in_string
+                continue
+
+            if in_string:
+                continue
+
+            if ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    end_pos = i
+                    break
+
+        if end_pos != -1:
+            candidate = clean[first_brace : end_pos + 1]
+            try:
+                return json.loads(candidate)
+            except json.JSONDecodeError:
+                logger.warning(
+                    "Brace-matched block (%d chars) failed to parse",
+                    len(candidate),
+                )
+
+    # ------------------------------------------------------------------
+    # Strategy 5: Give up
+    # ------------------------------------------------------------------
+    logger.error("Could not extract JSON from LLM response (%d chars)", len(clean))
+    logger.debug("Response preview: %.500s", clean[:500])
+    return {
+        "overall_verdict": "error",
+        "overall_notes": "Failed to parse QA analysis from model response.",
+        "raw_response": response_text,
+        "findings": [],
+        "shot_grades": {},
+    }
+
+
+# ---------------------------------------------------------------------------
 # Frame extraction
 # ---------------------------------------------------------------------------
 
@@ -87,68 +203,70 @@ def extract_frames(
 
     Returns list of {shot_id, position, timestamp, frame_path}.
     """
-    video_path = Path(video_path)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-
-    frames = []
+    results = []
 
     if shots:
         for shot in shots:
             sid = shot["shot_id"]
             start = shot["start_time"]
             dur = shot["duration"]
-
-            for position, ts in [
-                ("start", start + 0.1),
-                ("mid", start + dur / 2),
-                ("end", start + dur - 0.1),
-            ]:
-                frame_name = f"{sid}-{position}.png"
-                frame_path = output_dir / frame_name
-
-                _extract_single_frame(video_path, ts, frame_path)
-
-                frames.append({
+            positions = {
+                "start": start + 0.1,
+                "mid": start + dur / 2,
+                "end": start + dur - 0.1,
+            }
+            for pos_name, ts in positions.items():
+                ts = max(0, ts)
+                out_file = output_dir / f"{sid}-{pos_name}.png"
+                _ffmpeg_extract_frame(video_path, ts, out_file)
+                results.append({
                     "shot_id": sid,
-                    "position": position,
+                    "position": pos_name,
                     "timestamp": ts,
-                    "frame_path": str(frame_path),
+                    "frame_path": str(out_file),
                 })
+
     elif timestamps:
         for i, ts in enumerate(timestamps):
-            frame_name = f"frame-{i:03d}-{ts:.1f}s.png"
-            frame_path = output_dir / frame_name
-            _extract_single_frame(video_path, ts, frame_path)
-            frames.append({
-                "shot_id": f"frame-{i:03d}",
-                "position": "manual",
+            out_file = output_dir / f"frame-{i:04d}.png"
+            _ffmpeg_extract_frame(video_path, ts, out_file)
+            results.append({
+                "shot_id": f"frame-{i:04d}",
+                "position": "exact",
                 "timestamp": ts,
-                "frame_path": str(frame_path),
+                "frame_path": str(out_file),
             })
 
-    logger.info("Extracted %d frames → %s", len(frames), output_dir)
-    return frames
+    logger.info("Extracted %d frames → %s", len(results), output_dir)
+    return results
 
 
-def _extract_single_frame(video_path: Path, timestamp: float, output_path: Path):
+def _ffmpeg_extract_frame(video_path, timestamp: float, output_path: Path):
     """Extract a single frame at the given timestamp."""
     cmd = [
         "ffmpeg", "-y",
-        "-ss", str(timestamp),
+        "-ss", f"{timestamp:.3f}",
         "-i", str(video_path),
-        "-frames:v", "1",
+        "-vframes", "1",
         "-q:v", "2",
         str(output_path),
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
-    if result.returncode != 0:
-        logger.warning("Frame extraction failed at %.1fs: %s", timestamp, result.stderr[-200:])
+    try:
+        subprocess.run(
+            cmd, capture_output=True, text=True, timeout=15, check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        logger.warning("Frame extraction failed at %.1fs: %s", timestamp, e.stderr[:200])
+    except subprocess.TimeoutExpired:
+        logger.warning("Frame extraction timed out at %.1fs", timestamp)
 
 
-def _encode_frame_b64(frame_path: str | Path) -> str:
-    """Read a frame and return base64-encoded PNG data."""
-    return base64.standard_b64encode(Path(frame_path).read_bytes()).decode()
+def _encode_frame_b64(frame_path: Path) -> str:
+    """Read a PNG frame and return base64-encoded string."""
+    with open(frame_path, "rb") as f:
+        return base64.b64encode(f.read()).decode("utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -156,96 +274,94 @@ def _encode_frame_b64(frame_path: str | Path) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _get_anthropic_key() -> str:
-    key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not key:
-        raise EnvironmentError("ANTHROPIC_API_KEY environment variable is not set.")
-    return key
-
-
 def analyze_frames_with_claude(
     frames: list[dict],
-    shot_list_context: str,
-    style_context: str = "",
+    shot_list_context: str = "",
     model: str = "claude-sonnet-4-20250514",
-) -> dict[str, Any]:
+    raw_response_dir: Optional[Path] = None,
+) -> dict:
     """
     Send extracted frames to Claude for visual QA analysis.
 
-    Sends frames in batches (per shot) and asks Claude to evaluate
-    continuity, style adherence, and technical quality.
+    Args:
+        raw_response_dir: If provided, saves Claude's raw text response
+            to this directory for debugging. This is the fix for the
+            NameError on 'output_dir' from the prior version.
 
-    Returns the parsed analysis as a dict.
+    Returns parsed JSON report from Claude's response.
     """
     import requests
 
-    api_key = _get_anthropic_key()
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise EnvironmentError("ANTHROPIC_API_KEY not set")
 
-    # Group frames by shot
-    shots_grouped: dict[str, list[dict]] = {}
-    for f in frames:
-        sid = f["shot_id"]
-        if sid not in shots_grouped:
-            shots_grouped[sid] = []
-        shots_grouped[sid].append(f)
+    # Build the analysis prompt
+    system_prompt = """You are a film continuity supervisor reviewing an AI-generated short film.
 
-    # Build message content with all frames
-    content = []
+You will receive frames extracted from the assembled cut (start, mid, end of each shot).
 
-    # Add context
-    content.append({
-        "type": "text",
-        "text": f"""You are a film continuity supervisor reviewing an AI-generated short film called "The Last Marker" — a 1967 Baja desert motorcycle story shot in a vintage 16mm Ektachrome style.
+Analyze for:
+1. Visual continuity — character appearance, vehicle, environment consistency across shots
+2. Temporal continuity — time of day, lighting direction, shadow consistency
+3. Spatial continuity — screen direction, 180-degree rule, geography
+4. Technical quality — artifacts, resolution drops, generation glitches
+5. Style adherence — does each shot match the intended visual style?
 
-SHOT LIST CONTEXT:
-{shot_list_context}
+Respond with ONLY a JSON object (no preamble, no commentary, no markdown fences).
 
-{f"STYLE GUIDE: {style_context}" if style_context else ""}
-
-I'm going to show you extracted frames from the rough cut. For each shot, you'll see the start, middle, and end frames. Review them for:
-
-1. VISUAL CONTINUITY: Character appearance, vehicle consistency, environment consistency between shots
-2. TEMPORAL CONTINUITY: Time of day, lighting direction, shadow consistency
-3. SPATIAL CONTINUITY: Screen direction, 180-degree rule, background consistency
-4. STYLE ADHERENCE: Does it look like 1960s 16mm Ektachrome? Film grain, color palette, period accuracy
-5. TECHNICAL QUALITY: Artifacts, glitches, resolution issues, AI generation problems
-
-For each issue found, provide:
-- severity: "critical", "major", "minor", or "note"
-- category: which of the 5 categories above
-- description: what's wrong
-- recommendation: how to fix it
-- assigned_to: which agent should fix it (art_director, production, editor, sound_designer)
-
-Also grade each shot A through F.
-
-Respond in JSON format with this structure:
-{{
-  "overall_verdict": "approved" or "revise" or "reject",
-  "overall_notes": "summary of the cut",
+The JSON must have this exact structure:
+{
+  "overall_verdict": "approved" | "revise" | "reject",
+  "overall_notes": "summary string",
   "findings": [
-    {{
-      "severity": "major",
-      "category": "visual_continuity",
-      "shots_affected": ["s01-sh02", "s01-sh03"],
+    {
+      "finding_id": "F001",
+      "severity": "critical" | "major" | "minor" | "note",
+      "category": "visual_continuity" | "temporal_continuity" | "spatial_continuity" | "audio_continuity" | "narrative_continuity" | "technical_quality" | "style_adherence",
+      "shots_affected": ["s01-sh01", "s01-sh02"],
       "timestamp": "25.0s",
-      "description": "...",
-      "recommendation": "...",
-      "assigned_to": "production"
-    }}
+      "description": "what is wrong",
+      "evidence_frames": ["frames/s01-sh02-end.png"],
+      "recommendation": "how to fix",
+      "assigned_to": "production" | "sound_designer" | "editor" | "art_director"
+    }
   ],
-  "shot_grades": {{
-    "s01-sh01": {{"grade": "A", "notes": "..."}},
-    ...
-  }}
-}}""",
-    })
+  "shot_grades": [
+    {
+      "shot_id": "s01-sh01",
+      "grade": "A",
+      "notes": "reason"
+    }
+  ]
+}
 
-    # Add frames per shot
-    for sid, shot_frames in sorted(shots_grouped.items()):
+CRITICAL: Output ONLY the JSON object. No text before it. No text after it.
+No markdown code fences. Just the raw JSON starting with { and ending with }."""
+
+    # Build multimodal content array
+    content: list[dict] = []
+
+    if shot_list_context:
         content.append({
             "type": "text",
-            "text": f"\n--- {sid} ---",
+            "text": f"Shot list for reference:\n{shot_list_context}",
+        })
+
+    content.append({
+        "type": "text",
+        "text": f"Review the following {len(frames)} frames extracted from the rough cut:",
+    })
+
+    # Group frames by shot
+    shots_seen: dict[str, list[dict]] = {}
+    for f in frames:
+        shots_seen.setdefault(f["shot_id"], []).append(f)
+
+    for shot_id, shot_frames in shots_seen.items():
+        content.append({
+            "type": "text",
+            "text": f"\n--- Shot: {shot_id} ---",
         })
         for f in shot_frames:
             frame_path = Path(f["frame_path"])
@@ -277,6 +393,7 @@ Respond in JSON format with this structure:
         json={
             "model": model,
             "max_tokens": 4096,
+            "system": system_prompt,
             "messages": [{"role": "user", "content": content}],
         },
         timeout=120,
@@ -290,30 +407,16 @@ Respond in JSON format with this structure:
         if block.get("type") == "text":
             response_text += block["text"]
 
-    # Save raw response for debugging
     logger.info("Raw Claude response length: %d chars", len(response_text))
-    raw_path = Path(output_dir) / "claude-raw-response.txt" if output_dir else None
 
-    # Parse JSON from response
-    try:
-        clean = response_text.strip()
-        # Strip markdown fences
-        if "```json" in clean:
-            clean = clean.split("```json", 1)[1]
-        if "```" in clean:
-            clean = clean.split("```")[0]
-        clean = clean.strip()
-        return json.loads(clean)
-    except (json.JSONDecodeError, IndexError, ValueError) as e:
-        logger.warning("Could not parse Claude response as JSON: %s", e)
-        logger.info("First 500 chars of response: %s", response_text[:500])
-        return {
-            "overall_verdict": "error",
-            "overall_notes": "Failed to parse QA analysis",
-            "raw_response": response_text,
-            "findings": [],
-            "shot_grades": {},
-        }
+    # Save raw response for debugging
+    if raw_response_dir:
+        raw_path = Path(raw_response_dir) / "claude-raw-response.txt"
+        raw_path.write_text(response_text)
+        logger.info("Saved raw response → %s", raw_path)
+
+    # Parse JSON — using the robust parser
+    return parse_json_from_llm(response_text)
 
 
 # ---------------------------------------------------------------------------
@@ -327,7 +430,7 @@ class QAPipeline:
 
     Usage:
         qa = QAPipeline("productions/the-last-marker")
-        report = qa.review("edit/rough-cut-v1.mp4")
+        report = qa.review()
     """
 
     def __init__(self, production_dir: str | Path):
@@ -342,6 +445,7 @@ class QAPipeline:
 
     def _load_shot_timeline(self) -> list[dict]:
         """Build shot timeline from the edit decision list or by probing clips."""
+        # Try EDL first
         edl_path = self.prod_dir / "edit" / "edit-decision-list.json"
         if edl_path.exists():
             edl = json.loads(edl_path.read_text())
@@ -356,6 +460,10 @@ class QAPipeline:
 
         # Fallback: probe selected clips
         clips_dir = self.prod_dir / "clips" / "selected"
+        if not clips_dir.exists():
+            logger.warning("No EDL and no clips directory at %s", clips_dir)
+            return []
+
         shots = []
         timeline = 0.0
         for f in sorted(clips_dir.glob("s*-sh*.mp4")):
@@ -382,9 +490,8 @@ class QAPipeline:
         raw = json.loads(shot_list_path.read_text())
         lines = []
         for s in raw.get("shots", []):
-            lines.append(
-                f"  {s['shot_id']}: {s['generation_prompt'][:120]}..."
-            )
+            prompt_preview = s.get("generation_prompt", "")[:120]
+            lines.append(f"  {s['shot_id']}: {prompt_preview}...")
         return "\n".join(lines)
 
     def review(
@@ -422,6 +529,7 @@ class QAPipeline:
             frames=self.frames,
             shot_list_context=shot_context,
             model=model,
+            raw_response_dir=self.qa_dir,
         )
 
         # 5. Build report
@@ -433,10 +541,14 @@ class QAPipeline:
 
         return self.report
 
-    def review_local(self, cut_filename: str = "rough-cut-v1.mp4") -> list[dict]:
+    def review_local(
+        self,
+        cut_filename: str = "rough-cut-v1.mp4",
+    ) -> list[dict]:
         """
-        Extract frames only (no Claude API call).
-        Useful for manual review or when no API key is available.
+        Extract frames only — no API call.
+        For manual review or when you want to inspect frames before
+        spending API credits.
         """
         cut_path = self.prod_dir / "edit" / cut_filename
         if not cut_path.exists():
@@ -448,18 +560,20 @@ class QAPipeline:
             output_dir=self.frames_dir,
             shots=shots,
         )
-
-        logger.info("Extracted %d frames for manual review in %s", len(self.frames), self.frames_dir)
         return self.frames
 
     def _build_report(self, cut_filename: str) -> QAReport:
-        """Build a structured QAReport from the Claude analysis."""
+        """Convert raw Claude analysis into a typed QAReport."""
+        a = self.analysis
+        production_id = self.prod_dir.name
+
+        # Parse findings
         findings = []
-        for i, f in enumerate(self.analysis.get("findings", [])):
+        for f in a.get("findings", []):
             findings.append(Finding(
-                finding_id=f"F{i+1:03d}",
+                finding_id=f.get("finding_id", "F???"),
                 severity=f.get("severity", "note"),
-                category=f.get("category", "other"),
+                category=f.get("category", "unknown"),
                 shots_affected=f.get("shots_affected", []),
                 timestamp=f.get("timestamp", ""),
                 description=f.get("description", ""),
@@ -468,41 +582,62 @@ class QAPipeline:
                 assigned_to=f.get("assigned_to", ""),
             ))
 
+        # Parse shot grades — handle both list and dict formats
         shot_grades = []
-        for sid, grade_info in self.analysis.get("shot_grades", {}).items():
-            if isinstance(grade_info, dict):
+        raw_grades = a.get("shot_grades", [])
+        if isinstance(raw_grades, list):
+            for sg in raw_grades:
                 shot_grades.append(ShotGrade(
-                    shot_id=sid,
-                    grade=grade_info.get("grade", "?"),
-                    notes=grade_info.get("notes", ""),
+                    shot_id=sg.get("shot_id", "???"),
+                    grade=sg.get("grade", "?"),
+                    notes=sg.get("notes", ""),
                 ))
-            else:
-                shot_grades.append(ShotGrade(shot_id=sid, grade=str(grade_info)))
+        elif isinstance(raw_grades, dict):
+            # Claude sometimes returns {shot_id: {grade, notes}} instead of list
+            for shot_id, info in raw_grades.items():
+                if isinstance(info, dict):
+                    shot_grades.append(ShotGrade(
+                        shot_id=shot_id,
+                        grade=info.get("grade", "?"),
+                        notes=info.get("notes", ""),
+                    ))
+                elif isinstance(info, str):
+                    shot_grades.append(ShotGrade(
+                        shot_id=shot_id,
+                        grade=info,
+                        notes="",
+                    ))
 
-        stats = {
-            "total_findings": len(findings),
-            "critical": sum(1 for f in findings if f.severity == "critical"),
-            "major": sum(1 for f in findings if f.severity == "major"),
-            "minor": sum(1 for f in findings if f.severity == "minor"),
-            "notes": sum(1 for f in findings if f.severity == "note"),
-        }
+        # Compute statistics
+        severity_counts = {"critical": 0, "major": 0, "minor": 0, "note": 0}
+        for f in findings:
+            sev = f.severity.lower()
+            if sev in severity_counts:
+                severity_counts[sev] += 1
+        severity_counts["total_findings"] = len(findings)
 
         return QAReport(
-            production_id=self.prod_dir.name,
+            production_id=production_id,
             cut_reviewed=cut_filename,
             review_date=datetime.now(timezone.utc).isoformat(),
-            overall_verdict=self.analysis.get("overall_verdict", "unknown"),
-            overall_notes=self.analysis.get("overall_notes", ""),
+            overall_verdict=a.get("overall_verdict", "error"),
+            overall_notes=a.get("overall_notes", ""),
             findings=findings,
             shot_grades=shot_grades,
-            statistics=stats,
+            statistics=severity_counts,
         )
 
     def _write_report(self):
-        """Write the structured QA report JSON."""
+        """Write the structured JSON report."""
         if not self.report:
             return
-        out = self.qa_dir / "qa-report-v1.json"
+
+        # Version the report
+        version = 1
+        while (self.qa_dir / f"qa-report-v{version}.json").exists():
+            version += 1
+
+        out = self.qa_dir / f"qa-report-v{version}.json"
         out.write_text(json.dumps(asdict(self.report), indent=2))
         logger.info("Wrote QA report → %s", out)
 
@@ -542,6 +677,11 @@ class QAPipeline:
             if f.assigned_to:
                 lines.append(f"  Assign to: {f.assigned_to}")
 
-        out = self.qa_dir / "qa-summary-v1.txt"
+        # Version the summary
+        version = 1
+        while (self.qa_dir / f"qa-summary-v{version}.txt").exists():
+            version += 1
+
+        out = self.qa_dir / f"qa-summary-v{version}.txt"
         out.write_text("\n".join(lines))
         logger.info("Wrote QA summary → %s", out)
