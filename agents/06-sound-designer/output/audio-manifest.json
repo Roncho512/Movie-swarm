@@ -1,0 +1,437 @@
+{
+  "production_id": "the-last-marker",
+  "generated_at": "2026-05-01T14:49:46.721796+00:00",
+  "assets": [
+    {
+      "asset_id": "engine-healthy",
+      "asset_type": "sfx",
+      "local_path": "sfx/engine-healthy.mp3",
+      "prompt": "A vintage single-cylinder motorcycle engine at high RPM, cruising at 60 mph on an open road. Fast, steady, powerful exhaust note with rapid firing rhythm. Mechanical valve clatter at speed. Air rushing past the engine. Not idling \u2014 this engine is working hard, moving fast. Raw exhaust, no muffler.",
+      "duration_requested": 15.0,
+      "generated": false,
+      "assigned_shots": [
+        "s01-sh01",
+        "s01-sh02",
+        "s01-sh03",
+        "s01-sh04",
+        "s01-sh05"
+      ],
+      "layer_notes": "Primary engine sound for Scene 1. Loop as needed."
+    },
+    {
+      "asset_id": "engine-skip",
+      "asset_type": "sfx",
+      "local_path": "sfx/engine-skip.mp3",
+      "prompt": "Single-cylinder vintage motorcycle engine with intermittent misfire. Deep thump rhythm with every third beat missing \u2014 a skip in the pattern. Engine recovers each time but the skip returns. Mechanical distress. 1960s British motorcycle.",
+      "duration_requested": 10.0,
+      "generated": false,
+      "assigned_shots": [
+        "s01-sh05",
+        "s02-sh01"
+      ],
+      "layer_notes": "Engine degradation begins. Crossfade from healthy to this."
+    },
+    {
+      "asset_id": "engine-death",
+      "asset_type": "sfx",
+      "local_path": "sfx/engine-death.mp3",
+      "prompt": "A motorcycle engine misfiring and shutting down. The engine fires unevenly three times, each firing weaker than the last, with longer gaps between. Then the engine stops completely and there is total mechanical silence. No human sounds. Only metal and exhaust. The final silence should last five seconds.",
+      "duration_requested": 8.0,
+      "generated": false,
+      "assigned_shots": [
+        "s02-sh01"
+      ],
+      "layer_notes": "The central event of Scene 2. The silence after must be absolute."
+    },
+    {
+      "asset_id": "engine-kick-fail",
+      "asset_type": "sfx",
+      "local_path": "sfx/engine-kick-fail.mp3",
+      "prompt": "Boot stomping on a motorcycle kick-start lever. Metallic clank of the lever. Engine turns over \u2014 compression, release \u2014 but does not catch. No ignition. Just the mechanical turning and the boot impact. Repeat once.",
+      "duration_requested": 4.0,
+      "generated": false,
+      "assigned_shots": [
+        "s04-sh02",
+        "s04-sh03"
+      ],
+      "layer_notes": "First and second kick attempts. Engine turns but doesn't fire."
+    },
+    {
+      "asset_id": "engine-kick-catch",
+      "asset_type": "sfx",
+      "local_path": "sfx/engine-kick-catch.mp3",
+      "prompt": "Boot on motorcycle kick-start lever, engine turns, catches fire briefly then dies, catches again on second compression and holds. Rough idle \u2014 uneven, skipping every few beats. Not healthy. Something compromised choosing to function. Single-cylinder vintage motorcycle.",
+      "duration_requested": 6.0,
+      "generated": false,
+      "assigned_shots": [
+        "s04-sh04",
+        "s04-sh05"
+      ],
+      "layer_notes": "Third kick succeeds. Engine runs rough."
+    },
+    {
+      "asset_id": "engine-rough-idle",
+      "asset_type": "sfx",
+      "local_path": "sfx/engine-rough-idle.mp3",
+      "prompt": "Single-cylinder vintage motorcycle engine running rough at low RPM. Uneven rhythm, skipping every few beats. Mechanical distress but still running. Compromised but functional. Deep thump with irregular gaps.",
+      "duration_requested": 15.0,
+      "generated": false,
+      "assigned_shots": [
+        "s04-sh05",
+        "s04-sh06",
+        "s04-sh07"
+      ],
+      "layer_notes": "Final engine state. Rough but running. Fades over closing shot."
+    },
+    {
+      "asset_id": "desert-wind-light",
+      "asset_type": "sfx",
+      "local_path": "sfx/desert-wind-light.mp3",
+      "prompt": "Light desert wind. Dry air moving across flat terrain. Gentle, constant, with occasional soft gusts. No vegetation rustling \u2014 just air on sand and rock. Lonely and vast.",
+      "duration_requested": 20.0,
+      "generated": false,
+      "assigned_shots": [
+        "s01-sh01",
+        "s03-sh01",
+        "s03-sh02"
+      ],
+      "layer_notes": "Background ambient for wide shots. Loop as needed."
+    },
+    {
+      "asset_id": "desert-silence",
+      "asset_type": "sfx",
+      "local_path": "sfx/desert-silence.mp3",
+      "prompt": "Complete silence with very faint, almost subliminal low-frequency room tone. Not digital silence \u2014 the silence of a vast empty desert where the air itself is still. Barely perceptible.",
+      "duration_requested": 10.0,
+      "generated": false,
+      "assigned_shots": [
+        "s02-sh01",
+        "s02-sh03",
+        "s03-sh01"
+      ],
+      "layer_notes": "The silence after the engine dies. Also used for diagnostic scene."
+    },
+    {
+      "asset_id": "tire-hardpan",
+      "asset_type": "sfx",
+      "local_path": "sfx/tire-hardpan.mp3",
+      "prompt": "Motorcycle tire rolling on hard desert ground at moderate speed. Continuous hiss and crunch of dry packed earth under rubber. Small pebbles and grit. Steady and rhythmic.",
+      "duration_requested": 10.0,
+      "generated": false,
+      "assigned_shots": [
+        "s01-sh02",
+        "s01-sh04"
+      ],
+      "layer_notes": "Layer under engine sound for riding shots."
+    },
+    {
+      "asset_id": "pebble-spray",
+      "asset_type": "sfx",
+      "local_path": "sfx/pebble-spray.mp3",
+      "prompt": "Spray of sand and small pebbles kicked up by a motorcycle tire. Brief burst of grit hitting the ground and scattering. Desert terrain.",
+      "duration_requested": 3.0,
+      "generated": false,
+      "assigned_shots": [
+        "s01-sh04"
+      ],
+      "layer_notes": "Low angle pass-by shot."
+    },
+    {
+      "asset_id": "boot-on-lever",
+      "asset_type": "sfx",
+      "local_path": "sfx/boot-on-lever.mp3",
+      "prompt": "A heavy leather boot stomping down on a metal motorcycle kick-start lever. Single impact. Metallic clang with leather thud.",
+      "duration_requested": 1.5,
+      "generated": false,
+      "assigned_shots": [
+        "s04-sh02",
+        "s04-sh03"
+      ],
+      "layer_notes": "Punctuation sound for kick attempts."
+    },
+    {
+      "asset_id": "cooling-metal",
+      "asset_type": "sfx",
+      "local_path": "sfx/cooling-metal.mp3",
+      "prompt": "Hot metal cooling and ticking. Quiet, irregular metallic clicks as a motorcycle engine cools down after being turned off. Tick... tick... tick. Slowing.",
+      "duration_requested": 15.0,
+      "generated": false,
+      "assigned_shots": [
+        "s02-sh02",
+        "s02-sh03",
+        "s03-sh01"
+      ],
+      "layer_notes": "Diagnostic scene ambient. Engine cooling after death."
+    },
+    {
+      "asset_id": "spark-plug-pull",
+      "asset_type": "sfx",
+      "local_path": "sfx/spark-plug-pull.mp3",
+      "prompt": "A spark plug being unscrewed from a motorcycle engine by hand. Metal threading out of metal. Then the plug pulled free with a slight pop. Close-mic mechanical detail.",
+      "duration_requested": 4.0,
+      "generated": false,
+      "assigned_shots": [
+        "s02-sh02"
+      ],
+      "layer_notes": "Diagnostic detail shot."
+    },
+    {
+      "asset_id": "vega-primero-llegas",
+      "asset_type": "dialogue",
+      "local_path": "dialogue/vega-primero-llegas.mp3",
+      "prompt": "A quiet, private decision spoken aloud. Barely audible. Under the breath.",
+      "duration_requested": null,
+      "generated": false,
+      "assigned_shots": [
+        "s04-sh06"
+      ],
+      "layer_notes": "The only spoken words in the film. Barely audible under engine. Mix very low."
+    },
+    {
+      "asset_id": "closing-guitar",
+      "asset_type": "music",
+      "local_path": "output/music/closing-guitar.mp3",
+      "prompt": "Solo nylon-string acoustic guitar. Three simple notes \u2014 a Mexican folk phrase, a question not an answer. Played once. Four seconds of silence. Played once more. Then silence. Sparse, lonely, unhurried. No accompaniment, no percussion, no bass. Just the guitar and the desert.",
+      "duration_requested": 20.0,
+      "generated": true,
+      "assigned_shots": [
+        "s04-sh07"
+      ],
+      "layer_notes": "Enters after engine fades in the closing shot. The last sound before silence."
+    }
+  ],
+  "shot_assignments": {
+    "s01-sh01": [
+      {
+        "asset_id": "engine-healthy",
+        "asset_type": "sfx",
+        "local_path": "sfx/engine-healthy.mp3",
+        "layer_notes": "Primary engine sound for Scene 1. Loop as needed."
+      },
+      {
+        "asset_id": "desert-wind-light",
+        "asset_type": "sfx",
+        "local_path": "sfx/desert-wind-light.mp3",
+        "layer_notes": "Background ambient for wide shots. Loop as needed."
+      }
+    ],
+    "s01-sh02": [
+      {
+        "asset_id": "engine-healthy",
+        "asset_type": "sfx",
+        "local_path": "sfx/engine-healthy.mp3",
+        "layer_notes": "Primary engine sound for Scene 1. Loop as needed."
+      },
+      {
+        "asset_id": "tire-hardpan",
+        "asset_type": "sfx",
+        "local_path": "sfx/tire-hardpan.mp3",
+        "layer_notes": "Layer under engine sound for riding shots."
+      }
+    ],
+    "s01-sh03": [
+      {
+        "asset_id": "engine-healthy",
+        "asset_type": "sfx",
+        "local_path": "sfx/engine-healthy.mp3",
+        "layer_notes": "Primary engine sound for Scene 1. Loop as needed."
+      }
+    ],
+    "s01-sh04": [
+      {
+        "asset_id": "engine-healthy",
+        "asset_type": "sfx",
+        "local_path": "sfx/engine-healthy.mp3",
+        "layer_notes": "Primary engine sound for Scene 1. Loop as needed."
+      },
+      {
+        "asset_id": "tire-hardpan",
+        "asset_type": "sfx",
+        "local_path": "sfx/tire-hardpan.mp3",
+        "layer_notes": "Layer under engine sound for riding shots."
+      },
+      {
+        "asset_id": "pebble-spray",
+        "asset_type": "sfx",
+        "local_path": "sfx/pebble-spray.mp3",
+        "layer_notes": "Low angle pass-by shot."
+      }
+    ],
+    "s01-sh05": [
+      {
+        "asset_id": "engine-healthy",
+        "asset_type": "sfx",
+        "local_path": "sfx/engine-healthy.mp3",
+        "layer_notes": "Primary engine sound for Scene 1. Loop as needed."
+      },
+      {
+        "asset_id": "engine-skip",
+        "asset_type": "sfx",
+        "local_path": "sfx/engine-skip.mp3",
+        "layer_notes": "Engine degradation begins. Crossfade from healthy to this."
+      }
+    ],
+    "s02-sh01": [
+      {
+        "asset_id": "engine-skip",
+        "asset_type": "sfx",
+        "local_path": "sfx/engine-skip.mp3",
+        "layer_notes": "Engine degradation begins. Crossfade from healthy to this."
+      },
+      {
+        "asset_id": "engine-death",
+        "asset_type": "sfx",
+        "local_path": "sfx/engine-death.mp3",
+        "layer_notes": "The central event of Scene 2. The silence after must be absolute."
+      },
+      {
+        "asset_id": "desert-silence",
+        "asset_type": "sfx",
+        "local_path": "sfx/desert-silence.mp3",
+        "layer_notes": "The silence after the engine dies. Also used for diagnostic scene."
+      }
+    ],
+    "s04-sh02": [
+      {
+        "asset_id": "engine-kick-fail",
+        "asset_type": "sfx",
+        "local_path": "sfx/engine-kick-fail.mp3",
+        "layer_notes": "First and second kick attempts. Engine turns but doesn't fire."
+      },
+      {
+        "asset_id": "boot-on-lever",
+        "asset_type": "sfx",
+        "local_path": "sfx/boot-on-lever.mp3",
+        "layer_notes": "Punctuation sound for kick attempts."
+      }
+    ],
+    "s04-sh03": [
+      {
+        "asset_id": "engine-kick-fail",
+        "asset_type": "sfx",
+        "local_path": "sfx/engine-kick-fail.mp3",
+        "layer_notes": "First and second kick attempts. Engine turns but doesn't fire."
+      },
+      {
+        "asset_id": "boot-on-lever",
+        "asset_type": "sfx",
+        "local_path": "sfx/boot-on-lever.mp3",
+        "layer_notes": "Punctuation sound for kick attempts."
+      }
+    ],
+    "s04-sh04": [
+      {
+        "asset_id": "engine-kick-catch",
+        "asset_type": "sfx",
+        "local_path": "sfx/engine-kick-catch.mp3",
+        "layer_notes": "Third kick succeeds. Engine runs rough."
+      }
+    ],
+    "s04-sh05": [
+      {
+        "asset_id": "engine-kick-catch",
+        "asset_type": "sfx",
+        "local_path": "sfx/engine-kick-catch.mp3",
+        "layer_notes": "Third kick succeeds. Engine runs rough."
+      },
+      {
+        "asset_id": "engine-rough-idle",
+        "asset_type": "sfx",
+        "local_path": "sfx/engine-rough-idle.mp3",
+        "layer_notes": "Final engine state. Rough but running. Fades over closing shot."
+      }
+    ],
+    "s04-sh06": [
+      {
+        "asset_id": "engine-rough-idle",
+        "asset_type": "sfx",
+        "local_path": "sfx/engine-rough-idle.mp3",
+        "layer_notes": "Final engine state. Rough but running. Fades over closing shot."
+      },
+      {
+        "asset_id": "vega-primero-llegas",
+        "asset_type": "dialogue",
+        "local_path": "dialogue/vega-primero-llegas.mp3",
+        "layer_notes": "The only spoken words in the film. Barely audible under engine. Mix very low."
+      }
+    ],
+    "s04-sh07": [
+      {
+        "asset_id": "engine-rough-idle",
+        "asset_type": "sfx",
+        "local_path": "sfx/engine-rough-idle.mp3",
+        "layer_notes": "Final engine state. Rough but running. Fades over closing shot."
+      },
+      {
+        "asset_id": "closing-guitar",
+        "asset_type": "music",
+        "local_path": "output/music/closing-guitar.mp3",
+        "layer_notes": "Enters after engine fades in the closing shot. The last sound before silence."
+      }
+    ],
+    "s03-sh01": [
+      {
+        "asset_id": "desert-wind-light",
+        "asset_type": "sfx",
+        "local_path": "sfx/desert-wind-light.mp3",
+        "layer_notes": "Background ambient for wide shots. Loop as needed."
+      },
+      {
+        "asset_id": "desert-silence",
+        "asset_type": "sfx",
+        "local_path": "sfx/desert-silence.mp3",
+        "layer_notes": "The silence after the engine dies. Also used for diagnostic scene."
+      },
+      {
+        "asset_id": "cooling-metal",
+        "asset_type": "sfx",
+        "local_path": "sfx/cooling-metal.mp3",
+        "layer_notes": "Diagnostic scene ambient. Engine cooling after death."
+      }
+    ],
+    "s03-sh02": [
+      {
+        "asset_id": "desert-wind-light",
+        "asset_type": "sfx",
+        "local_path": "sfx/desert-wind-light.mp3",
+        "layer_notes": "Background ambient for wide shots. Loop as needed."
+      }
+    ],
+    "s02-sh03": [
+      {
+        "asset_id": "desert-silence",
+        "asset_type": "sfx",
+        "local_path": "sfx/desert-silence.mp3",
+        "layer_notes": "The silence after the engine dies. Also used for diagnostic scene."
+      },
+      {
+        "asset_id": "cooling-metal",
+        "asset_type": "sfx",
+        "local_path": "sfx/cooling-metal.mp3",
+        "layer_notes": "Diagnostic scene ambient. Engine cooling after death."
+      }
+    ],
+    "s02-sh02": [
+      {
+        "asset_id": "cooling-metal",
+        "asset_type": "sfx",
+        "local_path": "sfx/cooling-metal.mp3",
+        "layer_notes": "Diagnostic scene ambient. Engine cooling after death."
+      },
+      {
+        "asset_id": "spark-plug-pull",
+        "asset_type": "sfx",
+        "local_path": "sfx/spark-plug-pull.mp3",
+        "layer_notes": "Diagnostic detail shot."
+      }
+    ]
+  },
+  "generation_log": [
+    {
+      "asset_id": "closing-guitar",
+      "type": "music",
+      "success": true,
+      "timestamp": "2026-05-01T14:49:46.721755+00:00"
+    }
+  ]
+}
