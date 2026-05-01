@@ -1,0 +1,188 @@
+{
+  "production_id": "the-last-marker",
+  "clips": [
+    {
+      "shot_id": "s01-sh01",
+      "source_path": "../../productions/the-last-marker/clips/selected/s01-sh01.mp4",
+      "duration": 15.041667,
+      "start_time": 0.0,
+      "transition": "cut",
+      "transition_duration": 0.0
+    },
+    {
+      "shot_id": "s01-sh02",
+      "source_path": "../../productions/the-last-marker/clips/selected/s01-sh02.mp4",
+      "duration": 10.041667,
+      "start_time": 15.041667,
+      "transition": "cut",
+      "transition_duration": 0.0
+    },
+    {
+      "shot_id": "s01-sh03",
+      "source_path": "../../productions/the-last-marker/clips/selected/s01-sh03.mp4",
+      "duration": 5.041667,
+      "start_time": 25.083334,
+      "transition": "cut",
+      "transition_duration": 0.0
+    },
+    {
+      "shot_id": "s01-sh04",
+      "source_path": "../../productions/the-last-marker/clips/selected/s01-sh04.mp4",
+      "duration": 5.041667,
+      "start_time": 30.125001,
+      "transition": "cut",
+      "transition_duration": 0.0
+    },
+    {
+      "shot_id": "s01-sh05",
+      "source_path": "../../productions/the-last-marker/clips/selected/s01-sh05.mp4",
+      "duration": 5.041667,
+      "start_time": 35.166668,
+      "transition": "cut",
+      "transition_duration": 0.0
+    },
+    {
+      "shot_id": "s02-sh01",
+      "source_path": "../../productions/the-last-marker/clips/selected/s02-sh01.mp4",
+      "duration": 7.041667,
+      "start_time": 40.208335000000005,
+      "transition": "cut",
+      "transition_duration": 0.0
+    }
+  ],
+  "audio_layers": [
+    {
+      "asset_id": "desert-wind-light",
+      "source_path": "../../productions/the-last-marker/audio/sfx/desert-wind-light.mp3",
+      "layer_type": "ambient",
+      "timeline_start": 0.0,
+      "duration": null,
+      "volume": 0.15,
+      "loop": false,
+      "fade_in": 3.0,
+      "fade_out": 2.0,
+      "trim_start": 0.0,
+      "trim_end": 0.0
+    },
+    {
+      "asset_id": "engine-distant",
+      "source_path": "../../productions/the-last-marker/audio/sfx/218352__photomonster__motorcycle_nsumax_1954_engine.wav",
+      "layer_type": "sfx",
+      "timeline_start": 4.0,
+      "duration": null,
+      "volume": 0.2,
+      "loop": false,
+      "fade_in": 4.0,
+      "fade_out": 0.0,
+      "trim_start": 71.0,
+      "trim_end": 75.0
+    },
+    {
+      "asset_id": "engine-cruising",
+      "source_path": "../../productions/the-last-marker/audio/sfx/218352__photomonster__motorcycle_nsumax_1954_engine.wav",
+      "layer_type": "sfx",
+      "timeline_start": 15.0,
+      "duration": null,
+      "volume": 0.55,
+      "loop": false,
+      "fade_in": 1.0,
+      "fade_out": 0.0,
+      "trim_start": 71.0,
+      "trim_end": 75.0
+    },
+    {
+      "asset_id": "engine-cruising-2",
+      "source_path": "../../productions/the-last-marker/audio/sfx/218352__photomonster__motorcycle_nsumax_1954_engine.wav",
+      "layer_type": "sfx",
+      "timeline_start": 19.0,
+      "duration": null,
+      "volume": 0.55,
+      "loop": false,
+      "fade_in": 0.0,
+      "fade_out": 0.0,
+      "trim_start": 85.0,
+      "trim_end": 88.0
+    },
+    {
+      "asset_id": "engine-cruising-3",
+      "source_path": "../../productions/the-last-marker/audio/sfx/218352__photomonster__motorcycle_nsumax_1954_engine.wav",
+      "layer_type": "sfx",
+      "timeline_start": 25.0,
+      "duration": null,
+      "volume": 0.55,
+      "loop": false,
+      "fade_in": 0.0,
+      "fade_out": 0.0,
+      "trim_start": 71.0,
+      "trim_end": 75.0
+    },
+    {
+      "asset_id": "engine-cruising-4",
+      "source_path": "../../productions/the-last-marker/audio/sfx/218352__photomonster__motorcycle_nsumax_1954_engine.wav",
+      "layer_type": "sfx",
+      "timeline_start": 30.0,
+      "duration": null,
+      "volume": 0.55,
+      "loop": false,
+      "fade_in": 0.0,
+      "fade_out": 0.0,
+      "trim_start": 85.0,
+      "trim_end": 88.0
+    },
+    {
+      "asset_id": "tire-hardpan",
+      "source_path": "../../productions/the-last-marker/audio/sfx/tire-hardpan.mp3",
+      "layer_type": "sfx",
+      "timeline_start": 15.0,
+      "duration": null,
+      "volume": 0.2,
+      "loop": false,
+      "fade_in": 0.0,
+      "fade_out": 0.0,
+      "trim_start": 0.0,
+      "trim_end": 0.0
+    },
+    {
+      "asset_id": "pebble-spray",
+      "source_path": "../../productions/the-last-marker/audio/sfx/pebble-spray.mp3",
+      "layer_type": "sfx",
+      "timeline_start": 31.0,
+      "duration": null,
+      "volume": 0.35,
+      "loop": false,
+      "fade_in": 0.0,
+      "fade_out": 0.0,
+      "trim_start": 0.0,
+      "trim_end": 0.0
+    },
+    {
+      "asset_id": "engine-struggling",
+      "source_path": "../../productions/the-last-marker/audio/sfx/218352__photomonster__motorcycle_nsumax_1954_engine.wav",
+      "layer_type": "sfx",
+      "timeline_start": 35.0,
+      "duration": null,
+      "volume": 0.5,
+      "loop": false,
+      "fade_in": 0.0,
+      "fade_out": 0.0,
+      "trim_start": 105.0,
+      "trim_end": 118.0
+    },
+    {
+      "asset_id": "desert-silence",
+      "source_path": "../../productions/the-last-marker/audio/sfx/desert-silence.mp3",
+      "layer_type": "ambient",
+      "timeline_start": 44.0,
+      "duration": null,
+      "volume": 0.3,
+      "loop": false,
+      "fade_in": 0.0,
+      "fade_out": 0.0,
+      "trim_start": 0.0,
+      "trim_end": 0.0
+    }
+  ],
+  "total_duration": 47.250002,
+  "created_at": "2026-05-01T15:34:46.969364+00:00",
+  "output_path": "../../productions/the-last-marker/edit/rough-cut-v1.mp4"
+}

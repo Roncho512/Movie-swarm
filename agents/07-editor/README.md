@@ -1,47 +1,75 @@
-# 07. Editor (Assembly Agent)
+# Agent 07: Editor
 
-Assembles everything into the final film.
+Video and audio assembly agent for the AI Movie Production Swarm. Takes selected video clips and audio assets from the Sound Designer, assembles them into a rough cut via FFmpeg.
 
-## Role
+## Setup
 
-- Take selected clips and audio assets
-- Assemble the timeline according to the shot list order and transition notes
-- Apply pacing directives from the scene manifest
-- Color grade for consistency across clips
-- Apply Veo upscaling for final output resolution
-- Export in multiple formats
+```bash
+cd agents/07-editor
+brew install ffmpeg   # if not already installed
+```
 
-## Inputs
+No Python dependencies beyond the standard library.
 
-- Shot list (`shot-list.schema.json`) — sequence, transitions, pacing
-- Clip metadata (`clip-metadata.schema.json`) — selected clips
-- Audio manifest (`audio-manifest.schema.json`) — all audio layers
-- Scene manifest (`scene-manifest.schema.json`) — editorial rhythm notes
+## Usage
 
-## Outputs
+### Probe clip inventory
 
-- Assembled timeline
-- Color-graded final cut
-- Multiple format exports in `edit/export/`
-- Quality report
+```bash
+python3 -m src.cli probe ../../productions/the-last-marker
+```
 
-## Primary Tools
+### Concatenate video only (no audio mix)
 
-- FFmpeg (programmatic editing, clip assembly, format conversion)
-- Veo upscaling (enhance to 1080p or 4K)
+```bash
+python3 -m src.cli concat ../../productions/the-last-marker
+```
 
-## Secondary Tools
+### Full rough cut with audio mix
 
-- DaVinci Resolve (color grading, professional output)
-- CapCut (quick assembly, caption generation)
+```bash
+python3 -m src.cli assemble ../../productions/the-last-marker --mix-file mix-scenes-1-2.json
+```
 
-## Status
+## Mix File Format
 
-- [ ] Skill file written
-- [ ] FFmpeg assembly script written
-- [ ] Color grade workflow defined
-- [ ] Export formats defined
+The mix file is a JSON file that defines audio layers. Each layer specifies:
 
-## Build Order
+```json
+{
+  "layers": [
+    {
+      "asset_id": "engine-healthy",
+      "source_path": "audio/sfx/engine-source.wav",
+      "layer_type": "sfx",
+      "timeline_start": 4.0,
+      "volume": 0.6,
+      "fade_in": 3.0,
+      "fade_out": 0.0,
+      "trim_start": 10.0,
+      "trim_end": 45.0
+    }
+  ]
+}
+```
 
-Build in Phase 2, after clips and audio exist.
+- `source_path`: Relative to the production directory
+- `timeline_start`: When in the assembled timeline this audio begins (seconds)
+- `volume`: 0.0–1.0
+- `trim_start` / `trim_end`: Trim the source file to a specific segment
+- `fade_in` / `fade_out`: Fade durations in seconds
+
+## Output
+
+```
+productions/the-last-marker/edit/
+├── rough-cut-v1.mp4           # The assembled rough cut
+├── edit-decision-list.json    # What went where (clips + audio layers)
+└── assembly-log.txt           # Command log
+```
+
+## Integration Points
+
+- **Upstream**: Selected clips from human review; audio assets from Sound Designer
+- **Downstream**: QA agent reviews the rough cut for continuity issues
+- **Orchestrator**: EDL feeds back for tracking and iteration

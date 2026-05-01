@@ -1,0 +1,100 @@
+{
+  "_comment": "Audio mix for The Last Marker \u2014 Scenes 1 & 2. Timeline: s01-sh01 (0-15s), s01-sh02 (15-25s), s01-sh03 (25-30s), s01-sh04 (30-35s), s01-sh05 (35-40s), s02-sh01 (40-47s)",
+  "layers": [
+    {
+      "asset_id": "desert-wind-light",
+      "source_path": "audio/sfx/desert-wind-light.mp3",
+      "layer_type": "ambient",
+      "timeline_start": 0.0,
+      "volume": 0.15,
+      "fade_in": 3.0,
+      "fade_out": 2.0
+    },
+    {
+      "asset_id": "engine-distant",
+      "source_path": "audio/sfx/218352__photomonster__motorcycle_nsumax_1954_engine.wav",
+      "layer_type": "sfx",
+      "timeline_start": 4.0,
+      "volume": 0.2,
+      "fade_in": 4.0,
+      "trim_start": 71.0,
+      "trim_end": 75.0,
+      "_note": "Engine enters faintly at 4s during wide shot. Using steady running at speed (1:11-1:15). Low volume = distant."
+    },
+    {
+      "asset_id": "engine-cruising",
+      "source_path": "audio/sfx/218352__photomonster__motorcycle_nsumax_1954_engine.wav",
+      "layer_type": "sfx",
+      "timeline_start": 15.0,
+      "volume": 0.55,
+      "fade_in": 1.0,
+      "trim_start": 71.0,
+      "trim_end": 75.0,
+      "_note": "Engine at full volume for tracking shot sh02. Steady running (1:11-1:15). Short clip, will need to cover 20s of timeline through sh02-sh05."
+    },
+    {
+      "asset_id": "engine-cruising-2",
+      "source_path": "audio/sfx/218352__photomonster__motorcycle_nsumax_1954_engine.wav",
+      "layer_type": "sfx",
+      "timeline_start": 19.0,
+      "volume": 0.55,
+      "trim_start": 85.0,
+      "trim_end": 88.0,
+      "_note": "Second steady running segment (1:25-1:28) to extend engine coverage through Scene 1."
+    },
+    {
+      "asset_id": "engine-cruising-3",
+      "source_path": "audio/sfx/218352__photomonster__motorcycle_nsumax_1954_engine.wav",
+      "layer_type": "sfx",
+      "timeline_start": 25.0,
+      "volume": 0.55,
+      "trim_start": 71.0,
+      "trim_end": 75.0,
+      "_note": "Repeat steady running for sh03-sh04."
+    },
+    {
+      "asset_id": "engine-cruising-4",
+      "source_path": "audio/sfx/218352__photomonster__motorcycle_nsumax_1954_engine.wav",
+      "layer_type": "sfx",
+      "timeline_start": 30.0,
+      "volume": 0.55,
+      "trim_start": 85.0,
+      "trim_end": 88.0,
+      "_note": "Continue engine through sh04."
+    },
+    {
+      "asset_id": "tire-hardpan",
+      "source_path": "audio/sfx/tire-hardpan.mp3",
+      "layer_type": "sfx",
+      "timeline_start": 15.0,
+      "volume": 0.2,
+      "_note": "Tire sound under tracking shots sh02-sh04."
+    },
+    {
+      "asset_id": "pebble-spray",
+      "source_path": "audio/sfx/pebble-spray.mp3",
+      "layer_type": "sfx",
+      "timeline_start": 31.0,
+      "volume": 0.35,
+      "_note": "Pebble spray on low-angle pass sh04."
+    },
+    {
+      "asset_id": "engine-struggling",
+      "source_path": "audio/sfx/218352__photomonster__motorcycle_nsumax_1954_engine.wav",
+      "layer_type": "sfx",
+      "timeline_start": 35.0,
+      "volume": 0.5,
+      "trim_start": 105.0,
+      "trim_end": 118.0,
+      "_note": "Engine struggling (1:45-1:58). Starts at sh05 through s02-sh01 where engine dies."
+    },
+    {
+      "asset_id": "desert-silence",
+      "source_path": "audio/sfx/desert-silence.mp3",
+      "layer_type": "ambient",
+      "timeline_start": 44.0,
+      "volume": 0.3,
+      "_note": "The silence after the engine dies. Last 3 seconds of the cut."
+    }
+  ]
+}

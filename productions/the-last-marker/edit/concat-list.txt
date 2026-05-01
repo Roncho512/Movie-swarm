@@ -1,0 +1,6 @@
+file '/Users/rmerrill/Projects/movie-swarm/productions/the-last-marker/clips/selected/s01-sh01.mp4'
+file '/Users/rmerrill/Projects/movie-swarm/productions/the-last-marker/clips/selected/s01-sh02.mp4'
+file '/Users/rmerrill/Projects/movie-swarm/productions/the-last-marker/clips/selected/s01-sh03.mp4'
+file '/Users/rmerrill/Projects/movie-swarm/productions/the-last-marker/clips/selected/s01-sh04.mp4'
+file '/Users/rmerrill/Projects/movie-swarm/productions/the-last-marker/clips/selected/s01-sh05.mp4'
+file '/Users/rmerrill/Projects/movie-swarm/productions/the-last-marker/clips/selected/s02-sh01.mp4'

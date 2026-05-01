@@ -1,0 +1,3 @@
+Concatenated 6 clips → ../../productions/the-last-marker/edit/video-only.mp4
+Mixed 10 audio layers → ../../productions/the-last-marker/edit/audio-mix.wav
+Merged video + audio → ../../productions/the-last-marker/edit/rough-cut-v1.mp4
