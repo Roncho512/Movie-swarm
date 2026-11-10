@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "run-state.schema.json",
+  "title": "Run State",
+  "description": "One production run: current stage, status, artifacts produced, and money spent against the cap that applied when the run opened.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "production_id",
+    "run_id",
+    "stage",
+    "status",
+    "artifacts",
+    "cost_usd",
+    "budget_cap_usd",
+    "updated_at"
+  ],
+  "properties": {
+    "production_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Same slug as the production folder."
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Id for this run. A timestamp is fine."
+    },
+    "stage": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Pipeline stage this run is on. Use the same names as config/gates.json."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "running", "waiting-for-review", "completed", "failed", "blocked"]
+    },
+    "artifacts": {
+      "type": "array",
+      "description": "Files this run has produced.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "path"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "minLength": 1 },
+          "schema": { "type": "string" }
+        }
+      }
+    },
+    "cost_usd": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Money spent so far on this run, in US dollars."
+    },
+    "budget_cap_usd": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Cap copied from the gate config when the run was opened."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

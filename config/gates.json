@@ -1,0 +1,15 @@
+{
+  "budget_cap_usd": 500,
+  "currency": "USD",
+  "gates": {
+    "executive-producer": true,
+    "screenwriter": true,
+    "art-director": true,
+    "cinematographer": true,
+    "production": true,
+    "sound-designer": true,
+    "editor": true,
+    "qa": true,
+    "fix-loop": true
+  }
+}

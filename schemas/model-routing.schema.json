@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "model-routing.schema.json",
+  "title": "Model Routing",
+  "description": "Which generator each role uses. Overrides let a later pass pick a different model for one scene or shot without editing agent code.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "roles"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "roles": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["provider", "model"],
+        "properties": {
+          "provider": { "type": ["string", "null"] },
+          "model": { "type": ["string", "null"] },
+          "source": { "type": "string" },
+          "notes": { "type": "string" },
+          "endpoints": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          },
+          "purposes": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          }
+        }
+      }
+    },
+    "overrides": {
+      "type": "array",
+      "description": "Per-scene or per-shot replacements. Empty until a director sets one.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "model"],
+        "properties": {
+          "role": { "type": "string", "minLength": 1 },
+          "scene": { "type": "string" },
+          "shot": { "type": "string" },
+          "purpose": { "type": "string" },
+          "model": { "type": "string", "minLength": 1 },
+          "provider": { "type": "string" }
+        }
+      }
+    }
+  }
+}

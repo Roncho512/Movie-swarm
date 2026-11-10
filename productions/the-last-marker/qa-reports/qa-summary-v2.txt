@@ -10,7 +10,7 @@ Total findings: 4
   Critical: 1
   Major: 1
   Minor: 1
-  Notes: 0
+  Notes: 1
 
 --- Shot Grades ---
   s01-sh01: A- — Excellent establishing shot with perfect 16mm Ektachrome aesthetic and beautiful golden hour lighting. Aspect ratio needs standardization.

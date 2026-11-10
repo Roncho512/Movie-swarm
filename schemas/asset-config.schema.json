@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asset-config.schema.json",
+  "title": "Asset Root Config",
+  "description": "Where finished media lives. Null keeps files inside the production folder in this repo. Setting a path does not move existing files.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["asset_root"],
+  "properties": {
+    "asset_root": {
+      "type": ["string", "null"],
+      "description": "Folder on disk for finished media. Null means the production folder inside the repo."
+    },
+    "env_var": {
+      "type": "string",
+      "const": "MOVIE_SWARM_ASSET_ROOT",
+      "description": "Environment variable that overrides asset_root when it is set."
+    }
+  }
+}

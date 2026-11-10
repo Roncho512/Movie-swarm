@@ -27,10 +27,12 @@ movie-swarm/
 │   ├── 08-qa/                  # Continuity review — Claude vision analysis
 │   └── 09-fix-loop/            # QA-driven regeneration — route fixes, track iterations
 ├── schemas/                    # JSON schemas for all agent handoffs
+├── movie_swarm/                # Shared checks, run record, gates, model map
+├── config/                     # Review gates, budget cap, models, asset root
 ├── productions/                # One directory per film project
 │   └── the-last-marker/        # Pilot production (in progress)
-├── orchestration/              # Pipeline runner, state management (planned)
-├── scripts/                    # Utility scripts
+├── orchestration/              # Pipeline runner (planned)
+├── scripts/                    # validate-schema.py and other utilities
 └── docs/                       # Architecture brief, build guide
 ```
 
@@ -61,14 +63,16 @@ Style Brief → [Art Director] → Visual Style Bible + Character Refs
 | # | Agent | Skill File | Code | Tested |
 |---|---|---|---|---|
 | 01 | Executive Producer | ✅ | — | — |
-| 02 | Screenwriter | ✅ | ✅ | ✅ |
-| 03 | Art Director | ✅ | — | ✅ (manual) |
-| 04 | Cinematographer | ✅ | — | ✅ (manual) |
+| 02 | Screenwriter | ✅ | — | — |
+| 03 | Art Director | ✅ | — | — |
+| 04 | Cinematographer | ✅ | — | — |
 | 05 | Production | ✅ | ✅ | ✅ |
-| 06 | Sound Designer | ✅ | — | ✅ (manual) |
-| 07 | Editor | ✅ | ✅ | ✅ |
+| 06 | Sound Designer | ✅ | ✅ | ✅ |
+| 07 | Editor | ✅ | ✅ | — |
 | 08 | QA | ✅ | ✅ | ✅ |
-| 09 | Fix Loop | ✅ | ✅ | ✅ |
+| 09 | Fix Loop | ✅ | ✅ | — |
+
+A checkmark means the file is in the repo. **Code** means that agent has a program (`src/`). **Tested** means that program has automated tests. Skill-only agents are written instructions: a skill file, and no program yet.
 
 ## Schemas
 
@@ -83,6 +87,28 @@ Every agent handoff is defined by a JSON schema.
 | `clip-metadata` | Production | Editor, QA |
 | `audio-manifest` | Sound Designer | Editor |
 | `continuity-report` | QA | Fix Loop → Production |
+
+Run state, review gates, model routing, and the asset root have their own checklists too (`run-state`, `gate-config`, `model-routing`, `asset-config`).
+
+## How the foundation works
+
+Agents hand work to each other as JSON files. Each kind of file has a checklist in `schemas/`. The shared library checks a file before it is accepted. If a required piece is missing, the handoff stops. The message names the file, the checklist, and what is wrong.
+
+Each production run can keep a status file. It records the current stage, whether the run is waiting, which files it has produced, and how much money has been spent against the film's cap.
+
+Human review is a switch per stage in `config/gates.json`. Every switch starts on, so a person reviews every stage. The film budget cap is in the same file and starts at $500. Changing a switch or the cap is an edit to that file.
+
+`config/model-routing.json` records which generator each role uses, so a later change is a config edit. The programs still call the generators they call today. An `overrides` list is there for a later per-scene or per-shot choice. It is empty.
+
+Finished video can live on an external drive. Set `MOVIE_SWARM_ASSET_ROOT`, or set `asset_root` in `config/assets.json`. Until one of those is set, files stay in the production folder inside this repo. Nothing is moved.
+
+Check the pilot's files:
+
+```bash
+python3 scripts/validate-schema.py --production productions/the-last-marker
+```
+
+The scene manifest, the shot list, and the visual style bible match their checklists. The audio manifest, the clip metadata, and the two QA reports were saved in an older shape. They are listed in `config/known-schema-mismatches.json`, so the audit reports them and exits successfully. Any other file that fails its checklist stops the command with an error.
 
 ## Current Production: The Last Marker
 
@@ -116,7 +142,15 @@ $150–$460 estimated, depending on generation quality tiers and iteration count
 
 ## Setup
 
-Each agent with code runs independently from its directory:
+Install the shared foundation and the agent dependencies from the repo root:
+
+```bash
+pip3 install -r requirements.txt
+python3 -m pytest tests -q
+python3 scripts/validate-schema.py --production productions/the-last-marker
+```
+
+Each agent with code also runs independently from its directory:
 
 ```bash
 cd agents/08-qa
