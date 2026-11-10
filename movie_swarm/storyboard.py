@@ -70,6 +70,17 @@ _FRAMING = {
 }
 
 
+def _existing_board(production_dir: Path) -> dict:
+    path = storyboard_path(production_dir)
+    if not path.is_file():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
 def storyboard_path(production_dir: Path) -> Path:
     return production_dir / "storyboard" / "storyboard.json"
 
@@ -100,6 +111,7 @@ def build_boards(production_dir: Path, llm=None, image_client=None) -> dict:
     }
     write_handoff(shot_list_path(production_dir), shot_list, schema="shot-list")
     total = round(sum(frame["duration_seconds"] for frame in frames), 3)
+    prior = _existing_board(production_dir)
     document = {
         "version": "1.0.0",
         "production_id": production_dir.name,
@@ -117,6 +129,9 @@ def build_boards(production_dir: Path, llm=None, image_client=None) -> dict:
         "model": model,
         "created_at": created,
     }
+    if prior.get("status") == "approved" and isinstance(prior.get("approval"), dict):
+        document["status"] = "approved"
+        document["approval"] = prior["approval"]
     if llm is not None:
         document["animatic"]["note"] += (
             " A model was available. The beats stayed offline so a shot cannot be copied from its neighbor."
@@ -634,13 +649,22 @@ def _markdown(document: dict, treatment: dict) -> str:
     lines = [
         "# Storyboard",
         "",
+    ]
+    if document.get("status") == "approved":
+        note = str((document.get("approval") or {}).get("note") or "").strip()
+        who = str((document.get("approval") or {}).get("by") or "Ron")
+        lines.append(f"Status: approved by {who}.")
+        if note:
+            lines.append(note)
+        lines.append("")
+    lines.extend([
         "The look is stated once. Each shot below is one beat. It lists only its own frame.",
         "",
         f"## Look: {look.get('look_name') or 'Unnamed'}",
         "",
         look.get("summary") or "The production has not named a look.",
         "",
-    ]
+    ])
     if look.get("lenses"):
         lines.append("Lenses: " + "; ".join(look["lenses"]))
         lines.append("")

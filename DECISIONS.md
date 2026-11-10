@@ -330,3 +330,11 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: The beats are in the screenplay and in the approved treatment for scene 3. The storyboard is rebuilt from those files. The engine does not name the canteen, the birds, or this film's look. The animatic stays near three minutes by keeping the new shots inside scene 3's time.
 - Who decided: Ron
 
+## D40 — The storyboard previs gate is approved
+
+- Date: 2026-11-10
+- Context: Ron read the storyboard, including the scene 3 danger shots, and said, "Approve the storyboard previs gate."
+- Decision: Approve the previs gate for The Last Marker. The approval covers the storyboard at commit 48d84b0. The storyboard status is approved, with that note. No images are generated.
+- Consequences: Run phase-1 records Ron's yes on the previs gate. Picture calls still wait for their own stage gates. Spent stays $0.00 of $500.00. This does not merge the branch.
+- Who decided: Ron
+

@@ -68,6 +68,22 @@ def _copy_last_marker_inputs(tmp_path: Path) -> Path:
     return dest
 
 
+def test_ron_approved_the_storyboard_previs_gate():
+    root = repo_root() / "productions" / "the-last-marker"
+    record = json.loads((root / "runs" / "phase-1" / "line-producer.json").read_text(encoding="utf-8"))
+    decision = [item for item in record["gate_decisions"] if item["stage"] == "previs"][-1]
+    assert decision["decision"] == "approved"
+    assert decision["by"] == "ron"
+    assert decision["note"] == "Approve the storyboard previs gate."
+    assert record["schedule"]["previs"] == "approved"
+    board = json.loads((root / "storyboard" / "storyboard.json").read_text(encoding="utf-8"))
+    assert board["status"] == "approved"
+    assert board["approval"]["state"] == "approved"
+    assert board["approval"]["by"] == "ron"
+    assert board["approval"]["note"] == "Approve the storyboard previs gate."
+    assert board["image_generation"] == "not-run"
+
+
 def test_engine_source_does_not_name_the_sample_film():
     banned = ("leone", "spaghetti", "triumph", "breitling", "baja", "morricone", "1965", "1967")
     roots = [

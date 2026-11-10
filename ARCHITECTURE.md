@@ -91,7 +91,7 @@ A spend that would break a ceiling writes `runs/<run-id>/requests/req-001.json`.
 
 Crew the Director can call: `prop-master`, `script-supervisor`, `cinematographer`, `stunt-coordinator`, `production`, `sound-designer`, `editor`, `qa`, `fix-loop`.
 
-Phase 2 commands are `lock`, `check`, `package`, `boards`, and `breakdown`. They read the approved treatment. They write files. They do not require the previs gate to be open already, because those files are what Ron reviews. The estimate is checked against an existing ceiling in the locked split and is not charged.
+Phase 2 commands are `lock`, `check`, `package`, `boards`, and `breakdown`. They read the approved treatment. They write files. They do not require the previs gate to be open already, because those files are what Ron reviews. Ron approved that gate for The Last Marker on 2026-11-10. The estimate is checked against an existing ceiling in the locked split and is not charged.
 
 Picture commands are `estimate` and `dry-run`. A picture call waits until Ron has approved the treatment, the previs gate, and that stage. Editor, QA, and the fix loop are routed and named. Their commands are not run here, because they would read or write the cut.
 

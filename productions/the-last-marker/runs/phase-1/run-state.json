@@ -2,7 +2,7 @@
   "production_id": "the-last-marker",
   "run_id": "phase-1",
   "stage": "previs",
-  "status": "waiting-for-review",
+  "status": "running",
   "artifacts": [
     {
       "name": "treatment",
@@ -71,6 +71,6 @@
   ],
   "cost_usd": 0.0,
   "budget_cap_usd": 500.0,
-  "updated_at": "2026-11-10T22:10:35Z",
-  "notes": "The phase 2 package is waiting on Ron. Previs means the prop lock, the continuity check, the camera package, the storyboard, and the action breakdown. The Director did not approve them."
+  "updated_at": "2026-11-10T22:48:21Z",
+  "notes": "Ron approved the previs gate."
 }

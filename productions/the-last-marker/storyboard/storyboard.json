@@ -740,5 +740,12 @@
   "image_generation": "not-run",
   "draft_method": "offline-deterministic",
   "model": "claude-sonnet-5-5",
-  "created_at": "2026-11-10T22:45:34Z"
+  "created_at": "2026-11-10T22:45:34Z",
+  "status": "approved",
+  "approval": {
+    "state": "approved",
+    "by": "ron",
+    "at": "2026-11-10T22:48:21Z",
+    "note": "Approve the storyboard previs gate."
+  }
 }

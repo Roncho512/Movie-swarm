@@ -73,6 +73,22 @@
         "note": { "type": "string" }
       }
     },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "approved"],
+      "description": "Approved only when the Line Producer records Ron's yes on the previs gate."
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "by": { "type": ["string", "null"] },
+        "at": { "type": ["string", "null"], "format": "date-time" },
+        "note": { "type": "string" }
+      }
+    },
     "image_generation": { "type": "string", "enum": ["not-run", "fake-client"] },
     "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
     "model": { "type": ["string", "null"] },

@@ -1,5 +1,8 @@
 # Storyboard
 
+Status: approved by ron.
+Approve the storyboard previs gate.
+
 The look is stated once. Each shot below is one beat. It lists only its own frame.
 
 ## Look: Sergio Leone spaghetti western
