@@ -1,0 +1,243 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "treatment.schema.json",
+  "title": "Treatment",
+  "description": "The Director's plan for the film. Ron approves it at the treatment gate. The Director cannot set status to approved.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "status",
+    "approval",
+    "production_id",
+    "title",
+    "logline",
+    "theme_and_emotional_intent",
+    "tone_and_genre",
+    "characters",
+    "scenes",
+    "deliverables",
+    "open_questions"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "approved"]
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"]
+        },
+        "by": { "type": ["string", "null"] },
+        "at": { "type": ["string", "null"], "format": "date-time" },
+        "note": { "type": "string" }
+      }
+    },
+    "production_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "logline": {
+      "type": "string",
+      "minLength": 1,
+      "description": "One or two sentences. Who, what they want, what is in the way."
+    },
+    "theme_and_emotional_intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["theme", "emotional_intent"],
+      "properties": {
+        "theme": { "type": "string", "minLength": 1 },
+        "emotional_intent": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What the audience should feel."
+        }
+      }
+    },
+    "tone_and_genre": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tone", "genre"],
+      "properties": {
+        "tone": { "type": "string", "minLength": 1 },
+        "genre": { "type": "string", "minLength": 1 }
+      }
+    },
+    "characters": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "role", "look"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "role": { "type": "string", "minLength": 1 },
+          "look": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Minimum physical description."
+          },
+          "wardrobe": { "type": "string" },
+          "arc": { "type": "string" },
+          "continuity_specs": { "type": "string" }
+        }
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["what_happens", "emotional_purpose"],
+        "properties": {
+          "scene_id": { "type": "string" },
+          "heading": { "type": "string" },
+          "what_happens": { "type": "string", "minLength": 1 },
+          "emotional_purpose": { "type": "string", "minLength": 1 },
+          "point_of_view": { "type": "string" },
+          "withheld": { "type": "string" },
+          "coverage_intent": { "type": "string" },
+          "approximate_duration_seconds": { "type": "number", "exclusiveMinimum": 0 }
+        }
+      }
+    },
+    "deliverables": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["aspect_ratio", "resolution", "length"],
+      "properties": {
+        "aspect_ratio": { "type": "string", "minLength": 1 },
+        "resolution": { "type": "string", "minLength": 1 },
+        "length": { "type": "string", "minLength": 1 }
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "audience_feeling_per_act": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["act", "feeling"],
+        "properties": {
+          "act": { "type": "string", "minLength": 1 },
+          "feeling": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "reference_lookbook": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["reference", "take"],
+        "properties": {
+          "reference": { "type": "string", "minLength": 1 },
+          "take": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What to take from this reference. Not the whole film."
+          }
+        }
+      }
+    },
+    "world_and_period": { "type": "string" },
+    "camera_lens_film_stock": { "type": "string" },
+    "hero_props": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "locked_spec": { "type": "string" },
+          "sidedness": {
+            "type": "string",
+            "description": "Which side or which wrist, once Ron locks it."
+          },
+          "reference_images": {
+            "type": "array",
+            "description": "Slot for multi-angle reference images.",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "action_and_stunt_beats": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "sound_and_music_intent": { "type": "string" },
+    "color_and_light_plan": { "type": "string" },
+    "pacing_and_runtime_target": { "type": "string" },
+    "constraints_and_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["budget_cap_usd"],
+      "properties": {
+        "budget_cap_usd": { "type": "number", "exclusiveMinimum": 0 },
+        "notes": { "type": "string" },
+        "stage_split": {
+          "type": "object",
+          "description": "Proposed dollars per stage. The Line Producer locks this when Ron approves the treatment.",
+          "propertyNames": { "pattern": "^[a-z0-9-]+$" },
+          "additionalProperties": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    "draft_method": {
+      "type": "string",
+      "enum": ["offline-deterministic", "model"]
+    },
+    "draft_note": { "type": "string" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "draft" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "approval": {
+            "properties": { "state": { "enum": ["pending", "rejected"] } }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "approved" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "approval": {
+            "properties": {
+              "state": { "const": "approved" },
+              "by": { "type": "string", "minLength": 1 },
+              "at": { "type": "string", "format": "date-time" }
+            },
+            "required": ["state", "by", "at"]
+          }
+        }
+      }
+    }
+  ]
+}

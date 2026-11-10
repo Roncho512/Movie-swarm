@@ -1,0 +1,74 @@
+{
+  "production_id": "the-last-marker",
+  "round": 1,
+  "status": "open",
+  "drafted_by": "offline-deterministic",
+  "model": null,
+  "note": "Answer in the answer field, or send a separate answers file. Leave a field null if you are not ready.",
+  "questions": [
+    {
+      "id": "q-intent",
+      "topic": "intent",
+      "required": true,
+      "why": "The Director will not invent the film's intent.",
+      "question": "The draft theme is \"Arrive first. Winning can wait\". The feeling it aims for is \"The audience should feel how small the rider is, then the shock of the engine dying, then the quiet relief of a choice to live\". Lock that, or replace it?",
+      "answer": null
+    },
+    {
+      "id": "q-tone",
+      "topic": "tone",
+      "required": true,
+      "why": "Tone drives the look, the pace, and the performances.",
+      "question": "The draft calls the tone \"Sparse, tense, and sun-bleached. A Sergio Leone spaghetti western played as a quiet desert survival story\" and the genre \"western\". Lock this, or tell me what to change?",
+      "answer": null
+    },
+    {
+      "id": "q-references",
+      "topic": "references",
+      "required": true,
+      "why": "A reference is useful only if we name what to take from it.",
+      "question": "The lookbook currently takes: Sergio Leone spaghetti westerns (Locked 2.39:1 widescreen. Extreme wide shots cut against extreme close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Charcoal blacks, bone whites, and a day that moves from amber to bronze to rose to blue dusk.); Ennio Morricone, spirit only (A score in that spirit. Do not copy a melody.). Is each 'what to take' right? Add or cut references in your answer.",
+      "answer": null
+    },
+    {
+      "id": "q-arcs",
+      "topic": "character-arcs",
+      "required": true,
+      "why": "The character's change, or the choice not to change, has to be explicit.",
+      "question": "Miguel Vega is the protagonist. The draft does not lock an arc yet. What does he want, and what is different in him by the last shot? If he only chooses and does not change, say that.",
+      "answer": null
+    },
+    {
+      "id": "q-withheld",
+      "topic": "withheld",
+      "required": true,
+      "why": "What we hide is a directing choice, not a guess from the screenplay.",
+      "question": "What should the audience not know yet? For example, do we withhold whether the canyon really has water, and whether he gets out? Your answer is saved on the scene where he chooses.",
+      "answer": null
+    },
+    {
+      "id": "q-action",
+      "topic": "action-beats",
+      "required": true,
+      "why": "Stunt beats have to be named before anyone generates them.",
+      "question": "Action beats in the draft: Three kicks on the Triumph. The engine fails, teases, then catches rough. The kick starter is on the right in the screenplay. He taps the cracked spark-plug porcelain with a stone so the plug might fire. It is a field fix, not a repair. Are these the beats you want? Is there anything a stunt pass must lock before generation?",
+      "answer": null
+    },
+    {
+      "id": "q-props",
+      "topic": "hero-props",
+      "required": true,
+      "why": "The last pilot drifted on exhaust side and watch wrist. Those stay open until you lock them.",
+      "question": "Hero props (1965 Triumph TR6SC, Breitling Top Time) are not locked. The screenplay currently puts the Triumph exhaust on the right and the watch on the left wrist. Lock both: which side is the exhaust on, and which wrist is the watch on?",
+      "answer": null
+    },
+    {
+      "id": "q-budget",
+      "topic": "budget-split",
+      "required": true,
+      "why": "The Line Producer cannot enforce a split until you approve one.",
+      "question": "The film cap is $500. The draft proposes: director $20, line-producer $5, screenwriter $5, art-director $25, cinematographer $10, production $270, sound-designer $55, editor $15, qa $45, fix-loop $50, treatment $0. Those numbers add up to $500. Retakes spend from the same buckets and the same cap. Approve the split, or send new numbers as stage=amount, separated by commas.",
+      "answer": null
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "line-producer-record.schema.json",
+  "title": "Line Producer Record",
+  "description": "Budget ledger, stage split, credits, schedule, and Ron's decisions for one run. The Phase 0 run-state file still holds the stage, the status, and the running total.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "production_id",
+    "run_id",
+    "credits",
+    "stage_allocations",
+    "ledger",
+    "gate_decisions",
+    "requests",
+    "schedule",
+    "updated_at"
+  ],
+  "properties": {
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "run_id": { "type": "string", "minLength": 1 },
+    "credits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "name"],
+        "properties": {
+          "role": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "stage_allocations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "split"],
+      "properties": {
+        "status": { "type": "string", "enum": ["unlocked", "approved"] },
+        "split": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z0-9-]+$" },
+          "additionalProperties": { "type": "number", "minimum": 0 }
+        },
+        "approved_at": { "type": ["string", "null"], "format": "date-time" },
+        "approved_by": { "type": ["string", "null"] },
+        "note": { "type": "string" }
+      }
+    },
+    "ledger": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["entry_id", "stage", "amount_usd", "kind", "description", "recorded_at"],
+        "properties": {
+          "entry_id": { "type": "string", "minLength": 1 },
+          "stage": { "type": "string", "minLength": 1 },
+          "amount_usd": { "type": "number", "minimum": 0 },
+          "kind": { "type": "string", "enum": ["generation", "retake", "dry-run"] },
+          "description": { "type": "string" },
+          "recorded_at": { "type": "string", "format": "date-time" },
+          "request_id": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "gate_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stage", "decision", "by", "decided_at"],
+        "properties": {
+          "stage": { "type": "string", "minLength": 1 },
+          "decision": { "type": "string", "enum": ["approved", "rejected"] },
+          "by": { "type": "string", "minLength": 1 },
+          "note": { "type": "string" },
+          "decided_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "requests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "request_id",
+          "kind",
+          "stage",
+          "amount_usd",
+          "reason",
+          "status",
+          "books_money",
+          "created_at"
+        ],
+        "properties": {
+          "request_id": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string", "enum": ["extra-spend", "gate"] },
+          "stage": { "type": "string", "minLength": 1 },
+          "amount_usd": { "type": "number", "minimum": 0 },
+          "reason": { "type": "string", "minLength": 1 },
+          "description": { "type": "string" },
+          "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+          "books_money": { "type": "boolean" },
+          "consumed": { "type": "boolean" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "decided_at": { "type": ["string", "null"], "format": "date-time" },
+          "decided_by": { "type": ["string", "null"] },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "schedule": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z0-9-]+$" },
+      "additionalProperties": {
+        "type": "string",
+        "enum": ["pending", "in-progress", "waiting-for-review", "approved", "rejected", "complete"]
+      }
+    },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}

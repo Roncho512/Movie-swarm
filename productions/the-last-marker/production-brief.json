@@ -1,0 +1,79 @@
+{
+  "production_id": "the-last-marker",
+  "title": "The Last Marker",
+  "concept": "A solo motorcycle racer crosses the Baja California desert in 1967. His 1965 Triumph is failing. He is lost. He finds a trail marker left by a rider who came before him. The marker points two ways. He has to choose: water, or the course. Three minutes. Almost no dialogue.",
+  "genre": "western",
+  "tone": "Sparse, tense, and sun-bleached. A Sergio Leone spaghetti western played as a quiet desert survival story.",
+  "target_runtime_seconds": 180,
+  "aspect_ratio": "2.39:1",
+  "visual_style": {
+    "description": "Locked 2.39:1 widescreen. Extreme wide shots cut against extreme close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Charcoal blacks, bone whites, and a day that moves from amber to bronze to rose to blue dusk.",
+    "reference_films": ["Sergio Leone spaghetti westerns"],
+    "color_palette": ["amber", "ochre", "bronze", "rose", "cool dusk blue"],
+    "period": "1967"
+  },
+  "sound_design": {
+    "description": "The Triumph's single-cylinder engine is the lead sound. When it dies, the desert goes quiet: wind, sand, and cooling metal. One Spanish line, almost lost under the engine.",
+    "music_approach": "A score in the spirit of Ennio Morricone. Do not copy any melody.",
+    "dialogue_density": "minimal"
+  },
+  "characters": [
+    {
+      "character_id": "miguel-vega",
+      "name": "Miguel Vega",
+      "description": "30. Mexican. Lean. Sun-darkened skin, deep lines around the eyes from years of squinting into wind and light. Short dark hair. Strong jaw. The wear is from sun and wind, not from age. He wears a white cotton shirt, a sun-bleached brown leather vest, khaki pants, and boots that have been resoled twice. Goggles sit on his forehead when he is not riding. No helmet. He is a ranch hand from outside Tecate. He races because the desert is the only place big enough for the thing inside him that has no name.",
+      "props": [
+        {
+          "prop_id": "breitling-top-time",
+          "name": "Breitling Top Time",
+          "description": "Black reverse panda dial, stainless case, worn brown leather rally strap. He won it in a card game from a crop duster pilot in Mexicali. Which wrist it sits on is not locked.",
+          "consistency_priority": "critical"
+        }
+      ]
+    }
+  ],
+  "vehicles": [
+    {
+      "vehicle_id": "triumph-tr6sc",
+      "name": "1965 Triumph TR6SC",
+      "description": "Desert-modified 1965 Triumph TR6SC Trophy. Knobby tires, stripped fairing, pale dust. The film is set in 1967. The bike stays a 1965. Which side the exhaust is on is not locked."
+    }
+  ],
+  "screenplay_path": "screenplay/Pilot_-_the_last_marker_screenplay.md",
+  "test_objectives": [
+    "One consistent rider across every shot.",
+    "A desert that feels like one place as the light changes.",
+    "A specific 1965 Triumph, including the engine and the kick.",
+    "The Breitling Top Time staying the same watch once the wrist is locked.",
+    "One barely audible line of Spanish."
+  ],
+  "budget_cap_usd": 500,
+  "setting": {
+    "place": "Baja California",
+    "year": "1967",
+    "notes": "Ron locked the year at 1967. The Triumph remains a 1965 model."
+  },
+  "hero_props": [
+    {
+      "name": "1965 Triumph TR6SC",
+      "description": "Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust side is not locked.",
+      "sidedness": "not locked",
+      "locked": false
+    },
+    {
+      "name": "Breitling Top Time",
+      "description": "Black reverse panda dial on a worn brown leather rally strap. Which wrist it sits on is not locked.",
+      "sidedness": "not locked",
+      "locked": false
+    }
+  ],
+  "decisions": [
+    "The film cap is $500. Retakes count against the same cap.",
+    "The story is set in Baja California in 1967.",
+    "The Triumph stays a 1965 TR6SC.",
+    "The reference look is a Sergio Leone spaghetti western: extreme wides against extreme close-ups, locked 2.39:1, long holds then sharp cuts, a warm grainy 1960s film look, and a mostly still camera with slow push-ins.",
+    "The score is in the spirit of Ennio Morricone. No melody is copied.",
+    "The hero props are the Triumph and the Breitling Top Time. Sidedness is not locked yet."
+  ],
+  "created_at": "2026-11-10T00:00:00Z"
+}

@@ -1,17 +1,32 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "roles": {
-    "executive-producer": {
-      "provider": null,
-      "model": null,
-      "source": "agents/01-executive-producer/skill.md",
-      "notes": "Skill file only. No program selects a generator yet."
+    "line-producer": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/llm.py",
+      "notes": "Bookkeeping, status wording, and the Director's question rounds. Cheap model. Reads ANTHROPIC_API_KEY from the environment. D6 calls this the admin model.",
+      "purposes": {
+        "bookkeeping": "claude-haiku-5-5",
+        "questions": "claude-haiku-5-5",
+        "status": "claude-haiku-5-5"
+      }
+    },
+    "director": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "source": "movie_swarm/director.py",
+      "notes": "Drafting uses Claude Sonnet 5.5. The final treatment pass uses Claude Opus 5.5. Question bookkeeping stays on the line producer model. Reads ANTHROPIC_API_KEY.",
+      "purposes": {
+        "draft": "claude-sonnet-5-5",
+        "final": "claude-opus-5-5"
+      }
     },
     "screenwriter": {
       "provider": null,
       "model": null,
       "source": "agents/02-screenwriter/skill.md",
-      "notes": "Skill file only. No program selects a generator yet."
+      "notes": "Skill file only. No program selects a generator yet. D6: writing uses Claude Sonnet or Opus when this role gets a program."
     },
     "art-director": {
       "provider": null,
@@ -29,7 +44,7 @@
       "provider": "fal.ai",
       "model": "seedance-2.0",
       "source": "agents/05-production/src/config.py",
-      "notes": "The production program calls Seedance 2.0 on fal.ai. The shot list still names Veo on many shots; this file records what the program calls.",
+      "notes": "The production program calls Seedance 2.0 on fal.ai today. D6: final video is planned on Gemini Omni 1.2 Flash, with cheap previews. Seedance and Kling stay Director-routed alternates. This file still records the program that runs today.",
       "endpoints": {
         "text-to-video": "bytedance/seedance-2.0/text-to-video",
         "image-to-video": "bytedance/seedance-2.0/image-to-video",
@@ -59,7 +74,8 @@
     "qa": {
       "provider": "anthropic",
       "model": "claude-sonnet-4-20250514",
-      "source": "agents/08-qa/src/pipeline.py"
+      "source": "agents/08-qa/src/pipeline.py",
+      "notes": "The QA program calls this Claude model today. D6: dailies and QA move to Gemini because it can watch picture and hear sound together. The program has not switched yet."
     },
     "fix-loop": {
       "provider": null,

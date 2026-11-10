@@ -152,6 +152,40 @@
       "description": "Specific capabilities this production is designed to test.",
       "items": { "type": "string" }
     },
+    "budget_cap_usd": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Hard cap for this film, in US dollars. Retakes count against the same cap."
+    },
+    "setting": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "place": { "type": "string" },
+        "year": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "hero_props": {
+      "type": "array",
+      "description": "Props that must stay consistent. Sidedness stays open until Ron locks it.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "description"],
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "sidedness": { "type": "string" },
+          "locked": { "type": "boolean" }
+        }
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "description": "Choices the human executive producer has already locked.",
+      "items": { "type": "string" }
+    },
     "created_at": {
       "type": "string",
       "format": "date-time"

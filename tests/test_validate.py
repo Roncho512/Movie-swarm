@@ -135,6 +135,58 @@ def test_each_schema_accepts_a_minimal_document():
             (ROOT / "config" / "model-routing.json").read_text()
         ),
         "asset-config.schema.json": json.loads((ROOT / "config" / "assets.json").read_text()),
+        "treatment.schema.json": {
+            "version": "0.1.0",
+            "status": "draft",
+            "approval": {"state": "pending", "by": None, "at": None, "note": ""},
+            "production_id": "demo",
+            "title": "Demo",
+            "logline": "A rider chooses.",
+            "theme_and_emotional_intent": {
+                "theme": "Survival",
+                "emotional_intent": "Relief.",
+            },
+            "tone_and_genre": {"tone": "Sparse", "genre": "western"},
+            "characters": [
+                {"name": "Miguel", "role": "protagonist", "look": "Lean, sun-darkened."}
+            ],
+            "scenes": [
+                {
+                    "what_happens": "He rides.",
+                    "emotional_purpose": "The desert is larger than he is.",
+                }
+            ],
+            "deliverables": {
+                "aspect_ratio": "2.39:1",
+                "resolution": "1920x1080",
+                "length": "3 minutes",
+            },
+            "open_questions": [],
+        },
+        "director-questions.schema.json": {
+            "production_id": "demo",
+            "round": 1,
+            "status": "open",
+            "questions": [
+                {"id": "q-intent", "topic": "intent", "question": "Lock the intent?"}
+            ],
+        },
+        "line-producer-record.schema.json": {
+            "production_id": "demo",
+            "run_id": "run-1",
+            "credits": [{"role": "Executive Producer", "name": "Ron"}],
+            "stage_allocations": {
+                "status": "unlocked",
+                "split": {},
+                "approved_at": None,
+                "approved_by": None,
+            },
+            "ledger": [],
+            "gate_decisions": [],
+            "requests": [],
+            "schedule": {"treatment": "waiting-for-review"},
+            "updated_at": "2026-01-01T00:00:00Z",
+        },
     }
     on_disk = {path.name for path in schemas_dir().glob("*.schema.json")}
     assert on_disk == set(samples)

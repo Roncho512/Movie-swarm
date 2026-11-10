@@ -7,6 +7,7 @@ Use ``validate_file`` from Python. The command-line wrapper is
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -31,7 +32,12 @@ _SCHEMA_BY_FILENAME = {
     "gates.json": "gate-config.schema.json",
     "model-routing.json": "model-routing.schema.json",
     "assets.json": "asset-config.schema.json",
+    "treatment.json": "treatment.schema.json",
+    "line-producer.json": "line-producer-record.schema.json",
+    "questions.json": "director-questions.schema.json",
 }
+
+_QUESTIONS_ROUND = re.compile(r"^questions-round-\d+\.json$")
 
 
 class SchemaLookupError(Exception):
@@ -66,6 +72,8 @@ def matching_schema_name(path: str | Path) -> str | None:
         return _SCHEMA_BY_FILENAME[name]
     if name.startswith("qa-report") and name.endswith(".json"):
         return "continuity-report.schema.json"
+    if _QUESTIONS_ROUND.match(name):
+        return "director-questions.schema.json"
     return None
 
 

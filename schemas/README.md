@@ -48,6 +48,9 @@ When you're debugging why Shot 14 has the wrong lighting, you need to trace the 
 | `gate-config.schema.json` | Review switches and the film budget cap. |
 | `model-routing.schema.json` | Which generator each role uses, plus optional per-shot overrides. |
 | `asset-config.schema.json` | Where finished media lives. Null keeps the current in-repo paths. |
+| `treatment.schema.json` | The Director's plan. Draft until the Line Producer records Ron's approval. |
+| `director-questions.schema.json` | One round of questions for Ron. Answers live in the file. |
+| `line-producer-record.schema.json` | Ledger, stage split, credits, schedule, and Ron's decisions for one run. |
 
 ## Versioning
 
