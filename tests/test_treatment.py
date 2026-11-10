@@ -76,12 +76,15 @@ def _minimal_model_treatment(production_id: str, logline: str, status: str = "dr
     return json.dumps(document)
 
 
-def test_committed_last_marker_treatment_is_an_unapproved_draft():
+def test_committed_last_marker_treatment_is_approved_by_ron():
     path = repo_root() / "productions" / "the-last-marker" / "treatment" / "treatment.json"
     document = json.loads(path.read_text(encoding="utf-8"))
-    assert document["status"] == "draft"
+    assert document["status"] == "approved"
+    assert document["version"] == "1.0.0"
     assert document["draft_method"] == "offline-deterministic"
-    assert document["approval"]["state"] == "pending"
+    assert document["approval"]["state"] == "approved"
+    assert document["approval"]["by"] == "ron"
+    assert document["approval"]["note"] == "Approve the treatment and lock the split."
     assert document["world_and_period"].startswith("Baja California, 1967")
     assert treatment_errors(document) == []
 
@@ -254,3 +257,53 @@ def test_models_are_routed_and_cannot_self_approve(tmp_path):
         "claude-haiku-5-5",
         "claude-opus-5-5",
     ]
+
+
+def test_lock_it_keeps_the_draft_and_prop_sides_are_recorded():
+    from movie_swarm.treatment_doc import apply_answers, build_questions
+
+    treatment = json.loads(_minimal_model_treatment("demo", "A rider chooses."))
+    treatment["theme_and_emotional_intent"]["theme"] = "Arrive first. Winning can wait."
+    treatment["hero_props"] = [
+        {
+            "name": "1965 Triumph TR6SC",
+            "locked_spec": "1965 Triumph. Exhaust side is not locked.",
+            "sidedness": "not locked",
+            "reference_images": [],
+        },
+        {
+            "name": "Breitling Top Time",
+            "locked_spec": "Black dial. Which wrist it sits on is not locked.",
+            "sidedness": "not locked",
+            "reference_images": [],
+        },
+    ]
+    treatment["scenes"][0]["what_happens"] = "He sees a canyon and the word agua."
+    treatment["action_and_stunt_beats"] = ["Three kicks."]
+    treatment["constraints_and_budget"]["stage_split"] = {"production": 270, "fix-loop": 50}
+    questions = build_questions(treatment)
+    answers = {
+        "q-intent": "Lock it.",
+        "q-tone": "Lock it.",
+        "q-references": "Lock it.",
+        "q-arcs": "He wants to finish the race, but in the end water (life) is more important. (He chooses life over winning.)",
+        "q-withheld": "Withhold whether the canyon really has water.",
+        "q-action": "Yes, those beats.",
+        "q-props": "Yes, lock exhaust on the RIGHT side and the watch on the LEFT wrist.",
+        "q-budget": "Looks good, approve the proposed split as written.",
+    }
+    apply_answers(treatment, questions, answers)
+    assert treatment["theme_and_emotional_intent"]["emotional_intent"] == "Relief."
+    assert treatment["tone_and_genre"]["tone"] == "Sparse"
+    assert "From Ron" not in [item["reference"] for item in treatment.get("reference_lookbook") or []]
+    assert "life over winning" in treatment["characters"][0]["arc"]
+    assert treatment["scenes"][0]["withheld"] == "Withhold whether the canyon really has water."
+    assert treatment["action_and_stunt_beats"] == ["Three kicks."]
+    triumph = treatment["hero_props"][0]
+    watch = treatment["hero_props"][1]
+    assert triumph["sidedness"] == "exhaust on the right"
+    assert "right" in triumph["locked_spec"].lower()
+    assert watch["sidedness"] == "left wrist"
+    assert "left wrist" in watch["locked_spec"].lower()
+    assert treatment["constraints_and_budget"]["stage_split"]["production"] == 270
+    assert questions["status"] == "closed"

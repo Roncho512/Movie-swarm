@@ -2,14 +2,14 @@ Status as of 2026-11-10.
 
 ## Where things stand
 
-Phase 0 merged to main on 2026-11-10 via PR https://github.com/Roncho512/Movie-swarm/pull/1, merge commit c3696890. Phase 1 is in progress on a branch. It adds the Line Producer, the Director, the treatment checklist, and a draft of The Last Marker. The draft is not approved. Ron still answers the first questions.
+Phase 0 merged to main on 2026-11-10 via PR https://github.com/Roncho512/Movie-swarm/pull/1, merge commit c3696890. Phase 1's done-when is met: the treatment validates, the question round is closed, nothing can spend past a gate or the cap without a recorded approval, and the Director reaches crew only through the Line Producer. Ron approved the treatment gate on 2026-11-10 and the $500 split is locked. Phase 1 stays unmerged until Ron merges it.
 
 ## Phases
 
 | Phase | What it covers | Status |
 |---|---|---|
 | 0 | Cleanup and foundation: shared handoff checks, run state, gates, the $500 cap, model routing, asset root, CI | Done, merged 2026-11-10, PR #1, merge c3696890 |
-| 1 | Line Producer and Director core, with treatment intake | Building |
+| 1 | Line Producer and Director core, with treatment intake | Building, awaiting merge |
 | 2 | Prevent bad shots: Script Supervisor, Production Designer/Prop Master with locked hero-prop specs, camera package, storyboards/animatic, Stunt and Action Coordinator | Not started |
 | 3 | Catch bad shots: coverage and multiple takes, Dailies Reviewer watching full video, Assistant Editor | Not started |
 | 4 | Editor upgrade and Colorist | Not started |
@@ -21,7 +21,7 @@ Phase 0 merged to main on 2026-11-10 via PR https://github.com/Roncho512/Movie-s
 
 Every stage switch in `config/gates.json` is on. Ron reviews each stage until that part of the crew is reliable. The end goal is smaller: Ron approves the look, and Ron approves the final cut. Turning a switch off is an edit to the config file, done later on purpose. It is not a code change.
 
-The treatment gate is the one in front of Ron now. Approving it locks the proposed split of the $500. Crew calls stay paused until that gate, and the gate for that crew stage, are approved.
+On run phase-1, Ron approved the treatment gate. That locked the $500 split. Every other stage switch is still on. A crew call still waits for its own stage gate.
 
 ## Closed decisions
 
@@ -41,11 +41,16 @@ These are made. The write-up is in [DECISIONS.md](DECISIONS.md).
 - D12 — Add a Stunt and Action Coordinator.
 - D13 — Scripts become treatments through questions with Ron. A template says what is required.
 - D14 — Living docs update in the same pull request as the code.
+- D23 — The Last Marker theme, tone, and references stay as drafted.
+- D24 — Miguel chooses life over winning.
+- D25 — Withhold whether the canyon has water.
+- D26 — The kick and spark-plug beats stay.
+- D27 — Exhaust on the right. Watch on the left wrist.
+- D28 — The proposed $500 split is the one Ron wants.
+- D29 — Ron approved the treatment gate. The split is locked on the run.
 
 ## Open decisions
 
-- Which side the Triumph exhaust is on, and which wrist the Breitling is on. The screenplay says right and left. Ron has not locked them.
-- The dollar split across stages. The draft proposes one that adds up to $500. Ron has not approved it.
 - The folder path on the Ron Workspace drive. The switch exists. The path is not set.
 - When the video program and the QA program switch to the models in D6. The direction is decided. The code still calls today's models.
 
@@ -53,4 +58,4 @@ Phase 1 also records technical choices D15 through D22. They are proposals from 
 
 ## What comes next
 
-Ron answers `productions/the-last-marker/treatment/questions.json` and approves or rejects the treatment gate. After that, Phase 2 starts the roles that stop a bad shot before it is generated: the Script Supervisor, the Prop Master with locked hero-prop specs, the camera package, storyboards, and the Stunt and Action Coordinator.
+Ron merges Phase 1. After that, Phase 2 starts the roles that stop a bad shot before it is generated: the Script Supervisor, the Prop Master with locked hero-prop specs, the camera package, storyboards, and the Stunt and Action Coordinator.

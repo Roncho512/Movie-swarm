@@ -132,19 +132,44 @@ def parse_stage_split(text: str) -> dict[str, float] | None:
     return {name: money_number(amount) for name, amount in pairs}
 
 
+def _plain_words(text: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9 ]+", " ", text.strip().lower())).strip()
+
+
+def confirms_draft(text: str) -> bool:
+    """Ron is keeping the draft, not replacing it. 'Lock it.' is a yes."""
+    return _plain_words(text) in {
+        "lock it",
+        "lock them",
+        "locked",
+        "yes",
+        "y",
+        "ok",
+        "okay",
+        "looks right",
+        "use the proposal",
+        "yes those beats",
+    }
+
+
 def approves_proposal(text: str) -> bool:
+    """Ron is keeping the proposed dollar split. A reply that names new amounts is not this."""
+    if parse_stage_split(text):
+        return False
     cleaned = re.sub(r"[.!?]", "", text.strip().lower())
-    if cleaned.startswith("approve"):
+    if cleaned.startswith("approve") or "approve" in cleaned:
         return True
-    return cleaned in {
+    return _plain_words(text) in {
         "yes",
         "y",
         "lock it",
         "lock them",
+        "locked",
         "looks right",
         "use the proposal",
         "ok",
         "okay",
+        "looks good",
     }
 
 
@@ -589,25 +614,96 @@ def treatment_errors(treatment: dict) -> list[str]:
     return validate_data(conform_treatment(treatment), load_schema("treatment"))
 
 
-def _apply_one(treatment: dict, topic: str, answer: str) -> None:
-    if topic == "intent":
-        treatment["theme_and_emotional_intent"]["emotional_intent"] = answer
-    elif topic == "tone":
-        treatment["tone_and_genre"]["tone"] = answer
-    elif topic == "references":
-        treatment.setdefault("reference_lookbook", []).append(
-            {"reference": "From Ron", "take": answer}
-        )
-    elif topic == "character-arcs":
-        treatment["characters"][0]["arc"] = answer
-    elif topic == "withheld":
-        treatment["scenes"][-1]["withheld"] = answer
-    elif topic == "action-beats":
-        treatment.setdefault("action_and_stunt_beats", []).append(answer)
-    elif topic == "hero-props":
+def _apply_withheld(treatment: dict, answer: str) -> None:
+    """Save what the audience must not know on the choice, and on any canyon scene."""
+    scenes = treatment.get("scenes") or []
+    targets = []
+    for scene in scenes:
+        blob = f"{scene.get('heading', '')} {scene.get('what_happens', '')}"
+        if re.search(r"canyon|agua", blob, re.I):
+            targets.append(scene)
+    if scenes and scenes[-1] not in targets:
+        targets.append(scenes[-1])
+    for scene in targets:
+        scene["withheld"] = answer
+
+
+def _apply_hero_props(treatment: dict, answer: str) -> None:
+    """Lock exhaust side and watch wrist when Ron's answer names them."""
+    text = answer.lower()
+    exhaust_side = None
+    if re.search(r"exhaust\D{0,40}right|right\D{0,24}exhaust", text):
+        exhaust_side = "right"
+    elif re.search(r"exhaust\D{0,40}left|left\D{0,24}exhaust", text):
+        exhaust_side = "left"
+    wrist = None
+    if re.search(r"left\s+wrist", text):
+        wrist = "left"
+    elif re.search(r"right\s+wrist", text):
+        wrist = "right"
+    if exhaust_side is None and wrist is None and not confirms_draft(answer):
         for prop in treatment.get("hero_props") or []:
             prop["locked_spec"] = answer
             prop["sidedness"] = answer
+        return
+    for prop in treatment.get("hero_props") or []:
+        name = prop.get("name", "").lower()
+        spec = prop.get("locked_spec") or prop.get("name") or ""
+        if exhaust_side and ("triumph" in name or "exhaust" in name or "bike" in name):
+            prop["sidedness"] = f"exhaust on the {exhaust_side}"
+            spec = re.sub(
+                r"Exhaust side is not locked\.?",
+                f"Exhaust is locked on the {exhaust_side} side.",
+                spec,
+            )
+            if f"exhaust is locked on the {exhaust_side}" not in spec.lower():
+                spec = spec.rstrip(".") + f". Exhaust is locked on the {exhaust_side} side."
+            prop["locked_spec"] = spec
+        if wrist and any(word in name for word in ("breitling", "watch", "top time")):
+            prop["sidedness"] = f"{wrist} wrist"
+            spec = re.sub(
+                r"Which wrist it sits on is not locked\.?",
+                f"Locked on the {wrist} wrist.",
+                spec,
+                flags=re.I,
+            )
+            if f"locked on the {wrist} wrist" not in spec.lower():
+                spec = spec.rstrip(".") + f". Locked on the {wrist} wrist."
+            prop["locked_spec"] = spec
+    if wrist:
+        for person in treatment.get("characters") or []:
+            specs = person.get("continuity_specs") or ""
+            if not specs:
+                continue
+            person["continuity_specs"] = re.sub(
+                r"Which wrist it sits on is not locked\.?",
+                f"Locked on the {wrist} wrist.",
+                specs,
+                flags=re.I,
+            )
+
+
+def _apply_one(treatment: dict, topic: str, answer: str) -> None:
+    if topic == "intent":
+        if not confirms_draft(answer):
+            treatment["theme_and_emotional_intent"]["emotional_intent"] = answer
+    elif topic == "tone":
+        if not confirms_draft(answer):
+            treatment["tone_and_genre"]["tone"] = answer
+    elif topic == "references":
+        if not confirms_draft(answer):
+            treatment.setdefault("reference_lookbook", []).append(
+                {"reference": "From Ron", "take": answer}
+            )
+    elif topic == "character-arcs":
+        treatment["characters"][0]["arc"] = answer
+    elif topic == "withheld":
+        _apply_withheld(treatment, answer)
+    elif topic == "action-beats":
+        if not confirms_draft(answer):
+            treatment.setdefault("action_and_stunt_beats", []).append(answer)
+    elif topic == "hero-props":
+        _apply_hero_props(treatment, answer)
     elif topic == "budget-split":
         budget = treatment.setdefault("constraints_and_budget", {"budget_cap_usd": 500})
         parsed = parse_stage_split(answer)
@@ -623,9 +719,10 @@ def _apply_one(treatment: dict, topic: str, answer: str) -> None:
             return
         if approves_proposal(answer) and budget.get("stage_split"):
             budget["notes"] = (
-                (budget.get("notes") or "")
-                + " Ron approved the proposed split in his answer. The Line Producer locks it when the treatment gate is approved."
-            ).strip()
+                "Ron approved this split in his answer. Retakes come out of the same "
+                "stage allocations and the same cap. The Line Producer locks the split "
+                "when Ron approves the treatment gate."
+            )
             return
         budget["notes"] = ((budget.get("notes") or "") + " Ron's budget note: " + answer).strip()
 

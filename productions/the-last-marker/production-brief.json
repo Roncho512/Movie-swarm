@@ -26,7 +26,7 @@
         {
           "prop_id": "breitling-top-time",
           "name": "Breitling Top Time",
-          "description": "Black reverse panda dial, stainless case, worn brown leather rally strap. He won it in a card game from a crop duster pilot in Mexicali. Which wrist it sits on is not locked.",
+          "description": "Black reverse panda dial, stainless case, worn brown leather rally strap. He won it in a card game from a crop duster pilot in Mexicali. Locked on the left wrist.",
           "consistency_priority": "critical"
         }
       ]
@@ -36,7 +36,7 @@
     {
       "vehicle_id": "triumph-tr6sc",
       "name": "1965 Triumph TR6SC",
-      "description": "Desert-modified 1965 Triumph TR6SC Trophy. Knobby tires, stripped fairing, pale dust. The film is set in 1967. The bike stays a 1965. Which side the exhaust is on is not locked."
+      "description": "Desert-modified 1965 Triumph TR6SC Trophy. Knobby tires, stripped fairing, pale dust. The film is set in 1967. The bike stays a 1965. Exhaust is locked on the right side."
     }
   ],
   "screenplay_path": "screenplay/Pilot_-_the_last_marker_screenplay.md",
@@ -56,15 +56,15 @@
   "hero_props": [
     {
       "name": "1965 Triumph TR6SC",
-      "description": "Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust side is not locked.",
-      "sidedness": "not locked",
-      "locked": false
+      "description": "Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust is locked on the right side.",
+      "sidedness": "exhaust on the right",
+      "locked": true
     },
     {
       "name": "Breitling Top Time",
-      "description": "Black reverse panda dial on a worn brown leather rally strap. Which wrist it sits on is not locked.",
-      "sidedness": "not locked",
-      "locked": false
+      "description": "Black reverse panda dial on a worn brown leather rally strap. Locked on the left wrist.",
+      "sidedness": "left wrist",
+      "locked": true
     }
   ],
   "decisions": [
@@ -73,7 +73,7 @@
     "The Triumph stays a 1965 TR6SC.",
     "The reference look is a Sergio Leone spaghetti western: extreme wides against extreme close-ups, locked 2.39:1, long holds then sharp cuts, a warm grainy 1960s film look, and a mostly still camera with slow push-ins.",
     "The score is in the spirit of Ennio Morricone. No melody is copied.",
-    "The hero props are the Triumph and the Breitling Top Time. Sidedness is not locked yet."
+    "The hero props are the Triumph and the Breitling Top Time. Exhaust is locked on the right. The watch is locked on the left wrist."
   ],
   "created_at": "2026-11-10T00:00:00Z"
 }
