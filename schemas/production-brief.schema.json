@@ -215,6 +215,19 @@
           "type": "array",
           "items": { "type": "string", "minLength": 1 },
           "description": "What the boards may and may not do with the product."
+        },
+        "moments": {
+          "type": "array",
+          "description": "Optional. One plain reason for a beat that already shows the product. The engine matches the when text. It does not invent the reason.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["when", "why"],
+            "properties": {
+              "when": { "type": "string", "minLength": 1 },
+              "why": { "type": "string", "minLength": 1 }
+            }
+          }
         }
       }
     },

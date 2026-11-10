@@ -29,17 +29,17 @@
     {
       "shot_id": "s01-sh04",
       "product": "Breitling Top Time",
-      "why": "Breitling Top Time is in this detail because the beat already shows it. DETAIL SHOT. Vega's hands on the handlebars. Brown leather gloves worn smooth at the palms. His right hand rolls the throttle with small, constant adjustments. His grip is loose. Intent: Subtle. The film is quietly about this watch: time running out, the race, and choosing water over finishing. The dial is legible only in a few story-driven close views."
+      "why": "The watch is one dusty detail among his gloves while he rides, not a product shot."
     },
     {
-      "shot_id": "s03-sh07",
+      "shot_id": "s03-sh10",
       "product": "Breitling Top Time",
-      "why": "Breitling Top Time is in this close because the beat already shows it. He looks west. The sun is sitting on the ridge. Then he glances at his left wrist. The Top Time. Not to read the hour. To confirm what the sun already told him. The light and the. Intent: Subtle. The film is quietly about this watch: time running out, the race, and choosing water over finishing. The dial is legible only in a few story-driven close views."
+      "why": "He checks the watch against the sun, and the day is almost gone."
     },
     {
       "shot_id": "s04-sh12",
       "product": "Breitling Top Time",
-      "why": "Breitling Top Time is in this detail because the beat already shows it. DETAIL SHOT: His left hand on the grip, steadying the handlebars as the Triumph rolls over loose rock. The Top Time is visible on his wrist. Dust-caked. The crystal scratched. The. Intent: Subtle. The film is quietly about this watch: time running out, the race, and choosing water over finishing. The dial is legible only in a few story-driven close views."
+      "why": "After he turns toward the water, the watch is still on his wrist, worn like the rest of him."
     }
   ],
   "frames": [
@@ -48,11 +48,11 @@
       "shot_id": "s01-sh01",
       "scene_id": "s01",
       "shot_type": "extreme-wide",
-      "what_we_see": "EXTREME WIDE. The Baja desert. Flat hardpan stretching to a mountain range on the horizon. Cardon cacti scattered across the landscape like sentries. The sky is enormous. The sun is low in the west, turning everything amber. Hold this frame for four seconds. Empty. Still. Then:",
+      "what_we_see": "EXTREME WIDE. The Baja desert. Flat hardpan stretching to a mountain range on the horizon. Cardon cacti scattered across the landscape like sentries. The sky is enormous. The sun is low in the west, turning everything amber. Hold this frame for four seconds. Empty. Still. Then:.",
       "camera": "Lens: extreme wide Move: static The place fills the frame. A person, if any, is small. Light: Full amber. High saturation. Late afternoon at its warmest.",
       "transition": "fade-in / hold",
       "props_in_frame": [],
-      "board_prompt": "EXTREME WIDE. The Baja desert. Flat hardpan stretching to a mountain range on the horizon. Cardon cacti scattered across the landscape like sentries. The sky is enormous. The sun is low in the west, turning everything amber. Hold this frame for four seconds. Empty. Still. Then: Lens: extreme wide Move: static The place fills the frame. A person, if any, is small. Light: Full amber. High saturation. Late afternoon at its warmest.",
+      "board_prompt": "EXTREME WIDE. The Baja desert. Flat hardpan stretching to a mountain range on the horizon. Cardon cacti scattered across the landscape like sentries. The sky is enormous. The sun is low in the west, turning everything amber. Hold this frame for four seconds. Empty. Still. Then:. Lens: extreme wide Move: static The place fills the frame. A person, if any, is small. Light: Full amber. High saturation. Late afternoon at its warmest.",
       "duration_seconds": 4.0,
       "image_status": "not-generated",
       "image_ref": null
@@ -249,7 +249,7 @@
       "transition": "cut / cut",
       "props_in_frame": [],
       "board_prompt": "Vega walks. He has left the bike. He carries nothing. His boots crunch on the rocky ground. He is walking in the direction he was riding, following the faint tire tracks of riders who came through here before him. Looking for something. Any sign of the course. Any marker. Move: static The person is clear, with room around them. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
-      "duration_seconds": 7.737,
+      "duration_seconds": 6.286,
       "image_status": "not-generated",
       "image_ref": null
     },
@@ -258,12 +258,12 @@
       "shot_id": "s03-sh02",
       "scene_id": "s03",
       "shot_type": "detail",
-      "what_we_see": "DETAIL SHOT: His boots on the ground. Worn leather. The sole of the left boot is separating at the toe. Each step kicks up a small cloud of dust that the low sun turns pink.",
+      "what_we_see": "DETAIL SHOT: The last drop falls from an empty canteen. Nothing follows it. For 2 seconds.",
       "camera": "Lens: tight close Move: static One object fills the frame. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
       "transition": "cut / cut",
       "props_in_frame": [],
-      "board_prompt": "DETAIL SHOT: His boots on the ground. Worn leather. The sole of the left boot is separating at the toe. Each step kicks up a small cloud of dust that the low sun turns pink. Lens: tight close Move: static One object fills the frame. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
-      "duration_seconds": 5.526,
+      "board_prompt": "DETAIL SHOT: The last drop falls from an empty canteen. Nothing follows it. For 2 seconds. Lens: tight close Move: static One object fills the frame. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
+      "duration_seconds": 2.0,
       "image_status": "not-generated",
       "image_ref": null
     },
@@ -271,13 +271,13 @@
       "order": 16,
       "shot_id": "s03-sh03",
       "scene_id": "s03",
-      "shot_type": "medium",
-      "what_we_see": "He crests a low rise and stops.",
-      "camera": "Move: static The person is clear, with room around them. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
+      "shot_type": "detail",
+      "what_we_see": "DETAIL SHOT: His boots on the ground. Worn leather. The sole of the left boot is separating at the toe. Each step kicks up a small cloud of dust that the low sun turns pink.",
+      "camera": "Lens: tight close Move: static One object fills the frame. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
       "transition": "cut / cut",
       "props_in_frame": [],
-      "board_prompt": "He crests a low rise and stops. Move: static The person is clear, with room around them. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
-      "duration_seconds": 1.105,
+      "board_prompt": "DETAIL SHOT: His boots on the ground. Worn leather. The sole of the left boot is separating at the toe. Each step kicks up a small cloud of dust that the low sun turns pink. Lens: tight close Move: static One object fills the frame. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
+      "duration_seconds": 4.49,
       "image_status": "not-generated",
       "image_ref": null
     },
@@ -285,13 +285,13 @@
       "order": 17,
       "shot_id": "s03-sh04",
       "scene_id": "s03",
-      "shot_type": "pov",
-      "what_we_see": "VEGA'S POV: Ahead, fifty meters, a pile of stacked rocks. A cairn. Three feet tall. Built by human hands. On top of the cairn, wedged between the top stones, a piece of sheet metal cut from a tin can. The metal has been bent into an arrow shape. Crude. Handmade. It points to the right, toward a narrow canyon mouth in the rock face.",
-      "camera": "Move: static We see what the character sees. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
+      "shot_type": "medium",
+      "what_we_see": "He crests a low rise and stops.",
+      "camera": "Move: static The person is clear, with room around them. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
       "transition": "cut / cut",
       "props_in_frame": [],
-      "board_prompt": "VEGA'S POV: Ahead, fifty meters, a pile of stacked rocks. A cairn. Three feet tall. Built by human hands. On top of the cairn, wedged between the top stones, a piece of sheet metal cut from a tin can. The metal has been bent into an arrow shape. Crude. Handmade. It points to the right, toward a narrow canyon mouth in the rock face. Move: static We see what the character sees. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
-      "duration_seconds": 10.105,
+      "board_prompt": "He crests a low rise and stops. Move: static The person is clear, with room around them. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
+      "duration_seconds": 0.898,
       "image_status": "not-generated",
       "image_ref": null
     },
@@ -299,13 +299,13 @@
       "order": 18,
       "shot_id": "s03-sh05",
       "scene_id": "s03",
-      "shot_type": "close",
-      "what_we_see": "Beside the arrow, scratched into the face of the tin with a nail or a knife, a single word: AGUA.",
-      "camera": "Lens: tight close Move: slow push-in The face, or the one object that matters, fills the frame. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
+      "shot_type": "wide",
+      "what_we_see": "WIDE SHOT: Buzzards circle in the distant sky. For 4 seconds.",
+      "camera": "Lens: extreme wide Move: static The person and the place share the frame. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
       "transition": "cut / cut",
       "props_in_frame": [],
-      "board_prompt": "Beside the arrow, scratched into the face of the tin with a nail or a knife, a single word: AGUA. Lens: tight close Move: slow push-in The face, or the one object that matters, fills the frame. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
-      "duration_seconds": 3.158,
+      "board_prompt": "WIDE SHOT: Buzzards circle in the distant sky. For 4 seconds. Lens: extreme wide Move: static The person and the place share the frame. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
+      "duration_seconds": 4.0,
       "image_status": "not-generated",
       "image_ref": null
     },
@@ -313,19 +313,61 @@
       "order": 19,
       "shot_id": "s03-sh06",
       "scene_id": "s03",
-      "shot_type": "medium",
-      "what_we_see": "Vega approaches the cairn. Studies it. He looks right, toward the canyon. Then he looks straight ahead, where the tire tracks continue into the open desert toward the distant mountains. Two directions. One has water. The other has the course.",
-      "camera": "Move: static The person is clear, with room around them. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
+      "shot_type": "extreme-close",
+      "what_we_see": "EXTREME CLOSE. A buzzard's face and beak fill the frame. A hard cut lands on a tight close-up of his eyes. For 3 seconds.",
+      "camera": "Lens: tight close Move: static A fragment of the face or the object. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
       "transition": "cut / cut",
       "props_in_frame": [],
-      "board_prompt": "Vega approaches the cairn. Studies it. He looks right, toward the canyon. Then he looks straight ahead, where the tire tracks continue into the open desert toward the distant mountains. Two directions. One has water. The other has the course. Move: static The person is clear, with room around them. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
-      "duration_seconds": 6.316,
+      "board_prompt": "EXTREME CLOSE. A buzzard's face and beak fill the frame. A hard cut lands on a tight close-up of his eyes. For 3 seconds. Lens: tight close Move: static A fragment of the face or the object. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
+      "duration_seconds": 3.0,
       "image_status": "not-generated",
       "image_ref": null
     },
     {
       "order": 20,
       "shot_id": "s03-sh07",
+      "scene_id": "s03",
+      "shot_type": "pov",
+      "what_we_see": "VEGA'S POV: Ahead, fifty meters, a pile of stacked rocks. A cairn. Three feet tall. Built by human hands. On top of the cairn, wedged between the top stones, a piece of sheet metal cut from a tin can. The metal has been bent into an arrow shape. Crude. Handmade. It points to the right, toward a narrow canyon mouth in the rock face.",
+      "camera": "Move: static We see what the character sees. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
+      "transition": "cut / cut",
+      "props_in_frame": [],
+      "board_prompt": "VEGA'S POV: Ahead, fifty meters, a pile of stacked rocks. A cairn. Three feet tall. Built by human hands. On top of the cairn, wedged between the top stones, a piece of sheet metal cut from a tin can. The metal has been bent into an arrow shape. Crude. Handmade. It points to the right, toward a narrow canyon mouth in the rock face. Move: static We see what the character sees. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
+      "duration_seconds": 8.211,
+      "image_status": "not-generated",
+      "image_ref": null
+    },
+    {
+      "order": 21,
+      "shot_id": "s03-sh08",
+      "scene_id": "s03",
+      "shot_type": "close",
+      "what_we_see": "Beside the arrow, scratched into the face of the tin with a nail or a knife, a single word: AGUA.",
+      "camera": "Lens: tight close Move: slow push-in The face, or the one object that matters, fills the frame. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
+      "transition": "cut / cut",
+      "props_in_frame": [],
+      "board_prompt": "Beside the arrow, scratched into the face of the tin with a nail or a knife, a single word: AGUA. Lens: tight close Move: slow push-in The face, or the one object that matters, fills the frame. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
+      "duration_seconds": 2.566,
+      "image_status": "not-generated",
+      "image_ref": null
+    },
+    {
+      "order": 22,
+      "shot_id": "s03-sh09",
+      "scene_id": "s03",
+      "shot_type": "medium",
+      "what_we_see": "Vega approaches the cairn. Studies it. He looks right, toward the canyon. Then he looks straight ahead, where the tire tracks continue into the open desert toward the distant mountains. Two directions. One has water. The other has the course.",
+      "camera": "Move: static The person is clear, with room around them. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
+      "transition": "cut / cut",
+      "props_in_frame": [],
+      "board_prompt": "Vega approaches the cairn. Studies it. He looks right, toward the canyon. Then he looks straight ahead, where the tire tracks continue into the open desert toward the distant mountains. Two directions. One has water. The other has the course. Move: static The person is clear, with room around them. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
+      "duration_seconds": 5.132,
+      "image_status": "not-generated",
+      "image_ref": null
+    },
+    {
+      "order": 23,
+      "shot_id": "s03-sh10",
       "scene_id": "s03",
       "shot_type": "close",
       "what_we_see": "He looks west. The sun is sitting on the ridge. Then he glances at his left wrist. The Top Time. Not to read the hour. To confirm what the sun already told him. The light and the watch agree. He has fifteen minutes of day left. Maybe less. Hold for 2 seconds.",
@@ -340,8 +382,8 @@
       "image_ref": null
     },
     {
-      "order": 21,
-      "shot_id": "s03-sh08",
+      "order": 24,
+      "shot_id": "s03-sh11",
       "scene_id": "s03",
       "shot_type": "close",
       "what_we_see": "CLOSE on Vega's face. He is doing math. Not numbers. Odds. If he follows the canyon, he finds water but loses the course. If he stays on the course, he may not find water before dark. His tongue runs across cracked lips. Decision is a physical thing. You can see it happen in the muscles around his eyes.",
@@ -349,13 +391,13 @@
       "transition": "cut / cut",
       "props_in_frame": [],
       "board_prompt": "CLOSE on Vega's face. He is doing math. Not numbers. Odds. If he follows the canyon, he finds water but loses the course. If he stays on the course, he may not find water before dark. His tongue runs across cracked lips. Decision is a physical thing. You can see it happen in the muscles around his eyes. Lens: tight close Move: slow push-in The face, or the one object that matters, fills the frame. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
-      "duration_seconds": 9.158,
+      "duration_seconds": 7.441,
       "image_status": "not-generated",
       "image_ref": null
     },
     {
-      "order": 22,
-      "shot_id": "s03-sh09",
+      "order": 25,
+      "shot_id": "s03-sh12",
       "scene_id": "s03",
       "shot_type": "medium",
       "what_we_see": "He looks at the tin arrow one more time. Then he looks at the open desert ahead. The tire tracks. The mountains. The last light.",
@@ -363,13 +405,13 @@
       "transition": "cut / cut",
       "props_in_frame": [],
       "board_prompt": "He looks at the tin arrow one more time. Then he looks at the open desert ahead. The tire tracks. The mountains. The last light. Move: static The person is clear, with room around them. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
-      "duration_seconds": 3.947,
+      "duration_seconds": 3.207,
       "image_status": "not-generated",
       "image_ref": null
     },
     {
-      "order": 23,
-      "shot_id": "s03-sh10",
+      "order": 26,
+      "shot_id": "s03-sh13",
       "scene_id": "s03",
       "shot_type": "medium",
       "what_we_see": "He turns back toward his bike.",
@@ -377,12 +419,12 @@
       "transition": "cut / cut",
       "props_in_frame": [],
       "board_prompt": "He turns back toward his bike. Move: static The person is clear, with room around them. Light: Bronze to rose. Purple shadows. Sun on the western ridge. Transitional.",
-      "duration_seconds": 0.947,
+      "duration_seconds": 0.77,
       "image_status": "not-generated",
       "image_ref": null
     },
     {
-      "order": 24,
+      "order": 27,
       "shot_id": "s04-sh01",
       "scene_id": "s04",
       "shot_type": "medium",
@@ -398,7 +440,7 @@
       "image_ref": null
     },
     {
-      "order": 25,
+      "order": 28,
       "shot_id": "s04-sh02",
       "scene_id": "s04",
       "shot_type": "medium",
@@ -412,7 +454,7 @@
       "image_ref": null
     },
     {
-      "order": 26,
+      "order": 29,
       "shot_id": "s04-sh03",
       "scene_id": "s04",
       "shot_type": "medium",
@@ -426,7 +468,7 @@
       "image_ref": null
     },
     {
-      "order": 27,
+      "order": 30,
       "shot_id": "s04-sh04",
       "scene_id": "s04",
       "shot_type": "detail",
@@ -440,7 +482,7 @@
       "image_ref": null
     },
     {
-      "order": 28,
+      "order": 31,
       "shot_id": "s04-sh05",
       "scene_id": "s04",
       "shot_type": "medium",
@@ -454,7 +496,7 @@
       "image_ref": null
     },
     {
-      "order": 29,
+      "order": 32,
       "shot_id": "s04-sh06",
       "scene_id": "s04",
       "shot_type": "medium",
@@ -468,7 +510,7 @@
       "image_ref": null
     },
     {
-      "order": 30,
+      "order": 33,
       "shot_id": "s04-sh07",
       "scene_id": "s04",
       "shot_type": "close",
@@ -482,7 +524,7 @@
       "image_ref": null
     },
     {
-      "order": 31,
+      "order": 34,
       "shot_id": "s04-sh08",
       "scene_id": "s04",
       "shot_type": "medium",
@@ -496,7 +538,7 @@
       "image_ref": null
     },
     {
-      "order": 32,
+      "order": 35,
       "shot_id": "s04-sh09",
       "scene_id": "s04",
       "shot_type": "close",
@@ -510,7 +552,7 @@
       "image_ref": null
     },
     {
-      "order": 33,
+      "order": 36,
       "shot_id": "s04-sh10",
       "scene_id": "s04",
       "shot_type": "medium",
@@ -524,7 +566,7 @@
       "image_ref": null
     },
     {
-      "order": 34,
+      "order": 37,
       "shot_id": "s04-sh11",
       "scene_id": "s04",
       "shot_type": "medium",
@@ -538,7 +580,7 @@
       "image_ref": null
     },
     {
-      "order": 35,
+      "order": 38,
       "shot_id": "s04-sh12",
       "scene_id": "s04",
       "shot_type": "detail",
@@ -555,7 +597,7 @@
       "image_ref": null
     },
     {
-      "order": 36,
+      "order": 39,
       "shot_id": "s04-sh13",
       "scene_id": "s04",
       "shot_type": "medium",
@@ -569,7 +611,7 @@
       "image_ref": null
     },
     {
-      "order": 37,
+      "order": 40,
       "shot_id": "s04-sh14",
       "scene_id": "s04",
       "shot_type": "medium",
@@ -585,7 +627,7 @@
       "image_ref": null
     },
     {
-      "order": 38,
+      "order": 41,
       "shot_id": "s04-sh15",
       "scene_id": "s04",
       "shot_type": "extreme-wide",
@@ -601,7 +643,7 @@
       "image_ref": null
     },
     {
-      "order": 39,
+      "order": 42,
       "shot_id": "s04-sh16",
       "scene_id": "s04",
       "shot_type": "medium",
@@ -617,7 +659,7 @@
       "image_ref": null
     },
     {
-      "order": 40,
+      "order": 43,
       "shot_id": "s04-sh17",
       "scene_id": "s04",
       "shot_type": "medium",
@@ -631,7 +673,7 @@
       "image_ref": null
     },
     {
-      "order": 41,
+      "order": 44,
       "shot_id": "s04-sh18",
       "scene_id": "s04",
       "shot_type": "medium",
@@ -646,7 +688,7 @@
     }
   ],
   "animatic": {
-    "total_duration_seconds": 180.445,
+    "total_duration_seconds": 180.447,
     "order": [
       "s01-sh01",
       "s01-sh02",
@@ -671,6 +713,9 @@
       "s03-sh08",
       "s03-sh09",
       "s03-sh10",
+      "s03-sh11",
+      "s03-sh12",
+      "s03-sh13",
       "s04-sh01",
       "s04-sh02",
       "s04-sh03",
@@ -695,5 +740,5 @@
   "image_generation": "not-run",
   "draft_method": "offline-deterministic",
   "model": "claude-sonnet-5-5",
-  "created_at": "2026-11-10T22:36:11Z"
+  "created_at": "2026-11-10T22:45:34Z"
 }

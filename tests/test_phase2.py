@@ -117,6 +117,11 @@ def test_last_marker_package_comes_from_its_files(tmp_path):
     assert boards["featured_placements"]
     assert boards["featured_placements"][0]["product"] == "Breitling Top Time"
     _assert_distinct_actions(boards)
+    _assert_complete_sentences(boards)
+    scene_3 = [frame["what_we_see"].casefold() for frame in boards["frames"] if frame["scene_id"] == "s03"]
+    assert any("canteen" in text for text in scene_3)
+    assert any("buzzards circle" in text for text in scene_3)
+    assert any("hard cut" in text for text in scene_3)
     assert check["verdict"] == "clear"
     assert breakdown["beats"]
     assert breakdown["beats"][0]["source"] == json.loads(
@@ -170,6 +175,7 @@ def test_harbor_night_uses_a_different_prop_and_look(tmp_path):
     lamp = next(frame for frame in boards["frames"] if "fluorescent" in frame["what_we_see"].casefold())
     assert "scarf on the right shoulder" not in lamp["board_prompt"].casefold()
     _assert_distinct_actions(boards)
+    _assert_complete_sentences(boards)
     summary = boards["look"]["summary"]
     assert boards["frames"]
     assert sum(frame["board_prompt"].casefold().count(summary.casefold()) for frame in boards["frames"]) == 0
@@ -314,3 +320,22 @@ def _assert_distinct_actions(boards: dict) -> None:
 
 def _action_key(text: str) -> str:
     return re.sub(r"\s+", " ", text.casefold()).strip()
+
+
+_DANGLING_END = re.compile(r"\b(a|an|the|and|or|to|of|his|her|its)\.$", re.I)
+
+
+def _assert_complete_sentences(boards: dict) -> None:
+    """A description ends on a finished sentence. It is not cut off mid-phrase."""
+    texts = [frame.get("what_we_see") or "" for frame in boards["frames"]]
+    texts.extend(item.get("why") or "" for item in boards.get("featured_placements") or [])
+    for text in texts:
+        cleaned = text.strip()
+        assert cleaned, "a shot description is empty"
+        assert cleaned[-1] in ".!?", cleaned
+        assert _DANGLING_END.search(cleaned) is None, cleaned
+    for item in boards.get("featured_placements") or []:
+        why = item["why"]
+        assert "Intent:" not in why
+        assert "because the beat already shows it" not in why
+        assert why.count(".") + why.count("!") + why.count("?") == 1

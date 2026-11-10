@@ -176,13 +176,16 @@ def _frames(treatment, package, props, featured, script_scenes, image_client):
         for shot_number, beat in enumerate(beats, start=1):
             shot_id = f"{_scene_slug(scene_id, index)}-sh{shot_number:02d}"
             shot_type = beat["shot_type"]
-            action = beat["text"]
+            action = _finish(beat["text"])
             if featured and _mentions_product(action, featured) and _wants_legible(featured):
                 if shot_type not in {"detail", "close", "extreme-close", "medium-close"}:
                     shot_type = "close"
             duration = durations[shot_number - 1]
             transition_in = "fade-in" if order == 1 else "cut"
-            transition_out = "hold" if beat.get("hold_out") else "cut"
+            if re.search(r"\bhard cut\b", action, re.I):
+                transition_out = "cut"
+            else:
+                transition_out = "hold" if beat.get("hold_out") else "cut"
             lens = _lens_for(package, shot_type)
             camera = _camera_line(shot_type, lens, light)
             in_frame, lock_line = _props_for_beat(props, action)
@@ -459,7 +462,7 @@ def _scene_light(plan: str, index: int) -> str:
     )
     if not match:
         return ""
-    return _tidy(match.group(1).strip(" *"))[:180]
+    return _finish(_tidy(match.group(1).strip(" *")))
 
 
 def _lens_for(package: dict, shot_type: str) -> dict | None:
@@ -550,15 +553,22 @@ def _mentions_product(text: str, featured: dict) -> bool:
 
 
 def _placement_why(featured: dict, action: str, shot_type: str) -> str:
-    intent = str(featured.get("placement_intent") or "").strip()
-    product = str(featured.get("product") or "The product")
-    why = (
-        f"{product} is in this {shot_type.replace('-', ' ')} because the beat already shows it. "
-        f"{_clip(action, 180)}"
-    )
-    if intent:
-        why += " Intent: " + intent
-    return why
+    """One plain sentence. A matching moment from the brief wins. Otherwise a single generic line."""
+    del shot_type
+    haystack = action.casefold()
+    best = None
+    for moment in featured.get("moments") or []:
+        if not isinstance(moment, dict):
+            continue
+        when = str(moment.get("when") or "").strip()
+        why = str(moment.get("why") or "").strip()
+        if len(when) >= 3 and when.casefold() in haystack and why:
+            if best is None or len(when) > len(str(best.get("when") or "")):
+                best = moment
+    if best is not None:
+        return _finish(str(best["why"]))
+    product = str(featured.get("product") or "The product").strip() or "The product"
+    return _finish(f"The {product} is already part of this moment, so it stays in the frame")
 
 
 def _wants_legible(featured: dict) -> bool:
@@ -609,14 +619,14 @@ def _lens_line(lens: dict) -> str:
     return name
 
 
-def _clip(text: str, limit: int) -> str:
+def _finish(text: str) -> str:
+    """Keep the whole line. End on a complete sentence. Never cut a word off."""
     cleaned = _tidy(text)
-    if len(cleaned) <= limit:
-        return cleaned
-    cut = cleaned[:limit]
-    if " " in cut:
-        cut = cut.rsplit(" ", 1)[0]
-    return cut.rstrip(".,;") + "."
+    if not cleaned:
+        return ""
+    if cleaned[-1] not in ".!?":
+        cleaned += "."
+    return cleaned
 
 
 def _markdown(document: dict, treatment: dict) -> str:

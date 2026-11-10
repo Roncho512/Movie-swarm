@@ -322,3 +322,11 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: The production brief can carry an optional featured-product section. Only The Last Marker fills one in. The boards name the shots that show the watch and why. The engine stays generic, per D30. A film with no featured product gets no placement section.
 - Who decided: Ron
 
+## D39 — Three danger shots in scene 3
+
+- Date: 2026-11-10
+- Context: Ron reviewed the storyboard. Scene 3 did not yet show how much danger the rider is in, and it did not pay off the word on the marker.
+- Decision: Add three shots to scene 3 of The Last Marker. Early, after he walks away from the bike, the last drop falls from an empty canteen, so the AGUA arrow pays it off. After he crests the rise, buzzards circle in the distant sky. Just before he spots the cairn, an imposing close-up of a buzzard's face and beak hard-cuts, in a Sergio Leone way, against a tight close-up of his eyes. The shots orient the viewer, add drama, and recall that look.
+- Consequences: The beats are in the screenplay and in the approved treatment for scene 3. The storyboard is rebuilt from those files. The engine does not name the canteen, the birds, or this film's look. The animatic stays near three minutes by keeping the new shots inside scene 3's time.
+- Who decided: Ron
+
