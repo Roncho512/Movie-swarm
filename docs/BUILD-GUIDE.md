@@ -233,7 +233,7 @@ Step-by-step instructions for building the AI Movie Production Swarm and produci
 
 **Goal:** Automate the pipeline you've now run manually.
 
-1. Write the skill file (`agents/01-executive-producer/skill.md`)
+1. Write the skill file (`agents/01-line-producer/skill.md`)
 2. Implement:
    - Production brief parsing
    - Agent sequencing

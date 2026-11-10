@@ -1,0 +1,26 @@
+{
+  "production_id": "the-last-marker",
+  "run_id": "phase-1",
+  "stage": "treatment",
+  "status": "waiting-for-review",
+  "artifacts": [
+    {
+      "name": "treatment",
+      "path": "treatment/treatment.json",
+      "schema": "treatment.schema.json"
+    },
+    {
+      "name": "treatment-markdown",
+      "path": "treatment/treatment.md"
+    },
+    {
+      "name": "questions",
+      "path": "treatment/questions.json",
+      "schema": "director-questions.schema.json"
+    }
+  ],
+  "cost_usd": 0.0,
+  "budget_cap_usd": 500.0,
+  "updated_at": "2026-11-10T19:46:33Z",
+  "notes": "Draft treatment is waiting on Ron. The Director did not approve it."
+}

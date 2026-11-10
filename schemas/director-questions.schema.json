@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "director-questions.schema.json",
+  "title": "Director Questions",
+  "description": "One round of questions from the Director. Ron answers in this file, or in a separate answers file. Nothing waits on a terminal prompt.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["production_id", "round", "status", "questions"],
+  "properties": {
+    "production_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "round": { "type": "integer", "minimum": 1 },
+    "status": { "type": "string", "enum": ["open", "closed"] },
+    "drafted_by": {
+      "type": "string",
+      "enum": ["offline-deterministic", "model"]
+    },
+    "model": { "type": ["string", "null"] },
+    "note": { "type": "string" },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "topic", "question"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "topic": { "type": "string", "minLength": 1 },
+          "question": { "type": "string", "minLength": 1 },
+          "why": { "type": "string" },
+          "required": { "type": "boolean" },
+          "answer": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

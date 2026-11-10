@@ -1,148 +1,20 @@
-# AI Movie Production Swarm
+# Movie Swarm
 
-Nine specialized AI agents. One orchestrated pipeline. Script to screen.
+Movie Swarm turns a screenplay into a finished short film. Specialized helpers, called agents, do the steps. Ron is the executive producer. He reviews the work and decides what is allowed to spend money.
 
-## What This Is
+## Current status
 
-A production system that takes a screenplay and produces a complete short film using AI generation tools. Each stage of film production — writing, visual design, shot planning, video generation, sound design, editing, quality assurance, and fix coordination — is handled by a dedicated agent with defined inputs, outputs, and tool access.
+Phase 0 is on main. It merged on 2026-11-10 in [pull request 1](https://github.com/Roncho512/Movie-swarm/pull/1), merge `c3696890`. Phase 0 is the shared checklist, the run record, the review gates, and the $500 cap.
 
-The architecture is modeled on a prior software Build Swarm that produced ~43,000 lines of code. Same pattern: fan-out tasks to specialists, fan-in results, validate, loop if needed.
+Phase 1 adds two roles. The Line Producer watches the budget, the schedule, the credits, and the gates. The Director reads a screenplay and writes a treatment, which is the plan for the film before anyone generates a shot. The Director asks Ron questions in a file. Ron answers in a file. The Director cannot approve its own work.
 
-Optimized around Google Flow (Veo 3.1), ChatGPT Pro (Images 2.0), Claude API (orchestration and QA), ElevenLabs (audio), and Seedance 2.0 via fal.ai (multi-shot video).
+The Last Marker has a draft treatment. It is not approved. Spent so far on this run: $0.00 of $500.00. The film is set in 1967. The Triumph stays a 1965.
 
-Target: short-form content, 3–15 minutes. Feature-length is not yet viable.
+Older pilot files are still in the production folder. Scenes 1 and 2 were cut and reviewed before this phase. Those clips are not a finished film.
 
-## Repository Structure
+## Run it locally
 
-```
-movie-swarm/
-├── agents/
-│   ├── 01-executive-producer/  # Orchestrator — sequences agents, manages state
-│   ├── 02-screenwriter/        # Script parsing → scene manifest + character bible
-│   ├── 03-art-director/        # Visual language — character refs, style bible
-│   ├── 04-cinematographer/     # Shot planning — shot lists, generation prompts, tool routing
-│   ├── 05-production/          # Video generation — Seedance/Veo clip execution
-│   ├── 06-sound-designer/      # Audio — dialogue, SFX, ambience, score
-│   ├── 07-editor/              # FFmpeg assembly — timeline, audio mix, export
-│   ├── 08-qa/                  # Continuity review — Claude vision analysis
-│   └── 09-fix-loop/            # QA-driven regeneration — route fixes, track iterations
-├── schemas/                    # JSON schemas for all agent handoffs
-├── movie_swarm/                # Shared checks, run record, gates, model map
-├── config/                     # Review gates, budget cap, models, asset root
-├── productions/                # One directory per film project
-│   └── the-last-marker/        # Pilot production (in progress)
-├── orchestration/              # Pipeline runner (planned)
-├── scripts/                    # validate-schema.py and other utilities
-└── docs/                       # Architecture brief, build guide
-```
-
-## Pipeline Flow
-
-```
-Screenplay → [Screenwriter] → Scene Manifest
-                                    ↓
-Style Brief → [Art Director] → Visual Style Bible + Character Refs
-                                    ↓
-              [Cinematographer] → Shot List + Generation Prompts
-                                    ↓
-              [Production] → Video Clips + Native Audio
-                                    ↓
-              [Sound Designer] → Dialogue + SFX + Ambience + Score
-                                    ↓
-              [Editor] → Rough Cut → Final Export
-                                    ↓
-              [QA] → Continuity Report
-                                    ↓
-              [Fix Loop] → Modified Prompts → Regenerate → Reassemble → Re-review
-                                    ↓
-              [QA] → Approved or Loop (max 3 iterations)
-```
-
-## Agent Status
-
-| # | Agent | Skill File | Code | Tested |
-|---|---|---|---|---|
-| 01 | Executive Producer | ✅ | — | — |
-| 02 | Screenwriter | ✅ | — | — |
-| 03 | Art Director | ✅ | — | — |
-| 04 | Cinematographer | ✅ | — | — |
-| 05 | Production | ✅ | ✅ | ✅ |
-| 06 | Sound Designer | ✅ | ✅ | ✅ |
-| 07 | Editor | ✅ | ✅ | — |
-| 08 | QA | ✅ | ✅ | ✅ |
-| 09 | Fix Loop | ✅ | ✅ | — |
-
-A checkmark means the file is in the repo. **Code** means that agent has a program (`src/`). **Tested** means that program has automated tests. Skill-only agents are written instructions: a skill file, and no program yet.
-
-## Schemas
-
-Every agent handoff is defined by a JSON schema.
-
-| Schema | Producer | Consumer(s) |
-|---|---|---|
-| `production-brief` | Human / Signal | Executive Producer |
-| `scene-manifest` | Screenwriter | All downstream agents |
-| `visual-style-bible` | Art Director | Cinematographer, Production, QA |
-| `shot-list` | Cinematographer | Production, Editor |
-| `clip-metadata` | Production | Editor, QA |
-| `audio-manifest` | Sound Designer | Editor |
-| `continuity-report` | QA | Fix Loop → Production |
-
-Run state, review gates, model routing, and the asset root have their own checklists too (`run-state`, `gate-config`, `model-routing`, `asset-config`).
-
-## How the foundation works
-
-Agents hand work to each other as JSON files. Each kind of file has a checklist in `schemas/`. The shared library checks a file before it is accepted. If a required piece is missing, the handoff stops. The message names the file, the checklist, and what is wrong.
-
-Each production run can keep a status file. It records the current stage, whether the run is waiting, which files it has produced, and how much money has been spent against the film's cap.
-
-Human review is a switch per stage in `config/gates.json`. Every switch starts on, so a person reviews every stage. The film budget cap is in the same file and starts at $500. Changing a switch or the cap is an edit to that file.
-
-`config/model-routing.json` records which generator each role uses, so a later change is a config edit. The programs still call the generators they call today. An `overrides` list is there for a later per-scene or per-shot choice. It is empty.
-
-Finished video can live on an external drive. Set `MOVIE_SWARM_ASSET_ROOT`, or set `asset_root` in `config/assets.json`. Until one of those is set, files stay in the production folder inside this repo. Nothing is moved.
-
-Check the pilot's files:
-
-```bash
-python3 scripts/validate-schema.py --production productions/the-last-marker
-```
-
-The scene manifest, the shot list, and the visual style bible match their checklists. The audio manifest, the clip metadata, and the two QA reports were saved in an older shape. They are listed in `config/known-schema-mismatches.json`, so the audit reports them and exits successfully. Any other file that fails its checklist stops the command with an error.
-
-## Current Production: The Last Marker
-
-3-minute pilot. Baja California desert, 1967. A solo motorcycle racer on a vintage Triumph, shot in 16mm Ektachrome style.
-
-**Status:** Scenes 1–2 complete through QA. Fix loop generated. Awaiting clip regeneration for lighting and continuity fixes, then reassembly and re-review.
-
-**Production assets:**
-- 27 reference images (character, vehicle, environment, props)
-- 22-shot shot list with generation prompts
-- 6 selected clips (scenes 1–2)
-- Audio assets (engine, ambience, dialogue, score)
-- Rough cut v1 assembled
-- QA report v2 with 4 findings (1 critical, 1 major)
-- Fix plan v1 with modified prompts
-
-## Tool Stack
-
-| Category | Primary | Secondary |
-|---|---|---|
-| Orchestration | Claude API | GPT-5.5 API |
-| Image generation | ChatGPT Images 2.0 | Nano Banana Pro (Google Flow) |
-| Video generation | Google Veo 3.1 | Seedance 2.0 (fal.ai) |
-| Audio | ElevenLabs | Suno v5, Google Lyria 3 |
-| Assembly | FFmpeg | DaVinci Resolve |
-| QA | Claude API (vision) | GPT-5.5 (vision) |
-
-## Cost Per 15-Minute Short
-
-$150–$460 estimated, depending on generation quality tiers and iteration count. Ron's existing Google Flow and ChatGPT Pro subscriptions absorb significant cost.
-
-## Setup
-
-Install the shared foundation and the agent dependencies from the repo root:
+From the repo root:
 
 ```bash
 pip3 install -r requirements.txt
@@ -150,13 +22,110 @@ python3 -m pytest tests -q
 python3 scripts/validate-schema.py --production productions/the-last-marker
 ```
 
-Each agent with code also runs independently from its directory:
+See where The Last Marker stands:
 
 ```bash
-cd agents/08-qa
-pip3 install -r requirements.txt
-export ANTHROPIC_API_KEY="your-key"
-python3 -m src.cli review ../../productions/the-last-marker
+python3 scripts/line-producer.py --production productions/the-last-marker --run phase-1 status
 ```
 
-See individual agent READMEs for specific setup instructions.
+Draft again from the screenplay. This does not approve anything. `--offline` skips the model even if a key is set.
+
+```bash
+python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline intake
+```
+
+Answer the Director. Open `productions/the-last-marker/treatment/questions.json`. Type each answer in the `answer` field. Leave a field as `null` if you are not ready. Then:
+
+```bash
+python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline answer \
+  --answers productions/the-last-marker/treatment/questions.json
+```
+
+You can also send a separate answers file:
+
+```json
+{
+  "round": 1,
+  "answers": [
+    {"id": "q-intent", "answer": "Lock it."}
+  ]
+}
+```
+
+Approve the treatment after you have read `treatment/treatment.md`. This is the only way the treatment becomes approved. It also locks the stage split, which is how the $500 is divided across jobs.
+
+```bash
+python3 scripts/line-producer.py --production productions/the-last-marker --run phase-1 approve-gate \
+  --stage treatment --decision approved --by ron --note "Lock the treatment and the split."
+```
+
+Reject it the same way, with `--decision rejected`. You can put the same fields in a JSON file and pass `--file` instead of the flags.
+
+A crew call does not run until you have approved the treatment and that stage. This example only prices shots. It does not generate video. It will pause until those gates are approved.
+
+```bash
+python3 scripts/director.py --production productions/the-last-marker --run phase-1 dispatch \
+  --agent production --crew-command estimate --estimate 0 \
+  --shot-list productions/the-last-marker/shot-lists/shot-list.json
+```
+
+The same commands work from the agent folders as `python3 -m src.cli`, with the same flags.
+
+## What the checks do
+
+`python3 -m pytest tests -q` runs the shared checks. They cover the Phase 0 foundation and the Phase 1 rules: the cap, approvals, the treatment checklist, each screenplay format, the question round trip, and a crew call that must pass the Line Producer first.
+
+Three older agents have their own checks, because each one uses a folder named `src`:
+
+```bash
+python3 -m pytest agents/05-production/tests -q
+python3 -m pytest agents/06-sound-designer/tests -q
+python3 -m pytest agents/08-qa/tests -q
+```
+
+`python3 scripts/validate-schema.py --production productions/the-last-marker` checks every JSON file in the production against its checklist. A checklist is a schema: a list of required fields. Files that fail are named. A few older pilot files are on a known-mismatch list. They are reported and do not fail the run. A new file that fails does stop the command.
+
+GitHub runs these checks on every push and every pull request. See `.github/workflows/ci.yml`.
+
+## Settings
+
+Environment variables, by name only. Do not commit a key.
+
+| Name | Used for |
+|---|---|
+| `ANTHROPIC_API_KEY` | The Director and the Line Producer, when you want a real model. Without it, the draft is offline and labeled that way. |
+| `MOVIE_SWARM_ASSET_ROOT` | Optional folder for finished media. Overrides the file below. |
+| `FAL_KEY` | The production agent, when it really generates video. This phase does not do that. |
+| `ELEVENLABS_API_KEY` | The sound agent, when it really generates audio. This phase does not do that. |
+
+Config files in `config/`:
+
+| File | What it controls |
+|---|---|
+| `gates.json` | The $500 film cap, and one on/off switch per stage. On means Ron reviews that stage. Every switch starts on. |
+| `model-routing.json` | Which model each role uses. Change the file, not the code. |
+| `assets.json` | Where finished media lives. `null` keeps files in the production folder. |
+
+## Sample data
+
+The sample film is The Last Marker, in `productions/the-last-marker/`.
+
+| File | What it is |
+|---|---|
+| `screenplay/Pilot_-_the_last_marker_screenplay.md` | The shooting script. |
+| `production-brief.json` | Ron's locked choices: $500, Baja California, 1967, the Leone look, the two hero props. Sidedness is still open. |
+| `treatment/treatment.md` | The readable draft. Not approved. |
+| `treatment/treatment.json` | The same draft in the form the checks can read. |
+| `treatment/questions.json` | Eight questions for Ron. Answers are empty. |
+| `runs/phase-1/` | The run record. Stage: treatment. Waiting on Ron. |
+
+Hero props are the 1965 Triumph TR6SC and the Breitling Top Time. The screenplay currently says the exhaust is on the right and the watch is on the left wrist. Ron has not locked either side.
+
+## Where to read more
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — how the pieces fit, and what each coded role reads and writes.
+- [ROADMAP.md](ROADMAP.md) — phases, gates, and what is next.
+- [DECISIONS.md](DECISIONS.md) — choices already made.
+- [CONTRIBUTING.md](CONTRIBUTING.md) — how a pull request should read, and the doc rule.
+- [docs/perfect-treatment.md](docs/perfect-treatment.md) — what a good treatment contains, with a short Last Marker example for each field.
+- [docs/treatment-template.md](docs/treatment-template.md) — a blank treatment you can fill in.

@@ -1,0 +1,42 @@
+{
+  "production_id": "the-last-marker",
+  "run_id": "phase-1",
+  "credits": [
+    {
+      "role": "Executive Producer",
+      "name": "Ron"
+    },
+    {
+      "role": "Line Producer",
+      "name": "Line Producer"
+    },
+    {
+      "role": "Director",
+      "name": "Director"
+    }
+  ],
+  "stage_allocations": {
+    "status": "unlocked",
+    "split": {},
+    "approved_at": null,
+    "approved_by": null,
+    "note": "The split locks when Ron approves the treatment."
+  },
+  "ledger": [],
+  "gate_decisions": [],
+  "requests": [],
+  "schedule": {
+    "line-producer": "pending",
+    "director": "pending",
+    "treatment": "waiting-for-review",
+    "screenwriter": "pending",
+    "art-director": "pending",
+    "cinematographer": "pending",
+    "production": "pending",
+    "sound-designer": "pending",
+    "editor": "pending",
+    "qa": "pending",
+    "fix-loop": "pending"
+  },
+  "updated_at": "2026-11-10T19:46:33Z"
+}

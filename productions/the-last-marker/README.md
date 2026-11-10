@@ -4,7 +4,7 @@ Pilot production. 3-minute short film. AI Studio proof of concept.
 
 ## Concept
 
-A solo motorcycle racer crosses the Baja desert in 1966. His bike is failing. He is lost. He finds a trail marker left by a rider who came before him. The marker points two directions. He has to choose.
+A solo motorcycle racer crosses the Baja desert in 1967. His bike is failing. He is lost. He finds a trail marker left by a rider who came before him. The marker points two directions. He has to choose.
 
 Three minutes. Almost no dialogue. Pure visual storytelling.
 
@@ -16,7 +16,7 @@ Three minutes. Almost no dialogue. Pure visual storytelling.
 | **Scenes** | 4 |
 | **Dialogue** | 1 line (5 words, Spanish) |
 | **Aspect Ratio** | 2.39:1 Anamorphic |
-| **Visual Style** | 16mm Ektachrome, 1966 |
+| **Visual Style** | 16mm Ektachrome, 1967 |
 | **Cuts** | ~18-22 |
 
 ## Characters

@@ -27,7 +27,7 @@ The 4 angles:
 3. Three-quarter view from the left
 4. Three-quarter view from the right
 
-Period: 1966. No modern elements. This man looks like he belongs in a Sam Peckinpah film.
+Period: 1967. No modern elements. This man looks like he belongs in a Sam Peckinpah film.
 
 Do NOT include: helmet, sunglasses, clean or new clothing, any modern accessories.
 ```
@@ -49,7 +49,7 @@ The 4 poses:
 3. Crouching/kneeling beside a motorcycle engine, bare hands on the motor
 4. Standing on motorcycle foot pegs in riding position, low crouch, elbows out, weight forward
 
-Period: 1966. Analog. Everything has weight and wear.
+Period: 1967. Analog. Everything has weight and wear.
 ```
 
 Save as: `miguel-vega-full-front.png`, `miguel-vega-full-side-walking.png`, `miguel-vega-kneeling-engine.png`, `miguel-vega-riding-pose.png`
@@ -103,7 +103,7 @@ Condition across the 4 images:
 
 Camera: Shot on 16mm Ektachrome. Heavy grain. Warm light. Macro/detail photography.
 
-Period: 1966. This is a tool watch being used as a tool. Not a luxury display piece.
+Period: 1967. This is a tool watch being used as a tool. Not a luxury display piece.
 ```
 
 Save as: `top-time-clean-ref.png`, `top-time-dusty.png`, `top-time-worn.png`, `top-time-in-context.png`
@@ -175,7 +175,7 @@ Save as: `baja-desert-blue-dusk.png`
 ### Prompt 5A: Overall Visual Style Reference (request 2 images)
 
 ```
-Generate 2 photorealistic film frames that establish the visual style of a 1966 Baja desert motorcycle film:
+Generate 2 photorealistic film frames that establish the visual style of a 1967 Baja desert motorcycle film:
 
 Style: Shot on 16mm Kodak Ektachrome film stock. Heavy film grain visible throughout. Warm color bleed at frame edges. Lens flare on direct sun. Charcoal blacks (never true black). Bone whites (never pure white). The palette is amber, ochre, bronze, and leather brown.
 
@@ -183,7 +183,7 @@ Frame 1: A lone motorcycle rider crossing a vast desert hardpan. Extreme wide sh
 
 Frame 2: Close-up of a man's weathered hands gripping motorcycle handlebars. Brown leather gloves worn smooth. Throttle cable visible. Dust on every surface. A watch barely visible on the left wrist. The textures are everything — leather, rubber, metal, dust, skin. Shallow depth of field. The background is a warm amber blur of desert.
 
-Period: 1966. Analog. Every frame should feel like a recovered photograph from a Baja 1000 pre-race run that was never published.
+Period: 1967. Analog. Every frame should feel like a recovered photograph from a Baja 1000 pre-race run that was never published.
 ```
 
 Save as: `style-frame-wide.png`, `style-frame-detail.png`
