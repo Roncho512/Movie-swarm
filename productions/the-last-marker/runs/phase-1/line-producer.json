@@ -104,6 +104,13 @@
       "by": "ron",
       "note": "Approve the treatment and lock the split.",
       "decided_at": "2026-11-10T20:39:31Z"
+    },
+    {
+      "stage": "previs",
+      "decision": "approved",
+      "by": "ron",
+      "note": "Approve the storyboard previs gate.",
+      "decided_at": "2026-11-10T22:48:21Z"
     }
   ],
   "requests": [],
@@ -119,7 +126,7 @@
     "editor": "pending",
     "qa": "pending",
     "fix-loop": "pending",
-    "previs": "waiting-for-review"
+    "previs": "approved"
   },
-  "updated_at": "2026-11-10T22:10:35Z"
+  "updated_at": "2026-11-10T22:48:21Z"
 }

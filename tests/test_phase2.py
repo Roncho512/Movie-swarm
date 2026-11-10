@@ -7,7 +7,9 @@ and a second fixture, Harbor Night, so a different prop and look need no code ch
 from __future__ import annotations
 
 import json
+import re
 import shutil
+from difflib import SequenceMatcher
 from pathlib import Path
 
 from movie_swarm.camera import build_package
@@ -58,11 +60,28 @@ def _copy_last_marker_inputs(tmp_path: Path) -> Path:
         "treatment/treatment.json",
         "props/prop-definitions.json",
         "look/look.json",
+        "screenplay/Pilot_-_the_last_marker_screenplay.md",
     ):
         target = dest / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(source / relative, target)
     return dest
+
+
+def test_ron_approved_the_storyboard_previs_gate():
+    root = repo_root() / "productions" / "the-last-marker"
+    record = json.loads((root / "runs" / "phase-1" / "line-producer.json").read_text(encoding="utf-8"))
+    decision = [item for item in record["gate_decisions"] if item["stage"] == "previs"][-1]
+    assert decision["decision"] == "approved"
+    assert decision["by"] == "ron"
+    assert decision["note"] == "Approve the storyboard previs gate."
+    assert record["schedule"]["previs"] == "approved"
+    board = json.loads((root / "storyboard" / "storyboard.json").read_text(encoding="utf-8"))
+    assert board["status"] == "approved"
+    assert board["approval"]["state"] == "approved"
+    assert board["approval"]["by"] == "ron"
+    assert board["approval"]["note"] == "Approve the storyboard previs gate."
+    assert board["image_generation"] == "not-run"
 
 
 def test_engine_source_does_not_name_the_sample_film():
@@ -111,6 +130,14 @@ def test_last_marker_package_comes_from_its_files(tmp_path):
     assert package["source"] == "look/look.json"
     assert boards["image_generation"] == "not-run"
     assert all(frame["image_ref"] is None for frame in boards["frames"])
+    assert boards["featured_placements"]
+    assert boards["featured_placements"][0]["product"] == "Breitling Top Time"
+    _assert_distinct_actions(boards)
+    _assert_complete_sentences(boards)
+    scene_3 = [frame["what_we_see"].casefold() for frame in boards["frames"] if frame["scene_id"] == "s03"]
+    assert any("canteen" in text for text in scene_3)
+    assert any("buzzards circle" in text for text in scene_3)
+    assert any("hard cut" in text for text in scene_3)
     assert check["verdict"] == "clear"
     assert breakdown["beats"]
     assert breakdown["beats"][0]["source"] == json.loads(
@@ -161,6 +188,13 @@ def test_harbor_night_uses_a_different_prop_and_look(tmp_path):
     assert "spaghetti" not in blob
     assert check["verdict"] == "clear"
     assert any("scarf on the right shoulder" in frame["board_prompt"] for frame in boards["frames"])
+    lamp = next(frame for frame in boards["frames"] if "fluorescent" in frame["what_we_see"].casefold())
+    assert "scarf on the right shoulder" not in lamp["board_prompt"].casefold()
+    _assert_distinct_actions(boards)
+    _assert_complete_sentences(boards)
+    summary = boards["look"]["summary"]
+    assert boards["frames"]
+    assert sum(frame["board_prompt"].casefold().count(summary.casefold()) for frame in boards["frames"]) == 0
     assert breakdown["beats"][0]["source"].startswith("She ties the scarf")
     assert breakdown["beats"][0]["shots"][0]["plausible"] is True
 
@@ -283,3 +317,41 @@ def test_phase2_dispatch_uses_the_locked_split_and_the_previs_gate(tmp_path):
     )
     assert picture.status == "paused"
     assert "previs" in picture.message
+
+
+def _assert_distinct_actions(boards: dict) -> None:
+    """Shots in one scene must not repeat the same action, or a near copy of it."""
+    grouped: dict[str, list[str]] = {}
+    for frame in boards["frames"]:
+        grouped.setdefault(frame["scene_id"], []).append(_action_key(frame.get("what_we_see") or ""))
+    for scene_id, actions in grouped.items():
+        assert len(actions) == len(set(actions)), f"{scene_id} repeats an action"
+        for left_index, left in enumerate(actions):
+            for right in actions[left_index + 1 :]:
+                if len(left) > 40 and (left in right or right in left):
+                    raise AssertionError(f"{scene_id} has a near-duplicate action")
+                if len(left) > 40 and len(right) > 40 and SequenceMatcher(None, left, right).ratio() >= 0.85:
+                    raise AssertionError(f"{scene_id} has a near-duplicate action")
+
+
+def _action_key(text: str) -> str:
+    return re.sub(r"\s+", " ", text.casefold()).strip()
+
+
+_DANGLING_END = re.compile(r"\b(a|an|the|and|or|to|of|his|her|its)\.$", re.I)
+
+
+def _assert_complete_sentences(boards: dict) -> None:
+    """A description ends on a finished sentence. It is not cut off mid-phrase."""
+    texts = [frame.get("what_we_see") or "" for frame in boards["frames"]]
+    texts.extend(item.get("why") or "" for item in boards.get("featured_placements") or [])
+    for text in texts:
+        cleaned = text.strip()
+        assert cleaned, "a shot description is empty"
+        assert cleaned[-1] in ".!?", cleaned
+        assert _DANGLING_END.search(cleaned) is None, cleaned
+    for item in boards.get("featured_placements") or []:
+        why = item["why"]
+        assert "Intent:" not in why
+        assert "because the beat already shows it" not in why
+        assert why.count(".") + why.count("!") + why.count("?") == 1

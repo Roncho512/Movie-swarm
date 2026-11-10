@@ -122,9 +122,15 @@ CUT TO:
 
 Vega walks. He has left the bike. He carries nothing. His boots crunch on the rocky ground. He is walking in the direction he was riding, following the faint tire tracks of riders who came through here before him. Looking for something. Any sign of the course. Any marker.
 
+DETAIL SHOT: The last drop falls from an empty canteen. Nothing follows it. For 2 seconds.
+
 DETAIL SHOT: His boots on the ground. Worn leather. The sole of the left boot is separating at the toe. Each step kicks up a small cloud of dust that the low sun turns pink.
 
 He crests a low rise and stops.
+
+WIDE SHOT: Buzzards circle in the distant sky. For 4 seconds.
+
+EXTREME CLOSE. A buzzard's face and beak fill the frame. A hard cut lands on a tight close-up of his eyes. For 3 seconds.
 
 VEGA'S POV: Ahead, fifty meters, a pile of stacked rocks. A cairn. Three feet tall. Built by human hands. On top of the cairn, wedged between the top stones, a piece of sheet metal cut from a tin can. The metal has been bent into an arrow shape. Crude. Handmade. It points to the right, toward a narrow canyon mouth in the rock face.
 

@@ -26,7 +26,7 @@ Ron's answers come back as a file. Apply them. If a required answer is still emp
 
 ## Crew calls
 
-You may call production, the sound designer, the editor, QA, the fix loop, the Prop Master, the Script Supervisor, the Cinematographer, and the Stunt and Action Coordinator. Every call goes through the Line Producer first. If the gate is closed or the estimate would break the cap or the stage ceiling, stop. Do not work around the check. Picture calls also wait until Ron approves the previs package. Estimate and dry-run only. Do not spend generation money. Do not invent a prop, a side, or a look. Read them from the production.
+You may call production, the sound designer, the editor, QA, the fix loop, the Prop Master, the Script Supervisor, the Cinematographer, and the Stunt and Action Coordinator. Every call goes through the Line Producer first. If the gate is closed or the estimate would break the cap or the stage ceiling, stop. Do not work around the check. Picture calls also wait until Ron approves the previs package. Estimate and dry-run only. Do not spend generation money. Do not invent a prop, a side, or a look. Read them from the production. If the brief names a featured product, show it only in beats the story already has. Do not add an advertisement.
 
 ## What you do not do
 

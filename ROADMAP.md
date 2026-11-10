@@ -4,7 +4,7 @@ Status as of 2026-11-10.
 
 Phase 0 merged to main on 2026-11-10 via PR https://github.com/Roncho512/Movie-swarm/pull/1, merge commit c369689. Phase 1 merged to main on 2026-11-10 via PR https://github.com/Roncho512/Movie-swarm/pull/3, merge commit da9d54a. The treatment validates, the question round is closed, nothing can spend past a gate or the cap without a recorded approval, and the Director reaches crew only through the Line Producer. Ron approved the treatment gate and the $500 split is locked. Spent: $0.00 of $500.00.
 
-Phase 2 has written the previs package for The Last Marker and left the previs gate waiting. Previs means the prop lock, the continuity check, the camera package, the storyboard, and the action breakdown. The continuity check flags 17 missing exhaust-side statements on the old pilot shot list. The new storyboard states the locks. Ron has not approved the package.
+Phase 2's done-when is met. The previs package is written, the storyboard is one beat per shot, and Ron approved the previs gate on 2026-11-10 with the note "Approve the storyboard previs gate." That approval is the board at commit 48d84b0, plus the status recorded on this branch. No images were generated. Spent: $0.00 of $500.00. Phase 2 is waiting for Ron to merge it. The old pilot shot list still has 17 missing exhaust-side statements. Those are the earlier pilot, not this storyboard.
 
 ## Phases
 
@@ -12,7 +12,7 @@ Phase 2 has written the previs package for The Last Marker and left the previs g
 |---|---|---|
 | 0 | Cleanup and foundation: shared handoff checks, run state, gates, the $500 cap, model routing, asset root, CI | Done, merged 2026-11-10, PR #1, merge c3696890 |
 | 1 | Line Producer and Director core, with treatment intake | Done, merged 2026-11-10, PR #3, merge da9d54a |
-| 2 | Prevent bad shots: Script Supervisor, Production Designer/Prop Master with locked hero-prop specs, camera package, storyboards/animatic, Stunt and Action Coordinator | Building, previs gate waiting on Ron |
+| 2 | Prevent bad shots: Script Supervisor, Production Designer/Prop Master with locked hero-prop specs, camera package, storyboards/animatic, Stunt and Action Coordinator | Building, awaiting merge |
 | 3 | Catch bad shots: coverage and multiple takes, Dailies Reviewer watching full video, Assistant Editor | Not started |
 | 4 | Editor upgrade and Colorist | Not started |
 | 5 | Sound: Composer, Foley and Ambience, generalized Sound Designer, Re-recording Mixer | Not started |
@@ -23,7 +23,7 @@ Phase 2 has written the previs package for The Last Marker and left the previs g
 
 Every stage switch in `config/gates.json` is on. Ron reviews each stage until that part of the crew is reliable. The end goal is smaller: Ron approves the look, and Ron approves the final cut. Turning a switch off is an edit to the config file, done later on purpose. It is not a code change.
 
-On run phase-1, Ron approved the treatment gate. That locked the $500 split. The previs switch is on. The package is written and waiting. A picture call waits for the previs gate and for its own stage gate. Phase 2 drafts can be written before that gate, because the drafts are the review.
+On run phase-1, Ron approved the treatment gate. That locked the $500 split. Ron approved the previs gate on 2026-11-10. A picture call still waits for its own stage gate. Other stage switches stay on.
 
 ## Closed decisions
 
@@ -51,6 +51,9 @@ These are made. The write-up is in [DECISIONS.md](DECISIONS.md).
 - D28 — The proposed $500 split is the one Ron wants.
 - D29 — Ron approved the treatment gate. The split is locked on the run.
 - D30 — Film facts stay in the production folder. The engine does not hard-code a film's props, years, or look.
+- D38 — The Last Marker is a subtle placement for the Breitling Top Time. Not an ad.
+- D39 — Scene 3 gains the empty canteen, circling buzzards, and a hard cut from a buzzard's face to his eyes.
+- D40 — Ron approved the storyboard previs gate.
 
 ## Open decisions
 
@@ -62,4 +65,4 @@ Phase 1 records technical choices D15 through D22. Phase 2 records D31 through D
 
 ## What comes next
 
-Ron reviews the previs package and approves or rejects that gate. He also accepts or rejects D31 through D37. After that, Phase 3 starts the roles that catch a bad shot after it exists: coverage, extra takes, a Dailies Reviewer, and an Assistant Editor.
+Ron merges Phase 2 when he is ready. He can also accept or reject D31 through D37. After the merge, Phase 3 starts the roles that catch a bad shot after it exists: coverage, extra takes, a Dailies Reviewer, and an Assistant Editor.

@@ -8,7 +8,7 @@ Phase 0 is on main. It merged on 2026-11-10 in [pull request 1](https://github.c
 
 Phase 1 is on main. It merged on 2026-11-10 in [pull request 3](https://github.com/Roncho512/Movie-swarm/pull/3), merge `da9d54a`. The Line Producer watches the budget, the schedule, the credits, and the gates. The Director reads a screenplay and writes a treatment, which is the plan for the film before anyone generates a shot. Ron approved the Last Marker treatment gate. The $500 stage split is locked on run phase-1. Spent so far: $0.00 of $500.00.
 
-Phase 2 writes the package that stops a bad shot before it is generated. The Prop Master locks hero props. The Script Supervisor checks shots and scenes against that lock. The Cinematographer writes a camera package, a storyboard, and an animatic plan. An animatic is the boards in order, with a duration on each one. The Stunt and Action Coordinator turns the treatment's action beats into shots. Those files wait at the previs gate. Previs means this package. Ron has not approved it.
+Phase 2 writes the package that stops a bad shot before it is generated. The Prop Master locks hero props. The Script Supervisor checks shots and scenes against that lock. The Cinematographer writes a camera package, a storyboard, and an animatic plan. An animatic is the boards in order, with a duration on each one. The Stunt and Action Coordinator turns the treatment's action beats into shots. Ron approved the storyboard previs gate on 2026-11-10. The note is "Approve the storyboard previs gate." The storyboard status is approved. No images were generated. Spent so far: $0.00 of $500.00. Phase 2's done-when is met. It is waiting for Ron to merge it.
 
 Film facts stay in the production folder. The engine does not know that this film's exhaust is on the right, that the watch is on the left wrist, that the bike is a 1965, that the story is 1967, or that the look is Sergio Leone. Those sentences live in `productions/the-last-marker/`. A different film uses its own files.
 
@@ -148,7 +148,7 @@ The sample film is The Last Marker, in `productions/the-last-marker/`.
 | `props/hero-props.json` | The same lock, after the Prop Master copies it. |
 | `look/look.json` | This film's lenses, framing, and lighting. |
 | `camera/camera-package.json` | The Cinematographer's package, copied from that look. |
-| `storyboard/` | Board prompts, an animatic plan, and a shot list. No images were generated. |
+| `storyboard/` | One beat per shot, the look stated once, and an animatic. No images were generated. Shots that show the featured watch are listed, each with one sentence on why. Scene 3 also has the empty canteen, the circling buzzards, and the hard cut from a buzzard's face to his eyes. |
 | `continuity/continuity-check.json` | Drift findings. The old pilot shot list is missing the locked exhaust phrase. |
 | `stunts/action-breakdown.json` | The treatment's two action beats, broken into shots. |
 

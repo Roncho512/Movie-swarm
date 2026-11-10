@@ -91,7 +91,7 @@ A spend that would break a ceiling writes `runs/<run-id>/requests/req-001.json`.
 
 Crew the Director can call: `prop-master`, `script-supervisor`, `cinematographer`, `stunt-coordinator`, `production`, `sound-designer`, `editor`, `qa`, `fix-loop`.
 
-Phase 2 commands are `lock`, `check`, `package`, `boards`, and `breakdown`. They read the approved treatment. They write files. They do not require the previs gate to be open already, because those files are what Ron reviews. The estimate is checked against an existing ceiling in the locked split and is not charged.
+Phase 2 commands are `lock`, `check`, `package`, `boards`, and `breakdown`. They read the approved treatment. They write files. They do not require the previs gate to be open already, because those files are what Ron reviews. Ron approved that gate for The Last Marker on 2026-11-10. The estimate is checked against an existing ceiling in the locked split and is not charged.
 
 Picture commands are `estimate` and `dry-run`. A picture call waits until Ron has approved the treatment, the previs gate, and that stage. Editor, QA, and the fix loop are routed and named. Their commands are not run here, because they would read or write the cut.
 
@@ -131,7 +131,7 @@ Hands off to: Ron, at the previs gate. This is not the QA report. QA reads a cut
 
 Inputs: `look/look.json` when the production has one, otherwise the treatment's camera and color notes and the brief.
 
-Outputs: `camera/camera-package.json` (lenses, framing, lighting), `storyboard/storyboard.json` (board prompts and an animatic), and `storyboard/shot-list.json`. Image generation runs only when a caller passes an image client. The default path stores the prompt and does not make a picture.
+Outputs: `camera/camera-package.json` (lenses, framing, lighting), `storyboard/storyboard.json` (one beat per shot, plus an animatic), and `storyboard/shot-list.json`. The look is written once. A shot lists only its own frame, move, and light. A locked prop is named only when that beat puts it in frame. If the brief has a featured product, the storyboard lists those shots. Each reason is one sentence from the brief, not a clipped copy of the beat. Extra beats, such as a new danger shot, are written into the screenplay and the treatment. The generator does not invent them. Image generation runs only when a caller passes an image client. The default path stores the prompt and does not make a picture.
 
 Hands off to: production, through the shot list, after Ron approves the previs gate.
 
