@@ -238,6 +238,13 @@ def test_each_schema_accepts_a_minimal_document():
             "safety_policy": "One movement per shot.",
             "beats": [],
         },
+        "sound-prompts.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "sfx": [],
+            "dialogue": [],
+            "music": [],
+        },
     }
     on_disk = {path.name for path in schemas_dir().glob("*.schema.json")}
     assert on_disk == set(samples)

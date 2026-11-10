@@ -27,6 +27,7 @@ _SCHEMA_BY_FILENAME = {
     "shot-list.json": "shot-list.schema.json",
     "clip-metadata.json": "clip-metadata.schema.json",
     "audio-manifest.json": "audio-manifest.schema.json",
+    "sound-prompts.json": "sound-prompts.schema.json",
     "continuity-report.json": "continuity-report.schema.json",
     "run-state.json": "run-state.schema.json",
     "gates.json": "gate-config.schema.json",

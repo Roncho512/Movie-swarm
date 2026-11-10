@@ -43,6 +43,7 @@ When you're debugging why Shot 14 has the wrong lighting, you need to trace the 
 | `shot-list.schema.json` | Every shot in the film with generation prompts, tool routing, reference assets, and continuity notes. |
 | `clip-metadata.schema.json` | Every generated clip with technical specs, validation results, cost tracking, and selection status. |
 | `audio-manifest.schema.json` | All audio assets organized by layer: dialogue, SFX, ambience, score, engine sound. Time-coded for assembly. |
+| `sound-prompts.schema.json` | The prompts a production asks the sound program to generate. The program does not keep its own copy. |
 | `continuity-report.schema.json` | QA findings with issue routing. Drives the feedback loop. |
 | `run-state.schema.json` | One production run: stage, status, artifacts, and spend against the cap. |
 | `gate-config.schema.json` | Review switches and the film budget cap. |

@@ -4,26 +4,13 @@ Sound Designer Agent CLI
 
 Examples:
 
-  # Generate all SFX (dry run):
+  # Dry run. Prompts are read from the production's audio/sound-prompts.json:
   python -m src.cli sfx shot-list.json ./audio --dry-run
 
-  # Generate specific SFX:
-  python -m src.cli sfx shot-list.json ./audio --assets engine-healthy engine-death
+  # Or pass the library file yourself:
+  python -m src.cli sfx shot-list.json ./audio --library audio/sound-prompts.json --dry-run
 
-  # Generate all SFX:
-  python -m src.cli sfx shot-list.json ./audio
-
-  # Search for voices:
-  python -m src.cli voices "mexican male"
-
-  # Generate dialogue with a specific voice:
-  python -m src.cli dialogue shot-list.json ./audio --voice-id JBFqnCBsd6RMkjVDRZzb
-
-  # Generate closing guitar music:
-  python -m src.cli music shot-list.json ./audio
-
-  # Generate everything:
-  python -m src.cli all shot-list.json ./audio --voice-id JBFqnCBsd6RMkjVDRZzb
+A run without --dry-run is refused. This build does not call a provider.
 """
 
 from __future__ import annotations
@@ -46,9 +33,13 @@ def setup_logging(verbose: bool = False):
     )
 
 
+def _pipeline(args) -> SoundDesignPipeline:
+    return SoundDesignPipeline(args.shot_list, args.output_dir, library_path=args.library)
+
+
 def cmd_sfx(args):
     """Generate sound effects."""
-    pipeline = SoundDesignPipeline(args.shot_list, args.output_dir)
+    pipeline = _pipeline(args)
     results = pipeline.generate_sfx_library(
         asset_ids=args.assets or None,
         dry_run=args.dry_run,
@@ -67,7 +58,7 @@ def cmd_dialogue(args):
         print("Error: --voice-id required. Use 'voices' command to search.")
         return 1
 
-    pipeline = SoundDesignPipeline(args.shot_list, args.output_dir)
+    pipeline = _pipeline(args)
     results = pipeline.generate_dialogue_assets(
         voice_id=args.voice_id,
         dry_run=args.dry_run,
@@ -81,7 +72,7 @@ def cmd_dialogue(args):
 
 def cmd_music(args):
     """Generate music/score."""
-    pipeline = SoundDesignPipeline(args.shot_list, args.output_dir)
+    pipeline = _pipeline(args)
     results = pipeline.generate_music_assets(dry_run=args.dry_run)
     pipeline.write_audio_manifest()
 
@@ -104,7 +95,7 @@ def cmd_voices(args):
 
 def cmd_all(args):
     """Generate everything."""
-    pipeline = SoundDesignPipeline(args.shot_list, args.output_dir)
+    pipeline = _pipeline(args)
 
     print("=== Sound Effects ===")
     pipeline.generate_sfx_library(dry_run=args.dry_run)
@@ -139,6 +130,7 @@ def main():
     p_sfx.add_argument("shot_list", type=Path)
     p_sfx.add_argument("output_dir", type=Path)
     p_sfx.add_argument("--assets", nargs="+", help="Specific asset IDs to generate")
+    p_sfx.add_argument("--library", type=Path, help="sound-prompts.json for this production")
     p_sfx.add_argument("--dry-run", action="store_true")
 
     # dialogue
@@ -146,17 +138,19 @@ def main():
     p_dlg.add_argument("shot_list", type=Path)
     p_dlg.add_argument("output_dir", type=Path)
     p_dlg.add_argument("--voice-id", required=True)
+    p_dlg.add_argument("--library", type=Path, help="sound-prompts.json for this production")
     p_dlg.add_argument("--dry-run", action="store_true")
 
     # music
     p_mus = sub.add_parser("music", help="Generate music/score")
     p_mus.add_argument("shot_list", type=Path)
     p_mus.add_argument("output_dir", type=Path)
+    p_mus.add_argument("--library", type=Path, help="sound-prompts.json for this production")
     p_mus.add_argument("--dry-run", action="store_true")
 
     # voices
     p_vox = sub.add_parser("voices", help="Search for voices")
-    p_vox.add_argument("query", help="Search query (e.g. 'mexican male')")
+    p_vox.add_argument("query", help="Search query, for example 'low quiet voice'")
     p_vox.add_argument("--language", default="es", help="Language code")
 
     # all
@@ -164,6 +158,7 @@ def main():
     p_all.add_argument("shot_list", type=Path)
     p_all.add_argument("output_dir", type=Path)
     p_all.add_argument("--voice-id", help="Voice ID for dialogue")
+    p_all.add_argument("--library", type=Path, help="sound-prompts.json for this production")
     p_all.add_argument("--dry-run", action="store_true")
 
     args = parser.parse_args()

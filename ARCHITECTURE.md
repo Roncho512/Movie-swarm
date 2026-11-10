@@ -14,7 +14,7 @@ The crew is Python in this repo. You run a command on your machine. It reads and
 
 The Director and the Line Producer will be fronted by Grok Bot agents. Those bots live outside this repo. They show Ron the gates and the Director's questions in chat. The chat does not type into a waiting terminal. The bot reads and writes the same files these commands use, so a run can stop and start again.
 
-Generation runs on provider servers, not on the laptop that holds the repo. Video, stills, and audio can run at the same time once a later phase turns that on. This phase does not send a paid generation. A dry run is a practice pass: the call is checked, and no generation money is spent. A cost estimate only prices the work.
+Generation runs on provider servers, not on the laptop that holds the repo. Video, stills, and audio can run at the same time once a later phase turns that on. This phase does not send a paid generation. A dry run is a practice pass: the call is checked, and no generation money is spent. A cost estimate only prices the work. A generation plan is that quote in sentences, for any production that has boards or a shot list. The generation gate is a separate switch. A plan does not need it. A paid call does.
 
 ## Repository
 
@@ -26,7 +26,7 @@ Generation runs on provider servers, not on the laptop that holds the repo. Vide
 | `agents/04-cinematographer/` | Camera package and storyboard. The program is in `movie_swarm/`. |
 | `agents/05-production/` through `09-fix-loop/` | Coded crew: video, sound, edit, QA, and the fix loop. |
 | `agents/10-script-supervisor/`, `11-prop-master/`, `12-stunt-coordinator/` | Phase 2 roles. The programs are in `movie_swarm/`. |
-| `movie_swarm/` | Shared code: checklists, the run record, gates, money, the Director, the Line Producer, and the phase 2 package. |
+| `movie_swarm/` | Shared code: checklists, the run record, gates, money, the Director, the Line Producer, the phase 2 package, and the generation quote. |
 | `config/` | Gates, the $500 cap, model names, and the asset root. |
 | `schemas/` | The checklists. |
 | `productions/the-last-marker/` | The test film. |
@@ -48,7 +48,9 @@ Generation runs on provider servers, not on the laptop that holds the repo. Vide
 
 **Budget cap.** The film cap is $500 in `config/gates.json`. Landing on $500 is allowed. Going over pauses the spend and writes an approval request. Retakes use the same cap. After Ron approves the treatment, each stage also has its own ceiling. A retake spends from that stage's ceiling and from the film cap.
 
-**Model routing.** `config/model-routing.json` names the model for each role. The Line Producer and the question list use Claude Haiku 5.5. The Director's draft uses Claude Sonnet 5.5. The final treatment pass uses Claude Opus 5.5. The programs for video, sound, and QA still call the models they call today. The approved direction for later switches is decision D6.
+**Model routing.** `config/model-routing.json` names the model for each role. The Line Producer and the question list use Claude Haiku 5.5. The Director's draft uses Claude Sonnet 5.5. The final treatment pass uses Claude Opus 5.5. The older video program still calls Seedance 2.0. The generation pipeline reads the production role's preview and final purposes, which name Gemini Omni 1.2 Flash. Seedance and Kling stay alternates. A routing override can name one for a shot. The quote prices only models listed in `config/generation-rates.json`.
+
+**Generation gate.** `config/gates.json` has a `generation` switch. It starts on. Opening it is Ron's recorded yes on a run. A plan does not ask. A generate call does, after the treatment, the stage, and the previs gate are already open. This build's client still does not call a provider when the gate is open.
 
 **Asset root.** Finished video can live on an external drive. Set `MOVIE_SWARM_ASSET_ROOT`, or set `asset_root` in `config/assets.json`. Until one of those is set, files stay in the production folder. Nothing is moved by itself.
 
@@ -68,7 +70,8 @@ The choices already made are in [DECISIONS.md](DECISIONS.md). Short form:
 - A Stunt and Action Coordinator breaks the treatment's beats into shots (D12).
 - The Director reaches a treatment by asking Ron questions (D13). The Last Marker treatment gate is approved and the $500 split is locked (D29).
 - Docs and code land in the same pull request (D14).
-- Film facts stay in the production folder (D30).
+- Film facts stay in the production folder (D30). The pilot sound prompts moved there (D45, pending Ron's approval at merge).
+- The studio is built before the film (D41). Harbor Night proves a new picture tool. The Last Marker waits for the last phase.
 
 ## Interfaces
 
@@ -93,7 +96,7 @@ Crew the Director can call: `prop-master`, `script-supervisor`, `cinematographer
 
 Phase 2 commands are `lock`, `check`, `package`, `boards`, and `breakdown`. They read the approved treatment. They write files. They do not require the previs gate to be open already, because those files are what Ron reviews. Ron approved that gate for The Last Marker on 2026-11-10. The estimate is checked against an existing ceiling in the locked split and is not charged.
 
-Picture commands are `estimate` and `dry-run`. A picture call waits until Ron has approved the treatment, the previs gate, and that stage. Editor, QA, and the fix loop are routed and named. Their commands are not run here, because they would read or write the cut.
+Picture commands are `estimate`, `dry-run`, `plan`, and `generate`. Estimate and dry-run are the older local price check. A plan is the generation quote. It waits until Ron has approved the treatment, the previs gate, and that stage, and it does not spend. Generate is the paid path. It also waits for the generation gate. Editor, QA, and the fix loop are routed and named. Their commands are not run here, because they would read or write the cut.
 
 ## Line Producer
 
@@ -147,15 +150,19 @@ Hands off to: the Cinematographer and production, through that breakdown. Does n
 
 Inputs: a shot list JSON.
 
-Outputs: clip files, clip metadata, and a cost report, when a real run is allowed. This phase only runs the local price estimate, or a dry run that builds the request and does not call the video service.
+Outputs: clip files, clip metadata, and a cost report, when a real run is allowed. This phase writes a generation plan, or runs the older local price estimate, or a dry run that builds the request and does not call the video service. The plan reads the storyboard when one exists, otherwise a shot list. For each shot it names the generator, the clip length, the two takes it allows (one preview and one final), and the price. It adds the retake reserve and sets every line against the locked split. Rates come from `config/generation-rates.json`, with the source and the date. A line that is not a published price is marked as an assumption. Stills and sound are not priced, because that card has no rate for them.
 
-Hands off to: the editor and QA, through the clip metadata, once a later phase generates real clips. Today the handoff stops at the Line Producer's check.
+Before a prompt is sent, a locked prop that is in the shot must have its required phrase in the prompt. A forbidden phrase blocks the call. The phrases come from the production's prop file.
+
+After a client returns, `review_dailies` records those phrases. It does not watch a frame and it does not call a model. That hook is the Dailies Reviewer stub. Watching the picture is a later studio phase.
+
+Hands off to: Ron, through the plan, before any money moves. Hands off to the editor and QA, through clip metadata, once a later phase generates real clips. Today the paid call stops at the generation gate, and the default client does not leave the machine.
 
 ## Sound Designer
 
-Inputs: a shot list, and an output folder.
+Inputs: a shot list, an output folder, and `audio/sound-prompts.json` from the production when that file exists.
 
-Outputs: audio files and an audio manifest, when a real run is allowed. The dry run writes a manifest of what it would make, and does not call the audio service.
+Outputs: audio files and an audio manifest, when a real run is allowed. The dry run writes a manifest of what it would make, and does not call the audio service. A production with no prompt file gets an empty library. The manifest's production id comes from that file.
 
 Hands off to: the editor, through the audio manifest.
 
@@ -212,10 +219,11 @@ flowchart TD
 ## Not in this phase
 
 - A full orchestrator that runs every future role by itself.
-- Coverage, extra takes, a Dailies Reviewer, or an Assistant Editor.
+- A Dailies Reviewer that watches the picture. The hook is a stub.
+- Edit and assembly, sound and score beyond the prompt file, color and mix, or a finished delivery. Those are later studio phases, each proven on a fixture.
+- The Last Marker as a generated film. The approved previs stays. The first film phase is what makes it.
 - Color, a composer, Foley, a mixer, or a test audience.
 - QA on the full finished cut, or a Post Supervisor in place of the fix loop.
-- Real video or audio generation. No generation money is spent. Storyboard images stay behind an image client. The default client is none.
+- Real video or audio generation. No generation money is spent. The default client does not open a network connection. Storyboard images stay behind an image client. The default client is none.
 - Copying finished files to the external drive at the end of a run. The setting exists. The copy does not.
-- Switching the video program to Gemini Omni 1.2 Flash, or QA to Gemini. That direction is decided. The programs still call what they call today.
-- Moving the pilot sound library out of `agents/06-sound-designer/src/pipeline.py`. It still names this film. D30 says that list belongs in the production folder. That move is open.
+- Switching the older video program off Seedance. The new pipeline quotes Gemini Omni 1.2 Flash and does not call it.

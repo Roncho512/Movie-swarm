@@ -30,6 +30,7 @@ def test_pilot_audit_matches_the_recorded_gaps():
         "productions/the-last-marker/storyboard/storyboard.json",
         "productions/the-last-marker/storyboard/shot-list.json",
         "productions/the-last-marker/stunts/action-breakdown.json",
+        "productions/the-last-marker/audio/sound-prompts.json",
     }
     known = {
         "productions/the-last-marker/audio/audio-manifest.json": [
@@ -74,7 +75,7 @@ def test_pilot_audit_matches_the_recorded_gaps():
         assert by_path[path].status == "skip"
     assert audit_exit_code(items) == 0
     report = format_audit(items)
-    assert "16 passed" in report
+    assert "17 passed" in report
     assert "4 known mismatches" in report
     assert "0 failed" in report
 

@@ -1,0 +1,54 @@
+{
+  "version": "1.0.0",
+  "checked_on": "2026-11-10",
+  "assumptions": [
+    "Preview and final both use the published 720p Gemini Omni 1.2 Flash rate. Google says a draft can be 360p, and it does not publish a separate 360p price.",
+    "Each shot is quoted as two takes: one preview and one final.",
+    "The retake reserve is one extra preview of every priced shot. That is not a published fee. It counts against the production allocation.",
+    "A Gemini Omni clip shorter than 3 seconds is quoted at 3 seconds, and a clip longer than 15 seconds is split. Google publishes one-second lengths from 3 to 15. Shaping the call that way is an assumption.",
+    "Still frames are not priced. This card has no still-image rate, so the art-director line stays at $0.",
+    "Sound is not priced. This card has no audio-only rate, so the sound-designer line stays at $0.",
+    "The Dailies Reviewer is a stub and is priced at $0.",
+    "The fix-loop reserve is the locked fix-loop allocation when the split has one. It is not a new price. If the split has no fix-loop line, the reserve is $0."
+  ],
+  "generators": [
+    {
+      "model": "gemini-omni-1.2-flash",
+      "label": "Gemini Omni 1.2 Flash",
+      "usd_per_second": "0.07",
+      "resolution": "720p",
+      "min_seconds": "3",
+      "max_seconds": "15",
+      "source": "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/",
+      "source_date": "2026-11-05",
+      "quote": "$0.07 per second for 720p video. Clips run from 3 to 15 seconds."
+    },
+    {
+      "model": "seedance-2.0",
+      "label": "Seedance 2.0",
+      "usd_per_second": "0.3034",
+      "resolution": "720p",
+      "source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
+      "source_date": "2026-11-10",
+      "quote": "720p with audio is $0.3034 per second."
+    },
+    {
+      "model": "seedance-2.0-fast",
+      "label": "Seedance 2.0 fast",
+      "usd_per_second": "0.2419",
+      "resolution": "720p",
+      "source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
+      "source_date": "2026-11-10",
+      "quote": "720p fast with audio is $0.2419 per second."
+    },
+    {
+      "model": "kling-4.0",
+      "label": "Kling 4.0",
+      "usd_per_second": "0.157",
+      "resolution": "720p",
+      "source": "https://kling.ai/document-api/pricing/base/video.md",
+      "source_date": "2026-11-10",
+      "quote": "Kling 4.0 with no input video is $0.157 per second at 720p."
+    }
+  ]
+}

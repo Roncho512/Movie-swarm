@@ -86,169 +86,62 @@ def load_sound_plan(shot_list_path: str | Path) -> list[ShotAudioPlan]:
 
 
 # ---------------------------------------------------------------------------
-# SFX Library Definition for The Last Marker
+# Sound library
 # ---------------------------------------------------------------------------
 
-# These are the sound effects needed for the production, derived from
-# the shot list's sound_notes fields. Each entry defines what to generate.
+# Prompts live in the production folder, in audio/sound-prompts.json.
+# This program loads that file. It does not keep a film's prompts.
 
-LAST_MARKER_SFX_LIBRARY = [
-    AudioAsset(
-        asset_id="engine-healthy",
-        asset_type="sfx",
-        prompt="A vintage single-cylinder motorcycle engine at high RPM, cruising at 60 mph on an open road. Fast, steady, powerful exhaust note with rapid firing rhythm. Mechanical valve clatter at speed. Air rushing past the engine. Not idling — this engine is working hard, moving fast. Raw exhaust, no muffler.",
-        dest_path="sfx/engine-healthy.mp3",
-        duration=15.0,
-        prompt_influence=0.7,
-        assigned_shots=["s01-sh01", "s01-sh02", "s01-sh03", "s01-sh04", "s01-sh05"],
-        layer_notes="Primary engine sound for Scene 1. Loop as needed.",
-    ),
-    AudioAsset(
-        asset_id="engine-skip",
-        asset_type="sfx",
-        prompt="Single-cylinder vintage motorcycle engine with intermittent misfire. Deep thump rhythm with every third beat missing — a skip in the pattern. Engine recovers each time but the skip returns. Mechanical distress. 1960s British motorcycle.",
-        dest_path="sfx/engine-skip.mp3",
-        duration=10.0,
-        prompt_influence=0.7,
-        assigned_shots=["s01-sh05", "s02-sh01"],
-        layer_notes="Engine degradation begins. Crossfade from healthy to this.",
-    ),
-    AudioAsset(
-        asset_id="engine-death",
-        asset_type="sfx",
-        prompt="A motorcycle engine misfiring and shutting down. The engine fires unevenly three times, each firing weaker than the last, with longer gaps between. Then the engine stops completely and there is total mechanical silence. No human sounds. Only metal and exhaust. The final silence should last five seconds.",
-        dest_path="sfx/engine-death.mp3",
-        duration=8.0,
-        prompt_influence=0.8,
-        assigned_shots=["s02-sh01"],
-        layer_notes="The central event of Scene 2. The silence after must be absolute.",
-    ),
-    AudioAsset(
-        asset_id="engine-kick-fail",
-        asset_type="sfx",
-        prompt="Boot stomping on a motorcycle kick-start lever. Metallic clank of the lever. Engine turns over — compression, release — but does not catch. No ignition. Just the mechanical turning and the boot impact. Repeat once.",
-        dest_path="sfx/engine-kick-fail.mp3",
-        duration=4.0,
-        prompt_influence=0.8,
-        assigned_shots=["s04-sh02", "s04-sh03"],
-        layer_notes="First and second kick attempts. Engine turns but doesn't fire.",
-    ),
-    AudioAsset(
-        asset_id="engine-kick-catch",
-        asset_type="sfx",
-        prompt="Boot on motorcycle kick-start lever, engine turns, catches fire briefly then dies, catches again on second compression and holds. Rough idle — uneven, skipping every few beats. Not healthy. Something compromised choosing to function. Single-cylinder vintage motorcycle.",
-        dest_path="sfx/engine-kick-catch.mp3",
-        duration=6.0,
-        prompt_influence=0.8,
-        assigned_shots=["s04-sh04", "s04-sh05"],
-        layer_notes="Third kick succeeds. Engine runs rough.",
-    ),
-    AudioAsset(
-        asset_id="engine-rough-idle",
-        asset_type="sfx",
-        prompt="Single-cylinder vintage motorcycle engine running rough at low RPM. Uneven rhythm, skipping every few beats. Mechanical distress but still running. Compromised but functional. Deep thump with irregular gaps.",
-        dest_path="sfx/engine-rough-idle.mp3",
-        duration=15.0,
-        prompt_influence=0.7,
-        assigned_shots=["s04-sh05", "s04-sh06", "s04-sh07"],
-        layer_notes="Final engine state. Rough but running. Fades over closing shot.",
-    ),
-    AudioAsset(
-        asset_id="desert-wind-light",
-        asset_type="sfx",
-        prompt="Light desert wind. Dry air moving across flat terrain. Gentle, constant, with occasional soft gusts. No vegetation rustling — just air on sand and rock. Lonely and vast.",
-        dest_path="sfx/desert-wind-light.mp3",
-        duration=20.0,
-        prompt_influence=0.4,
-        assigned_shots=["s01-sh01", "s03-sh01", "s03-sh02"],
-        layer_notes="Background ambient for wide shots. Loop as needed.",
-    ),
-    AudioAsset(
-        asset_id="desert-silence",
-        asset_type="sfx",
-        prompt="Complete silence with very faint, almost subliminal low-frequency room tone. Not digital silence — the silence of a vast empty desert where the air itself is still. Barely perceptible.",
-        dest_path="sfx/desert-silence.mp3",
-        duration=10.0,
-        prompt_influence=0.3,
-        assigned_shots=["s02-sh01", "s02-sh03", "s03-sh01"],
-        layer_notes="The silence after the engine dies. Also used for diagnostic scene.",
-    ),
-    AudioAsset(
-        asset_id="tire-hardpan",
-        asset_type="sfx",
-        prompt="Motorcycle tire rolling on hard desert ground at moderate speed. Continuous hiss and crunch of dry packed earth under rubber. Small pebbles and grit. Steady and rhythmic.",
-        dest_path="sfx/tire-hardpan.mp3",
-        duration=10.0,
-        prompt_influence=0.6,
-        assigned_shots=["s01-sh02", "s01-sh04"],
-        layer_notes="Layer under engine sound for riding shots.",
-    ),
-    AudioAsset(
-        asset_id="pebble-spray",
-        asset_type="sfx",
-        prompt="Spray of sand and small pebbles kicked up by a motorcycle tire. Brief burst of grit hitting the ground and scattering. Desert terrain.",
-        dest_path="sfx/pebble-spray.mp3",
-        duration=3.0,
-        prompt_influence=0.7,
-        assigned_shots=["s01-sh04"],
-        layer_notes="Low angle pass-by shot.",
-    ),
-    AudioAsset(
-        asset_id="boot-on-lever",
-        asset_type="sfx",
-        prompt="A heavy leather boot stomping down on a metal motorcycle kick-start lever. Single impact. Metallic clang with leather thud.",
-        dest_path="sfx/boot-on-lever.mp3",
-        duration=1.5,
-        prompt_influence=0.8,
-        assigned_shots=["s04-sh02", "s04-sh03"],
-        layer_notes="Punctuation sound for kick attempts.",
-    ),
-    AudioAsset(
-        asset_id="cooling-metal",
-        asset_type="sfx",
-        prompt="Hot metal cooling and ticking. Quiet, irregular metallic clicks as a motorcycle engine cools down after being turned off. Tick... tick... tick. Slowing.",
-        dest_path="sfx/cooling-metal.mp3",
-        duration=15.0,
-        prompt_influence=0.6,
-        assigned_shots=["s02-sh02", "s02-sh03", "s03-sh01"],
-        layer_notes="Diagnostic scene ambient. Engine cooling after death.",
-    ),
-    AudioAsset(
-        asset_id="spark-plug-pull",
-        asset_type="sfx",
-        prompt="A spark plug being unscrewed from a motorcycle engine by hand. Metal threading out of metal. Then the plug pulled free with a slight pop. Close-mic mechanical detail.",
-        dest_path="sfx/spark-plug-pull.mp3",
-        duration=4.0,
-        prompt_influence=0.7,
-        assigned_shots=["s02-sh02"],
-        layer_notes="Diagnostic detail shot.",
-    ),
-]
 
-LAST_MARKER_DIALOGUE = [
-    AudioAsset(
-        asset_id="vega-primero-llegas",
-        asset_type="dialogue",
-        text="Primero llegas. Despues compites.",
-        prompt="A quiet, private decision spoken aloud. Barely audible. Under the breath.",
-        dest_path="dialogue/vega-primero-llegas.mp3",
-        voice_id=None,  # To be selected — needs Mexican male, mid-30s, weathered
-        assigned_shots=["s04-sh06"],
-        layer_notes="The only spoken words in the film. Barely audible under engine. Mix very low.",
-    ),
-]
+def _asset(item: dict, default_type: str) -> AudioAsset:
+    """One library row, whatever production wrote it."""
+    asset_id = str(item["asset_id"])
+    return AudioAsset(
+        asset_id=asset_id,
+        asset_type=str(item.get("asset_type") or default_type),
+        prompt=str(item.get("prompt") or ""),
+        dest_path=str(item.get("dest_path") or f"{default_type}/{asset_id}.mp3"),
+        duration=item.get("duration"),
+        prompt_influence=float(item.get("prompt_influence", 0.5)),
+        voice_id=item.get("voice_id"),
+        text=item.get("text"),
+        assigned_shots=[str(shot) for shot in item.get("assigned_shots") or []],
+        layer_notes=str(item.get("layer_notes") or ""),
+    )
 
-LAST_MARKER_MUSIC = [
-    AudioAsset(
-        asset_id="closing-guitar",
-        asset_type="music",
-        prompt="Solo nylon-string acoustic guitar. Three simple notes — a Mexican folk phrase, a question not an answer. Played once. Four seconds of silence. Played once more. Then silence. Sparse, lonely, unhurried. No accompaniment, no percussion, no bass. Just the guitar and the desert.",
-        dest_path="music/closing-guitar.mp3",
-        duration=20.0,
-        assigned_shots=["s04-sh07"],
-        layer_notes="Enters after engine fades in the closing shot. The last sound before silence.",
-    ),
-]
+
+def load_sound_library(path: str | Path) -> dict:
+    """Read sfx, dialogue, and music prompts from a production file."""
+    library_path = Path(path)
+    data = json.loads(library_path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"{library_path} must be a JSON object.")
+    return {
+        "production_id": str(data.get("production_id") or ""),
+        "path": str(library_path),
+        "sfx": [_asset(item, "sfx") for item in data.get("sfx") or [] if isinstance(item, dict)],
+        "dialogue": [_asset(item, "dialogue") for item in data.get("dialogue") or [] if isinstance(item, dict)],
+        "music": [_asset(item, "music") for item in data.get("music") or [] if isinstance(item, dict)],
+    }
+
+
+def find_sound_library(shot_list_path: str | Path) -> Path | None:
+    """Walk up from a shot list to audio/sound-prompts.json. Stop at the first hit."""
+    current = Path(shot_list_path).resolve()
+    for parent in [current.parent, *list(current.parents)[:8]]:
+        candidate = parent / "audio" / "sound-prompts.json"
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _refuse_paid_audio() -> None:
+    raise RuntimeError(
+        "Paid audio generation is closed in this build. "
+        "A real run has to go through the Director, and Ron has to approve the generation gate. "
+        "No audio was requested."
+    )
+
 
 
 # ---------------------------------------------------------------------------
@@ -272,15 +165,28 @@ class SoundDesignPipeline:
         self,
         shot_list_path: str | Path,
         output_dir: str | Path,
+        library_path: str | Path | None = None,
     ):
         self.shot_plans = load_sound_plan(shot_list_path)
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Asset registries
-        self.sfx_assets = list(LAST_MARKER_SFX_LIBRARY)
-        self.dialogue_assets = list(LAST_MARKER_DIALOGUE)
-        self.music_assets = list(LAST_MARKER_MUSIC)
+        library_file = Path(library_path) if library_path else find_sound_library(shot_list_path)
+        if library_file is not None and Path(library_file).is_file():
+            loaded = load_sound_library(library_file)
+        else:
+            loaded = {"production_id": "", "sfx": [], "dialogue": [], "music": []}
+        self.production_id = loaded["production_id"]
+        if not self.production_id:
+            try:
+                raw = json.loads(Path(shot_list_path).read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                raw = {}
+            if isinstance(raw, dict):
+                self.production_id = str(raw.get("production_id") or "")
+        self.sfx_assets = list(loaded["sfx"])
+        self.dialogue_assets = list(loaded["dialogue"])
+        self.music_assets = list(loaded["music"])
         self.generation_log: list[dict] = []
 
     def generate_sfx_library(
@@ -289,6 +195,8 @@ class SoundDesignPipeline:
         dry_run: bool = False,
     ) -> list[AudioAsset]:
         """Generate sound effects. Optionally filter by asset_id."""
+        if not dry_run:
+            _refuse_paid_audio()
         assets = self.sfx_assets
         if asset_ids:
             id_set = set(asset_ids)
@@ -339,6 +247,8 @@ class SoundDesignPipeline:
         dry_run: bool = False,
     ) -> list[AudioAsset]:
         """Generate dialogue lines."""
+        if not dry_run:
+            _refuse_paid_audio()
         logger.info("Generating %d dialogue lines...", len(self.dialogue_assets))
 
         for asset in self.dialogue_assets:
@@ -379,6 +289,8 @@ class SoundDesignPipeline:
         dry_run: bool = False,
     ) -> list[AudioAsset]:
         """Generate music/score."""
+        if not dry_run:
+            _refuse_paid_audio()
         logger.info("Generating %d music tracks...", len(self.music_assets))
 
         for asset in self.music_assets:
@@ -427,7 +339,7 @@ class SoundDesignPipeline:
                 })
 
         manifest = {
-            "production_id": "the-last-marker",
+            "production_id": self.production_id,
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "assets": [
                 {

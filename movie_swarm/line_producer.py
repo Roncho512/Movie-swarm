@@ -15,7 +15,15 @@ from pathlib import Path
 from movie_swarm.gates import budget_cap_usd, is_stage_gated, load_gate_config, would_exceed_budget
 from movie_swarm.handoff import read_handoff, write_handoff
 from movie_swarm.money import as_money, money_number
-from movie_swarm.roles import CALLABLE, GATED_CREW, PHASE2_BILLING, PHASE2_CREW, PICTURE_CREW, PREVIS_STAGE
+from movie_swarm.roles import (
+    CALLABLE,
+    GATED_CREW,
+    GENERATION_STAGE,
+    PHASE2_BILLING,
+    PHASE2_CREW,
+    PICTURE_CREW,
+    PREVIS_STAGE,
+)
 from movie_swarm.run_state import RunState, default_run_state_path
 from movie_swarm.treatment_doc import load_treatment, treatment_json_path, write_treatment_files
 
@@ -213,6 +221,21 @@ class LineProducer:
                 f"Recorded ${money_number(amount):.2f} for {stage} ({label}). "
                 f"The film has spent ${total:.2f} of ${float(self.run.data['budget_cap_usd']):.2f}."
             ),
+        )
+
+    def paid_generation_block(self) -> Authorization | None:
+        """Stop a paid call while the generation gate is still closed.
+
+        A dry run does not ask. Opening the gate is Ron's recorded yes.
+        This method does not book money.
+        """
+        if not is_stage_gated(GENERATION_STAGE, self.config_path):
+            return None
+        if self.gate_is_open(GENERATION_STAGE):
+            return None
+        return self._pause_gate(
+            GENERATION_STAGE,
+            "The generation gate is still closed. Ron has not approved a paid generation, so no provider was called.",
         )
 
     def authorize_crew(self, stage: str, amount_usd: float, description: str) -> Authorization:
@@ -440,6 +463,15 @@ class LineProducer:
             lines.append(
                 "Approve or reject the previs gate. "
                 "Read the prop lock, the continuity check, the camera package, the storyboard, and the action breakdown."
+            )
+        if (
+            self.gate_decision("previs") == "approved"
+            and is_stage_gated(GENERATION_STAGE, self.config_path)
+            and not self.gate_is_open(GENERATION_STAGE)
+        ):
+            lines.append(
+                "Approve or reject the generation gate before any paid image, video, or audio call. "
+                "A dry-run cost estimate does not need that approval."
             )
         return lines
 
