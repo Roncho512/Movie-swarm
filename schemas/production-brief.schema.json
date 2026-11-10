@@ -186,6 +186,38 @@
       "description": "Choices the human executive producer has already locked.",
       "items": { "type": "string" }
     },
+    "featured_product": {
+      "type": "object",
+      "description": "Optional. A product the film may show. Omit it when the film has no placement. The engine does not assume a product.",
+      "additionalProperties": false,
+      "required": ["product", "placement_intent"],
+      "properties": {
+        "product": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The product as this film names it."
+        },
+        "also_known_as": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Other words the script uses for the same product."
+        },
+        "target_audience": {
+          "type": "string",
+          "description": "Who the placement is for."
+        },
+        "placement_intent": {
+          "type": "string",
+          "minLength": 1,
+          "description": "How the product should sit in the story."
+        },
+        "rules": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "What the boards may and may not do with the product."
+        }
+      }
+    },
     "created_at": {
       "type": "string",
       "format": "date-time"

@@ -214,7 +214,7 @@
       "finding_id": "c-017"
     }
   ],
-  "checked_at": "2026-11-10T22:10:35Z",
+  "checked_at": "2026-11-10T22:36:11Z",
   "draft_method": "offline-deterministic",
   "model": "claude-haiku-5-5"
 }

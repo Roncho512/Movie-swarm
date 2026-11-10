@@ -131,7 +131,7 @@ Hands off to: Ron, at the previs gate. This is not the QA report. QA reads a cut
 
 Inputs: `look/look.json` when the production has one, otherwise the treatment's camera and color notes and the brief.
 
-Outputs: `camera/camera-package.json` (lenses, framing, lighting), `storyboard/storyboard.json` (board prompts and an animatic), and `storyboard/shot-list.json`. Image generation runs only when a caller passes an image client. The default path stores the prompt and does not make a picture.
+Outputs: `camera/camera-package.json` (lenses, framing, lighting), `storyboard/storyboard.json` (one beat per shot, plus an animatic), and `storyboard/shot-list.json`. The look is written once. A shot lists only its own frame, move, and light. A locked prop is named only when that beat puts it in frame. If the brief has a featured product, the storyboard lists those shots and why. Image generation runs only when a caller passes an image client. The default path stores the prompt and does not make a picture.
 
 Hands off to: production, through the shot list, after Ron approves the previs gate.
 

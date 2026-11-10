@@ -67,6 +67,17 @@
       "locked": true
     }
   ],
+  "featured_product": {
+    "product": "Breitling Top Time",
+    "also_known_as": ["Top Time"],
+    "target_audience": "The buyer who would wear this watch.",
+    "placement_intent": "Subtle. The film is quietly about this watch: time running out, the race, and choosing water over finishing. The dial is legible only in a few story-driven close views.",
+    "rules": [
+      "The dial is legible in a few key close-ups tied to time, the race, and water versus finishing.",
+      "Never make it ad-like. No logo-forward hero spins.",
+      "Do not add dialogue that names the brand. The script's one line does not name it."
+    ]
+  },
   "decisions": [
     "The film cap is $500. Retakes count against the same cap.",
     "The story is set in Baja California in 1967.",

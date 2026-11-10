@@ -4,7 +4,7 @@ Status as of 2026-11-10.
 
 Phase 0 merged to main on 2026-11-10 via PR https://github.com/Roncho512/Movie-swarm/pull/1, merge commit c369689. Phase 1 merged to main on 2026-11-10 via PR https://github.com/Roncho512/Movie-swarm/pull/3, merge commit da9d54a. The treatment validates, the question round is closed, nothing can spend past a gate or the cap without a recorded approval, and the Director reaches crew only through the Line Producer. Ron approved the treatment gate and the $500 split is locked. Spent: $0.00 of $500.00.
 
-Phase 2 has written the previs package for The Last Marker and left the previs gate waiting. Previs means the prop lock, the continuity check, the camera package, the storyboard, and the action breakdown. The continuity check flags 17 missing exhaust-side statements on the old pilot shot list. The new storyboard states the locks. Ron has not approved the package.
+Phase 2 has written the previs package for The Last Marker. Ron rejected the first storyboard: every shot in a scene repeated the same paragraph and the same look. The boards were rebuilt. Each shot is one beat. The look is stated once. A lock line appears only when that prop is in the frame. Three shots feature the Breitling, each for a story reason. The previs gate is still waiting. Ron has not approved the package. The old pilot shot list still has 17 missing exhaust-side statements.
 
 ## Phases
 
@@ -51,6 +51,7 @@ These are made. The write-up is in [DECISIONS.md](DECISIONS.md).
 - D28 — The proposed $500 split is the one Ron wants.
 - D29 — Ron approved the treatment gate. The split is locked on the run.
 - D30 — Film facts stay in the production folder. The engine does not hard-code a film's props, years, or look.
+- D38 — The Last Marker is a subtle placement for the Breitling Top Time. Not an ad.
 
 ## Open decisions
 

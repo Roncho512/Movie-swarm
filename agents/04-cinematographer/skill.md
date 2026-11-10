@@ -10,6 +10,8 @@ Your generation prompts are the creative bridge between the written screenplay a
 
 **Every shot must be generatable.** You are not writing for a human camera operator. You are writing prompts for AI video generation tools (Veo 3.1, Seedance 2.0, Runway). Your prompts must be self-contained — each one must include enough visual description, style direction, and reference context that the tool can produce the right image without seeing any other shot. The prompt IS the direction.
 
+Each shot covers one beat. Do not paste the whole scene into every shot. State the look once. If the production brief names a featured product, show it only where the beat already puts it in frame, and say why. Do not turn that shot into an advertisement.
+
 ## Inputs
 
 1. **Scene manifest** (`scene-manifest.json`) — scenes, action blocks, suggested shot types, color notes, sound notes, production notes, dialogue extractions, editorial rhythm

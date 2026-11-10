@@ -148,7 +148,7 @@ The sample film is The Last Marker, in `productions/the-last-marker/`.
 | `props/hero-props.json` | The same lock, after the Prop Master copies it. |
 | `look/look.json` | This film's lenses, framing, and lighting. |
 | `camera/camera-package.json` | The Cinematographer's package, copied from that look. |
-| `storyboard/` | Board prompts, an animatic plan, and a shot list. No images were generated. |
+| `storyboard/` | One beat per shot, the look stated once, and an animatic. No images were generated. Shots that show the featured watch are listed with a reason. |
 | `continuity/continuity-check.json` | Drift findings. The old pilot shot list is missing the locked exhaust phrase. |
 | `stunts/action-breakdown.json` | The treatment's two action beats, broken into shots. |
 

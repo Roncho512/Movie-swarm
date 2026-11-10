@@ -314,3 +314,11 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: The run record lists the new files. Spent stays $0.00 of $500.00. Approving previs does not change the split.
 - Who decided: Cursor cloud agent. Pending Ron's approval at merge.
 
+## D38 — The Last Marker is a subtle watch placement
+
+- Date: 2026-11-10
+- Context: Ron reviewed the storyboard and gave a new creative direction. The watch in the script is not a background detail.
+- Decision: The film is subtly about the specific Breitling in the script: a Breitling Top Time, black reverse panda dial, worn brown leather rally strap, on the left wrist. It is a very subtle product-placement piece for the buyer who would wear that watch. The dial is legible in a few key close-ups tied to time, the race, and choosing water over finishing. It is never ad-like. No logo-forward hero spins. No dialogue names the brand unless the script already does.
+- Consequences: The production brief can carry an optional featured-product section. Only The Last Marker fills one in. The boards name the shots that show the watch and why. The engine stays generic, per D30. A film with no featured product gets no placement section.
+- Who decided: Ron
+
