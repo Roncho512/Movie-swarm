@@ -76,12 +76,15 @@ def _minimal_model_treatment(production_id: str, logline: str, status: str = "dr
     return json.dumps(document)
 
 
-def test_committed_last_marker_treatment_is_an_unapproved_draft():
+def test_committed_last_marker_treatment_is_approved_by_ron():
     path = repo_root() / "productions" / "the-last-marker" / "treatment" / "treatment.json"
     document = json.loads(path.read_text(encoding="utf-8"))
-    assert document["status"] == "draft"
+    assert document["status"] == "approved"
+    assert document["version"] == "1.0.0"
     assert document["draft_method"] == "offline-deterministic"
-    assert document["approval"]["state"] == "pending"
+    assert document["approval"]["state"] == "approved"
+    assert document["approval"]["by"] == "ron"
+    assert document["approval"]["note"] == "Approve the treatment and lock the split."
     assert document["world_and_period"].startswith("Baja California, 1967")
     assert treatment_errors(document) == []
 

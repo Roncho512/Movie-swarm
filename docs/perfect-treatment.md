@@ -113,7 +113,7 @@ The shape of the cut, and how long it should run. Example: about three minutes. 
 
 ### Constraints and budget
 
-The film cap, and the proposed split across stages. The Last Marker cap is $500. Ron approved the drafted split in his answers. Retakes spend from the same buckets and the same cap. The Line Producer writes that split into its books only when Ron approves the treatment gate.
+The film cap, and the proposed split across stages. The Last Marker cap is $500. Ron approved the drafted split, then approved the treatment gate on 2026-11-10. That locked the split in the Line Producer's books. Retakes spend from the same buckets and the same cap.
 
 The draft's proposal, in dollars: director 20, line producer 5, screenwriter 5, art director 25, cinematographer 10, production 270, sound 55, editor 15, QA 45, fix loop 50, treatment 0.
 

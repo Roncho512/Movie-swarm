@@ -8,7 +8,7 @@ Phase 0 is on main. It merged on 2026-11-10 in [pull request 1](https://github.c
 
 Phase 1 adds two roles. The Line Producer watches the budget, the schedule, the credits, and the gates. The Director reads a screenplay and writes a treatment, which is the plan for the film before anyone generates a shot. The Director asks Ron questions in a file. Ron answers in a file. The Director cannot approve its own work.
 
-The Last Marker treatment is revised from Ron's round-1 answers on 2026-11-10. It is still a draft. The treatment gate is not approved. Spent so far on this run: $0.00 of $500.00. The film is set in 1967. The Triumph stays a 1965, with the exhaust locked on the right. The Breitling is locked on the left wrist.
+Ron approved the Last Marker treatment gate on 2026-11-10. The treatment status is approved, and the $500 stage split is locked on run phase-1. Spent so far: $0.00 of $500.00. The film is set in 1967. The Triumph stays a 1965, with the exhaust locked on the right. The Breitling is locked on the left wrist. Phase 1's work is done and is waiting for Ron to merge it.
 
 Older pilot files are still in the production folder. Scenes 1 and 2 were cut and reviewed before this phase. Those clips are not a finished film.
 
@@ -113,11 +113,11 @@ The sample film is The Last Marker, in `productions/the-last-marker/`.
 | File | What it is |
 |---|---|
 | `screenplay/Pilot_-_the_last_marker_screenplay.md` | The shooting script. |
-| `production-brief.json` | Ron's locked choices: $500, Baja California, 1967, the Leone look, the two hero props. Sidedness is still open. |
-| `treatment/treatment.md` | The revised draft. Not approved. |
-| `treatment/treatment.json` | The same draft in the form the checks can read. |
+| `production-brief.json` | Ron's locked choices: $500, Baja California, 1967, the Leone look, the two hero props. Exhaust on the right. Watch on the left wrist. |
+| `treatment/treatment.md` | The approved treatment. |
+| `treatment/treatment.json` | The same treatment in the form the checks can read. Status: approved. |
 | `treatment/questions.json` | Round 1, closed. Ron's answers are in the file. |
-| `runs/phase-1/` | The run record. Stage: treatment. Waiting on Ron. |
+| `runs/phase-1/` | The run record. Treatment gate approved. Stage split locked. Spent $0.00 of $500.00. |
 
 Hero props are the 1965 Triumph TR6SC and the Breitling Top Time. Ron locked the exhaust on the right and the watch on the left wrist.
 

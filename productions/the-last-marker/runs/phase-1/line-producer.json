@@ -16,19 +16,39 @@
     }
   ],
   "stage_allocations": {
-    "status": "unlocked",
-    "split": {},
-    "approved_at": null,
-    "approved_by": null,
-    "note": "The split locks when Ron approves the treatment."
+    "status": "approved",
+    "split": {
+      "director": 20.0,
+      "line-producer": 5.0,
+      "screenwriter": 5.0,
+      "art-director": 25.0,
+      "cinematographer": 10.0,
+      "production": 270.0,
+      "sound-designer": 55.0,
+      "editor": 15.0,
+      "qa": 45.0,
+      "fix-loop": 50.0,
+      "treatment": 0.0
+    },
+    "approved_at": "2026-11-10T20:39:31Z",
+    "approved_by": "ron",
+    "note": "Approve the treatment and lock the split."
   },
   "ledger": [],
-  "gate_decisions": [],
+  "gate_decisions": [
+    {
+      "stage": "treatment",
+      "decision": "approved",
+      "by": "ron",
+      "note": "Approve the treatment and lock the split.",
+      "decided_at": "2026-11-10T20:39:31Z"
+    }
+  ],
   "requests": [],
   "schedule": {
     "line-producer": "pending",
     "director": "pending",
-    "treatment": "waiting-for-review",
+    "treatment": "approved",
     "screenwriter": "pending",
     "art-director": "pending",
     "cinematographer": "pending",
@@ -38,5 +58,5 @@
     "qa": "pending",
     "fix-loop": "pending"
   },
-  "updated_at": "2026-11-10T19:46:33Z"
+  "updated_at": "2026-11-10T20:39:31Z"
 }

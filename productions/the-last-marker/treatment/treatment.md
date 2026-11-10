@@ -1,6 +1,6 @@
 # The Last Marker — treatment
 
-**Status: draft. Not approved.**
+**Status: approved.**
 
 This draft was written offline, without a model, because no API key was used. The label on the draft is offline-deterministic.
 Ron approves this through the Line Producer. The Director cannot approve it.

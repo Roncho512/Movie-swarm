@@ -2,7 +2,7 @@
   "production_id": "the-last-marker",
   "run_id": "phase-1",
   "stage": "treatment",
-  "status": "waiting-for-review",
+  "status": "running",
   "artifacts": [
     {
       "name": "treatment",
@@ -21,6 +21,6 @@
   ],
   "cost_usd": 0.0,
   "budget_cap_usd": 500.0,
-  "updated_at": "2026-11-10T20:11:18Z",
-  "notes": "Questions for this round are answered. The treatment is still a draft until Ron approves the gate."
+  "updated_at": "2026-11-10T20:39:31Z",
+  "notes": "Ron approved the treatment gate."
 }

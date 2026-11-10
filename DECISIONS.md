@@ -228,9 +228,18 @@ Choices that are already made. Each entry has the context, the decision, what fo
 
 ## D28 — The $500 split Ron wants
 
+- Status: The number choice stands. The "gate still open" part is superseded by D29.
 - Date: 2026-11-10
 - Context: The draft proposed a split of the $500 cap. The numbers add up to $500.
 - Decision: The proposed split is approved as written. Director $20, line producer $5, screenwriter $5, art director $25, cinematographer $10, production $270, sound $55, editor $15, QA $45, fix loop $50, treatment $0.
-- Consequences: The numbers stay on the treatment. Retakes use the same buckets and the same cap. The Line Producer has not locked them into the run yet. That happens when Ron approves the treatment gate, which he has not done.
+- Consequences: The numbers stay on the treatment. Retakes use the same buckets and the same cap. D29 is what locks them into the run.
+- Who decided: Ron
+
+## D29 — The treatment gate is approved
+
+- Date: 2026-11-10
+- Context: Ron read the revised treatment and said, "Approve the treatment and lock the split."
+- Decision: Approve the Last Marker treatment gate. Lock the $500 stage split from D28 into run phase-1.
+- Consequences: `treatment.json` status is approved, version 1.0.0, approval by Ron, with that note. The Line Producer record shows the stage allocations as approved. Spent so far is $0.00 of $500.00. Other stage gates stay on. This does not merge the branch.
 - Who decided: Ron
 

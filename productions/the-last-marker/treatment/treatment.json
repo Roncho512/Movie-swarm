@@ -1,11 +1,11 @@
 {
-  "version": "0.1.0",
-  "status": "draft",
+  "version": "1.0.0",
+  "status": "approved",
   "approval": {
-    "state": "pending",
-    "by": null,
-    "at": null,
-    "note": "The Director cannot approve. Ron approves through the Line Producer."
+    "state": "approved",
+    "by": "ron",
+    "at": "2026-11-10T20:39:31Z",
+    "note": "Approve the treatment and lock the split."
   },
   "production_id": "the-last-marker",
   "title": "The Last Marker",
