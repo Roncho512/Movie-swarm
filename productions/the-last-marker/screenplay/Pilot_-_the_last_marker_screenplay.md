@@ -8,7 +8,7 @@ Runtime: 3 Minutes
 
 Aspect Ratio: 2.39:1 Anamorphic
 
-Visual Style: 16mm Ektachrome, 1966
+Visual Style: 16mm Ektachrome, 1967
 
 Draft 1.0 - April 2026
 
@@ -18,11 +18,11 @@ Draft 1.0 - April 2026
 
 **CONCEPT:**
 
-A solo motorcycle racer crosses the Baja desert in 1966. His bike is failing. He is lost. He finds a trail marker left by a rider who came before him. The marker points two directions. He has to choose. Three minutes. Almost no dialogue. Pure visual storytelling. A complete pulp fiction narrative told in images, engine sound, and desert light.
+A solo motorcycle racer crosses the Baja desert in 1967. His bike is failing. He is lost. He finds a trail marker left by a rider who came before him. The marker points two directions. He has to choose. Three minutes. Almost no dialogue. Pure visual storytelling. A complete pulp fiction narrative told in images, engine sound, and desert light.
 
 **CHARACTER:**
 
-MIGUEL VEGA, 30. Mexican. Lean. Sun-darkened skin, deep lines around the eyes from years of squinting into wind and light. He rides a 1965 Triumph TR6SC Trophy, desert-modified with knobby tires and a stripped fairing. He is not a professional racer. He is a ranch hand from outside Tecate who races because the desert is the only place big enough to hold the thing inside him that has no name. He wears a white cotton shirt, brown leather vest, khaki pants, and boots that have been resoled twice. Goggles pushed up on his forehead when not riding. No helmet. This is 1966. On his left wrist he wears a Breitling Top Time with a black reverse panda dial on a worn brown leather rally strap. He won it in a card game from a crop duster pilot in Mexicali. It is the most precise thing he owns.
+MIGUEL VEGA, 30. Mexican. Lean. Sun-darkened skin, deep lines around the eyes from years of squinting into wind and light. He rides a 1965 Triumph TR6SC Trophy, desert-modified with knobby tires and a stripped fairing. He is not a professional racer. He is a ranch hand from outside Tecate who races because the desert is the only place big enough to hold the thing inside him that has no name. He wears a white cotton shirt, brown leather vest, khaki pants, and boots that have been resoled twice. Goggles pushed up on his forehead when not riding. No helmet. This is 1967. On his left wrist he wears a Breitling Top Time with a black reverse panda dial on a worn brown leather rally strap. He won it in a card game from a crop duster pilot in Mexicali. It is the most precise thing he owns.
 
 **VISUAL LANGUAGE:**
 
