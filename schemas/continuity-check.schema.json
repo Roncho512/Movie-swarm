@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "continuity-check.schema.json",
+  "title": "Continuity Check",
+  "description": "The Script Supervisor's check before anyone generates a shot. It compares shots and scenes with the locked hero props. It is not the QA report, which is written after a cut exists.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id", "verdict", "findings", "checked_at"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "verdict": { "type": "string", "enum": ["clear", "drift"] },
+    "summary": { "type": "string" },
+    "sources": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "severity", "kind", "detail"],
+        "properties": {
+          "finding_id": { "type": "string", "pattern": "^c-[0-9]+$" },
+          "severity": { "type": "string", "enum": ["critical", "major", "minor"] },
+          "kind": { "type": "string", "enum": ["contradiction", "unstated"] },
+          "detail": { "type": "string", "minLength": 1 },
+          "prop_id": { "type": "string" },
+          "fact_id": { "type": "string" },
+          "attribute_id": { "type": "string" },
+          "scene_id": { "type": "string" },
+          "shot_id": { "type": "string" },
+          "source": { "type": "string" },
+          "expected": { "type": "string" },
+          "observed": { "type": "string" }
+        }
+      }
+    },
+    "checked_at": { "type": "string", "format": "date-time" },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
+    "model": { "type": ["string", "null"] }
+  }
+}

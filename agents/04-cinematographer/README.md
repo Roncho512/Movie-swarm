@@ -37,11 +37,8 @@ Translates scenes into precise shot lists with generation prompts and tool routi
 
 ## Status
 
-- [ ] Skill file written
-- [ ] Shot list output validated against schema
-- [ ] Generation prompts quality-tested
-- [ ] Tool routing logic tested
+The program reads the production's look file and the approved treatment. It writes a camera package and a storyboard. It does not invent a look, and it does not generate images unless a caller passes an image client.
 
 ## Build Order
 
-Build in Phase 2, after Screenwriter and Art Director outputs exist.
+Run it through the Director, after Ron has approved the treatment. The previs gate stays closed until Ron reviews the package.

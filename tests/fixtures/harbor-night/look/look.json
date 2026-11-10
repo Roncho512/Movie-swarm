@@ -1,0 +1,28 @@
+{
+  "version": "1.0.0",
+  "production_id": "harbor-night",
+  "look_name": "modern documentary",
+  "summary": "Handheld. Available fluorescent light. Modern documentary.",
+  "aspect_ratio": "16:9",
+  "lenses": [
+    {
+      "lens_id": "handheld",
+      "name": "standard handheld",
+      "focal_length": "35mm",
+      "use": "Stay close to the person without a stylized frame."
+    }
+  ],
+  "framing": [
+    {
+      "id": "observational",
+      "description": "Handheld and level. No extreme vista."
+    }
+  ],
+  "lighting": [
+    {
+      "id": "practical",
+      "description": "Available fluorescent light. No sun."
+    }
+  ],
+  "palette": ["cool gray", "fluorescent green"]
+}

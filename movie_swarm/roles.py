@@ -10,13 +10,39 @@ Ron reviews. They still cannot pass the film cap or a locked stage allocation.
 from __future__ import annotations
 
 
-GATED_CREW = (
+# Picture calls. Each one has its own gate, and it also waits for the previs gate.
+PICTURE_CREW = (
     "production",
     "sound-designer",
     "editor",
     "qa",
     "fix-loop",
 )
+
+# The old name. A spend on one of these still waits for that stage's gate.
+GATED_CREW = PICTURE_CREW
+
+# Phase 2 writes the package Ron reviews at the previs gate.
+# The call does not require that gate to be open already. The files are the review.
+PHASE2_CREW = (
+    "script-supervisor",
+    "prop-master",
+    "cinematographer",
+    "stunt-coordinator",
+)
+
+CALLABLE = PICTURE_CREW + PHASE2_CREW
+
+# Which locked ceiling a phase 2 estimate is checked against.
+# The dollar amounts stay the split Ron already locked. No new bucket is added.
+PHASE2_BILLING = {
+    "script-supervisor": "screenwriter",
+    "prop-master": "art-director",
+    "cinematographer": "cinematographer",
+    "stunt-coordinator": "production",
+}
+
+PREVIS_STAGE = "previs"
 
 PREP_STAGES = (
     "director",

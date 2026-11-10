@@ -1,0 +1,64 @@
+{
+  "version": "1.0.0",
+  "status": "approved",
+  "approval": {
+    "state": "approved",
+    "by": "ron",
+    "at": "2026-11-10T00:00:00Z",
+    "note": "Fixture approval. This is not The Last Marker."
+  },
+  "production_id": "harbor-night",
+  "title": "Harbor Night",
+  "logline": "A night worker ties a red scarf and steps onto a dock.",
+  "theme_and_emotional_intent": {
+    "theme": "Stay.",
+    "emotional_intent": "Quiet attention."
+  },
+  "tone_and_genre": {
+    "tone": "Observational and cool.",
+    "genre": "documentary"
+  },
+  "characters": [
+    {
+      "name": "Ada",
+      "role": "protagonist",
+      "look": "Forty. Short hair. Dark coat."
+    }
+  ],
+  "scenes": [
+    {
+      "scene_id": "s01",
+      "heading": "EXT. HARBOR DOCK - NIGHT",
+      "what_happens": "Ada stands under a fluorescent lamp. The red scarf is on her right shoulder. She ties it again and steps onto the dock.",
+      "emotional_purpose": "The night is ordinary.",
+      "approximate_duration_seconds": 8,
+      "coverage_intent": "WIDE, CLOSE"
+    }
+  ],
+  "deliverables": {
+    "aspect_ratio": "16:9",
+    "resolution": "1920x1080",
+    "length": "1 minute"
+  },
+  "open_questions": [],
+  "camera_lens_film_stock": "Handheld. Available fluorescent light. Modern documentary.",
+  "color_and_light_plan": "Cool fluorescent. No sun.",
+  "hero_props": [
+    {
+      "name": "Red scarf",
+      "locked_spec": "Wool, red, worn on the right shoulder.",
+      "sidedness": "scarf on the right shoulder",
+      "reference_images": []
+    }
+  ],
+  "action_and_stunt_beats": [
+    "She ties the scarf and steps onto the dock."
+  ],
+  "constraints_and_budget": {
+    "budget_cap_usd": 500,
+    "stage_split": {
+      "treatment": 0,
+      "production": 500
+    }
+  }
+}

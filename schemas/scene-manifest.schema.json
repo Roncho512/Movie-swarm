@@ -64,11 +64,11 @@
           "heading": {
             "type": "string",
             "description": "Standard screenplay scene heading.",
-            "examples": ["EXT. BAJA CALIFORNIA - OPEN DESERT - LATE AFTERNOON"]
+            "examples": ["EXT. OPEN COUNTRY - DAY"]
           },
           "location": {
             "type": "string",
-            "examples": ["Baja California - Open Desert"]
+            "examples": ["Open country"]
           },
           "time_of_day": {
             "type": "string",

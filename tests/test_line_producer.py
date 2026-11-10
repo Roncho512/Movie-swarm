@@ -93,6 +93,7 @@ def test_stage_allocation_blocks_a_retake_until_ron_approves(tmp_path):
     producer = LineProducer.start(production, run_id="run-1")
     producer.approve_gate("treatment", "approved", "ron", note="Lock the small split.")
     producer.approve_gate("production", "approved", "ron", note="Picture may spend.")
+    producer.approve_gate("previs", "approved", "ron", note="The package is reviewed.")
     assert producer.record["stage_allocations"]["status"] == "approved"
     first = producer.record_spend("production", 6, "first take")
     assert first.recorded is True

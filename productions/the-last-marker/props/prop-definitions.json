@@ -1,0 +1,70 @@
+{
+  "version": "1.0.0",
+  "production_id": "the-last-marker",
+  "status": "draft",
+  "source": "Ron's locks. The Prop Master copies this file. It does not invent the values.",
+  "facts": [
+    {
+      "fact_id": "setting-year",
+      "label": "setting year",
+      "value": "1967",
+      "required_phrases": [],
+      "forbidden_phrases": ["set in 1966", "the year is 1966", "story year is 1966"],
+      "must_be_stated": false
+    }
+  ],
+  "props": [
+    {
+      "prop_id": "triumph-tr6sc",
+      "name": "1965 Triumph TR6SC",
+      "kind": "vehicle",
+      "aliases": ["Triumph", "TR6SC", "motorcycle"],
+      "locked_spec": "Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust is locked on the right side.",
+      "reference_images": [],
+      "attributes": [
+        {
+          "attribute_id": "exhaust-side",
+          "label": "exhaust side",
+          "value": "right",
+          "must_be_stated_when_visible": true,
+          "required_phrases": ["exhaust on the right", "right-side exhaust", "right side exhaust"],
+          "forbidden_phrases": [
+            "exhaust on the left",
+            "left-side exhaust",
+            "left side exhaust",
+            "no exhaust",
+            "exhaust missing",
+            "exhaust vanished",
+            "without an exhaust"
+          ]
+        },
+        {
+          "attribute_id": "model-year",
+          "label": "model year",
+          "value": "1965",
+          "must_be_stated_when_visible": false,
+          "required_phrases": [],
+          "forbidden_phrases": ["1966 Triumph", "1967 Triumph", "1964 Triumph", "1968 Triumph"]
+        }
+      ]
+    },
+    {
+      "prop_id": "breitling-top-time",
+      "name": "Breitling Top Time",
+      "kind": "prop",
+      "aliases": ["Breitling", "Top Time"],
+      "locked_spec": "Black reverse panda dial on a worn brown leather rally strap. Locked on the left wrist.",
+      "reference_images": [],
+      "attributes": [
+        {
+          "attribute_id": "wrist",
+          "label": "wrist",
+          "value": "left",
+          "must_be_stated_when_visible": true,
+          "required_phrases": ["left wrist"],
+          "forbidden_phrases": ["right wrist", "other wrist", "watch missing", "no watch"]
+        }
+      ]
+    }
+  ]
+}

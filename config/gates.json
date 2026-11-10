@@ -12,6 +12,7 @@
     "sound-designer": true,
     "editor": true,
     "qa": true,
-    "fix-loop": true
+    "fix-loop": true,
+    "previs": true
   }
 }

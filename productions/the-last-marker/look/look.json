@@ -1,0 +1,38 @@
+{
+  "version": "1.0.0",
+  "production_id": "the-last-marker",
+  "look_name": "Sergio Leone spaghetti western",
+  "summary": "Locked 2.39:1 widescreen. Extreme wide vistas cut against tight eye close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Harsh sun. Dusty palette.",
+  "aspect_ratio": "2.39:1",
+  "lenses": [
+    {
+      "lens_id": "vista",
+      "name": "extreme wide",
+      "focal_length": "wide anamorphic",
+      "use": "Extreme wide vistas. The land is larger than the rider."
+    },
+    {
+      "lens_id": "eyes",
+      "name": "tight close",
+      "focal_length": "long",
+      "use": "Tight close-ups on the eyes."
+    }
+  ],
+  "framing": [
+    {
+      "id": "wide-to-close",
+      "description": "Extreme wide vistas cut against tight eye close-ups."
+    },
+    {
+      "id": "holds",
+      "description": "Long holds, then sharp cuts. Mostly a still camera, with slow push-ins."
+    }
+  ],
+  "lighting": [
+    {
+      "id": "sun",
+      "description": "Harsh sun. Dust in the air. The day moves from amber to bronze to rose to blue dusk."
+    }
+  ],
+  "palette": ["amber", "ochre", "bronze", "rose", "cool dusk blue", "dust"]
+}

@@ -14,6 +14,6 @@ python3 scripts/director.py --production productions/the-last-marker --run phase
   --answers productions/the-last-marker/treatment/questions.json
 ```
 
-`dispatch` calls production, sound, the editor, QA, or the fix loop. The Line Producer checks the gate and the cap first. This phase can price a shot list or dry-run a command. It does not buy a generation.
+`dispatch` calls the phase 2 roles, production, sound, the editor, QA, or the fix loop. The Line Producer checks the gate and the cap first. Phase 2 writes the previs package. A picture call waits until Ron approves that gate. This phase can price a shot list or dry-run a command. It does not buy a generation.
 
 Inputs can be Markdown, Fountain, PDF, or Word, or a partial treatment, or both. The guide for a finished treatment is `docs/perfect-treatment.md`.

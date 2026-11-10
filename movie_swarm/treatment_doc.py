@@ -366,8 +366,7 @@ def build_questions(treatment: dict, script_text: str = "") -> dict:
             "why": "What we hide is a directing choice, not a guess from the screenplay.",
             "question": (
                 "What should the audience not know yet? "
-                "For example, do we withhold whether the canyon really has water, and whether he gets out? "
-                "Your answer is saved on the scene where he chooses."
+                "Name it. The answer is saved on the scenes it matches, and on the last scene."
             ),
             "answer": None,
         },
@@ -386,7 +385,7 @@ def build_questions(treatment: dict, script_text: str = "") -> dict:
             "id": "q-props",
             "topic": "hero-props",
             "required": True,
-            "why": "The last pilot drifted on exhaust side and watch wrist. Those stay open until you lock them.",
+            "why": "A hero prop drifts if its side or placement is not locked.",
             "question": prop_text,
             "answer": None,
         },
@@ -615,12 +614,13 @@ def treatment_errors(treatment: dict) -> list[str]:
 
 
 def _apply_withheld(treatment: dict, answer: str) -> None:
-    """Save what the audience must not know on the choice, and on any canyon scene."""
+    """Save the withhold on scenes that share a word with the answer, and on the last scene."""
     scenes = treatment.get("scenes") or []
+    words = {word for word in re.findall(r"[A-Za-z]{5,}", answer)}
     targets = []
     for scene in scenes:
         blob = f"{scene.get('heading', '')} {scene.get('what_happens', '')}"
-        if re.search(r"canyon|agua", blob, re.I):
+        if any(word.casefold() in blob.casefold() for word in words):
             targets.append(scene)
     if scenes and scenes[-1] not in targets:
         targets.append(scenes[-1])
@@ -629,58 +629,34 @@ def _apply_withheld(treatment: dict, answer: str) -> None:
 
 
 def _apply_hero_props(treatment: dict, answer: str) -> None:
-    """Lock exhaust side and watch wrist when Ron's answer names them."""
-    text = answer.lower()
-    exhaust_side = None
-    if re.search(r"exhaust\D{0,40}right|right\D{0,24}exhaust", text):
-        exhaust_side = "right"
-    elif re.search(r"exhaust\D{0,40}left|left\D{0,24}exhaust", text):
-        exhaust_side = "left"
-    wrist = None
-    if re.search(r"left\s+wrist", text):
-        wrist = "left"
-    elif re.search(r"right\s+wrist", text):
-        wrist = "right"
-    if exhaust_side is None and wrist is None and not confirms_draft(answer):
-        for prop in treatment.get("hero_props") or []:
-            prop["locked_spec"] = answer
-            prop["sidedness"] = answer
+    """Lock a prop when Ron's answer names it. The prop names come from the treatment."""
+    props = treatment.get("hero_props") or []
+    if not props:
         return
-    for prop in treatment.get("hero_props") or []:
-        name = prop.get("name", "").lower()
+    if confirms_draft(answer):
+        return
+    sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", answer.strip()) if part.strip()]
+    if not sentences:
+        sentences = [answer.strip()]
+    matched = False
+    for prop in props:
+        tokens = [token for token in re.findall(r"[A-Za-z0-9]+", prop.get("name") or "") if len(token) > 3]
+        hit = ""
+        for sentence in sentences:
+            if any(token.casefold() in sentence.casefold() for token in tokens):
+                hit = sentence.strip()
+                break
+        if not hit:
+            continue
+        matched = True
+        prop["sidedness"] = hit.rstrip(".")
         spec = prop.get("locked_spec") or prop.get("name") or ""
-        if exhaust_side and ("triumph" in name or "exhaust" in name or "bike" in name):
-            prop["sidedness"] = f"exhaust on the {exhaust_side}"
-            spec = re.sub(
-                r"Exhaust side is not locked\.?",
-                f"Exhaust is locked on the {exhaust_side} side.",
-                spec,
-            )
-            if f"exhaust is locked on the {exhaust_side}" not in spec.lower():
-                spec = spec.rstrip(".") + f". Exhaust is locked on the {exhaust_side} side."
-            prop["locked_spec"] = spec
-        if wrist and any(word in name for word in ("breitling", "watch", "top time")):
-            prop["sidedness"] = f"{wrist} wrist"
-            spec = re.sub(
-                r"Which wrist it sits on is not locked\.?",
-                f"Locked on the {wrist} wrist.",
-                spec,
-                flags=re.I,
-            )
-            if f"locked on the {wrist} wrist" not in spec.lower():
-                spec = spec.rstrip(".") + f". Locked on the {wrist} wrist."
-            prop["locked_spec"] = spec
-    if wrist:
-        for person in treatment.get("characters") or []:
-            specs = person.get("continuity_specs") or ""
-            if not specs:
-                continue
-            person["continuity_specs"] = re.sub(
-                r"Which wrist it sits on is not locked\.?",
-                f"Locked on the {wrist} wrist.",
-                specs,
-                flags=re.I,
-            )
+        if hit.casefold() not in spec.casefold():
+            prop["locked_spec"] = spec.rstrip(".") + ". " + hit
+    if not matched:
+        for prop in props:
+            prop["sidedness"] = answer.strip()
+            prop["locked_spec"] = answer.strip()
 
 
 def _apply_one(treatment: dict, topic: str, answer: str) -> None:
@@ -820,7 +796,7 @@ def _scenes(script: ParsedSource | None, script_text: str) -> list[dict]:
         if durations.get(index):
             item["approximate_duration_seconds"] = durations[index]
         if re.search(r"\bPOV\b", body):
-            item["point_of_view"] = "The rider, for the shot marked POV. The rest of the scene is observed."
+            item["point_of_view"] = "The character, for the shot marked POV. The rest of the scene is observed."
         coverage = _coverage(body)
         if coverage:
             item["coverage_intent"] = coverage
@@ -851,12 +827,6 @@ def _emotional_purpose(body: str) -> str:
     if thesis:
         sentence = thesis.group(1).strip().rstrip(".")
         return sentence[:1].upper() + sentence[1:] + "."
-    choice = re.search(r"(A man who chose to live[^.]*\.)", body)
-    if choice:
-        return choice.group(1).strip()
-    decision = re.search(r"(Decision is a physical thing[^.]*\.)", body)
-    if decision:
-        return decision.group(1).strip()
     color = re.search(r"\[COLOR:\s*([^\]]+)\]", body)
     if color:
         return "The light carries the feeling. " + _shorten(re.sub(r"\s+", " ", color.group(1)).strip(), 240)
@@ -890,13 +860,7 @@ def _logline(script_text: str, brief: dict | None) -> str:
 
 
 def _theme_and_intent(script_text: str, brief: dict | None) -> tuple[str, str]:
-    if re.search(r"chose to live", script_text, re.I):
-        theme = "Arrive first. Winning can wait."
-        intent = (
-            "The audience should feel how small the rider is, then the shock of the engine dying, "
-            "then the quiet relief of a choice to live."
-        )
-        return theme, intent
+    del script_text
     concept = (brief or {}).get("concept") or ""
     return (
         "The theme is still open.",
@@ -907,10 +871,14 @@ def _theme_and_intent(script_text: str, brief: dict | None) -> tuple[str, str]:
 def _tone_and_genre(brief: dict | None, script_text: str) -> tuple[str, str]:
     tone = (brief or {}).get("tone") or ""
     genre = (brief or {}).get("genre") or ""
-    if not tone and re.search(r"leone|western", script_text, re.I):
-        tone = "Sparse, tense, sun-bleached."
-    if not genre and re.search(r"western", script_text, re.I):
-        genre = "western"
+    if not genre:
+        match = re.search(
+            r"\b(western|comedy|drama|documentary|horror|thriller)\b",
+            script_text,
+            re.I,
+        )
+        if match:
+            genre = match.group(1).casefold()
     return tone or "Tone is still open.", genre or "drama"
 
 
@@ -945,8 +913,10 @@ def _world(script_text: str, brief: dict | None) -> str:
         text = f"{place}, {year}."
         return (text + " " + note).strip()
     year = re.search(r"\bin (\d{4})\b", script_text)
-    if "baja" in script_text.lower():
-        return "Baja California, " + (year.group(1) if year else "year not set") + "."
+    heading = re.search(r"\b(?:EXT|INT)\.\s+([^-\n]+)", script_text)
+    if heading or year:
+        place = heading.group(1).strip(" .") if heading else "Place not set"
+        return place + ", " + (year.group(1) if year else "year not set") + "."
     return "World and period are still open."
 
 
@@ -970,23 +940,6 @@ def _hero_props(script_text: str, brief: dict | None) -> list[dict]:
             "reference_images": [],
         }
         props.append(item)
-    if props:
-        return props
-    if re.search(r"triumph", script_text, re.I):
-        props.append({
-            "name": "1965 Triumph TR6SC",
-            "locked_spec": "1965 Triumph. Exhaust side is not locked in this draft.",
-            "sidedness": "not locked",
-            "reference_images": [],
-        })
-    if re.search(r"top time|breitling", script_text, re.I):
-        wrist = "left wrist" if re.search(r"left wrist", script_text, re.I) else "wrist not stated"
-        props.append({
-            "name": "Breitling Top Time",
-            "locked_spec": f"Breitling Top Time. The screenplay currently says {wrist}. Not locked.",
-            "sidedness": "not locked",
-            "reference_images": [],
-        })
     return props
 
 
@@ -1015,10 +968,10 @@ def _lookbook(brief: dict | None) -> list[dict]:
             "take": style.get("description") or "Use the reference for framing and pace, not as a copy.",
         })
     music = ((brief or {}).get("sound_design") or {}).get("music_approach") or ""
-    if re.search(r"morricone", music, re.I):
+    if music.strip():
         items.append({
-            "reference": "Ennio Morricone, spirit only",
-            "take": "A score in that spirit. Do not copy a melody.",
+            "reference": "Score approach",
+            "take": music.strip(),
         })
     return items
 
@@ -1031,27 +984,32 @@ def _feelings(script_text: str) -> list[dict]:
 
 
 def _action_beats(script_text: str) -> list[str]:
+    """Quote action sentences from the screenplay. Do not invent a beat."""
     beats = []
-    if re.search(r"kick", script_text, re.I):
-        beats.append(
-            "Three kicks on the Triumph. The engine fails, teases, then catches rough. "
-            "The kick starter is on the right in the screenplay."
-        )
-    if re.search(r"spark plug|porcelain", script_text, re.I):
-        beats.append(
-            "He taps the cracked spark-plug porcelain with a stone so the plug might fire. It is a field fix, not a repair."
-        )
+    pattern = re.compile(r"\b(kicks?|falls?|jumps?|punches|stumbles|crashes|fights)\b", re.I)
+    for sentence in re.split(r"(?<=[.!?])\s+", script_text):
+        cleaned = _shorten(sentence, 280)
+        if pattern.search(cleaned) and cleaned not in beats:
+            beats.append(cleaned)
+        if len(beats) >= 6:
+            break
     return beats
 
 
 def _prop_question(props: list[dict], script_text: str) -> str:
-    exhaust = "the right" if re.search(r"right-side exhaust", script_text, re.I) else "an unstated side"
-    wrist = "the left wrist" if re.search(r"left wrist", script_text, re.I) else "an unstated wrist"
-    names = ", ".join(prop["name"] for prop in props) or "the hero props"
+    del script_text
+    if not props:
+        return (
+            "Name the hero props, if this film has any. "
+            "For each one, lock the attribute that must not drift. Name the prop in your answer."
+        )
+    described = []
+    for prop in props:
+        side = prop.get("sidedness") or "not locked"
+        described.append(f"{prop['name']} ({side})")
     return (
-        f"Hero props ({names}) are not locked. "
-        f"The screenplay currently puts the Triumph exhaust on {exhaust} and the watch on {wrist}. "
-        "Lock both: which side is the exhaust on, and which wrist is the watch on?"
+        "Hero props: " + "; ".join(described) + ". "
+        "Lock each one. Name the prop and the attribute you are locking."
     )
 
 

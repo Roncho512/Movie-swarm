@@ -30,13 +30,9 @@ Establishes the visual language. The consistency anchor for the entire productio
 
 - Midjourney (stylized concept art, mood boards)
 
-## Key Requirements for The Last Marker
+## Key Requirements
 
-- Miguel Vega must be recognizable across all 25 shots
-- The 1965 Triumph TR6SC must be visually consistent (single cylinder, right-side exhaust, distinct tank shape)
-- The Breitling Top Time must be identifiable in 3 shots across 3 scenes (black reverse panda dial, worn brown leather rally strap)
-- Four distinct lighting conditions need style frames (amber → bronze → rose → blue dusk)
-- Desert environment refs showing the same mountain range at different times of day
+Read them from the production brief and the locked hero props. Do not copy another film's props or year into this agent. A character must stay recognizable. A hero prop must match its locked spec. Environment refs stay the same place as the light changes.
 
 ## Status
 

@@ -42,7 +42,7 @@ When a clip needs regeneration, the fix loop modifies the original generation pr
 
 1. **Lighting fix:** Add explicit lighting direction to the prompt. Example: QA says "golden hour lost in sh02" → add "warm golden sunset light, low sun angle from camera-left, long amber shadows" to the prompt.
 2. **Continuity fix:** Add reference to the adjacent shot. Example: QA says "goggles position changes" → add "rider wearing goggles over eyes, matching previous shot" to the prompt.
-3. **Environment fix:** Add explicit environment anchors. Example: QA says "desert type changes" → add "Baja California desert, Sonoran landscape with saguaro cactus and red rock formations" to the prompt.
+3. **Environment fix:** Add the place named in the production brief. Example: QA says "the place changes between shots" → add the brief's place, in the brief's words, to the prompt.
 4. **Technical fix:** Adjust generation parameters. Example: QA says "resolution drop" → re-run at higher quality tier.
 
 The modified prompt is stored in the fix plan alongside the original, so you can see exactly what changed.

@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "production_id": "the-last-marker",
+  "safety_policy": "Stage the beat as separate shots. One movement per shot. Do not ask anyone to take a real impact, a real fall from height, or a real fire. Keep the body supported. The action has to be possible in the place the scene already describes.",
+  "beats": [
+    {
+      "beat_id": "beat-001",
+      "source": "Three kicks on the Triumph. The engine fails, teases, then catches rough. The kick starter is on the right in the screenplay.",
+      "shots": [
+        {
+          "shot_id": "stunt-01-sh01",
+          "action": "Three kicks on the Triumph.",
+          "plausible": true,
+          "safety": "Stage the beat as separate shots. One movement per shot. Do not ask anyone to take a real impact, a real fall from height, or a real fire. Keep the body supported. The action has to be possible in the place the scene already describes."
+        },
+        {
+          "shot_id": "stunt-01-sh02",
+          "action": "The engine fails, teases, then catches rough.",
+          "plausible": true,
+          "safety": "Stage the beat as separate shots. One movement per shot. Do not ask anyone to take a real impact, a real fall from height, or a real fire. Keep the body supported. The action has to be possible in the place the scene already describes."
+        },
+        {
+          "shot_id": "stunt-01-sh03",
+          "action": "The kick starter is on the right in the screenplay.",
+          "plausible": true,
+          "safety": "Stage the beat as separate shots. One movement per shot. Do not ask anyone to take a real impact, a real fall from height, or a real fire. Keep the body supported. The action has to be possible in the place the scene already describes."
+        }
+      ]
+    },
+    {
+      "beat_id": "beat-002",
+      "source": "He taps the cracked spark-plug porcelain with a stone so the plug might fire. It is a field fix, not a repair.",
+      "shots": [
+        {
+          "shot_id": "stunt-02-sh01",
+          "action": "He taps the cracked spark-plug porcelain with a stone so the plug might fire.",
+          "plausible": true,
+          "safety": "Stage the beat as separate shots. One movement per shot. Do not ask anyone to take a real impact, a real fall from height, or a real fire. Keep the body supported. The action has to be possible in the place the scene already describes."
+        },
+        {
+          "shot_id": "stunt-02-sh02",
+          "action": "It is a field fix, not a repair.",
+          "plausible": true,
+          "safety": "Stage the beat as separate shots. One movement per shot. Do not ask anyone to take a real impact, a real fall from height, or a real fire. Keep the body supported. The action has to be possible in the place the scene already describes."
+        }
+      ]
+    }
+  ],
+  "draft_method": "offline-deterministic",
+  "model": "claude-sonnet-5-5",
+  "created_at": "2026-11-10T22:10:35Z"
+}

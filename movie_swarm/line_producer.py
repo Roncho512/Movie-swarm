@@ -15,7 +15,7 @@ from pathlib import Path
 from movie_swarm.gates import budget_cap_usd, is_stage_gated, load_gate_config, would_exceed_budget
 from movie_swarm.handoff import read_handoff, write_handoff
 from movie_swarm.money import as_money, money_number
-from movie_swarm.roles import GATED_CREW
+from movie_swarm.roles import CALLABLE, GATED_CREW, PHASE2_BILLING, PHASE2_CREW, PICTURE_CREW, PREVIS_STAGE
 from movie_swarm.run_state import RunState, default_run_state_path
 from movie_swarm.treatment_doc import load_treatment, treatment_json_path, write_treatment_files
 
@@ -217,36 +217,42 @@ class LineProducer:
 
     def authorize_crew(self, stage: str, amount_usd: float, description: str) -> Authorization:
         """Gate and budget check before the Director calls a crew agent. Does not book money."""
-        if stage not in GATED_CREW:
+        if stage not in CALLABLE:
             raise LineProducerError(
                 f"{stage} is not a crew agent the Director can call. "
-                f"Calls go to: {', '.join(GATED_CREW)}."
+                f"Calls go to: {', '.join(CALLABLE)}."
             )
+        billing = PHASE2_BILLING.get(stage, stage)
+        self._require_known_stage(billing)
         amount = self._check_amount(amount_usd)
-        allowance = self._allowance(stage, amount)
+        allowance = self._allowance(billing, amount)
         if allowance is not None:
             return Authorization(
                 allowed=True,
                 message=(
-                    f"Ron already approved this ${money_number(amount):.2f} {stage} estimate "
+                    f"Ron already approved this ${money_number(amount):.2f} {billing} estimate "
                     f"({allowance['request_id']}). The call can proceed. It will not be charged."
                 ),
                 allowance_request_id=allowance["request_id"],
             )
+        gate_block = self._crew_gate_block(stage)
+        if gate_block is not None:
+            return gate_block
         block = self._block_reason(
-            stage,
+            billing,
             amount,
             books_money=False,
             description=description,
-            crew_gates=True,
+            crew_gates=False,
         )
         if block is not None:
             return block
+        where = billing if billing != stage else stage
         return Authorization(
             allowed=True,
             message=(
                 f"{stage} is allowed. The estimate ${money_number(amount):.2f} fits the cap "
-                "and the stage allocation. No money is charged for a dry run or an estimate."
+                f"and the {where} allocation. No money is charged for a dry run or an estimate."
             ),
         )
 
@@ -429,6 +435,12 @@ class LineProducer:
         for request in self.record["requests"]:
             if request["status"] == "pending":
                 lines.append(f"{request['request_id']}: {request['reason']}")
+        package = self.production_dir / "props" / "hero-props.json"
+        if package.is_file() and self.gate_decision("previs") != "approved":
+            lines.append(
+                "Approve or reject the previs gate. "
+                "Read the prop lock, the continuity check, the camera package, the storyboard, and the action breakdown."
+            )
         return lines
 
     def _still_waiting(self) -> bool:
@@ -470,16 +482,9 @@ class LineProducer:
         crew_gates: bool,
     ) -> Authorization | None:
         if crew_gates and stage in GATED_CREW:
-            if is_stage_gated("treatment", self.config_path) and not self.gate_is_open("treatment"):
-                return self._pause_gate(
-                    "treatment",
-                    f"The treatment gate is still closed. The Director cannot call {stage} until Ron approves the treatment.",
-                )
-            if is_stage_gated(stage, self.config_path) and not self.gate_is_open(stage):
-                return self._pause_gate(
-                    stage,
-                    f"The {stage} gate is still closed. Ron has not approved that stage, so this call was not made.",
-                )
+            gate_block = self._crew_gate_block(stage)
+            if gate_block is not None:
+                return gate_block
         spent = as_money(self.run.data["cost_usd"])
         cap = as_money(self.run.data["budget_cap_usd"])
         if would_exceed_budget(amount, spent_usd=spent, cap_usd=cap):
@@ -510,6 +515,30 @@ class LineProducer:
                         "The film cap was not the blocker. Nothing was charged."
                     ),
                 )
+        return None
+
+    def _crew_gate_block(self, stage: str) -> Authorization | None:
+        """The gates a call must already have open. Phase 2 drafts are the review, so their own gate stays shut."""
+        if is_stage_gated("treatment", self.config_path) and not self.gate_is_open("treatment"):
+            return self._pause_gate(
+                "treatment",
+                f"The treatment gate is still closed. The Director cannot call {stage} until Ron approves the treatment.",
+            )
+        if stage in PHASE2_CREW:
+            return None
+        if stage in PICTURE_CREW and is_stage_gated(stage, self.config_path) and not self.gate_is_open(stage):
+            return self._pause_gate(
+                stage,
+                f"The {stage} gate is still closed. Ron has not approved that stage, so this call was not made.",
+            )
+        if stage in PICTURE_CREW and is_stage_gated(PREVIS_STAGE, self.config_path) and not self.gate_is_open(PREVIS_STAGE):
+            return self._pause_gate(
+                PREVIS_STAGE,
+                (
+                    f"The previs gate is still closed. Previs is the phase 2 package: props, continuity, "
+                    f"camera, storyboards, and stunts. Ron has not reviewed it, so {stage} was not called."
+                ),
+            )
         return None
 
     def _pause_gate(self, stage: str, reason: str) -> Authorization:

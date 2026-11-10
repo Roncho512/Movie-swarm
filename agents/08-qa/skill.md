@@ -73,7 +73,7 @@ The QA agent evaluates the cut across seven dimensions:
 - Film grain / vintage aesthetic consistent
 - Color palette matches style bible
 - Camera language matches cinematographer's shot list (wide, medium, close-up)
-- Overall look matches the reference period (1960s Baja)
+- Overall look matches the production brief and the style bible
 
 ## Execution Strategy
 
@@ -133,7 +133,7 @@ Produce a structured QA report with:
       "timestamp": "25.0s",
       "description": "Desert landscape changes from Sonoran (cactus) to Mojave (scrubland) at the sh02→sh03 cut.",
       "evidence_frames": ["frames/s01-sh02-end.png", "frames/s01-sh03-start.png"],
-      "recommendation": "Regenerate s01-sh03 with Baja desert environment reference.",
+      "recommendation": "Regenerate the shot with the environment reference from the style bible.",
       "assigned_to": "production"
     }
   ],
