@@ -35,8 +35,26 @@ def main(argv: list[str] | None = None) -> int:
     answer.add_argument("--answers", required=True, help="Answers file, or the questions file with answers filled in")
 
     dispatch = sub.add_parser("dispatch", help="Call a crew agent through the Line Producer")
-    dispatch.add_argument("--agent", required=True, choices=["production", "sound-designer", "editor", "qa", "fix-loop"])
-    dispatch.add_argument("--crew-command", required=True, choices=["estimate", "dry-run"])
+    dispatch.add_argument(
+        "--agent",
+        required=True,
+        choices=[
+            "production",
+            "sound-designer",
+            "editor",
+            "qa",
+            "fix-loop",
+            "prop-master",
+            "script-supervisor",
+            "cinematographer",
+            "stunt-coordinator",
+        ],
+    )
+    dispatch.add_argument(
+        "--crew-command",
+        required=True,
+        choices=["estimate", "dry-run", "lock", "check", "package", "boards", "breakdown"],
+    )
     dispatch.add_argument("--estimate", type=float, required=True, help="Dollars to check against the cap. An estimate command is usually 0.")
     dispatch.add_argument("--shot-list")
     dispatch.add_argument("--output-dir")

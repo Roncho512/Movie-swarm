@@ -289,7 +289,7 @@ def test_lock_it_keeps_the_draft_and_prop_sides_are_recorded():
         "q-arcs": "He wants to finish the race, but in the end water (life) is more important. (He chooses life over winning.)",
         "q-withheld": "Withhold whether the canyon really has water.",
         "q-action": "Yes, those beats.",
-        "q-props": "Yes, lock exhaust on the RIGHT side and the watch on the LEFT wrist.",
+        "q-props": "Lock the Triumph: exhaust on the right. Lock the Breitling: left wrist.",
         "q-budget": "Looks good, approve the proposed split as written.",
     }
     apply_answers(treatment, questions, answers)
@@ -301,9 +301,9 @@ def test_lock_it_keeps_the_draft_and_prop_sides_are_recorded():
     assert treatment["action_and_stunt_beats"] == ["Three kicks."]
     triumph = treatment["hero_props"][0]
     watch = treatment["hero_props"][1]
-    assert triumph["sidedness"] == "exhaust on the right"
+    assert "exhaust on the right" in triumph["sidedness"].lower()
     assert "right" in triumph["locked_spec"].lower()
-    assert watch["sidedness"] == "left wrist"
+    assert "left wrist" in watch["sidedness"].lower()
     assert "left wrist" in watch["locked_spec"].lower()
     assert treatment["constraints_and_budget"]["stage_split"]["production"] == 270
     assert questions["status"] == "closed"

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "action-breakdown.schema.json",
+  "title": "Action Breakdown",
+  "description": "The Stunt and Action Coordinator turns each action beat from the treatment into shots. The beats come from the production. The safety line is the same for every film.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id", "beats", "safety_policy"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "safety_policy": { "type": "string", "minLength": 1 },
+    "beats": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["beat_id", "source", "shots"],
+        "properties": {
+          "beat_id": { "type": "string", "pattern": "^beat-[0-9]+$" },
+          "source": { "type": "string", "minLength": 1 },
+          "shots": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["shot_id", "action", "plausible", "safety"],
+              "properties": {
+                "shot_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+                "action": { "type": "string", "minLength": 1 },
+                "plausible": { "type": "boolean" },
+                "safety": { "type": "string", "minLength": 1 },
+                "note": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
+    "model": { "type": ["string", "null"] },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

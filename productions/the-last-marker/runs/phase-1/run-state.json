@@ -1,8 +1,8 @@
 {
   "production_id": "the-last-marker",
   "run_id": "phase-1",
-  "stage": "treatment",
-  "status": "running",
+  "stage": "previs",
+  "status": "waiting-for-review",
   "artifacts": [
     {
       "name": "treatment",
@@ -17,10 +17,60 @@
       "name": "questions",
       "path": "treatment/questions.json",
       "schema": "director-questions.schema.json"
+    },
+    {
+      "name": "hero-props",
+      "path": "props/hero-props.json",
+      "schema": "hero-props.schema.json"
+    },
+    {
+      "name": "hero-props-notes",
+      "path": "props/hero-props.md"
+    },
+    {
+      "name": "camera-package",
+      "path": "camera/camera-package.json",
+      "schema": "camera-package.schema.json"
+    },
+    {
+      "name": "camera-notes",
+      "path": "camera/camera-package.md"
+    },
+    {
+      "name": "storyboard",
+      "path": "storyboard/storyboard.json",
+      "schema": "storyboard.schema.json"
+    },
+    {
+      "name": "storyboard-notes",
+      "path": "storyboard/storyboard.md"
+    },
+    {
+      "name": "storyboard-shot-list",
+      "path": "storyboard/shot-list.json",
+      "schema": "shot-list.schema.json"
+    },
+    {
+      "name": "continuity-check",
+      "path": "continuity/continuity-check.json",
+      "schema": "continuity-check.schema.json"
+    },
+    {
+      "name": "continuity-notes",
+      "path": "continuity/continuity-check.md"
+    },
+    {
+      "name": "action-breakdown",
+      "path": "stunts/action-breakdown.json",
+      "schema": "action-breakdown.schema.json"
+    },
+    {
+      "name": "action-notes",
+      "path": "stunts/action-breakdown.md"
     }
   ],
   "cost_usd": 0.0,
   "budget_cap_usd": 500.0,
-  "updated_at": "2026-11-10T20:39:31Z",
-  "notes": "Ron approved the treatment gate."
+  "updated_at": "2026-11-10T22:10:35Z",
+  "notes": "The phase 2 package is waiting on Ron. Previs means the prop lock, the continuity check, the camera package, the storyboard, and the action breakdown. The Director did not approve them."
 }

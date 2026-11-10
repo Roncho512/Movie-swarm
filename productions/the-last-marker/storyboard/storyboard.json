@@ -1,0 +1,147 @@
+{
+  "version": "1.0.0",
+  "production_id": "the-last-marker",
+  "shot_list_path": "storyboard/shot-list.json",
+  "frames": [
+    {
+      "order": 1,
+      "shot_id": "s01-sh01",
+      "scene_id": "s01",
+      "board_prompt": "extreme wide. Look: Locked 2.39:1 widescreen. Extreme wide vistas cut against tight eye close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Harsh sun. Dusty palette. Frame: Extreme wide vistas cut against tight eye close-ups. Light: Harsh sun. Dust in the air. The day moves from amber to bronze to rose to blue dusk. Palette: amber, ochre, bronze, rose, cool dusk blue, dust. Action: EXTREME WIDE. The Baja desert. Flat hardpan stretching to a mountain range on the horizon. Cardon cacti scattered across the landscape like sentries. The sky is enormous. The sun is low in the west, turning everything amber. Hold this frame for four seconds. Empty. Still. Then: A dust trail appears at the far left of the frame. Moving right. Tiny. A white line drawn across the brown landscape. It takes three full seconds for the source to become visible: a motorcycle. A man on a machine\u2026 Locked prop 1965 Triumph TR6SC: Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust is locked on the right side.. exhaust on the right.",
+      "duration_seconds": 11.25,
+      "image_status": "not-generated",
+      "image_ref": null
+    },
+    {
+      "order": 2,
+      "shot_id": "s01-sh02",
+      "scene_id": "s01",
+      "board_prompt": "low angle. Look: Locked 2.39:1 widescreen. Extreme wide vistas cut against tight eye close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Harsh sun. Dusty palette. Frame: Extreme wide vistas cut against tight eye close-ups. Light: Harsh sun. Dust in the air. The day moves from amber to bronze to rose to blue dusk. Palette: amber, ochre, bronze, rose, cool dusk blue, dust. Action: EXTREME WIDE. The Baja desert. Flat hardpan stretching to a mountain range on the horizon. Cardon cacti scattered across the landscape like sentries. The sky is enormous. The sun is low in the west, turning everything amber. Hold this frame for four seconds. Empty. Still. Then: A dust trail appears at the far left of the frame. Moving right. Tiny. A white line drawn across the brown landscape. It takes three full seconds for the source to become visible: a motorcycle. A man on a machine\u2026 Locked prop 1965 Triumph TR6SC: Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust is locked on the right side.. exhaust on the right.",
+      "duration_seconds": 11.25,
+      "image_status": "not-generated",
+      "image_ref": null
+    },
+    {
+      "order": 3,
+      "shot_id": "s01-sh03",
+      "scene_id": "s01",
+      "board_prompt": "tracking. Look: Locked 2.39:1 widescreen. Extreme wide vistas cut against tight eye close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Harsh sun. Dusty palette. Frame: Extreme wide vistas cut against tight eye close-ups. Light: Harsh sun. Dust in the air. The day moves from amber to bronze to rose to blue dusk. Palette: amber, ochre, bronze, rose, cool dusk blue, dust. Action: EXTREME WIDE. The Baja desert. Flat hardpan stretching to a mountain range on the horizon. Cardon cacti scattered across the landscape like sentries. The sky is enormous. The sun is low in the west, turning everything amber. Hold this frame for four seconds. Empty. Still. Then: A dust trail appears at the far left of the frame. Moving right. Tiny. A white line drawn across the brown landscape. It takes three full seconds for the source to become visible: a motorcycle. A man on a machine\u2026 Locked prop 1965 Triumph TR6SC: Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust is locked on the right side.. exhaust on the right.",
+      "duration_seconds": 11.25,
+      "image_status": "not-generated",
+      "image_ref": null
+    },
+    {
+      "order": 4,
+      "shot_id": "s01-sh04",
+      "scene_id": "s01",
+      "board_prompt": "detail. Look: Locked 2.39:1 widescreen. Extreme wide vistas cut against tight eye close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Harsh sun. Dusty palette. Frame: Extreme wide vistas cut against tight eye close-ups. Light: Harsh sun. Dust in the air. The day moves from amber to bronze to rose to blue dusk. Palette: amber, ochre, bronze, rose, cool dusk blue, dust. Action: EXTREME WIDE. The Baja desert. Flat hardpan stretching to a mountain range on the horizon. Cardon cacti scattered across the landscape like sentries. The sky is enormous. The sun is low in the west, turning everything amber. Hold this frame for four seconds. Empty. Still. Then: A dust trail appears at the far left of the frame. Moving right. Tiny. A white line drawn across the brown landscape. It takes three full seconds for the source to become visible: a motorcycle. A man on a machine\u2026 Locked prop 1965 Triumph TR6SC: Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust is locked on the right side.. exhaust on the right.",
+      "duration_seconds": 11.25,
+      "image_status": "not-generated",
+      "image_ref": null
+    },
+    {
+      "order": 5,
+      "shot_id": "s02-sh01",
+      "scene_id": "s02",
+      "board_prompt": "close. Look: Locked 2.39:1 widescreen. Extreme wide vistas cut against tight eye close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Harsh sun. Dusty palette. Frame: Extreme wide vistas cut against tight eye close-ups. Light: Harsh sun. Dust in the air. The day moves from amber to bronze to rose to blue dusk. Palette: amber, ochre, bronze, rose, cool dusk blue, dust. Action: The terrain has changed. The flat hardpan gives way to a rocky wash. Larger stones. Uneven footing. The Triumph picks its way through, Vega standing on the pegs, letting the bike move underneath him. The engine coughs. A hard, wet sound. Vega blips the throttle. The engine catches. Coughs again. He pulls in the clutch. Coasts. Tries the throttle again. The engine sputters, fires unevenly for three seconds, and dies. The Triumph rolls to a stop. Vega puts both boots on the ground. Sits on the\u2026 Locked prop 1965 Triumph TR6SC: Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust is locked on the right side.. exhaust on the right.",
+      "duration_seconds": 22.5,
+      "image_status": "not-generated",
+      "image_ref": null
+    },
+    {
+      "order": 6,
+      "shot_id": "s02-sh02",
+      "scene_id": "s02",
+      "board_prompt": "wide. Look: Locked 2.39:1 widescreen. Extreme wide vistas cut against tight eye close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Harsh sun. Dusty palette. Frame: Extreme wide vistas cut against tight eye close-ups. Light: Harsh sun. Dust in the air. The day moves from amber to bronze to rose to blue dusk. Palette: amber, ochre, bronze, rose, cool dusk blue, dust. Action: The terrain has changed. The flat hardpan gives way to a rocky wash. Larger stones. Uneven footing. The Triumph picks its way through, Vega standing on the pegs, letting the bike move underneath him. The engine coughs. A hard, wet sound. Vega blips the throttle. The engine catches. Coughs again. He pulls in the clutch. Coasts. Tries the throttle again. The engine sputters, fires unevenly for three seconds, and dies. The Triumph rolls to a stop. Vega puts both boots on the ground. Sits on the\u2026 Locked prop 1965 Triumph TR6SC: Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust is locked on the right side.. exhaust on the right.",
+      "duration_seconds": 22.5,
+      "image_status": "not-generated",
+      "image_ref": null
+    },
+    {
+      "order": 7,
+      "shot_id": "s03-sh01",
+      "scene_id": "s03",
+      "board_prompt": "detail. Look: Locked 2.39:1 widescreen. Extreme wide vistas cut against tight eye close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Harsh sun. Dusty palette. Frame: Extreme wide vistas cut against tight eye close-ups. Light: Harsh sun. Dust in the air. The day moves from amber to bronze to rose to blue dusk. Palette: amber, ochre, bronze, rose, cool dusk blue, dust. Action: Vega walks. He has left the bike. He carries nothing. His boots crunch on the rocky ground. He is walking in the direction he was riding, following the faint tire tracks of riders who came through here before him. Looking for something. Any sign of the course. Any marker. DETAIL SHOT: His boots on the ground. Worn leather. The sole of the left boot is separating at the toe. Each step kicks up a small cloud of dust that the low sun turns pink. He crests a low rise and stops. VEGA'S POV: Ahead\u2026",
+      "duration_seconds": 16.667,
+      "image_status": "not-generated",
+      "image_ref": null
+    },
+    {
+      "order": 8,
+      "shot_id": "s03-sh02",
+      "scene_id": "s03",
+      "board_prompt": "pov. Look: Locked 2.39:1 widescreen. Extreme wide vistas cut against tight eye close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Harsh sun. Dusty palette. Frame: Extreme wide vistas cut against tight eye close-ups. Light: Harsh sun. Dust in the air. The day moves from amber to bronze to rose to blue dusk. Palette: amber, ochre, bronze, rose, cool dusk blue, dust. Action: Vega walks. He has left the bike. He carries nothing. His boots crunch on the rocky ground. He is walking in the direction he was riding, following the faint tire tracks of riders who came through here before him. Looking for something. Any sign of the course. Any marker. DETAIL SHOT: His boots on the ground. Worn leather. The sole of the left boot is separating at the toe. Each step kicks up a small cloud of dust that the low sun turns pink. He crests a low rise and stops. VEGA'S POV: Ahead\u2026",
+      "duration_seconds": 16.667,
+      "image_status": "not-generated",
+      "image_ref": null
+    },
+    {
+      "order": 9,
+      "shot_id": "s03-sh03",
+      "scene_id": "s03",
+      "board_prompt": "close. Look: Locked 2.39:1 widescreen. Extreme wide vistas cut against tight eye close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Harsh sun. Dusty palette. Frame: Extreme wide vistas cut against tight eye close-ups. Light: Harsh sun. Dust in the air. The day moves from amber to bronze to rose to blue dusk. Palette: amber, ochre, bronze, rose, cool dusk blue, dust. Action: Vega walks. He has left the bike. He carries nothing. His boots crunch on the rocky ground. He is walking in the direction he was riding, following the faint tire tracks of riders who came through here before him. Looking for something. Any sign of the course. Any marker. DETAIL SHOT: His boots on the ground. Worn leather. The sole of the left boot is separating at the toe. Each step kicks up a small cloud of dust that the low sun turns pink. He crests a low rise and stops. VEGA'S POV: Ahead\u2026",
+      "duration_seconds": 16.667,
+      "image_status": "not-generated",
+      "image_ref": null
+    },
+    {
+      "order": 10,
+      "shot_id": "s04-sh01",
+      "scene_id": "s04",
+      "board_prompt": "extreme wide. Look: Locked 2.39:1 widescreen. Extreme wide vistas cut against tight eye close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Harsh sun. Dusty palette. Frame: Extreme wide vistas cut against tight eye close-ups. Light: Harsh sun. Dust in the air. The day moves from amber to bronze to rose to blue dusk. Palette: amber, ochre, bronze, rose, cool dusk blue, dust. Action: Vega walks back to the Triumph. He kneels beside the engine one more time. Pulls the fouled plug. Holds it up. Studies it. Then he does something unexpected. He places the plug on a flat rock. Picks up a smaller stone. Carefully, precisely, he taps the cracked porcelain insulator with the stone. Once. Twice. On the third tap, the loose fragment of cracked porcelain falls away, exposing clean insulator underneath. Not repaired. But the short circuit caused by the crack is eliminated. The plug\u2026 Locked prop 1965 Triumph TR6SC: Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust is locked on the right side.. exhaust on the right.",
+      "duration_seconds": 10.0,
+      "image_status": "not-generated",
+      "image_ref": null
+    },
+    {
+      "order": 11,
+      "shot_id": "s04-sh02",
+      "scene_id": "s04",
+      "board_prompt": "detail. Look: Locked 2.39:1 widescreen. Extreme wide vistas cut against tight eye close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Harsh sun. Dusty palette. Frame: Extreme wide vistas cut against tight eye close-ups. Light: Harsh sun. Dust in the air. The day moves from amber to bronze to rose to blue dusk. Palette: amber, ochre, bronze, rose, cool dusk blue, dust. Action: Vega walks back to the Triumph. He kneels beside the engine one more time. Pulls the fouled plug. Holds it up. Studies it. Then he does something unexpected. He places the plug on a flat rock. Picks up a smaller stone. Carefully, precisely, he taps the cracked porcelain insulator with the stone. Once. Twice. On the third tap, the loose fragment of cracked porcelain falls away, exposing clean insulator underneath. Not repaired. But the short circuit caused by the crack is eliminated. The plug\u2026 Locked prop 1965 Triumph TR6SC: Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust is locked on the right side.. exhaust on the right.",
+      "duration_seconds": 10.0,
+      "image_status": "not-generated",
+      "image_ref": null
+    },
+    {
+      "order": 12,
+      "shot_id": "s04-sh03",
+      "scene_id": "s04",
+      "board_prompt": "close. Look: Locked 2.39:1 widescreen. Extreme wide vistas cut against tight eye close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Harsh sun. Dusty palette. Frame: Extreme wide vistas cut against tight eye close-ups. Light: Harsh sun. Dust in the air. The day moves from amber to bronze to rose to blue dusk. Palette: amber, ochre, bronze, rose, cool dusk blue, dust. Action: Vega walks back to the Triumph. He kneels beside the engine one more time. Pulls the fouled plug. Holds it up. Studies it. Then he does something unexpected. He places the plug on a flat rock. Picks up a smaller stone. Carefully, precisely, he taps the cracked porcelain insulator with the stone. Once. Twice. On the third tap, the loose fragment of cracked porcelain falls away, exposing clean insulator underneath. Not repaired. But the short circuit caused by the crack is eliminated. The plug\u2026 Locked prop 1965 Triumph TR6SC: Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust is locked on the right side.. exhaust on the right.",
+      "duration_seconds": 10.0,
+      "image_status": "not-generated",
+      "image_ref": null
+    },
+    {
+      "order": 13,
+      "shot_id": "s04-sh04",
+      "scene_id": "s04",
+      "board_prompt": "wide. Look: Locked 2.39:1 widescreen. Extreme wide vistas cut against tight eye close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Harsh sun. Dusty palette. Frame: Extreme wide vistas cut against tight eye close-ups. Light: Harsh sun. Dust in the air. The day moves from amber to bronze to rose to blue dusk. Palette: amber, ochre, bronze, rose, cool dusk blue, dust. Action: Vega walks back to the Triumph. He kneels beside the engine one more time. Pulls the fouled plug. Holds it up. Studies it. Then he does something unexpected. He places the plug on a flat rock. Picks up a smaller stone. Carefully, precisely, he taps the cracked porcelain insulator with the stone. Once. Twice. On the third tap, the loose fragment of cracked porcelain falls away, exposing clean insulator underneath. Not repaired. But the short circuit caused by the crack is eliminated. The plug\u2026 Locked prop 1965 Triumph TR6SC: Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust is locked on the right side.. exhaust on the right.",
+      "duration_seconds": 10.0,
+      "image_status": "not-generated",
+      "image_ref": null
+    }
+  ],
+  "animatic": {
+    "total_duration_seconds": 180.001,
+    "order": [
+      "s01-sh01",
+      "s01-sh02",
+      "s01-sh03",
+      "s01-sh04",
+      "s02-sh01",
+      "s02-sh02",
+      "s03-sh01",
+      "s03-sh02",
+      "s03-sh03",
+      "s04-sh01",
+      "s04-sh02",
+      "s04-sh03",
+      "s04-sh04"
+    ],
+    "note": "Play the boards in this order. Durations come from the treatment scenes."
+  },
+  "image_generation": "not-run",
+  "draft_method": "offline-deterministic",
+  "model": "claude-sonnet-5-5",
+  "created_at": "2026-11-10T22:10:35Z"
+}

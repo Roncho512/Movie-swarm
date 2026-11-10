@@ -118,7 +118,7 @@ The agent reads shot lists conforming to `schemas/shot-list.schema.json`. Key fi
   "scene_number": 1,
   "shot_number": 1,
   "sequence_position": 1,
-  "generation_prompt": "Extreme wide shot of Baja desert...",
+  "generation_prompt": "Extreme wide shot of the place named in the brief...",
   "target_duration_seconds": 8,
   "aspect_ratio": "16:9",
   "tool_routing": {

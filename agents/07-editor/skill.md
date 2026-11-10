@@ -36,7 +36,7 @@ Join selected clips in sequence order. Two approaches:
 - **Hard cut**: Simple concat demuxer. No transition between shots.
 - **Crossfade**: Use xfade filter for dissolves between scenes (not between shots within a scene).
 
-For The Last Marker, Scene 1→2 transition should be a 1-second dissolve. Within-scene cuts are hard.
+Take the transition from the treatment. If the treatment does not name one, hard-cut within a scene.
 
 ### Step 2: Strip or Mute Native Audio
 Native audio from Veo/Seedance clips varies in quality. For a controlled mix:

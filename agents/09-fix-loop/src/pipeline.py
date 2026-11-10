@@ -213,11 +213,6 @@ def _extract_environment_anchor(recommendation: str, description: str) -> str:
     """Extract an environment anchor from QA feedback."""
     combined = f"{recommendation} {description}".lower()
 
-    if "baja" in combined or "sonoran" in combined:
-        return "Baja California desert, Sonoran landscape with saguaro cactus and red rock formations"
-    if "mojave" in combined:
-        return "Mojave desert with Joshua trees and scrubland"
-
     if recommendation:
         return recommendation
     return ""

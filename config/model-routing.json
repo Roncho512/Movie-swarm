@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "roles": {
     "line-producer": {
       "provider": "anthropic",
@@ -35,10 +35,41 @@
       "notes": "Skill file only. No program selects a generator yet."
     },
     "cinematographer": {
-      "provider": null,
-      "model": null,
-      "source": "agents/04-cinematographer/skill.md",
-      "notes": "Skill file only. No program selects a generator yet."
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "source": "movie_swarm/camera.py",
+      "notes": "Camera package and storyboard prompts. Writing model, per D6. Image generation is not called from this role. The offline path is used when ANTHROPIC_API_KEY is unset. Board prompts stay offline even when a key is set, so a model cannot drop a locked phrase.",
+      "purposes": {
+        "package": "claude-sonnet-5-5",
+        "boards": "claude-sonnet-5-5"
+      }
+    },
+    "script-supervisor": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/script_supervisor.py",
+      "notes": "Continuity check. Cheap model. The findings are computed in code. The model may only reword the summary. Reads ANTHROPIC_API_KEY.",
+      "purposes": {
+        "check": "claude-haiku-5-5"
+      }
+    },
+    "prop-master": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/prop_master.py",
+      "notes": "Locks the props the production already defined. Cheap model. A model reply that changes a prop is discarded. Reads ANTHROPIC_API_KEY.",
+      "purposes": {
+        "lock": "claude-haiku-5-5"
+      }
+    },
+    "stunt-coordinator": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "source": "movie_swarm/stunts.py",
+      "notes": "Turns treatment action beats into a shot breakdown. Writing model, per D6. The beat text has to stay the production's. Reads ANTHROPIC_API_KEY.",
+      "purposes": {
+        "breakdown": "claude-sonnet-5-5"
+      }
     },
     "production": {
       "provider": "fal.ai",

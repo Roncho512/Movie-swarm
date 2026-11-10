@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "look.schema.json",
+  "title": "Look",
+  "description": "The look one production chose. Lenses, framing, and lighting are written here, in the production folder. The Cinematographer reads this file. A different film can name a different look without a code change.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id", "look_name", "summary"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "look_name": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string", "minLength": 1 },
+    "aspect_ratio": { "type": "string" },
+    "lenses": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/lens" }
+    },
+    "framing": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/line" }
+    },
+    "lighting": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/line" }
+    },
+    "palette": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "$defs": {
+    "lens": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lens_id", "name", "use"],
+      "properties": {
+        "lens_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "name": { "type": "string", "minLength": 1 },
+        "focal_length": { "type": "string" },
+        "use": { "type": "string", "minLength": 1 }
+      }
+    },
+    "line": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "description": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

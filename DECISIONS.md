@@ -87,7 +87,7 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Date: 2026-11-10
 - Context: The May pilot drifted. The exhaust side and the watch wrist did not stay put.
 - Decision: Hero props get locked specs, with multi-angle reference images. A Script Supervisor checks them before generation. A Dailies Reviewer checks them after, on the real frames.
-- Consequences: The treatment has a slot for the locked spec and for those images. The two checker roles are Phase 2 and Phase 3. They are not in the code yet. Sidedness for this film is still open.
+- Consequences: The treatment has a slot for the locked spec and for those images. The Script Supervisor is the before-generation check. The Dailies Reviewer is still Phase 3. D27 locked this film's sidedness. D30 says the checker reads the production's prop file and does not hard-code it.
 - Who decided: Ron
 
 ## D12 — A stunt and action role
@@ -95,7 +95,7 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Date: 2026-11-10
 - Context: Action beats were being invented inside other jobs. Kicks, plugs, and falls need an owner.
 - Decision: Add a Stunt and Action Coordinator role.
-- Consequences: The treatment has a place for action beats. The role itself arrives in Phase 2. The Director's first questions ask Ron to confirm the beats.
+- Consequences: The treatment has a place for action beats. The role reads those beats and writes a shot breakdown. It does not invent a beat.
 - Who decided: Ron
 
 ## D13 — A treatment, built by questions
@@ -240,6 +240,77 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Date: 2026-11-10
 - Context: Ron read the revised treatment and said, "Approve the treatment and lock the split."
 - Decision: Approve the Last Marker treatment gate. Lock the $500 stage split from D28 into run phase-1.
-- Consequences: `treatment.json` status is approved, version 1.0.0, approval by Ron, with that note. The Line Producer record shows the stage allocations as approved. Spent so far is $0.00 of $500.00. Other stage gates stay on. This does not merge the branch.
+- Consequences: `treatment.json` status is approved, version 1.0.0, approval by Ron, with that note. The Line Producer record shows the stage allocations as approved. Spent so far is $0.00 of $500.00. Other stage gates stay on.
 - Who decided: Ron
+
+## D30 — Film facts stay in the production folder
+
+- Date: 2026-11-10
+- Context: The exhaust side, the watch wrist, the bike's model year, the story year, and the Leone look are facts about The Last Marker. If the studio code knows them, the next film inherits them.
+- Decision: Nothing film-specific may be hard-coded in the studio code, the agents, the schemas, or the defaults. Those facts belong only under `productions/the-last-marker/`. The Prop Master and the Script Supervisor read whatever hero props and locked attributes a production defines. The Cinematographer builds a camera package from the production's chosen look. A different film can use another look with no code change.
+- Consequences: Phase 2 reads `props/prop-definitions.json` and `look/look.json` from the production. Tests include Harbor Night, a second tiny production with a scarf and a documentary look. The shared treatment draft no longer invents this film's props, theme, or tone. The pilot sound library is still inside the sound program. Moving it is open.
+- Who decided: Ron
+
+## D31 — One previs gate for the phase 2 package
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-10
+- Context: Phase 2 writes several files. Ron needs one place to review them before a picture call can spend.
+- Decision: Add one gate, `previs`, in `config/gates.json`. It starts on. It covers the prop lock, the continuity check, the camera package, the storyboard, and the action breakdown. The drafts can be written while the gate is closed. A picture call cannot.
+- Consequences: Run phase-1 is waiting on that gate. The locked dollar split did not gain a new bucket.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D32 — Phase 2 estimates use the locked ceilings
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-10
+- Context: The $500 split is already locked. The new roles were not given their own dollars.
+- Decision: A phase 2 call is a dry run. The estimate is checked and not charged. The Script Supervisor is checked against the screenwriter ceiling ($5). The Prop Master is checked against the art director ceiling ($25). The Cinematographer is checked against its own ceiling ($10). The Stunt and Action Coordinator is checked against the production ceiling ($270).
+- Consequences: A $0 document pass fits. A larger estimate pauses on that ceiling, the same way a picture estimate does. The split Ron locked is unchanged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D33 — Continuity uses the production's phrases
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-10
+- Context: The checker has to flag a prop that switches or vanishes, without knowing what the prop is.
+- Decision: Each locked attribute can list required phrases and forbidden phrases. A forbidden phrase in a scene or a shot is a contradiction. A shot that shows the prop and never states a required phrase is a missing lock. Scenes are not flagged merely for omitting the phrase. Negative prompts are not scanned, so a "do not show" line is not treated as the picture.
+- Consequences: The Last Marker definitions name the exhaust phrases and the wrist phrases. The old pilot shot list has 17 missing exhaust-side statements and no contradictions. The new storyboard states the required phrases.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D34 — The camera package copies the look file
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-10
+- Context: Lenses, framing, and lighting have to come from the film, not from a default look in the code.
+- Decision: If `look/look.json` exists, the camera package copies its lenses, framing, lighting, and palette. If it does not, the package quotes the treatment and the brief and leaves the lens list empty, with a note that none were named.
+- Consequences: The Last Marker package matches its look file. Harbor Night's package matches the documentary look. A model reply that names a look the documents do not contain is discarded.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D35 — Storyboard images are not generated by default
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-10
+- Context: Boards need prompts now. They do not need a paid image call.
+- Decision: The storyboard stores a prompt and an animatic duration for each shot. `image_generation` is `not-run` unless the caller passes an image client. Tests pass a fake client. There is no image API and no network call on the default path. Board prompts stay on the offline pass even when a language-model key is set, so a model cannot drop a locked phrase.
+- Consequences: `storyboard/storyboard.json` has 13 boards for The Last Marker and no image files.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D36 — Model names for the new roles
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-10
+- Context: D6 says cheap models for admin and Claude for writing. The new roles need exact ids.
+- Decision: The Script Supervisor and the Prop Master use `claude-haiku-5-5`. The Cinematographer and the Stunt and Action Coordinator use `claude-sonnet-5-5`. The names are in `config/model-routing.json`. A model reply that changes a locked prop is discarded.
+- Consequences: With no `ANTHROPIC_API_KEY`, or with `--offline`, the files are labeled `offline-deterministic` and still name the model they would have used. The key is never written into the repo.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D37 — Phase 2 files are registered on the existing run
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-10
+- Context: The locked split lives on run phase-1. A new run would not have that split unless it was copied.
+- Decision: The phase 2 calls use run phase-1. They add dry-run ledger lines at $0 and set the stage to previs, waiting for review. They do not clear the treatment approval.
+- Consequences: The run record lists the new files. Spent stays $0.00 of $500.00. Approving previs does not change the split.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
 

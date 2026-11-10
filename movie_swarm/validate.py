@@ -35,6 +35,13 @@ _SCHEMA_BY_FILENAME = {
     "treatment.json": "treatment.schema.json",
     "line-producer.json": "line-producer-record.schema.json",
     "questions.json": "director-questions.schema.json",
+    "hero-props.json": "hero-props.schema.json",
+    "prop-definitions.json": "hero-props.schema.json",
+    "continuity-check.json": "continuity-check.schema.json",
+    "look.json": "look.schema.json",
+    "camera-package.json": "camera-package.schema.json",
+    "storyboard.json": "storyboard.schema.json",
+    "action-breakdown.json": "action-breakdown.schema.json",
 }
 
 _QUESTIONS_ROUND = re.compile(r"^questions-round-\d+\.json$")

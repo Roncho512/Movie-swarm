@@ -13,6 +13,22 @@
     {
       "role": "Director",
       "name": "Director"
+    },
+    {
+      "role": "Script Supervisor",
+      "name": "Script Supervisor"
+    },
+    {
+      "role": "Prop Master",
+      "name": "Prop Master"
+    },
+    {
+      "role": "Cinematographer",
+      "name": "Cinematographer"
+    },
+    {
+      "role": "Stunt and Action Coordinator",
+      "name": "Stunt and Action Coordinator"
     }
   ],
   "stage_allocations": {
@@ -34,7 +50,53 @@
     "approved_by": "ron",
     "note": "Approve the treatment and lock the split."
   },
-  "ledger": [],
+  "ledger": [
+    {
+      "entry_id": "spend-001",
+      "stage": "art-director",
+      "amount_usd": 0.0,
+      "kind": "dry-run",
+      "description": "prop-master lock Estimate $0.00 was checked and not charged.",
+      "recorded_at": "2026-11-10T22:10:35Z",
+      "request_id": null
+    },
+    {
+      "entry_id": "spend-002",
+      "stage": "cinematographer",
+      "amount_usd": 0.0,
+      "kind": "dry-run",
+      "description": "cinematographer package Estimate $0.00 was checked and not charged.",
+      "recorded_at": "2026-11-10T22:10:35Z",
+      "request_id": null
+    },
+    {
+      "entry_id": "spend-003",
+      "stage": "cinematographer",
+      "amount_usd": 0.0,
+      "kind": "dry-run",
+      "description": "cinematographer boards Estimate $0.00 was checked and not charged.",
+      "recorded_at": "2026-11-10T22:10:35Z",
+      "request_id": null
+    },
+    {
+      "entry_id": "spend-004",
+      "stage": "screenwriter",
+      "amount_usd": 0.0,
+      "kind": "dry-run",
+      "description": "script-supervisor check Estimate $0.00 was checked and not charged.",
+      "recorded_at": "2026-11-10T22:10:35Z",
+      "request_id": null
+    },
+    {
+      "entry_id": "spend-005",
+      "stage": "production",
+      "amount_usd": 0.0,
+      "kind": "dry-run",
+      "description": "stunt-coordinator breakdown Estimate $0.00 was checked and not charged.",
+      "recorded_at": "2026-11-10T22:10:35Z",
+      "request_id": null
+    }
+  ],
   "gate_decisions": [
     {
       "stage": "treatment",
@@ -56,7 +118,8 @@
     "sound-designer": "pending",
     "editor": "pending",
     "qa": "pending",
-    "fix-loop": "pending"
+    "fix-loop": "pending",
+    "previs": "waiting-for-review"
   },
-  "updated_at": "2026-11-10T20:39:31Z"
+  "updated_at": "2026-11-10T22:10:35Z"
 }

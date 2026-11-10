@@ -165,6 +165,8 @@ class Director:
         except LineProducerError as exc:
             return DispatchResult(status="refused", message=str(exc))
         call.production_dir = call.production_dir or str(self.production_dir)
+        if call.llm is None:
+            call.llm = self.llm
         return dispatch_call(producer, call, handler=handler)
 
     def _draft(self, script: ParsedSource | None, partial: ParsedSource | None, brief, cap: float):

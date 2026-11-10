@@ -14,7 +14,8 @@ from pathlib import Path
 
 from movie_swarm.line_producer import Authorization, LineProducer
 from movie_swarm.paths import repo_root
-from movie_swarm.roles import GATED_CREW
+from movie_swarm.previs import run_previs
+from movie_swarm.roles import CALLABLE, PHASE2_BILLING, PHASE2_CREW
 
 
 class DispatchError(Exception):
@@ -32,6 +33,8 @@ class CrewCall:
     shot_list: str | None = None
     output_dir: str | None = None
     production_dir: str | None = None
+    llm: object | None = None
+    image_client: object | None = None
 
 
 @dataclass
@@ -47,28 +50,54 @@ class DispatchResult:
 # because they would read or write the cut.
 _COMMANDS = {
     "production": {
-        "stage": "production",
-        "commands": {
-            "estimate": True,
-            "dry-run": True,
-        },
+        "commands": {"estimate": True, "dry-run": True},
     },
     "sound-designer": {
-        "stage": "sound-designer",
         "commands": {"dry-run": True},
     },
     "editor": {
-        "stage": "editor",
         "commands": {"dry-run": False},
     },
     "qa": {
-        "stage": "qa",
         "commands": {"dry-run": False},
     },
     "fix-loop": {
-        "stage": "fix-loop",
         "commands": {"dry-run": False},
     },
+    "prop-master": {
+        "commands": {"lock": True},
+    },
+    "script-supervisor": {
+        "commands": {"check": True},
+    },
+    "cinematographer": {
+        "commands": {"package": True, "boards": True},
+    },
+    "stunt-coordinator": {
+        "commands": {"breakdown": True},
+    },
+}
+
+_PHASE2_OUTPUTS = {
+    "prop-master": (
+        ("hero-props", "props/hero-props.json", "hero-props.schema.json"),
+        ("hero-props-notes", "props/hero-props.md", None),
+    ),
+    "script-supervisor": (
+        ("continuity-check", "continuity/continuity-check.json", "continuity-check.schema.json"),
+        ("continuity-notes", "continuity/continuity-check.md", None),
+    ),
+    "cinematographer": (
+        ("camera-package", "camera/camera-package.json", "camera-package.schema.json"),
+        ("camera-notes", "camera/camera-package.md", None),
+        ("storyboard", "storyboard/storyboard.json", "storyboard.schema.json"),
+        ("storyboard-notes", "storyboard/storyboard.md", None),
+        ("storyboard-shot-list", "storyboard/shot-list.json", "shot-list.schema.json"),
+    ),
+    "stunt-coordinator": (
+        ("action-breakdown", "stunts/action-breakdown.json", "action-breakdown.schema.json"),
+        ("action-notes", "stunts/action-breakdown.md", None),
+    ),
 }
 
 
@@ -79,7 +108,7 @@ def dispatch_call(
 ) -> DispatchResult:
     """Check the gate and the budget, then run ``handler`` or the default crew command."""
     if call.agent not in _COMMANDS:
-        known = ", ".join(GATED_CREW)
+        known = ", ".join(CALLABLE)
         return DispatchResult(
             status="refused",
             message=f"The Director cannot call '{call.agent}'. Crew calls go to: {known}.",
@@ -92,9 +121,10 @@ def dispatch_call(
             message=f"{call.agent} has no '{call.command}' command here. Commands: {known}.",
         )
     description = call.note or f"{call.agent} {call.command}"
+    billing = PHASE2_BILLING.get(call.agent, call.agent)
     try:
         auth: Authorization = producer.authorize_crew(
-            spec["stage"],
+            call.agent,
             call.estimated_cost_usd,
             description,
         )
@@ -112,11 +142,13 @@ def dispatch_call(
             message=f"The gate allowed the call, but {call.agent} failed. {exc}",
         )
     producer.note_dry_run(
-        spec["stage"],
+        billing,
         call.estimated_cost_usd,
         description,
         allowance_request_id=auth.allowance_request_id,
     )
+    if call.agent in PHASE2_CREW:
+        _register_phase2(producer, call.agent)
     return DispatchResult(
         status="ran",
         message=auth.message,
@@ -126,6 +158,8 @@ def dispatch_call(
 
 def default_handler(call: CrewCall) -> str:
     """Run a free local command, or name the command and stop before the cut is touched."""
+    if call.agent in PHASE2_CREW:
+        return run_previs(call)
     spec = _COMMANDS[call.agent]
     executes = spec["commands"][call.command]
     argv, cwd = _argv(call)
@@ -146,6 +180,45 @@ def default_handler(call: CrewCall) -> str:
     if completed.returncode != 0:
         raise DispatchError(output.strip() or f"{call.agent} exited {completed.returncode}.")
     return output.strip()
+
+
+def _register_phase2(producer: LineProducer, agent: str) -> None:
+    """Remember the files this call wrote, and leave them waiting on Ron."""
+    production = producer.production_dir
+    for name, relative, schema in _PHASE2_OUTPUTS.get(agent, ()):
+        if (production / relative).is_file():
+            producer.ensure_artifact(name, relative, schema)
+    if producer.gate_decision("previs") == "approved":
+        producer.run.data["notes"] = (
+            "Phase 2 files were written again after Ron approved the previs gate. "
+            "The approval still stands until Ron rejects it."
+        )
+        producer.run.save()
+        return
+    producer.set_stage("previs", "waiting-for-review")
+    producer.run.data["notes"] = (
+        "The phase 2 package is waiting on Ron. "
+        "Previs means the prop lock, the continuity check, the camera package, "
+        "the storyboard, and the action breakdown. The Director did not approve them."
+    )
+    producer.run.save()
+    _ensure_credits(producer)
+
+
+def _ensure_credits(producer: LineProducer) -> None:
+    have = {item["role"] for item in producer.record["credits"]}
+    added = False
+    for role, name in (
+        ("Script Supervisor", "Script Supervisor"),
+        ("Prop Master", "Prop Master"),
+        ("Cinematographer", "Cinematographer"),
+        ("Stunt and Action Coordinator", "Stunt and Action Coordinator"),
+    ):
+        if role not in have:
+            producer.record["credits"].append({"role": role, "name": name})
+            added = True
+    if added:
+        producer._save_record()
 
 
 def _argv(call: CrewCall) -> tuple[list[str], Path]:

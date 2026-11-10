@@ -155,7 +155,7 @@
               "file_path": { "type": "string" },
               "description": {
                 "type": "string",
-                "examples": ["Triumph single-cylinder engine, healthy rhythm, steady thump"]
+                "examples": ["Machine sound, steady rhythm"]
               },
               "start_seconds": { "type": "number" },
               "end_seconds": { "type": "number" },

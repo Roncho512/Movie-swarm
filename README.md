@@ -4,13 +4,17 @@ Movie Swarm turns a screenplay into a finished short film. Specialized helpers, 
 
 ## Current status
 
-Phase 0 is on main. It merged on 2026-11-10 in [pull request 1](https://github.com/Roncho512/Movie-swarm/pull/1), merge `c3696890`. Phase 0 is the shared checklist, the run record, the review gates, and the $500 cap.
+Phase 0 is on main. It merged on 2026-11-10 in [pull request 1](https://github.com/Roncho512/Movie-swarm/pull/1), merge `c369689`. Phase 0 is the shared checklist, the run record, the review gates, and the $500 cap.
 
-Phase 1 adds two roles. The Line Producer watches the budget, the schedule, the credits, and the gates. The Director reads a screenplay and writes a treatment, which is the plan for the film before anyone generates a shot. The Director asks Ron questions in a file. Ron answers in a file. The Director cannot approve its own work.
+Phase 1 is on main. It merged on 2026-11-10 in [pull request 3](https://github.com/Roncho512/Movie-swarm/pull/3), merge `da9d54a`. The Line Producer watches the budget, the schedule, the credits, and the gates. The Director reads a screenplay and writes a treatment, which is the plan for the film before anyone generates a shot. Ron approved the Last Marker treatment gate. The $500 stage split is locked on run phase-1. Spent so far: $0.00 of $500.00.
 
-Ron approved the Last Marker treatment gate on 2026-11-10. The treatment status is approved, and the $500 stage split is locked on run phase-1. Spent so far: $0.00 of $500.00. The film is set in 1967. The Triumph stays a 1965, with the exhaust locked on the right. The Breitling is locked on the left wrist. Phase 1's work is done and is waiting for Ron to merge it.
+Phase 2 writes the package that stops a bad shot before it is generated. The Prop Master locks hero props. The Script Supervisor checks shots and scenes against that lock. The Cinematographer writes a camera package, a storyboard, and an animatic plan. An animatic is the boards in order, with a duration on each one. The Stunt and Action Coordinator turns the treatment's action beats into shots. Those files wait at the previs gate. Previs means this package. Ron has not approved it.
 
-Older pilot files are still in the production folder. Scenes 1 and 2 were cut and reviewed before this phase. Those clips are not a finished film.
+Film facts stay in the production folder. The engine does not know that this film's exhaust is on the right, that the watch is on the left wrist, that the bike is a 1965, that the story is 1967, or that the look is Sergio Leone. Those sentences live in `productions/the-last-marker/`. A different film uses its own files.
+
+The continuity check on the old pilot shot list found 17 missing locks. Each one is the Triumph shown without the locked exhaust phrase. The new storyboard states the locks. No money was spent.
+
+Older pilot clips of scenes 1 and 2 are still in the production folder. They are not a finished film.
 
 ## Run it locally
 
@@ -61,7 +65,29 @@ python3 scripts/line-producer.py --production productions/the-last-marker --run 
 
 Reject it the same way, with `--decision rejected`. You can put the same fields in a JSON file and pass `--file` instead of the flags.
 
-A crew call does not run until you have approved the treatment and that stage. This example only prices shots. It does not generate video. It will pause until those gates are approved.
+Write the phase 2 package. These calls do not spend money. They pause until the treatment gate is approved. They do not approve the previs gate.
+
+```bash
+python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+  --agent prop-master --crew-command lock --estimate 0
+python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+  --agent cinematographer --crew-command package --estimate 0
+python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+  --agent cinematographer --crew-command boards --estimate 0
+python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+  --agent script-supervisor --crew-command check --estimate 0
+python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+  --agent stunt-coordinator --crew-command breakdown --estimate 0
+```
+
+Approve the package after you have read the files under `props/`, `continuity/`, `camera/`, `storyboard/`, and `stunts/`.
+
+```bash
+python3 scripts/line-producer.py --production productions/the-last-marker --run phase-1 approve-gate \
+  --stage previs --decision approved --by ron --note "The phase 2 package can go forward."
+```
+
+A picture call does not run until you have approved the treatment, the previs package, and that stage. This example only prices shots. It does not generate video.
 
 ```bash
 python3 scripts/director.py --production productions/the-last-marker --run phase-1 dispatch \
@@ -73,7 +99,7 @@ The same commands work from the agent folders as `python3 -m src.cli`, with the 
 
 ## What the checks do
 
-`python3 -m pytest tests -q` runs the shared checks. They cover the Phase 0 foundation and the Phase 1 rules: the cap, approvals, the treatment checklist, each screenplay format, the question round trip, and a crew call that must pass the Line Producer first.
+`python3 -m pytest tests -q` runs the shared checks. They cover the Phase 0 foundation, the Phase 1 rules, and the Phase 2 package: the cap, approvals, the treatment checklist, each screenplay format, the question round trip, a crew call that must pass the Line Producer first, locked props, a continuity check, a camera package, storyboards, and an action breakdown. One fixture is The Last Marker. Another is Harbor Night, a tiny second film, so the engine is not proven only on this one.
 
 Three older agents have their own checks, because each one uses a folder named `src`:
 
@@ -117,9 +143,16 @@ The sample film is The Last Marker, in `productions/the-last-marker/`.
 | `treatment/treatment.md` | The approved treatment. |
 | `treatment/treatment.json` | The same treatment in the form the checks can read. Status: approved. |
 | `treatment/questions.json` | Round 1, closed. Ron's answers are in the file. |
-| `runs/phase-1/` | The run record. Treatment gate approved. Stage split locked. Spent $0.00 of $500.00. |
+| `runs/phase-1/` | The run record. Treatment gate approved. Stage split locked. Previs gate waiting. Spent $0.00 of $500.00. |
+| `props/prop-definitions.json` | The locked attributes for this film, written as production data. |
+| `props/hero-props.json` | The same lock, after the Prop Master copies it. |
+| `look/look.json` | This film's lenses, framing, and lighting. |
+| `camera/camera-package.json` | The Cinematographer's package, copied from that look. |
+| `storyboard/` | Board prompts, an animatic plan, and a shot list. No images were generated. |
+| `continuity/continuity-check.json` | Drift findings. The old pilot shot list is missing the locked exhaust phrase. |
+| `stunts/action-breakdown.json` | The treatment's two action beats, broken into shots. |
 
-Hero props are the 1965 Triumph TR6SC and the Breitling Top Time. Ron locked the exhaust on the right and the watch on the left wrist.
+Hero props for this film are the 1965 Triumph TR6SC and the Breitling Top Time. Ron locked the exhaust on the right and the watch on the left wrist. Those sentences are in the production files above. They are not in the studio code.
 
 ## Where to read more
 

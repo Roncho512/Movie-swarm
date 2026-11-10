@@ -187,6 +187,57 @@ def test_each_schema_accepts_a_minimal_document():
             "schedule": {"treatment": "waiting-for-review"},
             "updated_at": "2026-01-01T00:00:00Z",
         },
+        "hero-props.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "status": "locked",
+            "props": [],
+        },
+        "continuity-check.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "verdict": "clear",
+            "findings": [],
+            "checked_at": "2026-01-01T00:00:00Z",
+        },
+        "look.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "look_name": "Unnamed look",
+            "summary": "The production names the look.",
+        },
+        "camera-package.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "look_name": "Unnamed look",
+            "summary": "The production names the look.",
+            "lenses": [],
+            "framing": [{"id": "stated-look", "description": "The production names the frame."}],
+            "lighting": [{"id": "stated-look", "description": "The production names the light."}],
+            "source": "treatment",
+        },
+        "storyboard.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "frames": [
+                {
+                    "order": 1,
+                    "shot_id": "s01-sh01",
+                    "scene_id": "s01",
+                    "board_prompt": "Wide. The production names the action.",
+                    "image_status": "not-generated",
+                    "image_ref": None,
+                }
+            ],
+            "animatic": {"total_duration_seconds": 4, "order": ["s01-sh01"]},
+            "image_generation": "not-run",
+        },
+        "action-breakdown.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "safety_policy": "One movement per shot.",
+            "beats": [],
+        },
     }
     on_disk = {path.name for path in schemas_dir().glob("*.schema.json")}
     assert on_disk == set(samples)

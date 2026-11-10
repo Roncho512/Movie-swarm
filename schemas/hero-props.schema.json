@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hero-props.schema.json",
+  "title": "Hero Props",
+  "description": "Locked hero props for one production. The attributes are whatever that production defines. The checker does not know which film this is.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id", "status", "props"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "status": { "type": "string", "enum": ["draft", "locked"] },
+    "source": { "type": "string" },
+    "facts": {
+      "type": "array",
+      "description": "Locked facts that are not a single prop, such as the story year.",
+      "items": { "$ref": "#/$defs/fact" }
+    },
+    "props": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/prop" }
+    },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
+    "model": { "type": ["string", "null"] },
+    "note": { "type": "string" },
+    "locked_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "phrases": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "fact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fact_id", "label", "value"],
+      "properties": {
+        "fact_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "label": { "type": "string", "minLength": 1 },
+        "value": { "type": "string", "minLength": 1 },
+        "required_phrases": { "$ref": "#/$defs/phrases" },
+        "forbidden_phrases": { "$ref": "#/$defs/phrases" },
+        "must_be_stated": { "type": "boolean" }
+      }
+    },
+    "attribute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attribute_id", "label", "value"],
+      "properties": {
+        "attribute_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "label": { "type": "string", "minLength": 1 },
+        "value": { "type": "string", "minLength": 1 },
+        "must_be_stated_when_visible": { "type": "boolean" },
+        "required_phrases": { "$ref": "#/$defs/phrases" },
+        "forbidden_phrases": { "$ref": "#/$defs/phrases" }
+      }
+    },
+    "prop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prop_id", "name", "locked_spec", "attributes"],
+      "properties": {
+        "prop_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "name": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "minLength": 1 },
+        "aliases": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "locked_spec": { "type": "string", "minLength": 1 },
+        "reference_images": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "attributes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/attribute" }
+        }
+      }
+    }
+  }
+}

@@ -31,29 +31,28 @@ Handles all audio for the production: dialogue, sound effects, ambient layers, a
 - Endpoint: `text_to_speech.convert()`
 - Model: `eleven_v3` for highest quality, `eleven_flash_v2_5` for iteration
 - Voice selection: Search 10,000+ voices or clone a custom voice
-- For The Last Marker: Only one dialogue line — "Primero llegas. Despues compites." Needs a Mexican male voice, mid-30s, weathered, speaking quietly under engine noise.
+- Dialogue comes from the screenplay. Do not invent a line. Match the voice note in the production brief.
 
 ### 2. Sound Effects
 - Endpoint: `text_to_sound_effects.convert()`
 - Model: `eleven_text_to_sound_v2`
 - Duration: 0.5 to 30 seconds per generation
 - Prompt influence: 0.0–1.0 (higher = more literal)
-- For The Last Marker needs:
-  - Triumph single-cylinder engine (5 states: healthy steady, skip/misfire, sputtering death, kick-start attempts, rough restart)
-  - Desert wind (several intensities)
-  - Tire on hardpan
-  - Pebble spray
-  - Boot on metal (kick lever)
-  - Silence (actual silence tracks for dramatic beats)
+- Read the production's sound list. Do not assume a vehicle or a place.
+  - The lead machine, in the states the shot list names
+  - Wind or room tone, at the intensities the shot list names
+  - Footsteps and surface contact
+  - Impacts the action breakdown names
+  - Silence, when the shot list asks for it
   - Cooling metal ticking
 
 ### 3. Music Generation
 - Endpoint: `text_to_music.convert()` (commercially licensed)
-- For The Last Marker: Closing guitar — three notes, nylon strings, Mexican folk phrase, played twice with pause. Simple and spare.
+- Use the music approach in the production brief. Do not copy a melody from a reference.
 
 ## Secondary Tools
 
-- **Suno v5** (via third-party API): Highest quality score generation. Use if the closing guitar needs more musical sophistication than ElevenLabs can deliver. No official API — requires third-party wrapper (sunoapi.org or similar). Copyright situation less clear than ElevenLabs.
+- **Suno v5** (via third-party API): Highest quality score generation. Use if the brief's music needs more than ElevenLabs can deliver. No official API — requires third-party wrapper (sunoapi.org or similar). Copyright situation less clear than ElevenLabs.
 - **Google Lyria 3** (via Google Vids): In-ecosystem music. Ron has access. Manual workflow, not API-driven.
 
 ## Execution Strategy

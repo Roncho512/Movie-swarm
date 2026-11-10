@@ -1,0 +1,35 @@
+{
+  "version": "1.0.0",
+  "production_id": "harbor-night",
+  "status": "draft",
+  "facts": [
+    {
+      "fact_id": "setting-year",
+      "label": "setting year",
+      "value": "1998",
+      "required_phrases": [],
+      "forbidden_phrases": ["set in 1967"],
+      "must_be_stated": false
+    }
+  ],
+  "props": [
+    {
+      "prop_id": "red-scarf",
+      "name": "Red scarf",
+      "kind": "prop",
+      "aliases": ["scarf"],
+      "locked_spec": "Wool, red, worn on the right shoulder.",
+      "reference_images": [],
+      "attributes": [
+        {
+          "attribute_id": "shoulder",
+          "label": "shoulder",
+          "value": "right",
+          "must_be_stated_when_visible": true,
+          "required_phrases": ["scarf on the right shoulder"],
+          "forbidden_phrases": ["scarf on the left shoulder", "no scarf"]
+        }
+      ]
+    }
+  ]
+}

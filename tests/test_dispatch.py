@@ -37,6 +37,11 @@ def test_dispatch_pauses_until_the_gates_are_open(tmp_path):
     assert called == []
 
     producer.approve_gate("production", "approved", "ron")
+    waiting_on_previs = director.dispatch(call, "run-1", handler=handler)
+    assert waiting_on_previs.status == "paused"
+    assert "previs" in waiting_on_previs.message
+    assert called == []
+    producer.approve_gate("previs", "approved", "ron")
     allowed = director.dispatch(call, "run-1", handler=handler)
     assert allowed.status == "ran"
     assert called == ["production"]
@@ -52,6 +57,7 @@ def test_dispatch_pauses_when_the_estimate_breaks_the_cap(tmp_path):
     producer = LineProducer.start(production, run_id="run-1")
     producer.approve_gate("treatment", "approved", "ron")
     producer.approve_gate("production", "approved", "ron")
+    producer.approve_gate("previs", "approved", "ron")
     called = []
     director = Director(production)
     call = CrewCall(agent="qa", command="dry-run", estimated_cost_usd=600, note="too much")
@@ -89,6 +95,7 @@ def test_production_estimate_runs_for_real_without_charging(tmp_path):
     producer = LineProducer.start(production, run_id="run-1")
     producer.approve_gate("treatment", "approved", "ron")
     producer.approve_gate("production", "approved", "ron")
+    producer.approve_gate("previs", "approved", "ron")
     shot_list = tmp_path / "shot-list.json"
     shot_list.write_text(
         json.dumps({
@@ -124,6 +131,7 @@ def test_stage_allocation_blocks_a_cheap_looking_overage(tmp_path):
     producer = LineProducer.start(production, run_id="run-1")
     producer.approve_gate("treatment", "approved", "ron")
     producer.approve_gate("production", "approved", "ron")
+    producer.approve_gate("previs", "approved", "ron")
     called = []
     result = Director(production).dispatch(
         CrewCall(agent="production", command="dry-run", estimated_cost_usd=5, note="over the stage"),
