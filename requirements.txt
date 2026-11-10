@@ -1,0 +1,7 @@
+# Shared foundation, tests, and the agents that ship Python dependencies.
+jsonschema>=4.23,<5
+rfc3339-validator>=0.1.4
+pytest>=8.0
+-r agents/05-production/requirements.txt
+-r agents/06-sound-designer/requirements.txt
+-r agents/08-qa/requirements.txt

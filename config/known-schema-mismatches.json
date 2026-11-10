@@ -1,0 +1,25 @@
+{
+  "description": "Historical files in The Last Marker that were saved in a different shape than the handoff schemas. The production audit reports them and does not treat them as a new failure. A file that is not on this list must validate.",
+  "files": [
+    {
+      "path": "productions/the-last-marker/audio/audio-manifest.json",
+      "schema": "audio-manifest.schema.json",
+      "reason": "The sound designer writes a flat assets list plus generated_at. The schema expects version, layers, and created_at."
+    },
+    {
+      "path": "productions/the-last-marker/seedance-output/clip-metadata.json",
+      "schema": "clip-metadata.schema.json",
+      "reason": "The production agent writes preview clips with local_path and status preview. The schema expects version, created_at, clip_id, file_path, and a status from its list."
+    },
+    {
+      "path": "productions/the-last-marker/qa-reports/qa-report-v1.json",
+      "schema": "continuity-report.schema.json",
+      "reason": "The QA agent writes overall_verdict, findings, and review_date. The schema expects verdict, issues, review_pass, version, and reviewed_at."
+    },
+    {
+      "path": "productions/the-last-marker/qa-reports/qa-report-v2.json",
+      "schema": "continuity-report.schema.json",
+      "reason": "Same shape as qa-report-v1. The findings are real; the field names do not match the continuity-report schema."
+    }
+  ]
+}

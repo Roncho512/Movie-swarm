@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gate-config.schema.json",
+  "title": "Gate Config",
+  "description": "Human review switches and the film budget cap. Edit the config file to change them. No code change is required.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["budget_cap_usd", "gates"],
+  "properties": {
+    "budget_cap_usd": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Hard cap for one film, in US dollars."
+    },
+    "currency": {
+      "type": "string",
+      "const": "USD"
+    },
+    "gates": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[a-z0-9-]+$" },
+      "additionalProperties": { "type": "boolean" },
+      "description": "True means a person reviews this stage before the next one starts."
+    }
+  }
+}

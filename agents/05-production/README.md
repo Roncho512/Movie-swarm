@@ -10,6 +10,8 @@ pip install -r requirements.txt
 export FAL_KEY="your-fal-api-key"
 ```
 
+`requirements.txt` installs `requests` and the `fal-client` SDK. Uploads and generation call that SDK.
+
 Get your API key from [fal.ai/dashboard/keys](https://fal.ai/dashboard/keys).
 
 FFmpeg is optional but recommended for clip validation:
@@ -26,7 +28,7 @@ sudo apt install ffmpeg
 ### Cost estimate (no API calls)
 
 ```bash
-python -m src.cli estimate ../../productions/the-last-marker/shot-list.json
+python -m src.cli estimate ../../productions/the-last-marker/shot-lists/shot-list.json
 ```
 
 Shows per-shot cost breakdown for both preview and final passes.
@@ -34,19 +36,19 @@ Shows per-shot cost breakdown for both preview and final passes.
 ### Dry run (shows payloads without calling fal)
 
 ```bash
-python -m src.cli run ../../productions/the-last-marker/shot-list.json ./output --dry-run
+python -m src.cli run ../../productions/the-last-marker/shot-lists/shot-list.json ./output --dry-run
 ```
 
 ### Preview pass (fast tier, 480p — cheap iteration)
 
 ```bash
-python -m src.cli run ../../productions/the-last-marker/shot-list.json ./output --pass preview
+python -m src.cli run ../../productions/the-last-marker/shot-lists/shot-list.json ./output --pass preview
 ```
 
 ### Final pass (standard tier, 720p)
 
 ```bash
-python -m src.cli run ../../productions/the-last-marker/shot-list.json ./output --pass final
+python -m src.cli run ../../productions/the-last-marker/shot-lists/shot-list.json ./output --pass final
 ```
 
 ### Generate specific shots only

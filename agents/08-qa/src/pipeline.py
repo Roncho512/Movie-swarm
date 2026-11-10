@@ -659,7 +659,8 @@ class QAPipeline:
             f"  Critical: {self.report.statistics.get('critical', 0)}",
             f"  Major: {self.report.statistics.get('major', 0)}",
             f"  Minor: {self.report.statistics.get('minor', 0)}",
-            f"  Notes: {self.report.statistics.get('notes', 0)}",
+            # Count key is "note", the severity stored by _build_report.
+            f"  Notes: {self.report.statistics.get('note', 0)}",
             f"",
             f"--- Shot Grades ---",
         ]

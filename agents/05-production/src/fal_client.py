@@ -1,8 +1,9 @@
 """
-fal_client.py — Wrapper around the fal.ai REST API for Seedance 2.0.
+fal_client.py — Wrapper around fal.ai for Seedance 2.0.
 
-Uses the REST API directly (no SDK dependency) so the agent can run
-anywhere Python + requests is available. Handles:
+File uploads and shot generation use the fal_client SDK (pip package
+fal-client). The queue helpers below talk to the REST API with requests.
+Handles:
 
   - File uploads to fal storage
   - Async queue submission, polling, and result retrieval

@@ -44,6 +44,10 @@ When you're debugging why Shot 14 has the wrong lighting, you need to trace the 
 | `clip-metadata.schema.json` | Every generated clip with technical specs, validation results, cost tracking, and selection status. |
 | `audio-manifest.schema.json` | All audio assets organized by layer: dialogue, SFX, ambience, score, engine sound. Time-coded for assembly. |
 | `continuity-report.schema.json` | QA findings with issue routing. Drives the feedback loop. |
+| `run-state.schema.json` | One production run: stage, status, artifacts, and spend against the cap. |
+| `gate-config.schema.json` | Review switches and the film budget cap. |
+| `model-routing.schema.json` | Which generator each role uses, plus optional per-shot overrides. |
+| `asset-config.schema.json` | Where finished media lives. Null keeps the current in-repo paths. |
 
 ## Versioning
 
@@ -51,4 +55,21 @@ Every schema instance carries a `version` field (semver). When an agent regenera
 
 ## Validation
 
-Agents should validate their inputs before processing and their outputs before handing off. A script for validation against these schemas is in `/scripts/validate-schema.py` (planned).
+Agents should validate their inputs before processing and their outputs before handing off.
+
+```bash
+python3 scripts/validate-schema.py productions/the-last-marker/shot-lists/shot-list.json
+python3 scripts/validate-schema.py --production productions/the-last-marker
+```
+
+From Python:
+
+```python
+from movie_swarm.validate import validate_file
+
+result = validate_file("productions/the-last-marker/shot-lists/shot-list.json")
+if not result.ok:
+    raise SystemExit(result.text())
+```
+
+`movie_swarm.handoff.read_handoff` and `write_handoff` use the same check. An invalid file raises `HandoffError` and is not written.

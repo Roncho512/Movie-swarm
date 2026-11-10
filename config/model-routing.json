@@ -1,0 +1,72 @@
+{
+  "version": "1.0.0",
+  "roles": {
+    "executive-producer": {
+      "provider": null,
+      "model": null,
+      "source": "agents/01-executive-producer/skill.md",
+      "notes": "Skill file only. No program selects a generator yet."
+    },
+    "screenwriter": {
+      "provider": null,
+      "model": null,
+      "source": "agents/02-screenwriter/skill.md",
+      "notes": "Skill file only. No program selects a generator yet."
+    },
+    "art-director": {
+      "provider": null,
+      "model": null,
+      "source": "agents/03-art-director/skill.md",
+      "notes": "Skill file only. No program selects a generator yet."
+    },
+    "cinematographer": {
+      "provider": null,
+      "model": null,
+      "source": "agents/04-cinematographer/skill.md",
+      "notes": "Skill file only. No program selects a generator yet."
+    },
+    "production": {
+      "provider": "fal.ai",
+      "model": "seedance-2.0",
+      "source": "agents/05-production/src/config.py",
+      "notes": "The production program calls Seedance 2.0 on fal.ai. The shot list still names Veo on many shots; this file records what the program calls.",
+      "endpoints": {
+        "text-to-video": "bytedance/seedance-2.0/text-to-video",
+        "image-to-video": "bytedance/seedance-2.0/image-to-video",
+        "reference-to-video": "bytedance/seedance-2.0/reference-to-video",
+        "fast-text-to-video": "bytedance/seedance-2.0/fast/text-to-video",
+        "fast-image-to-video": "bytedance/seedance-2.0/fast/image-to-video",
+        "fast-reference-to-video": "bytedance/seedance-2.0/fast/reference-to-video"
+      }
+    },
+    "sound-designer": {
+      "provider": "elevenlabs",
+      "model": "elevenlabs",
+      "source": "agents/06-sound-designer/src/elevenlabs_client.py",
+      "notes": "Dialogue and sound effects pass these model ids. Score uses the ElevenLabs music compose call, which takes no model id.",
+      "purposes": {
+        "dialogue": "eleven_v3",
+        "sfx": "eleven_text_to_sound_v2",
+        "score": "elevenlabs-music-compose"
+      }
+    },
+    "editor": {
+      "provider": "local",
+      "model": "ffmpeg",
+      "source": "agents/07-editor/src/pipeline.py",
+      "notes": "Assembly only. No generative model."
+    },
+    "qa": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-20250514",
+      "source": "agents/08-qa/src/pipeline.py"
+    },
+    "fix-loop": {
+      "provider": null,
+      "model": null,
+      "source": "agents/09-fix-loop/src/pipeline.py",
+      "notes": "Coordinates fixes. No generative model."
+    }
+  },
+  "overrides": []
+}
