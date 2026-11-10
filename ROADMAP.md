@@ -2,7 +2,7 @@ Status as of 2026-11-10.
 
 ## Where things stand
 
-Phase 0 merged to main on 2026-11-10 via PR https://github.com/Roncho512/Movie-swarm/pull/1, merge commit c3696890. Phase 1 is in progress on a branch. It adds the Line Producer, the Director, the treatment checklist, and a draft of The Last Marker. The draft is not approved. Ron still answers the first questions.
+Phase 0 merged to main on 2026-11-10 via PR https://github.com/Roncho512/Movie-swarm/pull/1, merge commit c3696890. Phase 1 is in progress. The Director's first question round is answered. The revised Last Marker treatment is still a draft. Ron has not approved the treatment gate.
 
 ## Phases
 
@@ -41,11 +41,15 @@ These are made. The write-up is in [DECISIONS.md](DECISIONS.md).
 - D12 — Add a Stunt and Action Coordinator.
 - D13 — Scripts become treatments through questions with Ron. A template says what is required.
 - D14 — Living docs update in the same pull request as the code.
+- D23 — The Last Marker theme, tone, and references stay as drafted.
+- D24 — Miguel chooses life over winning.
+- D25 — Withhold whether the canyon has water.
+- D26 — The kick and spark-plug beats stay.
+- D27 — Exhaust on the right. Watch on the left wrist.
+- D28 — The proposed $500 split is the one Ron wants. The treatment gate still has to lock it.
 
 ## Open decisions
 
-- Which side the Triumph exhaust is on, and which wrist the Breitling is on. The screenplay says right and left. Ron has not locked them.
-- The dollar split across stages. The draft proposes one that adds up to $500. Ron has not approved it.
 - The folder path on the Ron Workspace drive. The switch exists. The path is not set.
 - When the video program and the QA program switch to the models in D6. The direction is decided. The code still calls today's models.
 
@@ -53,4 +57,4 @@ Phase 1 also records technical choices D15 through D22. They are proposals from 
 
 ## What comes next
 
-Ron answers `productions/the-last-marker/treatment/questions.json` and approves or rejects the treatment gate. After that, Phase 2 starts the roles that stop a bad shot before it is generated: the Script Supervisor, the Prop Master with locked hero-prop specs, the camera package, storyboards, and the Stunt and Action Coordinator.
+Ron reads the revised `productions/the-last-marker/treatment/treatment.md` and approves or rejects the treatment gate. That approval is what locks the $500 split in the Line Producer's books. After that, Phase 2 starts the roles that stop a bad shot before it is generated: the Script Supervisor, the Prop Master with locked hero-prop specs, the camera package, storyboards, and the Stunt and Action Coordinator.

@@ -60,7 +60,7 @@ The choices already made are in [DECISIONS.md](DECISIONS.md). Short form:
 - Models are chosen to keep cost down (D6).
 - The Last Marker is the test film through every phase (D7), set in 1967, with a 1965 Triumph (D10) and a Leone look (D8).
 - Finished media is meant for Ron's external drive (D9). The copy step is not built yet.
-- Hero props get locked specs. That check arrives with later roles (D11, D12).
+- Hero props get locked specs. That check arrives with later roles (D11, D12). For this film, the exhaust is on the right and the watch is on the left wrist (D27).
 - The Director reaches a treatment by asking Ron questions (D13).
 - Docs and code land in the same pull request (D14).
 

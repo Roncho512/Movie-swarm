@@ -33,7 +33,9 @@ Look: 30. Mexican. Lean. Sun-darkened skin, deep lines around the eyes from year
 
 Wardrobe: He wears a white cotton shirt, a sun-bleached brown leather vest, khaki pants, and boots that have been resoled twice. Goggles sit on his forehead when he is not riding. No helmet.
 
-Continuity: Breitling Top Time: Black reverse panda dial, stainless case, worn brown leather rally strap. He won it in a card game from a crop duster pilot in Mexicali. Which wrist it sits on is not locked.
+Arc: He wants to finish the race, but in the end water (life) is more important. (He chooses life over winning.)
+
+Continuity: Breitling Top Time: Black reverse panda dial, stainless case, worn brown leather rally strap. He won it in a card game from a crop duster pilot in Mexicali. Locked on the left wrist.
 
 ## Scenes
 
@@ -65,6 +67,8 @@ Emotional purpose: Decision is a physical thing.
 
 Point of view: The rider, for the shot marked POV. The rest of the scene is observed.
 
+Withheld: Withhold whether the canyon really has water.
+
 Coverage: Coverage named in the screenplay: DETAIL SHOT, POV, CLOSE.
 
 Approximate duration: 50 seconds
@@ -74,6 +78,8 @@ Approximate duration: 50 seconds
 Vega walks back to the Triumph. He kneels beside the engine one more time. Pulls the fouled plug. Holds it up. Studies it. Then he does something unexpected. He places the plug on a flat rock. Picks up a smaller stone. Carefully, precisely, he taps the cracked porcelain insulator with the stone. Once. Twice. On the third tap, the loose fragment of cracked porcelain falls away, exposing clean insulator underneath. Not repaired. But the short circuit caused by the crack is eliminated. The plug might fire now. Once. Maybe twice. Maybe long enough. He threads the plug back into the cylinder head. Finger-tight. Reconnects the wire. Swings his leg over the bike. Stands on the left peg. Reaches down with his right foot and finds the kick starter. DETAIL SHOT: His boot on the kick lever. The worn sole. The exposed stitching at the toe. The lever is steel, polished smooth by a thousand kicks…
 
 Emotional purpose: A man who chose to live over a man who chose to win.
+
+Withheld: Withhold whether the canyon really has water.
 
 Coverage: Coverage named in the screenplay: DETAIL SHOT, CLOSE, WIDE SHOT, EXTREME WIDE.
 
@@ -99,17 +105,17 @@ Locked 2.39:1 widescreen. Extreme wide shots cut against extreme close-ups. Long
 
 ### 1965 Triumph TR6SC
 
-Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust side is not locked.
+Desert-modified 1965 Triumph TR6SC. The film year is 1967. The bike year stays 1965. Exhaust is locked on the right side.
 
-Sidedness: not locked
+Sidedness: exhaust on the right
 
 Reference images: (slot empty — add multi-angle refs when they exist)
 
 ### Breitling Top Time
 
-Black reverse panda dial on a worn brown leather rally strap. Which wrist it sits on is not locked.
+Black reverse panda dial on a worn brown leather rally strap. Locked on the left wrist.
 
-Sidedness: not locked
+Sidedness: left wrist
 
 Reference images: (slot empty — add multi-angle refs when they exist)
 
@@ -143,7 +149,7 @@ Scene 1 is fluid. Longer shots. The camera follows and observes. The pace says: 
 
 Film cap: $500
 
-Proposed split of the film cap. Retakes come out of the same stage allocations and the same cap. Not locked until Ron approves the treatment.
+Ron approved this split in his answer. Retakes come out of the same stage allocations and the same cap. The Line Producer locks the split when Ron approves the treatment gate.
 
 Proposed stage split:
 
@@ -161,11 +167,4 @@ Proposed stage split:
 
 ## Open questions
 
-- The draft theme is "Arrive first. Winning can wait". The feeling it aims for is "The audience should feel how small the rider is, then the shock of the engine dying, then the quiet relief of a choice to live". Lock that, or replace it?
-- The draft calls the tone "Sparse, tense, and sun-bleached. A Sergio Leone spaghetti western played as a quiet desert survival story" and the genre "western". Lock this, or tell me what to change?
-- The lookbook currently takes: Sergio Leone spaghetti westerns (Locked 2.39:1 widescreen. Extreme wide shots cut against extreme close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Charcoal blacks, bone whites, and a day that moves from amber to bronze to rose to blue dusk.); Ennio Morricone, spirit only (A score in that spirit. Do not copy a melody.). Is each 'what to take' right? Add or cut references in your answer.
-- Miguel Vega is the protagonist. The draft does not lock an arc yet. What does he want, and what is different in him by the last shot? If he only chooses and does not change, say that.
-- What should the audience not know yet? For example, do we withhold whether the canyon really has water, and whether he gets out? Your answer is saved on the scene where he chooses.
-- Action beats in the draft: Three kicks on the Triumph. The engine fails, teases, then catches rough. The kick starter is on the right in the screenplay. He taps the cracked spark-plug porcelain with a stone so the plug might fire. It is a field fix, not a repair. Are these the beats you want? Is there anything a stunt pass must lock before generation?
-- Hero props (1965 Triumph TR6SC, Breitling Top Time) are not locked. The screenplay currently puts the Triumph exhaust on the right and the watch on the left wrist. Lock both: which side is the exhaust on, and which wrist is the watch on?
-- The film cap is $500. The draft proposes: director $20, line-producer $5, screenwriter $5, art-director $25, cinematographer $10, production $270, sound-designer $55, editor $15, qa $45, fix-loop $50, treatment $0. Those numbers add up to $500. Retakes spend from the same buckets and the same cap. Approve the split, or send new numbers as stage=amount, separated by commas.
+None in the treatment file. See the questions file if a round is still open.

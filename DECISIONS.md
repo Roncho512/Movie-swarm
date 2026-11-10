@@ -185,3 +185,52 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Decision: The Director and the Line Producer may record their own small costs against the film cap before their review gates. The five crew agents may not be called, and may not be charged, until the treatment gate and that stage's gate are approved.
 - Consequences: A production spend on a new run pauses with a gate request. A two-dollar Director bookkeeping line does not, unless it would break the cap or a locked stage ceiling.
 - Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D23 — Theme, tone, and references for The Last Marker
+
+- Date: 2026-11-10
+- Context: The Director's first question round asked Ron to lock or replace the draft theme, the tone, and the lookbook.
+- Decision: Lock all three as drafted. Theme: "Arrive first. Winning can wait." Feeling: the rider feels small, the engine death is a shock, then quiet relief at the choice to live. Tone: sparse, tense, and sun-bleached, a Sergio Leone spaghetti western played as a quiet desert survival story. Genre: western. References: the Leone framing already in the lookbook, and a score in the spirit of Ennio Morricone with no copied melody.
+- Consequences: Those fields stay in the revised treatment. Round 1 does not replace them with new wording.
+- Who decided: Ron
+
+## D24 — Miguel chooses life over winning
+
+- Date: 2026-11-10
+- Context: The draft had no locked arc for Miguel Vega.
+- Decision: He wants to finish the race, but in the end water (life) is more important. He chooses life over winning.
+- Consequences: That sentence is his arc in the treatment.
+- Who decided: Ron
+
+## D25 — Withhold the canyon water
+
+- Date: 2026-11-10
+- Context: The Director asked what the audience should not know yet.
+- Decision: Withhold whether the canyon really has water.
+- Consequences: That withhold is written on the canyon scene and on the scene where he chooses. The film does not show him finding the water.
+- Who decided: Ron
+
+## D26 — The action beats stay
+
+- Date: 2026-11-10
+- Context: The draft named three kicks on the Triumph and a stone tap on the cracked spark plug.
+- Decision: Yes, those beats.
+- Consequences: The treatment keeps those two beats. No new stunt was added in this round.
+- Who decided: Ron
+
+## D27 — Exhaust on the right, watch on the left wrist
+
+- Date: 2026-11-10
+- Context: The May pilot drifted on exhaust side and watch wrist. The screenplay already said right and left. Ron had not locked them.
+- Decision: Lock the Triumph exhaust on the right side. Lock the Breitling Top Time on the left wrist.
+- Consequences: Both hero props in the treatment carry that sidedness. The multi-angle reference slot is still empty. Later roles still have to check the locks before and after generation.
+- Who decided: Ron
+
+## D28 — The $500 split Ron wants
+
+- Date: 2026-11-10
+- Context: The draft proposed a split of the $500 cap. The numbers add up to $500.
+- Decision: The proposed split is approved as written. Director $20, line producer $5, screenwriter $5, art director $25, cinematographer $10, production $270, sound $55, editor $15, QA $45, fix loop $50, treatment $0.
+- Consequences: The numbers stay on the treatment. Retakes use the same buckets and the same cap. The Line Producer has not locked them into the run yet. That happens when Ron approves the treatment gate, which he has not done.
+- Who decided: Ron
+
