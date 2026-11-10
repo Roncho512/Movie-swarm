@@ -79,7 +79,7 @@ Generate 2-4 images that capture the overall visual feel — film stock simulati
 2. **Specify the camera.** "Shot on 16mm Ektachrome film stock, heavy grain, warm color bleed at frame edges, charcoal blacks, bone whites."
 3. **Specify the light.** "Late afternoon amber light from the west, long shadows stretching east, dust in the air catching the light."
 4. **Include what NOT to generate.** "No helmet. No modern elements. No clean or new clothing."
-5. **Reference the period.** "1966. Pre-digital. Analog. Everything has weight and wear."
+5. **Reference the period.** "1967. Pre-digital. Analog. Everything has weight and wear."
 6. **Store every prompt.** Every generation prompt goes into the style bible JSON. Prompts are how you reproduce and iterate.
 
 ## Quality Checks

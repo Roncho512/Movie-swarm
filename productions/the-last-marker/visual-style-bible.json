@@ -95,7 +95,7 @@
           "angle": "front",
           "description": "Front face, direct eye contact. Head and shoulders. Goggles on forehead, white shirt, brown leather vest.",
           "generation_tool": "chatgpt-images-2.0",
-          "generation_prompt": "Photorealistic portrait of Miguel Vega, 30 years old, Mexican, lean build. Sun-darkened skin with deep lines around the eyes from years of squinting into wind and light. Short dark hair. Strong jaw. Weathered but not old — the wear comes from sun and wind, not age. Wardrobe: White cotton shirt (sweat-stained at collar and under arms), brown leather vest (sun-bleached), riding goggles pushed up on forehead. Front face, direct eye contact with camera. Head and shoulders framing. Shot on 16mm Ektachrome film stock. Heavy film grain. Warm amber light from the left suggesting late afternoon desert sun. Charcoal shadows, bone highlights. Color bleed at frame edges. Period: 1966. No modern elements. No helmet, no sunglasses, no clean or new clothing."
+          "generation_prompt": "Photorealistic portrait of Miguel Vega, 30 years old, Mexican, lean build. Sun-darkened skin with deep lines around the eyes from years of squinting into wind and light. Short dark hair. Strong jaw. Weathered but not old — the wear comes from sun and wind, not age. Wardrobe: White cotton shirt (sweat-stained at collar and under arms), brown leather vest (sun-bleached), riding goggles pushed up on forehead. Front face, direct eye contact with camera. Head and shoulders framing. Shot on 16mm Ektachrome film stock. Heavy film grain. Warm amber light from the left suggesting late afternoon desert sun. Charcoal shadows, bone highlights. Color bleed at frame edges. Period: 1967. No modern elements. No helmet, no sunglasses, no clean or new clothing."
         },
         {
           "image_id": "mv-profile-left",
@@ -127,7 +127,7 @@
           "angle": "full-body-front",
           "description": "Full body front. Standing, weight on one leg. White shirt, brown vest, khaki pants, resoled boots. Watch visible on left wrist.",
           "generation_tool": "chatgpt-images-2.0",
-          "generation_prompt": "Same man — Miguel Vega. Full body front view, standing, weight on one leg, relaxed but alert. Wardrobe: White cotton shirt (sweat-stained), brown leather vest (sun-bleached), khaki pants, boots that have been resoled twice. Brown leather gloves. Goggles on forehead. Vintage watch with black dial on worn brown leather strap on left wrist. Shot on 16mm Ektachrome. Heavy grain. Warm amber light. Desert background. Period: 1966."
+          "generation_prompt": "Same man — Miguel Vega. Full body front view, standing, weight on one leg, relaxed but alert. Wardrobe: White cotton shirt (sweat-stained), brown leather vest (sun-bleached), khaki pants, boots that have been resoled twice. Brown leather gloves. Goggles on forehead. Vintage watch with black dial on worn brown leather strap on left wrist. Shot on 16mm Ektachrome. Heavy grain. Warm amber light. Desert background. Period: 1967."
         },
         {
           "image_id": "mv-full-side-walking",
@@ -243,7 +243,7 @@
           "path": "visual-assets/prop-refs/top-time-in-context.png",
           "description": "On left wrist gripping motorcycle handlebar. Other textures in frame: leather glove, rubber grip, throttle cable, dust.",
           "generation_tool": "chatgpt-images-2.0",
-          "generation_prompt": "Same Breitling Top Time on a left wrist gripping a motorcycle handlebar. Sun-darkened wrist. Glove cuff pulled back. Other textures: leather glove, rubber grip, throttle cable, dust. Same Ektachrome look. Period: 1966."
+          "generation_prompt": "Same Breitling Top Time on a left wrist gripping a motorcycle handlebar. Sun-darkened wrist. Glove cuff pulled back. Other textures: leather glove, rubber grip, throttle cable, dust. Same Ektachrome look. Period: 1967."
         }
       ],
       "consistency_notes": "Black reverse panda dial (black main dial, white subdials). Stainless steel case. Worn brown leather rally strap with perforations. Always on the LEFT wrist. The watch accumulates dust and wear across the film — clean in concept, dusty in Scene 1, dust-caked and scratched by Scene 4. Never the subject of a shot — appears because the hand appears. Total screen time: 4 seconds across 3 scenes."
