@@ -15,6 +15,7 @@ from movie_swarm.gates import budget_cap_usd
 from movie_swarm.handoff import HandoffError
 from movie_swarm.line_producer import LineProducer, LineProducerError
 from movie_swarm.llm import LLMError
+from movie_swarm.redact import redact
 from movie_swarm.script_intake import ParsedSource, load_source
 from movie_swarm.treatment_doc import (
     apply_answers,
@@ -206,9 +207,12 @@ class Director:
             if treatment_errors(drafted):
                 return offline, "offline-deterministic"
             return drafted, "model"
-        except (LLMError, ValueError):
+        except (LLMError, ValueError) as exc:
             note = offline.get("draft_note") or ""
-            offline["draft_note"] = (note + " The model draft failed, so this is the offline draft.").strip()
+            reason = redact(str(exc))
+            offline["draft_note"] = (
+                note + " The model draft failed, so this is the offline draft. " + reason
+            ).strip()
             return offline, "offline-deterministic"
 
     def _phrase_questions(self, questions: dict) -> dict:

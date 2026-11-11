@@ -50,6 +50,8 @@ class CrewCall:
     image_client: object | None = None
     client: object | None = None
     takes: str | None = None
+    live: bool = False
+    price_override: float | None = None
 
 
 @dataclass

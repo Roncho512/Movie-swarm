@@ -119,7 +119,8 @@
         "source": { "type": "string", "enum": ["generated", "library", "silence"] },
         "prop_id": { "type": ["string", "null"] },
         "role": { "type": "string", "enum": ["sound-designer", "composer"] },
-        "model": { "type": "string" }
+        "model": { "type": "string" },
+        "voice_id": { "type": "string", "minLength": 1 }
       }
     },
     "finding": {

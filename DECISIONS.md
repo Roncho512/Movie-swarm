@@ -688,3 +688,66 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: The locked split is unchanged. Nothing is charged.
 - Who decided: Cursor cloud agent. Pending Ron's approval at merge.
 
+## D80 — Offline stays the default
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: The provider clients could call out as soon as a key was present. A key on the machine should not spend money by itself.
+- Decision: A real provider call is sent only when the command passes `--live`. Without that flag, the Director, the Line Producer, picture, and sound stay offline even if `ANTHROPIC_API_KEY`, `FAL_KEY`, or `ELEVENLABS_API_KEY` is set. The studio command never passes `--live`.
+- Consequences: Tests do not need a key. A person can set a key and still get the offline draft. The test shot command with no `--live` records nothing sent.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D81 — Four checks before any live call
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D44 already stops a paid call while the generation gate is closed. A live client needs the rest of the lock as well.
+- Decision: A live call also needs the generation gate approved through the Line Producer, a locked stage split, and an estimate that fits the money left on that stage line and under the $500 cap. The lines stay the locked split: Production $270, Sound $55, Fix loop $50, QA $45, Art $25, Director $20, Editor $15, Cinematographer $10, Screenwriter $5, Line Producer $5. The key is read from the environment at call time. Picture uses `FAL_KEY`. Sound uses `ELEVENLABS_API_KEY`. Text uses `ANTHROPIC_API_KEY`.
+- Consequences: A missing key, a closed gate, or an estimate over the line refuses the call before any HTTP request. The refusal names the missing piece and does not include the key.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D82 — An unknown price is refused
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D43 and D62 refuse to invent a price. Audio, color, delivery, and the Claude text models are not on the rate card as dollar amounts. No source in this repo names one.
+- Decision: If the rate card has no price for the model, the call is not sent. `--price-override` writes an approval request for that one dollar amount. The call waits until Ron approves that request. The approval is recorded. It is not copied onto the rate card as a published price. The card is not given a made-up audio, color, or delivery price.
+- Consequences: Harbor Night can prove the refusal and the one-call override with a fake transport. Spent on that proof stays $0.00.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D83 — The ledger reserves the estimate, then records the actual
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: A call can fail after the provider has accepted it. The budget has to show the hold before the bytes come back.
+- Decision: The Line Producer writes the estimate on the ledger before the HTTP call. When the provider reports a dollar amount, that same row keeps the estimate and the actual, and the booked amount becomes the actual. When the provider does not report one, the booked amount stays the estimate and the note says so. The request is hashed without the key. A second run of the same hash uses the saved file, writes a dry-run line, and does not charge again.
+- Consequences: A crash after the reservation does not send a second paid request. The running total matches the booked amount.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D84 — A failed call stays at the stage gate
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: A timeout or a provider error should not skip the stage or look like a finished film.
+- Decision: Connection errors are retried with a short backoff. A timeout, or a 5xx after those retries, keeps the estimate booked when the provider may already have accepted the request, and the same request is not sent again. A connection error that never reached the provider releases the reservation. The run status goes back to waiting. The stage does not move forward.
+- Consequences: The generation gate stays as Ron left it. The pipeline does not advance to the next stage because a call failed.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D85 — Keys stay in the environment, and files follow the asset root
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D9 says finished files belong on a drive whose path is a setting. A key must not land in the repo, the ledger, or an error message.
+- Decision: Keys are read from the environment only. They are stripped from errors, the ledger, the provider cache, and the test-shot record. `.env.example` lists the three names with empty values. `.env` stays gitignored. Downloaded media goes through `resolve_asset`. That uses `MOVIE_SWARM_ASSET_ROOT` when it is set, otherwise `asset_root` in `config/assets.json`, otherwise the production folder. `asset_root` stays null. No drive path is written in code.
+- Consequences: A test can set a fake key and check that it never appears in the production folder. The proof media stays in the temp folder.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D86 — Only a cited endpoint can be called
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: The picture routing names Gemini Omni 1.2 Flash. The older production program names Seedance on fal. Sending Gemini to a guessed fal address would invent an integration.
+- Decision: A live picture call uses the fal queue only when that model's row in `config/generation-rates.json` names an endpoint. Seedance 2.0 and Seedance 2.0 fast use the addresses already in `config/model-routing.json`. Gemini Omni and Kling have prices and no endpoint, so a live call for them is refused. ElevenLabs dialogue, effects, and music use the HTTP paths for those three jobs. A dialogue call with no voice id is refused. The engine does not pick a voice.
+- Consequences: The default test shot on Harbor Night refuses until a routing override names Seedance, or until an endpoint for Gemini is added from a cited source. Nothing is spent either way.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+

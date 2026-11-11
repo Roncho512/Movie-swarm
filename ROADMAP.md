@@ -18,7 +18,9 @@ Phase 6 merged to main on 2026-11-11 via PR https://github.com/Roncho512/Movie-s
 
 Phase 7 merged to main on 2026-11-11 via PR https://github.com/Roncho512/Movie-swarm/pull/10, merge commit 82fdbf5. The Colorist writes a grade plan from the production's look, with one base grade and one adjustment per scene. The Re-recording Mixer writes a mix plan from the cue sheet and the stems: levels, dialogue ducking, fades at scene changes, and a loudness target. The target is EBU R128 unless the production sets its own. The rate card has no color or mix price, so the estimate is unknown. ffmpeg renders a graded preview, the mix, and a married picture-and-sound preview when it is installed. The plans are written either way. Both calls wait until Ron has approved the edit gate and the sound gate. Ron approves a color-mix gate before final delivery. The proof is Harbor Night and tiny synthetic video and audio. The Last Marker is not graded or mixed. Spent: $0.00 of $500.00.
 
-Phase 8 is in review. The Post Supervisor reads the production's delivery spec and writes a master, the variants that spec asks for, a poster frame, and captions from the dialogue cues. QC checks duration, resolution, frame rate, loudness, black frames, frozen frames, and caption timing. The manifest lists files, SHA-256 checksums, spend against the $500 cap, the stage split, and every gate record. The package folder is a setting. Ron approves a delivery gate to mark the film delivered. `scripts/studio.py` walks Harbor Night from the treatment through that package and stops at each gate. A test harness can approve the gates. The command line cannot. The generation gate stays closed. The Last Marker is not delivered. Spent: $0.00 of $500.00.
+Phase 8 merged to main on 2026-11-11 via PR https://github.com/Roncho512/Movie-swarm/pull/11, merge commit 3fa56c0. The Post Supervisor reads the production's delivery spec and writes a master, the variants that spec asks for, a poster frame, and captions from the dialogue cues. QC checks duration, resolution, frame rate, loudness, black frames, frozen frames, and caption timing. The manifest lists files, SHA-256 checksums, spend against the $500 cap, the stage split, and every gate record. The package folder is a setting. Ron approves a delivery gate to mark the film delivered. `scripts/studio.py` walks Harbor Night from the treatment through that package and stops at each gate. A test harness can approve the gates. The command line cannot. The generation gate stays closed. The Last Marker is not delivered. Spent: $0.00 of $500.00.
+
+Phase 8.5 is in review. The provider clients can call Anthropic, fal, and ElevenLabs. A call is sent only when the generation gate is approved, the estimate fits the stage line and the $500 cap, the key is in the environment, and `--live` is passed. Offline stays the default. The test shot command prepares exactly one picture call and records it. It was not run live. The rate card still has no audio, color, or delivery price, and no fal address for Gemini Omni or Kling. Spent: $0.00 of $500.00.
 
 ## Phases
 
@@ -34,7 +36,8 @@ Each studio phase is proven on a synthetic fixture. The Last Marker is not the p
 | 5 | Edit and assembly: an edit decision list from circled takes, in storyboard order, trimmed toward the brief. Missing coverage goes back to dailies or generation. A picture-lock gate blocks sound. | Done, merged 2026-11-11, PR #8, merge 683e4c5. Proven on Harbor Night and synthetic clips. No paid call. Spent $0.00 of $500.00. |
 | 6 | Sound and score: a cue sheet on the locked cut, with dialogue, effects, foley, ambience, and music. Sync and prop-sound checks. A sound gate blocks color and mix. | Done, merged 2026-11-11, PR #9, merge 8d0de69. Proven on Harbor Night and synthetic audio. No paid call. Spent $0.00 of $500.00. |
 | 7 | Color and mix: a grade plan from the production's look, a mix plan from the cue sheet, loudness against a cited target, and a color-mix gate before final delivery. | Done, merged 2026-11-11, PR #10, merge 82fdbf5. Proven on Harbor Night and synthetic video and audio. No paid call. Spent $0.00 of $500.00. |
-| 8 | Final delivery: a master, variants, a poster, captions, QC, and a manifest, plus an offline studio run that stops at each gate. | In review. Proven on Harbor Night and synthetic media. No paid call. Spent $0.00 of $500.00. |
+| 8 | Final delivery: a master, variants, a poster, captions, QC, and a manifest, plus an offline studio run that stops at each gate. | Done, merged 2026-11-11, PR #11, merge 3fa56c0. Proven on Harbor Night and synthetic media. No paid call. Spent $0.00 of $500.00. |
+| 8.5 | Provider wiring: real HTTP clients for Anthropic, fal, and ElevenLabs, behind the generation gate, the stage line, the key, and `--live`. Offline stays the default. One test-shot command. | In review. Proven on Harbor Night with a fake HTTP transport. No live call. Spent $0.00 of $500.00. |
 | 9 | First film: the finished studio makes The Last Marker from its approved previs. | Not started |
 
 ## Gates
@@ -77,17 +80,21 @@ These are made. The write-up is in [DECISIONS.md](DECISIONS.md).
 ## Open decisions
 
 - The folder path on the Ron Workspace drive. The switch exists. The path is not set.
-- The older video program still calls Seedance, and QA still calls its current Claude model. The generation pipeline quotes Gemini Omni 1.2 Flash and does not call it. Connecting a live client is a later step, after Ron approves the generation gate.
+- The older video program still calls Seedance, and QA still calls its current Claude model. The generation pipeline quotes Gemini Omni 1.2 Flash. A live call for that model is refused because the rate card has no fal address for it. Connecting that address is still open, and it still waits on Ron's generation-gate approval and `--live`.
+- Audio, color, and delivery have no published price in this repo. A live call for one of them is refused unless Ron approves a one-call price override.
 
-Phase 1 records technical choices D15 through D22. Phase 2 records D31 through D37. Phase 3 records D42 through D46. Phase 4 records D47 through D51. Phase 5 records D52 through D57. Phase 6 records D58 through D63. Phase 7 records D64 through D70. Phase 8 records D71 through D79. They are proposals from the build. Ron has not accepted or rejected them in a decision entry. They are not closed.
+Phase 1 records technical choices D15 through D22. Phase 2 records D31 through D37. Phase 3 records D42 through D46. Phase 4 records D47 through D51. Phase 5 records D52 through D57. Phase 6 records D58 through D63. Phase 7 records D64 through D70. Phase 8 records D71 through D79. Phase 8.5 records D80 through D86. They are proposals from the build. Ron has not accepted or rejected them in a decision entry. They are not closed.
 
 ## What comes next
 
-Ron reviews Phase 8. Phases 4 through 7 are merged. He can accept or reject D47 through D79. Merging does not approve a paid run, the dailies gate, the edit gate, the sound gate, the color-mix gate, or the delivery gate on The Last Marker. The generation gate stays closed until he approves it on a run.
+Ron reviews Phase 8.5. Phases 4 through 8 are merged. He can accept or reject D47 through D86. Merging does not approve a paid run, the dailies gate, the edit gate, the sound gate, the color-mix gate, or the delivery gate on The Last Marker. The generation gate stays closed until he approves it on a run. `--live` was not used.
 
-The next phase is the first film. The Last Marker is made from its approved previs, still inside the $500 cap. Before that run can leave the machine, Ron would need to choose:
+The next phase is the first film. The Last Marker is made from its approved previs, still inside the $500 cap. Before that run can leave the machine, these are still open:
 
-- Whether to approve the generation gate on that run. Until he does, no paid picture or audio call is made. This build's client still does not call a provider after the approval.
-- Which provider keys to set, if a later build is allowed to call out. The names are `ANTHROPIC_API_KEY`, `FAL_KEY`, and `ELEVENLABS_API_KEY`. No key is stored in the repo.
+- Ron's keys, in the environment only: `ANTHROPIC_API_KEY`, `FAL_KEY`, and `ELEVENLABS_API_KEY`. No key is stored in the repo.
 - A delivery spec at `productions/the-last-marker/delivery/delivery-spec.json`: master codec and size, which variants he wants (16:9, 9:16, 1:1), the poster shot, and sidecar or burned-in captions. The studio does not invent those for the film.
-- The folder on the Ron Workspace drive, if the package should be written there. Set `MOVIE_SWARM_ASSET_ROOT` or `asset_root` in `config/assets.json`. The path is still unset.
+- Ron's approval of the generation gate on that run. Until he does, no paid picture or audio call is made.
+- The first live test shot, one shot, after he has read the estimate. The command is `scripts/line-producer.py` `test-shot`. It was not run.
+- A published price for audio, color, and delivery. This repo does not contain one, so those calls stay unknown until Ron approves a one-call override or a cited rate is added.
+- A fal address for Gemini Omni 1.2 Flash and for Kling. The rate card has their picture prices and no endpoint, so a live call for them is refused. Seedance 2.0 and Seedance 2.0 fast are the picture models with a fal address.
+- The folder on the Ron Workspace drive, if the package should be written there. Set `MOVIE_SWARM_ASSET_ROOT` or `asset_root` in `config/assets.json`. The path is still unset. `asset_root` is null.

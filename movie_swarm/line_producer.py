@@ -15,6 +15,7 @@ from pathlib import Path
 from movie_swarm.gates import budget_cap_usd, is_stage_gated, load_gate_config, would_exceed_budget
 from movie_swarm.handoff import read_handoff, write_handoff
 from movie_swarm.money import as_money, money_number
+from movie_swarm.redact import redact
 from movie_swarm.roles import (
     CALLABLE,
     COLOR_MIX_BILLING,
@@ -910,6 +911,59 @@ class LineProducer:
                 return request
         known = ", ".join(item["request_id"] for item in self.record["requests"]) or "none"
         raise LineProducerError(f"No approval request named {request_id}. Requests on this run: {known}.")
+
+    def ledger_entry(self, entry_id: str) -> dict:
+        for entry in self.record["ledger"]:
+            if entry["entry_id"] == entry_id:
+                return entry
+        raise LineProducerError(f"No ledger entry {entry_id}.")
+
+    def annotate_ledger(self, entry_id: str, **fields) -> dict:
+        """Add the live-call fields onto one ledger row and save it."""
+        entry = self.ledger_entry(entry_id)
+        for key, value in fields.items():
+            if key == "description" and value is not None:
+                entry[key] = redact(str(value))
+            else:
+                entry[key] = value
+        self._save_record()
+        return entry
+
+    def set_ledger_amount(self, entry_id: str, amount_usd, description: str) -> dict:
+        """Change one booked amount and keep the running total in step.
+
+        A lower amount gives the difference back. A higher amount adds it.
+        This is how a reserved estimate becomes the provider's actual price.
+        """
+        entry = self.ledger_entry(entry_id)
+        old = as_money(entry["amount_usd"])
+        new = as_money(amount_usd)
+        if new < 0:
+            raise LineProducerError("A spend cannot be negative.")
+        entry["amount_usd"] = money_number(new)
+        entry["description"] = redact(description)
+        self._save_record()
+        self._adjust_running_total(new - old)
+        return entry
+
+    def consume_request(self, request_id: str) -> None:
+        for request in self.record["requests"]:
+            if request["request_id"] == request_id:
+                request["consumed"] = True
+        self._save_record()
+
+    def hold_for_review(self, message: str) -> None:
+        """Leave the run waiting. The stage does not move forward."""
+        self.run.data["status"] = "waiting-for-review"
+        self.run.data["notes"] = redact(message)
+        self.run.save()
+
+    def _adjust_running_total(self, delta) -> None:
+        updated = as_money(self.run.data["cost_usd"]) + as_money(delta)
+        if updated < 0:
+            updated = as_money(0)
+        self.run.data["cost_usd"] = money_number(updated)
+        self.run.save()
 
     @staticmethod
     def _next_id(prefix: str, existing: list[str]) -> str:

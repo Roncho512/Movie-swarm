@@ -20,7 +20,9 @@ Phase 6 is on main. It merged on 2026-11-11 in [pull request 9](https://github.c
 
 Phase 7 is on main. It merged on 2026-11-11 in [pull request 10](https://github.com/Roncho512/Movie-swarm/pull/10), merge `82fdbf5`. After the edit gate and the sound gate are both approved, the Colorist grades the locked picture and the Re-recording Mixer mixes the stems. A grade plan is the color: one base grade for the whole cut, plus one adjustment per scene, read from `look/look.json` and from `look/grade.json` when the production has one. A mix plan is the sound: a level for each stem, dialogue in front, music and effects ducked under dialogue, and a fade at each scene change. Loudness is checked against EBU R128, or against `audio/mix-targets.json` when the production sets its own target. EBU R128 is a published delivery standard: -23.0 LUFS, true peak no higher than -1.0 dBTP. The rate card has no color or mix price, so that estimate is marked unknown and is not stored as zero. When ffmpeg is installed, it renders a low-resolution graded preview, the mix, and a married preview of picture plus sound. When it is not, the plans are still written. Ron approves a `color-mix` gate before final delivery. The proof is Harbor Night plus tiny synthetic video and audio. Nothing was spent. The Last Marker was not graded or mixed.
 
-Phase 8 is in review. This is the last studio phase before the first film. The Post Supervisor reads `delivery/delivery-spec.json` from the production folder and writes a delivery package: a master file, the web or social variants the spec asks for, a poster frame, and captions timed from the dialogue cues. QC checks duration, resolution, frame rate, loudness, black frames, frozen frames, and caption timing. The report is JSON plus a short Markdown table. A delivery manifest lists the files, a SHA-256 checksum for each one that was written, the film spend against the $500 cap, the stage split, and every gate record. The package folder follows `MOVIE_SWARM_ASSET_ROOT` or `config/assets.json`. No drive path is hard-coded. Ron approves a `delivery` gate to mark the film delivered. One command, `scripts/studio.py`, walks Harbor Night from the treatment through that package and stops at each gate. A test harness can approve those gates. The command line cannot. The generation gate stays closed. Nothing was spent. The Last Marker was not delivered.
+Phase 8 is on main. It merged on 2026-11-11 in [pull request 11](https://github.com/Roncho512/Movie-swarm/pull/11), merge `3fa56c0`. The Post Supervisor reads `delivery/delivery-spec.json` from the production folder and writes a delivery package: a master file, the web or social variants the spec asks for, a poster frame, and captions timed from the dialogue cues. QC checks duration, resolution, frame rate, loudness, black frames, frozen frames, and caption timing. The report is JSON plus a short Markdown table. A delivery manifest lists the files, a SHA-256 checksum for each one that was written, the film spend against the $500 cap, the stage split, and every gate record. The package folder follows `MOVIE_SWARM_ASSET_ROOT` or `config/assets.json`. No drive path is hard-coded. Ron approves a `delivery` gate to mark the film delivered. One command, `scripts/studio.py`, walks Harbor Night from the treatment through that package and stops at each gate. A test harness can approve those gates. The command line cannot. The generation gate stays closed. Nothing was spent. The Last Marker was not delivered.
+
+Phase 8.5 wires the provider clients. A provider is the company that makes the picture, the sound, or the text. Anthropic is the text provider. fal is the picture provider. ElevenLabs is the sound provider. A real call is sent only when all four of these are true: the generation gate is approved, the estimate fits the remaining money on that stage line and under the $500 cap, the key for that provider is in the environment, and the command was given `--live`. Offline stays the default. A test shot is one picture call for one shot. The command is on the Line Producer. It was not run live. The rate card still has no price for audio, color, or delivery, and no fal address for Gemini Omni or Kling, so those calls are refused. Spent so far: $0.00 of $500.00. The Last Marker was not generated.
 
 Film facts stay in the production folder. The engine does not know that this film's exhaust is on the right, that the watch is on the left wrist, that the bike is a 1965, that the story is 1967, or that the look is Sergio Leone. Those sentences live in `productions/the-last-marker/`. A different film uses its own files. The pilot sound prompts moved out of the sound program and into `productions/the-last-marker/audio/sound-prompts.json`.
 
@@ -44,7 +46,7 @@ See where The Last Marker stands:
 python3 scripts/line-producer.py --production productions/the-last-marker --run phase-1 status
 ```
 
-Draft again from the screenplay. This does not approve anything. `--offline` skips the model even if a key is set.
+Draft again from the screenplay. This does not approve anything. The draft stays offline unless you pass `--live`. `--offline` is the same default, written out.
 
 ```bash
 python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline intake
@@ -115,7 +117,7 @@ python3 scripts/director.py --production path/to/a-production --run phase-1 disp
   --output-dir path/to/a-folder
 ```
 
-A generate call is the paid path. It pauses until you approve the generation gate. Even after that approval, this build's client does not call a provider.
+A generate call is the paid path. It pauses until you approve the generation gate. Without `--live`, it still does not call a provider. With `--live`, it can call, and it sends every shot that passes the checks. Use the test shot below when you want exactly one call.
 
 ```bash
 python3 scripts/line-producer.py --production path/to/a-production --run phase-1 approve-gate \
@@ -160,7 +162,7 @@ python3 scripts/director.py --production path/to/a-production --run phase-1 --of
   --agent composer --crew-command spot --estimate 0
 ```
 
-Read `sound/cue-sheet.md`. The checklist is `sound/cue-sheet.json`. When ffmpeg is installed, placeholder stems land in `sound/stems/`. A generate call is the paid path. It pauses until you approve the generation gate. This build's client does not call a provider.
+Read `sound/cue-sheet.md`. The checklist is `sound/cue-sheet.json`. When ffmpeg is installed, placeholder stems land in `sound/stems/`. A generate call is the paid path. It pauses until you approve the generation gate. Without `--live`, it does not call ElevenLabs. The rate card has no audio price, so a live sound call also needs `--price-override` and your approval of that one amount.
 
 ```bash
 python3 scripts/line-producer.py --production path/to/a-production --run phase-1 approve-gate \
@@ -231,7 +233,7 @@ Keep going. Each run stops at the next closed gate and tells you the name. The o
 9. `color-mix`. The grade and the mix are written first. Read `color/grade-plan.md` and `color/mix-plan.md`.
 10. `delivery`. The package is written first. Read the QC report and the manifest. Approving this gate marks the film delivered.
 
-The generation gate is not in that list. Leave it closed until you are ready to pay for pictures. This build's client still does not call a provider after that approval. Harbor Night's offline run spends $0.00.
+The generation gate is not in that list. Leave it closed until you are ready to pay for pictures. The studio command never passes `--live`. Harbor Night's offline run spends $0.00.
 
 A real production is the same two commands, with that film's folder instead of `/tmp/harbor-night`. If it has no treatment yet, draft one first with `scripts/director.py` and the `intake` command, answer the questions, and then start the studio command. Do not run this path on The Last Marker until the first-film phase. Its approved previs stays where it is.
 
@@ -241,9 +243,36 @@ When ffmpeg is installed, the package can include `master.mp4` (or a ProRes mast
 
 Tests can call `run_studio(..., auto_approve=True)`. That is a test harness. It records the approver as `test-auto-approve`, not as Ron, and it still leaves the generation gate closed. `scripts/studio.py` and the Director's `studio` command do not pass that flag. Do not use it on a real film.
 
+## One live test shot
+
+A test shot is one picture call for one shot. It does not send anything unless you pass `--live`. Set the keys in your own shell. Do not put them in a file that gets committed. `.env.example` lists the names with empty values. `.env` is ignored by git.
+
+```bash
+python3 scripts/line-producer.py --production /tmp/harbor-night --run studio-1 test-shot --shot s01-sh01
+```
+
+That prints the reason and does not call a provider. To send the one call, all of these have to be true:
+
+1. You approved the generation gate on that run.
+2. The estimate fits the money left on the Production line ($270 in the locked split) and under the $500 cap.
+3. `FAL_KEY` is set in the environment.
+4. You pass `--live`.
+
+```bash
+python3 scripts/line-producer.py --production /tmp/harbor-night --run studio-1 --live test-shot --shot s01-sh01
+```
+
+The picture model in the routing file is Gemini Omni 1.2 Flash. The rate card has its price and does not have a fal address for it, so that command refuses and does not spend. Seedance 2.0 and Seedance 2.0 fast are the picture models with a fal address in the rate card. Point one shot at one of them with an override in a copy of `config/model-routing.json` when you want that first call. Do not run it until you mean to spend.
+
+The estimate is written on the ledger before the call. The provider's own price, when it reports one, replaces that estimate after the call. If the rate card has no price, the call is refused. `--price-override 0.25` writes an approval request for that one amount. The call waits until you approve the request. It does not invent a price.
+
+Run the same command again and it uses the saved file. It does not call the provider again and it does not charge again. A failure leaves the run waiting at the current stage. It does not skip ahead.
+
+Text calls use `ANTHROPIC_API_KEY`. Sound calls use `ELEVENLABS_API_KEY`. The Director stays offline unless you pass `--live` on `scripts/director.py`. The rate card has no text price and no audio price, so those live calls need a price override. Downloaded files go under `MOVIE_SWARM_ASSET_ROOT` when that is set, otherwise under `asset_root` in `config/assets.json`, otherwise in the production folder. `asset_root` is still null. No drive path is written in the code.
+
 ## What the checks do
 
-`python3 -m pytest tests -q` runs the shared checks. They cover the Phase 0 foundation, the Phase 1 rules, the Phase 2 package, the Phase 3 quote, the Phase 4 dailies review, the Phase 5 edit, the Phase 6 cue sheet, the Phase 7 grade and mix, and the Phase 8 delivery package: the cap, approvals, the treatment checklist, each screenplay format, the question round trip, a crew call that must pass the Line Producer first, locked props, a continuity check, a camera package, storyboards, an action breakdown, a dry-run generation plan, the generation gate, a prompt that keeps a locked phrase, a circled take, a forbidden prop phrase, a missing file, a shot-list mismatch, the dailies report checklist, the dailies gate in front of the editor, storyboard order, a missing-coverage blocker, a runtime trim, the edit decision list checklist, a locked prop that breaks across a cut, the edit gate in front of sound, cues inside the cut, a sync tolerance flag, a prop sound outside the frame, a paid sound call refused while the generation gate is closed, the Sound line on the rate card, a grade read from the look, a scene grade stated once, a color mismatch between adjacent shots, dialogue ducking, a loudness miss, the color-mix gate in front of final delivery, a delivery spec read from the production, caption timing, a QC pass, a forced QC fail, a manifest with checksums and spend, the delivery gate, and a studio run that stops at each gate unless a test harness approves them. One fixture is The Last Marker. Another is Harbor Night, a tiny second film, so the engine is not proven only on this one. Phase 3 through Phase 8 picture, sound, and delivery checks use Harbor Night.
+`python3 -m pytest tests -q` runs the shared checks. They cover the Phase 0 foundation, the Phase 1 rules, the Phase 2 package, the Phase 3 quote, the Phase 4 dailies review, the Phase 5 edit, the Phase 6 cue sheet, the Phase 7 grade and mix, the Phase 8 delivery package, and the Phase 8.5 provider gate: the cap, approvals, the treatment checklist, each screenplay format, the question round trip, a crew call that must pass the Line Producer first, locked props, a continuity check, a camera package, storyboards, an action breakdown, a dry-run generation plan, the generation gate, a prompt that keeps a locked phrase, a circled take, a forbidden prop phrase, a missing file, a shot-list mismatch, the dailies report checklist, the dailies gate in front of the editor, storyboard order, a missing-coverage blocker, a runtime trim, the edit decision list checklist, a locked prop that breaks across a cut, the edit gate in front of sound, cues inside the cut, a sync tolerance flag, a prop sound outside the frame, a paid sound call refused while the generation gate is closed, the Sound line on the rate card, a grade read from the look, a scene grade stated once, a color mismatch between adjacent shots, dialogue ducking, a loudness miss, the color-mix gate in front of final delivery, a delivery spec read from the production, caption timing, a QC pass, a forced QC fail, a manifest with checksums and spend, the delivery gate, a studio run that stops at each gate unless a test harness approves them, an offline default, a closed generation gate, a missing key, an over-budget call, an unknown price, a ledger estimate and a reported actual, a re-run that does not charge again, a retry and a timeout, and a key that never appears in the saved output. The provider tests use a fake HTTP transport. They do not open a network connection. One fixture is The Last Marker. Another is Harbor Night, a tiny second film, so the engine is not proven only on this one. Phase 3 through Phase 8.5 picture, sound, delivery, and provider checks use Harbor Night. The provider checks do not call The Last Marker.
 
 Three older agents have their own checks, because each one uses a folder named `src`:
 
@@ -263,10 +292,10 @@ Environment variables, by name only. Do not commit a key.
 
 | Name | Used for |
 |---|---|
-| `ANTHROPIC_API_KEY` | The Director and the Line Producer, when you want a real model. Without it, the draft is offline and labeled that way. |
-| `MOVIE_SWARM_ASSET_ROOT` | Optional folder for the delivery package. Overrides the file below. |
-| `FAL_KEY` | The production agent, when it really generates video. This phase does not do that. |
-| `ELEVENLABS_API_KEY` | The sound agent, when it really generates audio. This phase does not do that. |
+| `ANTHROPIC_API_KEY` | Text calls for the Director and the Line Producer. Read only when you pass `--live`. The value is never written down. |
+| `MOVIE_SWARM_ASSET_ROOT` | Optional folder for downloaded media and the delivery package. Overrides the file below. |
+| `FAL_KEY` | Picture calls on fal. Read only when you pass `--live`. |
+| `ELEVENLABS_API_KEY` | Sound calls on ElevenLabs. Read only when you pass `--live`. |
 
 Config files in `config/`:
 

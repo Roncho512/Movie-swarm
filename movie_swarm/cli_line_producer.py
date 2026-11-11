@@ -11,7 +11,8 @@ import sys
 from pathlib import Path
 
 from movie_swarm.line_producer import LineProducer, LineProducerError
-from movie_swarm.llm import LLMError, client_from_environment
+from movie_swarm.llm import LLMError
+from movie_swarm.providers import llm_for_command, run_test_shot
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -20,6 +21,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--production", required=True, help="Production folder")
     parser.add_argument("--run", help="Run id. Required except for start, which can choose one.")
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Allow one real provider call. Offline is the default. A live call still needs the generation gate, the key, and a known price.",
+    )
+    parser.add_argument(
+        "--price-override",
+        type=float,
+        help="Dollars for one call when the rate card has no price. Approve that request before the call is sent.",
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     start = sub.add_parser("start", help="Open a run for this production")
@@ -29,7 +40,7 @@ def main(argv: list[str] | None = None) -> int:
     status.add_argument(
         "--narrate",
         action="store_true",
-        help="Add one sentence from the cheap model when ANTHROPIC_API_KEY is set",
+        help="Add one sentence from the cheap model. Needs --live, the generation gate, the key, and a known price.",
     )
 
     spend = sub.add_parser("spend", help="Record a spend, or pause and write an approval request")
@@ -57,6 +68,12 @@ def main(argv: list[str] | None = None) -> int:
     credit.add_argument("--name", required=True)
     credit.add_argument("--note", default="")
 
+    shot = sub.add_parser(
+        "test-shot",
+        help="Prepare exactly one picture call for one shot. Sends it only with --live, and only when the gate, the key, and the price all allow it.",
+    )
+    shot.add_argument("--shot", required=True, help="Shot id, for example s01-sh01")
+
     args = parser.parse_args(argv)
     try:
         return _run(args)
@@ -78,10 +95,16 @@ def _run(args) -> int:
     if args.command == "status":
         narration = ""
         if args.narrate:
-            client = client_from_environment()
-            if client is None:
-                print("ANTHROPIC_API_KEY is not set, so the status has no model sentence.")
+            if not args.live:
+                print("Offline is the default. Pass --live to add a model sentence. Nothing was sent.")
             else:
+                client = llm_for_command(
+                    production,
+                    args.run,
+                    live=True,
+                    offline=False,
+                    price_override=args.price_override,
+                )
                 try:
                     narration = client.complete(
                         role="line-producer",
@@ -92,6 +115,8 @@ def _run(args) -> int:
                     )
                 except LLMError as exc:
                     print(exc)
+                    print(producer.status_text())
+                    return 2
         print(producer.status_text(narration))
         return 0
     if args.command == "spend":
@@ -125,6 +150,22 @@ def _run(args) -> int:
         producer.add_credit(args.role, args.name, args.note)
         print(f"Added credit: {args.role} — {args.name}")
         return 0
+    if args.command == "test-shot":
+        from movie_swarm.providers import CallSettings
+
+        result = run_test_shot(
+            producer,
+            args.shot,
+            live=args.live,
+            settings=CallSettings(price_override=args.price_override),
+        )
+        print(result["message"])
+        if result.get("output"):
+            print(f"File: {result['output']}")
+            print(f"Location setting: {result.get('location')}")
+        if result["status"] in {"generated", "replayed", "offline"}:
+            return 0
+        return 2
     print("Unknown command.")
     return 1
 

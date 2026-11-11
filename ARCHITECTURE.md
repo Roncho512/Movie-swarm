@@ -14,7 +14,7 @@ The crew is Python in this repo. You run a command on your machine. It reads and
 
 The Director and the Line Producer will be fronted by Grok Bot agents. Those bots live outside this repo. They show Ron the gates and the Director's questions in chat. The chat does not type into a waiting terminal. The bot reads and writes the same files these commands use, so a run can stop and start again.
 
-Generation runs on provider servers, not on the laptop that holds the repo. Video, stills, and audio can run at the same time once a later phase turns that on. This phase does not send a paid generation. A dry run is a practice pass: the call is checked, and no generation money is spent. A cost estimate only prices the work. A generation plan is that quote in sentences, for any production that has boards or a shot list. The generation gate is a separate switch. A plan does not need it. A paid call does.
+Generation runs on provider servers, not on the laptop that holds the repo. Video, stills, and audio can run at the same time once a later phase turns that on. A provider call is sent only when `--live` is passed, the generation gate is approved, the estimate fits the stage line and the film cap, and the provider key is in the environment. Offline is the default. A dry run is a practice pass: the call is checked, and no generation money is spent. A cost estimate only prices the work. A generation plan is that quote in sentences, for any production that has boards or a shot list. The generation gate is a separate switch. A plan does not need it. A paid call does. The test shot command sends at most one picture call. It was not run live.
 
 ## Repository
 
@@ -26,7 +26,7 @@ Generation runs on provider servers, not on the laptop that holds the repo. Vide
 | `agents/04-cinematographer/` | Camera package and storyboard. The program is in `movie_swarm/`. |
 | `agents/05-production/` through `09-fix-loop/` | Coded crew: video, sound, edit, QA, and the fix loop. |
 | `agents/10-script-supervisor/`, `11-prop-master/`, `12-stunt-coordinator/` | Phase 2 roles. The programs are in `movie_swarm/`. |
-| `movie_swarm/` | Shared code: checklists, the run record, gates, money, the Director, the Line Producer, the phase 2 package, the generation quote, the dailies review, the edit, sound and score, color and mix, delivery, and the offline studio run. |
+| `movie_swarm/` | Shared code: checklists, the run record, gates, money, the Director, the Line Producer, the phase 2 package, the generation quote, the dailies review, the edit, sound and score, color and mix, delivery, the offline studio run, and the live provider gate. |
 | `config/` | Gates, the $500 cap, model names, and the asset root. |
 | `schemas/` | The checklists. |
 | `productions/the-last-marker/` | The test film. |
@@ -48,9 +48,9 @@ Generation runs on provider servers, not on the laptop that holds the repo. Vide
 
 **Budget cap.** The film cap is $500 in `config/gates.json`. Landing on $500 is allowed. Going over pauses the spend and writes an approval request. Retakes use the same cap. After Ron approves the treatment, each stage also has its own ceiling. A retake spends from that stage's ceiling and from the film cap.
 
-**Model routing.** `config/model-routing.json` names the model for each role. The Line Producer and the question list use Claude Haiku 5.5. The Director's draft uses Claude Sonnet 5.5. The final treatment pass uses Claude Opus 5.5. The older video program still calls Seedance 2.0. The generation pipeline reads the production role's preview and final purposes, which name Gemini Omni 1.2 Flash. The dailies role names that same picture model, because a later build may watch the clip with it. This build does not call it. The editor assembles with ffmpeg. A notes purpose names Claude Haiku 5.5 and is not called. Sound spotting and the Composer use Claude Haiku 5.5 for notes. This build does not call them. Dialogue, effects, and score name the generators a paid call would use. Seedance and Kling stay alternates. A routing override can name one for a shot. The quote prices only models listed in `config/generation-rates.json`. The Colorist uses Claude Haiku 5.5 for the grade note and is not called. ffmpeg applies the grade. The Mixer renders with ffmpeg. A notes purpose names Claude Haiku 5.5 and is not called. The Post Supervisor uses Claude Haiku 5.5 for a packaging note and is not called. ffmpeg renders the delivery files. QC is local. It does not call the QA program's model.
+**Model routing.** `config/model-routing.json` names the model for each role. The Line Producer and the question list use Claude Haiku 5.5. The Director's draft uses Claude Sonnet 5.5. The final treatment pass uses Claude Opus 5.5. The older video program still calls Seedance 2.0. The generation pipeline reads the production role's preview and final purposes, which name Gemini Omni 1.2 Flash. The dailies role names that same picture model, because a later build may watch the clip with it. This build does not call it. The editor assembles with ffmpeg. A notes purpose names Claude Haiku 5.5 and is not called unless `--live` is passed, and even then the rate card has no text price, so the call is refused until Ron approves a one-call price. Sound spotting and the Composer use Claude Haiku 5.5 for notes. Dialogue, effects, and score name ElevenLabs. Seedance and Kling stay alternates. A routing override can name one for a shot. The quote prices only models listed in `config/generation-rates.json`. A live picture call also needs an endpoint on that row. Seedance 2.0 and Seedance 2.0 fast have fal addresses copied from this routing file. Gemini Omni and Kling do not, so a live call for them is refused. The Colorist uses Claude Haiku 5.5 for the grade note. ffmpeg applies the grade. The Mixer renders with ffmpeg. The Post Supervisor uses Claude Haiku 5.5 for a packaging note. ffmpeg renders the delivery files. QC is local. It does not call the QA program's model. Audio, color, and delivery still have no published price in the rate card.
 
-**Generation gate.** `config/gates.json` has a `generation` switch. It starts on. Opening it is Ron's recorded yes on a run. A plan does not ask. A generate call does, after the treatment, the stage, and the previs gate are already open. This build's client still does not call a provider when the gate is open.
+**Generation gate.** `config/gates.json` has a `generation` switch. It starts on. Opening it is Ron's recorded yes on a run. A plan does not ask. A generate call does, after the treatment, the stage, and the previs gate are already open. Opening the gate is not enough. The call also needs `--live`, the provider key, and an estimate that fits the stage line. Without `--live`, the client does not leave the machine.
 
 **Dailies gate.** `config/gates.json` has a `dailies` switch. It starts on. The review can be written while the switch is closed, because that report is what Ron reads. The editor does not run until Ron approves it, even if the editor's own gate is already open.
 
@@ -87,6 +87,7 @@ The choices already made are in [DECISIONS.md](DECISIONS.md). Short form:
 - Sound and score spot a cue sheet onto the locked cut (D58 through D63, pending Ron's approval at merge). Color and mix wait on the sound gate.
 - Color and mix grade the locked picture and mix the stems (D64 through D70, pending Ron's approval at merge). Final delivery waits on the color-mix gate.
 - Final delivery packages the locked cut from the production's delivery spec (D71 through D79, pending Ron's approval at merge). The delivery gate marks the film delivered.
+- A live provider call waits on `--live`, the generation gate, the stage line, and the key (D80 through D86, pending Ron's approval at merge). Offline stays the default. Audio, color, and delivery stay unpriced.
 
 ## Interfaces
 
@@ -94,7 +95,7 @@ Two commands. Both take a production folder and a run id. Neither waits for you 
 
 | Command | What Ron uses it for |
 |---|---|
-| `scripts/line-producer.py` | Start a run, read status, record a spend, approve or reject a gate, decide a spend request, add a credit. |
+| `scripts/line-producer.py` | Start a run, read status, record a spend, approve or reject a gate, decide a spend request, add a credit, or prepare one test shot. |
 | `scripts/director.py` | Draft a treatment, apply an answers file, call a crew agent. |
 
 Question file: `productions/<id>/treatment/questions.json`. Each question has an `id`, a `topic`, the question, and `answer`. Ron fills `answer`, or sends a separate file shaped as `{ "answers": [ { "id", "answer" } ] }`.
@@ -111,7 +112,7 @@ Crew the Director can call: `prop-master`, `script-supervisor`, `cinematographer
 
 Phase 2 commands are `lock`, `check`, `package`, `boards`, and `breakdown`. They read the approved treatment. They write files. They do not require the previs gate to be open already, because those files are what Ron reviews. Ron approved that gate for The Last Marker on 2026-11-10. The estimate is checked against an existing ceiling in the locked split and is not charged.
 
-Picture commands are `estimate`, `dry-run`, `plan`, and `generate`. Estimate and dry-run are the older local price check. A plan is the generation quote. It waits until Ron has approved the treatment, the previs gate, and that stage, and it does not spend. Generate is the paid path. It also waits for the generation gate. The dailies command is `review`. It reads a takes manifest and writes the report. It waits for the treatment and the previs gate. It does not wait for its own gate, because the report is the review. The editor command `assemble` writes the cut. It waits for the treatment, the previs gate, the editor's own gate, and the dailies gate. It does not wait for the edit gate, because the cut is the review. The older editor dry-run is still only routed. QA and the fix loop are routed and named. Their commands are not run here. Sound waits for the edit gate, which is picture lock. The sound designer and the composer command `spot` writes the cue sheet. It waits for the treatment, the previs gate, the sound designer's gate, and the edit gate. It does not wait for the sound gate, because the sheet is the review. `generate` is the paid path. It also waits for the generation gate. The older sound dry-run is still the local prompt check. The Composer's estimate is checked against the sound-designer allocation, which is the Sound line. The colorist command `grade` and the mixer command `mix` write the finishing plans. They wait for the treatment, the previs gate, the edit gate, and the sound gate. They do not wait for the color-mix gate, because the plans are the review. The Post Supervisor command `deliver` writes the package. It waits for the color-mix gate. It does not wait for the delivery gate, because the package is the review. Approving that gate stamps the manifest.
+Picture commands are `estimate`, `dry-run`, `plan`, and `generate`. Estimate and dry-run are the older local price check. A plan is the generation quote. It waits until Ron has approved the treatment, the previs gate, and that stage, and it does not spend. Generate is the paid path. It also waits for the generation gate. It calls fal only when the Director command also passes `--live`. The Line Producer command `test-shot` is the one-shot version of that call. The dailies command is `review`. It reads a takes manifest and writes the report. It waits for the treatment and the previs gate. It does not wait for its own gate, because the report is the review. The editor command `assemble` writes the cut. It waits for the treatment, the previs gate, the editor's own gate, and the dailies gate. It does not wait for the edit gate, because the cut is the review. The older editor dry-run is still only routed. QA and the fix loop are routed and named. Their commands are not run here. Sound waits for the edit gate, which is picture lock. The sound designer and the composer command `spot` writes the cue sheet. It waits for the treatment, the previs gate, the sound designer's gate, and the edit gate. It does not wait for the sound gate, because the sheet is the review. `generate` is the paid path. It also waits for the generation gate. The older sound dry-run is still the local prompt check. The Composer's estimate is checked against the sound-designer allocation, which is the Sound line. The colorist command `grade` and the mixer command `mix` write the finishing plans. They wait for the treatment, the previs gate, the edit gate, and the sound gate. They do not wait for the color-mix gate, because the plans are the review. The Post Supervisor command `deliver` writes the package. It waits for the color-mix gate. It does not wait for the delivery gate, because the package is the review. Approving that gate stamps the manifest.
 
 ## Line Producer
 
@@ -171,7 +172,7 @@ Before a prompt is sent, a locked prop that is in the shot must have its require
 
 After a client returns, `review_dailies` records the phrases it would check and marks the shot `not-reviewed`. It does not open the file and it does not call a model. The review that circles a take is a separate dailies call.
 
-Hands off to: Ron, through the plan, before any money moves. Hands off to the Dailies Reviewer, through the takes manifest, once clips exist. Today the paid call stops at the generation gate, and the default client does not leave the machine.
+Hands off to: Ron, through the plan, before any money moves. Hands off to the Dailies Reviewer, through the takes manifest, once clips exist. The default client does not leave the machine. A `--live` call can, after the estimate is reserved on the ledger. The file is written under the asset root when that setting is set.
 
 ## Dailies Reviewer
 
@@ -200,7 +201,7 @@ Outputs: `sound/cue-sheet.json`, checked against `cue-sheet.schema.json`, and `s
 
 Every placed cue has to lie inside the cut. A cue that names a shot the cut does not have is not placed, and the sheet records a missing-shot flag. An effect or a foley cue has to land within half a second of its shot, unless the production sets `sync_tolerance_seconds`. A prop sound that plays in a shot which does not show that prop is a continuity flag. The phrases and the prop ids come from the production.
 
-The quote uses `config/generation-rates.json`, the same card as the picture plan. A model with no row is marked unknown. That unknown is not stored as zero. The total is set against the locked sound-designer allocation, the Sound line. Library and silence are not charged. A `generate` call waits on the generation gate. A closed gate does not call the client. The client in this build does not open a network connection.
+The quote uses `config/generation-rates.json`, the same card as the picture plan. A model with no row is marked unknown. That unknown is not stored as zero. The total is set against the locked sound-designer allocation, the Sound line. Library and silence are not charged. A `generate` call waits on the generation gate. A closed gate does not call the client. Without `--live`, the client does not open a network connection. With `--live`, ElevenLabs is called only when the price is on the card or Ron has approved a one-call override. The card has no audio price, so the override is the only way through.
 
 When ffmpeg is installed, the stage renders `sound/stems/dialogue.wav`, `sound/stems/effects.wav`, `sound/stems/music.wav`, and `sound/stems/mix-preview.wav`. The tones are placeholders. When ffmpeg is missing, the stems are skipped and the cue sheet is still written. Spotting is computed in code. The admin model is Claude Haiku 5.5. This build does not call it. Nothing is spent.
 
@@ -286,6 +287,14 @@ When the production has no takes manifest, the walk writes synthetic placeholder
 
 Hands off to: Ron, at whichever gate is still closed. After the delivery gate, the manifest says the film is delivered.
 
+## Live providers
+
+`movie_swarm/providers.py` is the gate in front of Anthropic, fal, and ElevenLabs. The HTTP helper retries a connection error and a 429 or 5xx, with a short backoff. A timeout on a request that might already have been accepted is not sent again. The request is hashed. The hash does not include the key. A second run of the same hash reads the saved file and writes a dry-run ledger line. It does not charge again.
+
+Before the call, the Line Producer reserves the estimate. After the call, that same ledger row keeps the estimate and, when the provider reports a dollar amount, the actual. The booked amount becomes the actual. When the provider does not report one, the booked amount stays the estimate. An unknown estimate is refused. `--price-override` writes an approval request and waits. Approving it records the amount. It does not invent a price for the rate card.
+
+A failure sets the run back to waiting. The stage does not move forward. Keys are read from `ANTHROPIC_API_KEY`, `FAL_KEY`, and `ELEVENLABS_API_KEY`. They are stripped from errors, the ledger, and the cache. Downloaded bytes go through `resolve_asset`, so they follow `MOVIE_SWARM_ASSET_ROOT` or `config/assets.json`. `asset_root` stays null.
+
 ## QA
 
 Inputs: a cut, plus the style bible and the shot list.
@@ -357,6 +366,8 @@ flowchart TD
 - A paid vision model. Dailies names Gemini Omni 1.2 Flash and does not call it. The description is a fake client or a text file beside the frame. Delivery QC does not call one either.
 - A test audience. The Composer spots from the production's score brief and does not call a music service. The Re-recording Mixer builds the mix plan in code and does not call one either.
 - The older QA program's Claude review of a finished cut. Delivery QC is the local technical pass. It does not call that model. The fix loop is not replaced.
-- Real video or audio generation. No generation money is spent. The default client does not open a network connection. Storyboard images stay behind an image client. The default client is none. The studio walk writes synthetic placeholders when a production has no takes.
+- A live run of the test shot. The command exists. It was not executed against a provider. Storyboard images stay behind an image client. The default client is none. The studio walk writes synthetic placeholders when a production has no takes, and it never passes `--live`.
+- A published price for audio, color, or delivery. None is in the repo, so those calls stay unknown.
+- A fal address for Gemini Omni 1.2 Flash or Kling. The rate card has their picture prices and no endpoint, so a live call for them is refused.
 - Copying every working file to an external drive. The delivery package is written to the asset root when that setting is set. Earlier stages stay in the production folder.
 - Switching the older video program off Seedance. The new pipeline quotes Gemini Omni 1.2 Flash and does not call it.

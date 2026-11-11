@@ -11,7 +11,7 @@ from pathlib import Path
 
 from movie_swarm.director import Director, DirectorError
 from movie_swarm.dispatch import CrewCall
-from movie_swarm.llm import client_from_environment
+from movie_swarm.providers import llm_for_command
 from movie_swarm.studio import StudioError, run_studio
 
 
@@ -24,7 +24,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--offline",
         action="store_true",
-        help="Do not call a model, even if ANTHROPIC_API_KEY is set",
+        help="Do not call a model. This is the default. Offline wins if --live is also set.",
+    )
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Allow a real provider call. Still needs the generation gate, the key, and a known price.",
+    )
+    parser.add_argument(
+        "--price-override",
+        type=float,
+        help="Dollars for one call when the rate card has no price. Ron must approve that request before it is sent.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -81,12 +91,25 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _run(args) -> int:
-    llm = None if args.offline else client_from_environment()
+    if args.offline and args.live:
+        print("Pass either --offline or --live, not both. Nothing was sent.")
+        return 1
+    llm = None
+    if args.command in {"intake", "answer"}:
+        llm = llm_for_command(
+            args.production,
+            args.run,
+            live=args.live,
+            offline=args.offline,
+            price_override=args.price_override,
+        )
     director = Director(args.production, llm=llm)
     if args.command == "intake":
         if llm is None:
             print("No model call. Drafting offline.")
         result = director.intake(screenplay=args.screenplay, partial=args.partial, run_id=args.run)
+        if llm is not None and result.get("drafted_by") != "model":
+            print("The live draft was not used. The offline draft was kept.")
         print(f"Draft treatment: {result['treatment']}")
         print(f"Readable draft: {result['treatment_markdown']}")
         print(f"Questions: {result['questions']} ({result['question_count']} questions)")
@@ -124,6 +147,8 @@ def _run(args) -> int:
         output_dir=args.output_dir,
         production_dir=args.production,
         takes=args.takes,
+        live=args.live,
+        price_override=args.price_override,
     )
     result = director.dispatch(call, args.run)
     print(result.message)

@@ -234,6 +234,12 @@ def generate_shots(
         )
     if called and all(item["status"] == "not-sent" for item in results):
         message = "No live provider is connected. The call was not sent. No image or video was made."
+    elif called and any(item["status"] in {"refused", "failed", "generated", "replayed", "offline"} for item in results):
+        message = " ".join(
+            str((item.get("response") or {}).get("detail") or item["status"])
+            for item in results
+            if item["status"] in {"refused", "failed", "generated", "replayed", "offline"}
+        )
     elif called:
         message = "The client was asked. This build's default client does not call a provider."
     elif results and all(item["status"] == "blocked" for item in results):
@@ -276,9 +282,18 @@ def run_picture(producer, call) -> str:
             return text + f"\nWrote {text_path}."
         return text
     if call.command == "generate":
+        client = call.client
+        if client is None and getattr(call, "live", False):
+            from movie_swarm.providers import CallSettings, LiveGenerationClient
+
+            client = LiveGenerationClient(
+                producer,
+                live=True,
+                settings=CallSettings(price_override=getattr(call, "price_override", None)),
+            )
         result = generate_shots(
             call.production_dir,
-            client=call.client or OfflineGenerationClient(),
+            client=client or OfflineGenerationClient(),
             gate_open=True,
         )
         return result["message"]
