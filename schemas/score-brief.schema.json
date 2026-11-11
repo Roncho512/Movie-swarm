@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "score-brief.schema.json",
+  "title": "Score Brief",
+  "description": "One production's music plan. Tempo, instrumentation, motifs, and the shots that stay silent. The composer reads this file. The engine does not keep a copy.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "tempo_bpm": { "type": "number", "exclusiveMinimum": 0 },
+    "instrumentation": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "motifs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/motif" }
+    },
+    "silence": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/silence" }
+    },
+    "sync_tolerance_seconds": { "type": "number", "minimum": 0 },
+    "note": { "type": "string" }
+  },
+  "$defs": {
+    "motif": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["motif_id", "description", "shot_ids"],
+      "properties": {
+        "motif_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "description": { "type": "string", "minLength": 1 },
+        "shot_ids": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "source": { "type": "string", "enum": ["generated", "library", "silence"] }
+      }
+    },
+    "silence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shot_id"],
+      "properties": {
+        "shot_id": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string" }
+      }
+    }
+  }
+}

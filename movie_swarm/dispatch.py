@@ -18,7 +18,8 @@ from movie_swarm.generation import run_picture
 from movie_swarm.line_producer import Authorization, LineProducer
 from movie_swarm.paths import repo_root
 from movie_swarm.previs import run_previs
-from movie_swarm.roles import CALLABLE, DAILIES_BILLING, PHASE2_BILLING, PHASE2_CREW
+from movie_swarm.roles import CALLABLE, DAILIES_BILLING, PHASE2_BILLING, PHASE2_CREW, SOUND_BILLING
+from movie_swarm.sound import run_sound
 
 
 class DispatchError(Exception):
@@ -58,7 +59,10 @@ _COMMANDS = {
         "commands": {"estimate": True, "dry-run": True, "plan": True, "generate": True},
     },
     "sound-designer": {
-        "commands": {"dry-run": True},
+        "commands": {"dry-run": True, "spot": True, "generate": True},
+    },
+    "composer": {
+        "commands": {"spot": True, "generate": True},
     },
     "editor": {
         "commands": {"dry-run": False, "assemble": True},
@@ -129,7 +133,12 @@ def dispatch_call(
             message=f"{call.agent} has no '{call.command}' command here. Commands: {known}.",
         )
     description = call.note or f"{call.agent} {call.command}"
-    billing = PHASE2_BILLING.get(call.agent) or DAILIES_BILLING.get(call.agent) or call.agent
+    billing = (
+        PHASE2_BILLING.get(call.agent)
+        or DAILIES_BILLING.get(call.agent)
+        or SOUND_BILLING.get(call.agent)
+        or call.agent
+    )
     try:
         auth: Authorization = producer.authorize_crew(
             call.agent,
@@ -140,7 +149,7 @@ def dispatch_call(
         return DispatchResult(status="refused", message=str(exc))
     if not auth.allowed:
         return DispatchResult(status="paused", message=auth.message, request_id=auth.request_id)
-    if call.agent == "production" and call.command == "generate":
+    if call.command == "generate" and call.agent in {"production", "sound-designer", "composer"}:
         block = producer.paid_generation_block()
         if block is not None:
             return DispatchResult(status="paused", message=block.message, request_id=block.request_id)
@@ -151,6 +160,8 @@ def dispatch_call(
         runner = lambda current: run_edit(producer, current)
     elif handler is None and call.agent == "production" and call.command in {"plan", "generate"}:
         runner = lambda current: run_picture(producer, current)
+    elif handler is None and call.agent in {"sound-designer", "composer"} and call.command in {"spot", "generate"}:
+        runner = lambda current: run_sound(producer, current)
     else:
         runner = handler or default_handler
     try:

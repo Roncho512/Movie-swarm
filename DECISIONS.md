@@ -490,3 +490,57 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: This phase does not approve the gate. Approving it does not spend money and does not generate sound. A cut with a blocker, a continuity flag, or a runtime outside the tolerance does not write the picture-lock file. Sound still waits until Ron approves the gate.
 - Who decided: Cursor cloud agent. Pending Ron's approval at merge.
 
+## D58 — The cue sheet is spotted after picture lock
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D57 left sound waiting on the edit gate. The sound program had a prompt list. It did not time cues to a cut.
+- Decision: The Sound Designer and the Composer read the picture-lock cut, `audio/sound-prompts.json`, and `audio/score-brief.json` when the production has them. They write `sound/cue-sheet.json`, checked against `cue-sheet.schema.json`, plus `sound/cue-sheet.md`. Each cue has a type (dialogue, sfx, foley, ambience, or music), a start and end on the cut, the shot ids it belongs to, a prompt, and a source (generated, library, or silence). The Director calls `sound-designer` or `composer` with `spot`. The call waits for the treatment, the previs gate, the sound designer's gate, and the edit gate. It does not wait for the sound gate, because the sheet is what Ron reads. Spotting is computed in code. The admin model is Claude Haiku 5.5. This build does not call it.
+- Consequences: Tests prove it on Harbor Night. The Last Marker is not spotted. Nothing is spent.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D59 — Sync is checked, and a miss is a flag
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: A cue that starts before the cut, runs past the end, or sits on a shot the cut does not have would drift out of picture lock.
+- Decision: Every placed cue must lie inside the cut. A cue that names a shot the cut does not have is not placed, and the sheet records a missing-shot flag. An effect or a foley cue tied to a shot must start and end within 0.5 seconds of that shot, unless the production sets `sync_tolerance_seconds` on the sound prompts or the score brief. A miss stays on the sheet and blocks ready-for-approval. The cue is not deleted and the shot is not invented.
+- Consequences: A clean sheet can be ready for Ron. A flagged sheet is still written. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D60 — A prop sound plays only while that prop is in frame
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D11 locks props in the production folder. A sound that belongs to a prop should stay with the shots that show it.
+- Decision: A production can put a sound prompt on a prop, or set `prop_id` on a sound prompt. The cue is checked against the shot list. If the prop is not in that shot, the sheet records a prop-sound flag. The phrases and the prop ids come from the production. The engine does not name them.
+- Consequences: The flag blocks ready-for-approval. The cue stays on the sheet so Ron can see it. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D61 — Music follows the score brief, including silence
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D8 describes one film's score. That description is a film fact and does not belong in the spotting code.
+- Decision: Music cues are read from `audio/score-brief.json`: tempo, instrumentation, motifs, and the shots where the brief asks for silence. A silence entry wins over a motif on the same shot. A production with no brief gets no invented score. A music prompt in `audio/sound-prompts.json` is spotted onto its assigned shots. On a shot the brief marks silent, that prompt is not placed over the silence.
+- Consequences: Harbor Night's brief, when a test writes one, is the proof. The engine does not contain a film's tempo, motif, or instrumentation.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D62 — Sound is priced from the rate card, and a paid call waits
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D43 prices picture from `config/generation-rates.json`. That card has no audio rate. D44 stops a paid picture call until the generation gate is open. Sound should not invent a price or spend.
+- Decision: The cue sheet prices generated cues with the same rate card. A model with no row is marked unknown. The unknown estimate is not stored as zero. The total is set against the locked `sound-designer` allocation, which is the Sound line. A model that does have a published row is quoted from that row, including its source. Library and silence cues are not charged. The `generate` command waits on the generation gate. A closed gate does not call the client. The client in this build does not open a network connection. A dispatch estimate that would pass the Sound line pauses before the sheet is written. The Composer's estimate uses that same Sound line.
+- Consequences: Spent on the proof stays $0.00. The picture quote is unchanged. It still does not invent an audio price.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D63 — The sound gate sits in front of color and mix
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D3 says a person reviews each stage. Phase 7 is color and mix. It should not start on a cue sheet Ron has not approved.
+- Decision: Add a gate named `sound` in `config/gates.json`. It starts on. The cue sheet can be written while the gate is closed. Ron approves it with the existing approve-gate command. Color and mix wait on that approval. This phase does not build color or mix, and it does not approve the gate.
+- Consequences: Approving the gate does not spend money and does not generate audio. A flagged sheet can still be approved by Ron. The sheet does not approve itself. `sound_approved` stays false.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+

@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "production_id": "harbor-night",
+  "tempo_bpm": 72,
+  "instrumentation": ["piano"],
+  "motifs": [
+    {
+      "motif_id": "hold",
+      "description": "A held low note.",
+      "shot_ids": ["s01-sh01"]
+    }
+  ],
+  "silence": [
+    {
+      "shot_id": "s01-sh02",
+      "reason": "Leave this shot quiet."
+    }
+  ]
+}

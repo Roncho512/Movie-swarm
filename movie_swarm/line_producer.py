@@ -27,6 +27,8 @@ from movie_swarm.roles import (
     PHASE2_CREW,
     PICTURE_CREW,
     PREVIS_STAGE,
+    SOUND_BILLING,
+    SOUND_STAGE,
 )
 from movie_swarm.run_state import RunState, default_run_state_path
 from movie_swarm.treatment_doc import load_treatment, treatment_json_path, write_treatment_files
@@ -249,7 +251,12 @@ class LineProducer:
                 f"{stage} is not a crew agent the Director can call. "
                 f"Calls go to: {', '.join(CALLABLE)}."
             )
-        billing = PHASE2_BILLING.get(stage) or DAILIES_BILLING.get(stage) or stage
+        billing = (
+            PHASE2_BILLING.get(stage)
+            or DAILIES_BILLING.get(stage)
+            or SOUND_BILLING.get(stage)
+            or stage
+        )
         self._require_known_stage(billing)
         amount = self._check_amount(amount_usd)
         allowance = self._allowance(billing, amount)
@@ -497,6 +504,15 @@ class LineProducer:
                 "Approve or reject the edit gate before sound runs. "
                 "Read edit/rough-cut.md. That approval is picture lock."
             )
+        cue_sheet = self.production_dir / "sound" / "cue-sheet.md"
+        if (
+            cue_sheet.is_file()
+            and is_stage_gated(SOUND_STAGE, self.config_path)
+            and not self.gate_is_open(SOUND_STAGE)
+        ):
+            lines.append(
+                "Approve or reject the sound gate before color and mix. Read sound/cue-sheet.md."
+            )
         return lines
 
     def _still_waiting(self) -> bool:
@@ -580,6 +596,26 @@ class LineProducer:
                 "treatment",
                 f"The treatment gate is still closed. The Director cannot call {stage} until Ron approves the treatment.",
             )
+        if stage == "composer":
+            if is_stage_gated("sound-designer", self.config_path) and not self.gate_is_open("sound-designer"):
+                return self._pause_gate(
+                    "sound-designer",
+                    "The sound-designer gate is still closed. Ron has not approved that stage, so the composer was not called.",
+                )
+            if is_stage_gated(PREVIS_STAGE, self.config_path) and not self.gate_is_open(PREVIS_STAGE):
+                return self._pause_gate(
+                    PREVIS_STAGE,
+                    (
+                        "The previs gate is still closed. Previs is the phase 2 package: props, continuity, "
+                        "camera, storyboards, and stunts. Ron has not reviewed it, so the composer was not called."
+                    ),
+                )
+            if is_stage_gated(EDIT_STAGE, self.config_path) and not self.gate_is_open(EDIT_STAGE):
+                return self._pause_gate(
+                    EDIT_STAGE,
+                    "The edit gate is still closed. Ron has not approved picture lock, so sound was not called.",
+                )
+            return None
         if stage in PHASE2_CREW or stage in DAILIES_CREW:
             if stage in DAILIES_CREW and is_stage_gated(PREVIS_STAGE, self.config_path) and not self.gate_is_open(PREVIS_STAGE):
                 return self._pause_gate(
