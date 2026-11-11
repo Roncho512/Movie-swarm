@@ -85,6 +85,11 @@ def test_ron_approved_the_storyboard_previs_gate():
 
 
 def test_engine_source_does_not_name_the_sample_film():
+    """Film facts stay out of the engine, including the phase 4 dailies reviewer.
+
+    The reviewer, its schemas, and its config live under the folders below,
+    so this scan covers them without a separate list.
+    """
     banned = ("leone", "spaghetti", "triumph", "breitling", "baja", "morricone", "1965", "1967")
     roots = [
         repo_root() / "movie_swarm",

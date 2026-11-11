@@ -10,7 +10,9 @@ Phase 1 is on main. It merged on 2026-11-10 in [pull request 3](https://github.c
 
 Phase 2 is on main. It merged on 2026-11-10 in [pull request 4](https://github.com/Roncho512/Movie-swarm/pull/4) and [pull request 5](https://github.com/Roncho512/Movie-swarm/pull/5), merge `f6f52d4`. The storyboard is one beat per shot: 41 shots, plus the three scene 3 shots Ron added, 44 in all. Ron approved the previs gate. The note is "Approve the storyboard previs gate." No images were generated.
 
-Phase 3 builds the studio, not the film. Ron's direction on 2026-11-10 is to prove the picture tools on a synthetic production first. Harbor Night, under `tests/fixtures/`, is that production. The studio can quote any production, put locked prop phrases into a prompt, and refuse a paid call until Ron approves a new gate called `generation`. A gate is a switch that makes a stage wait for Ron. This build does not call a provider. Spent so far: $0.00 of $500.00. The Last Marker is not generated in this phase. Its approved previs stays where it is. Making that film is the last phase, after the studio is finished.
+Phase 3 is on main. It merged on 2026-11-10 in [pull request 6](https://github.com/Roncho512/Movie-swarm/pull/6), merge `1355ad4`. The studio can quote any production, put locked prop phrases into a prompt, and refuse a paid call until Ron approves a gate called `generation`. A gate is a switch that makes a stage wait for Ron. That build does not call a provider. The generation gate on The Last Marker is still closed. Spent so far: $0.00 of $500.00.
+
+Phase 4 is in review. After generation, every take is reviewed before it can be cut. A take is one generated clip or frame for a shot. The Dailies Reviewer circles a take that passes, sends a bad one back as a retake, or rejects a file that is missing. The proof is Harbor Night, under `tests/fixtures/`, plus tiny frames made in the tests. Harbor Night is a synthetic production, not The Last Marker. The review does not call a paid model. A retake is an estimate against the fix-loop line, and nothing is charged. The editor waits until Ron approves the new `dailies` gate. Making The Last Marker is still the last phase.
 
 Film facts stay in the production folder. The engine does not know that this film's exhaust is on the right, that the watch is on the left wrist, that the bike is a 1965, that the story is 1967, or that the look is Sergio Leone. Those sentences live in `productions/the-last-marker/`. A different film uses its own files. The pilot sound prompts moved out of the sound program and into `productions/the-last-marker/audio/sound-prompts.json`.
 
@@ -112,11 +114,26 @@ python3 scripts/line-producer.py --production path/to/a-production --run phase-1
   --stage generation --decision approved --by ron --note "A paid generation may be prepared."
 ```
 
+Review the takes before the edit. A takes manifest is a JSON file that lists each generated clip or frame and the shot it belongs to. The checklist is `schemas/takes-manifest.schema.json`. This command does not call a vision model and does not spend. If a text file sits beside a frame and has the same name plus `.txt`, that text is the picture description. Tests pass a fake description instead. A required phrase that never appears is a retake. A missing file is a reject.
+
+```bash
+python3 scripts/director.py --production path/to/a-production --run phase-1 --offline dispatch \
+  --agent dailies --crew-command review --estimate 0 \
+  --takes path/to/takes-manifest.json
+```
+
+Read `dailies/dailies-report.md`. Then approve the circled takes. Until you do, the editor does not run.
+
+```bash
+python3 scripts/line-producer.py --production path/to/a-production --run phase-1 approve-gate \
+  --stage dailies --decision approved --by ron --note "The circled takes can be cut."
+```
+
 The same commands work from the agent folders as `python3 -m src.cli`, with the same flags.
 
 ## What the checks do
 
-`python3 -m pytest tests -q` runs the shared checks. They cover the Phase 0 foundation, the Phase 1 rules, the Phase 2 package, and the Phase 3 quote: the cap, approvals, the treatment checklist, each screenplay format, the question round trip, a crew call that must pass the Line Producer first, locked props, a continuity check, a camera package, storyboards, an action breakdown, a dry-run generation plan, the generation gate, and a prompt that keeps a locked phrase. One fixture is The Last Marker. Another is Harbor Night, a tiny second film, so the engine is not proven only on this one. Phase 3's picture checks use Harbor Night.
+`python3 -m pytest tests -q` runs the shared checks. They cover the Phase 0 foundation, the Phase 1 rules, the Phase 2 package, the Phase 3 quote, and the Phase 4 dailies review: the cap, approvals, the treatment checklist, each screenplay format, the question round trip, a crew call that must pass the Line Producer first, locked props, a continuity check, a camera package, storyboards, an action breakdown, a dry-run generation plan, the generation gate, a prompt that keeps a locked phrase, a circled take, a forbidden prop phrase, a missing file, a shot-list mismatch, the dailies report checklist, and the dailies gate in front of the editor. One fixture is The Last Marker. Another is Harbor Night, a tiny second film, so the engine is not proven only on this one. Phase 3 and Phase 4 picture checks use Harbor Night.
 
 Three older agents have their own checks, because each one uses a folder named `src`:
 

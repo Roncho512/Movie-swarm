@@ -48,16 +48,18 @@ def main(argv: list[str] | None = None) -> int:
             "script-supervisor",
             "cinematographer",
             "stunt-coordinator",
+            "dailies",
         ],
     )
     dispatch.add_argument(
         "--crew-command",
         required=True,
-        choices=["estimate", "dry-run", "plan", "generate", "lock", "check", "package", "boards", "breakdown"],
+        choices=["estimate", "dry-run", "plan", "generate", "lock", "check", "package", "boards", "breakdown", "review"],
     )
     dispatch.add_argument("--estimate", type=float, required=True, help="Dollars to check against the cap. An estimate command is usually 0.")
     dispatch.add_argument("--shot-list")
     dispatch.add_argument("--output-dir")
+    dispatch.add_argument("--takes", help="Takes manifest for the dailies reviewer")
     dispatch.add_argument("--note", default="")
 
     args = parser.parse_args(argv)
@@ -96,6 +98,7 @@ def _run(args) -> int:
         shot_list=args.shot_list,
         output_dir=args.output_dir,
         production_dir=args.production,
+        takes=args.takes,
     )
     result = director.dispatch(call, args.run)
     print(result.message)

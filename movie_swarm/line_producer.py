@@ -17,6 +17,9 @@ from movie_swarm.handoff import read_handoff, write_handoff
 from movie_swarm.money import as_money, money_number
 from movie_swarm.roles import (
     CALLABLE,
+    DAILIES_BILLING,
+    DAILIES_CREW,
+    DAILIES_STAGE,
     GATED_CREW,
     GENERATION_STAGE,
     PHASE2_BILLING,
@@ -245,7 +248,7 @@ class LineProducer:
                 f"{stage} is not a crew agent the Director can call. "
                 f"Calls go to: {', '.join(CALLABLE)}."
             )
-        billing = PHASE2_BILLING.get(stage, stage)
+        billing = PHASE2_BILLING.get(stage) or DAILIES_BILLING.get(stage) or stage
         self._require_known_stage(billing)
         amount = self._check_amount(amount_usd)
         allowance = self._allowance(billing, amount)
@@ -473,6 +476,16 @@ class LineProducer:
                 "Approve or reject the generation gate before any paid image, video, or audio call. "
                 "A dry-run cost estimate does not need that approval."
             )
+        report = self.production_dir / "dailies" / "dailies-report.md"
+        if (
+            report.is_file()
+            and is_stage_gated(DAILIES_STAGE, self.config_path)
+            and not self.gate_is_open(DAILIES_STAGE)
+        ):
+            lines.append(
+                "Approve or reject the dailies gate before the editor runs. "
+                "Read dailies/dailies-report.md. Circled takes stay out of the edit until you approve."
+            )
         return lines
 
     def _still_waiting(self) -> bool:
@@ -556,7 +569,15 @@ class LineProducer:
                 "treatment",
                 f"The treatment gate is still closed. The Director cannot call {stage} until Ron approves the treatment.",
             )
-        if stage in PHASE2_CREW:
+        if stage in PHASE2_CREW or stage in DAILIES_CREW:
+            if stage in DAILIES_CREW and is_stage_gated(PREVIS_STAGE, self.config_path) and not self.gate_is_open(PREVIS_STAGE):
+                return self._pause_gate(
+                    PREVIS_STAGE,
+                    (
+                        "The previs gate is still closed. Previs is the phase 2 package: props, continuity, "
+                        "camera, storyboards, and stunts. Ron has not reviewed it, so dailies was not called."
+                    ),
+                )
             return None
         if stage in PICTURE_CREW and is_stage_gated(stage, self.config_path) and not self.gate_is_open(stage):
             return self._pause_gate(
@@ -570,6 +591,11 @@ class LineProducer:
                     f"The previs gate is still closed. Previs is the phase 2 package: props, continuity, "
                     f"camera, storyboards, and stunts. Ron has not reviewed it, so {stage} was not called."
                 ),
+            )
+        if stage == "editor" and is_stage_gated(DAILIES_STAGE, self.config_path) and not self.gate_is_open(DAILIES_STAGE):
+            return self._pause_gate(
+                DAILIES_STAGE,
+                "The dailies gate is still closed. Ron has not approved the circled takes, so the editor was not called.",
             )
         return None
 

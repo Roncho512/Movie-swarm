@@ -8,7 +8,7 @@
     "A Gemini Omni clip shorter than 3 seconds is quoted at 3 seconds, and a clip longer than 15 seconds is split. Google publishes one-second lengths from 3 to 15. Shaping the call that way is an assumption.",
     "Still frames are not priced. This card has no still-image rate, so the art-director line stays at $0.",
     "Sound is not priced. This card has no audio-only rate, so the sound-designer line stays at $0.",
-    "The Dailies Reviewer is a stub and is priced at $0.",
+    "Dailies review does not call a paid model in this build, so the review itself is $0. A retake is estimated as one preview and checked against the fix-loop line. It is not spent here.",
     "The fix-loop reserve is the locked fix-loop allocation when the split has one. It is not a new price. If the split has no fix-loop line, the reserve is $0."
   ],
   "generators": [

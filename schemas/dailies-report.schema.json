@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dailies-report.schema.json",
+  "title": "Dailies Report",
+  "description": "The Dailies Reviewer verdict for each generated take. Circle means the take can be cut. Retake means generate again. Reject means the file cannot be used. The review does not spend money. A retake estimate is checked against the fix-loop line and is not charged.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "production_id",
+    "reviewed_at",
+    "spent_usd",
+    "fix_loop_reserve_usd",
+    "retake_estimate_usd",
+    "within_fix_loop",
+    "shots",
+    "retakes"
+  ],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "reviewed_at": { "type": "string", "format": "date-time" },
+    "source": { "type": "string" },
+    "watched": { "type": "boolean" },
+    "spent_usd": { "type": "number", "const": 0 },
+    "fix_loop_reserve_usd": { "type": "number", "minimum": 0 },
+    "retake_estimate_usd": { "type": "number", "minimum": 0 },
+    "within_fix_loop": { "type": "boolean" },
+    "fix_loop_note": { "type": "string" },
+    "model": { "type": "string" },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "fake-client"] },
+    "shots": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/shot" }
+    },
+    "retakes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/retake" }
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "type": "string", "enum": ["pass", "fail", "skipped"] },
+        "detail": { "type": "string" }
+      }
+    },
+    "take": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["take_id", "file", "verdict", "reasons", "description_source", "checks"],
+      "properties": {
+        "take_id": { "type": "string", "minLength": 1 },
+        "file": { "type": "string", "minLength": 1 },
+        "verdict": { "type": "string", "enum": ["circle", "retake", "reject"] },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "description_source": { "type": "string", "enum": ["client", "sidecar", "none"] },
+        "checks": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["technical", "continuity", "shot_match", "look_match"],
+          "properties": {
+            "technical": { "$ref": "#/$defs/check" },
+            "continuity": { "$ref": "#/$defs/check" },
+            "shot_match": { "$ref": "#/$defs/check" },
+            "look_match": { "$ref": "#/$defs/check" }
+          }
+        }
+      }
+    },
+    "shot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shot_id", "verdict", "best_take", "reasons", "takes"],
+      "properties": {
+        "shot_id": { "type": "string", "minLength": 1 },
+        "verdict": { "type": "string", "enum": ["circle", "retake", "reject"] },
+        "best_take": { "type": ["string", "null"] },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "takes": { "type": "array", "items": { "$ref": "#/$defs/take" } }
+      }
+    },
+    "retake": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shot_id", "take_id", "reasons", "prompt_fix", "estimate_usd", "routed_to"],
+      "properties": {
+        "shot_id": { "type": "string", "minLength": 1 },
+        "take_id": { "type": "string", "minLength": 1 },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "prompt_fix": { "type": "string", "minLength": 1 },
+        "estimate_usd": { "type": "number", "minimum": 0 },
+        "routed_to": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

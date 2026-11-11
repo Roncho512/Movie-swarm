@@ -43,6 +43,8 @@ _SCHEMA_BY_FILENAME = {
     "camera-package.json": "camera-package.schema.json",
     "storyboard.json": "storyboard.schema.json",
     "action-breakdown.json": "action-breakdown.schema.json",
+    "takes-manifest.json": "takes-manifest.schema.json",
+    "dailies-report.json": "dailies-report.schema.json",
 }
 
 _QUESTIONS_ROUND = re.compile(r"^questions-round-\d+\.json$")
