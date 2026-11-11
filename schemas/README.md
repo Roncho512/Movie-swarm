@@ -49,6 +49,10 @@ When you're debugging why Shot 14 has the wrong lighting, you need to trace the 
 | `edit-decision-list.schema.json` | The Editor's cut. Ordered circled takes, source in and out, transitions, and scene markers. JSON is the source of truth. |
 | `cue-sheet.schema.json` | The Sound Designer and the Composer's cues, timed to the locked cut. |
 | `score-brief.schema.json` | One production's music plan: tempo, instrumentation, motifs, and the shots that stay silent. |
+| `grade.schema.json` | One production's grade: scene and shot adjustments, an optional LUT, and the consistency tolerance. |
+| `grade-plan.schema.json` | The Colorist's grade. A base for the whole cut, and one adjustment per scene. |
+| `mix-targets.schema.json` | One production's stem levels and loudness target. Optional. EBU R128 is the default. |
+| `mix-plan.schema.json` | The Re-recording Mixer's levels, dialogue ducking, scene fades, and loudness check. |
 | `continuity-report.schema.json` | QA findings with issue routing. Drives the feedback loop. |
 | `run-state.schema.json` | One production run: stage, status, artifacts, and spend against the cap. |
 | `gate-config.schema.json` | Review switches and the film budget cap. |

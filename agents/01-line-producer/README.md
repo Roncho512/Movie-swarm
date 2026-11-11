@@ -16,4 +16,4 @@ Other commands: `start`, `spend`, `approve-gate`, `decide`, `credit`. Pass `--fi
 
 ## What it will not do
 
-It will not write the story. It will not approve a spend that breaks the $500 cap or a locked stage ceiling unless Ron's yes is recorded. It will not hide a retake outside the cap. It will not let the editor run while the dailies gate is closed. It will not let sound run while the edit gate is closed. That gate is picture lock. It will not let color and mix run while the sound gate is closed.
+It will not write the story. It will not approve a spend that breaks the $500 cap or a locked stage ceiling unless Ron's yes is recorded. It will not hide a retake outside the cap. It will not let the editor run while the dailies gate is closed. It will not let sound run while the edit gate is closed. That gate is picture lock. It will not let color and mix run while the edit gate or the sound gate is closed. It will not let final delivery run while the color-mix gate is closed.

@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mix-plan.schema.json",
+  "title": "Mix Plan",
+  "description": "The Re-recording Mixer's plan for the locked cut. Dialogue stays in front. Music and effects duck under it. Scene changes fade. Loudness is checked against the production target or EBU R128. The color-mix gate stays unapproved until Ron says so. This file does not name a film.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "production_id",
+    "kind",
+    "created_at",
+    "cut_runtime_seconds",
+    "ready_for_color_mix_approval",
+    "color_mix_approved",
+    "spent_usd",
+    "cut_source",
+    "cue_source",
+    "sources",
+    "levels",
+    "ducking",
+    "fades",
+    "loudness",
+    "measurement",
+    "render",
+    "budget",
+    "models",
+    "draft_method"
+  ],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "kind": { "type": "string", "const": "mix-plan" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "cut_runtime_seconds": { "type": "number", "minimum": 0 },
+    "ready_for_color_mix_approval": {
+      "type": "boolean",
+      "description": "True when loudness was not measured, or the measurement sits inside the target. A miss blocks this. Ron can still approve the gate."
+    },
+    "color_mix_approved": {
+      "type": "boolean",
+      "description": "False until Ron approves the color-mix gate. This file does not approve itself."
+    },
+    "spent_usd": { "type": "number", "const": 0 },
+    "cut_source": { "type": "string", "minLength": 1 },
+    "cue_source": { "type": "string", "minLength": 1 },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["edit", "cue_sheet", "mix_targets", "stems"],
+      "properties": {
+        "edit": { "type": "string", "minLength": 1 },
+        "cue_sheet": { "type": "string", "minLength": 1 },
+        "mix_targets": { "type": ["string", "null"] },
+        "stems": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "levels": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/level" }
+    },
+    "ducking": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/duck" }
+    },
+    "fades": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/fade" }
+    },
+    "loudness": { "$ref": "#/$defs/loudness" },
+    "measurement": { "$ref": "#/$defs/measurement" },
+    "render": { "$ref": "#/$defs/render" },
+    "budget": { "$ref": "#/$defs/budget" },
+    "models": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mixer", "notes"],
+      "properties": {
+        "mixer": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic"] }
+  },
+  "$defs": {
+    "level": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stem", "gain_db", "priority"],
+      "properties": {
+        "stem": { "type": "string", "enum": ["dialogue", "effects", "music"] },
+        "gain_db": { "type": "number" },
+        "priority": { "type": "string", "enum": ["dialogue", "bed"] }
+      }
+    },
+    "duck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stem", "under", "cue_id", "duck_db", "start_seconds", "end_seconds"],
+      "properties": {
+        "stem": { "type": "string", "enum": ["effects", "music"] },
+        "under": { "type": "string", "const": "dialogue" },
+        "cue_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "duck_db": { "type": "number" },
+        "start_seconds": { "type": "number" },
+        "end_seconds": { "type": "number" }
+      }
+    },
+    "fade": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scene_id", "time_seconds", "fade_seconds", "kind"],
+      "properties": {
+        "scene_id": { "type": "string", "minLength": 1 },
+        "time_seconds": { "type": "number", "minimum": 0 },
+        "fade_seconds": { "type": "number", "minimum": 0 },
+        "kind": { "type": "string", "const": "scene-change" }
+      }
+    },
+    "loudness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "integrated_lufs",
+        "true_peak_dbtp",
+        "tolerance_lufs",
+        "standard",
+        "citation",
+        "source"
+      ],
+      "properties": {
+        "integrated_lufs": { "type": "number" },
+        "true_peak_dbtp": { "type": "number" },
+        "tolerance_lufs": { "type": "number", "minimum": 0 },
+        "standard": { "type": "string", "minLength": 1 },
+        "citation": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 }
+      }
+    },
+    "measurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "meter",
+        "integrated_lufs",
+        "true_peak_dbtp",
+        "within_target",
+        "flags",
+        "note"
+      ],
+      "properties": {
+        "status": { "type": "string", "enum": ["skipped", "measured", "failed"] },
+        "meter": { "type": ["string", "null"], "enum": ["ebur128", "loudnorm", null] },
+        "integrated_lufs": { "type": ["number", "null"] },
+        "true_peak_dbtp": { "type": ["number", "null"] },
+        "within_target": { "type": ["boolean", "null"] },
+        "flags": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/flag" }
+        },
+        "note": { "type": "string" }
+      }
+    },
+    "flag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "status", "detail"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["integrated-loudness", "true-peak"] },
+        "status": { "type": "string", "const": "fail" },
+        "detail": { "type": "string", "minLength": 1 }
+      }
+    },
+    "render": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "mix", "married", "note"],
+      "properties": {
+        "status": { "type": "string", "enum": ["skipped", "rendered", "failed"] },
+        "mix": { "type": ["string", "null"] },
+        "married": { "type": ["string", "null"] },
+        "note": { "type": "string" }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stage", "estimated_usd", "rate_status", "note"],
+      "properties": {
+        "stage": { "type": "string", "const": "sound-designer" },
+        "estimated_usd": { "type": ["number", "null"] },
+        "rate_status": { "type": "string", "enum": ["unknown", "priced", "not-charged"] },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

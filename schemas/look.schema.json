@@ -27,6 +27,20 @@
     "palette": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 }
+    },
+    "grade": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional base grade for the whole cut. Numbers come from this production. A separate look/grade.json can add per-scene and per-shot adjustments.",
+      "properties": {
+        "time_of_day": { "type": "string", "minLength": 1 },
+        "contrast": { "type": "number" },
+        "saturation": { "type": "number" },
+        "warmth": { "type": "number" },
+        "brightness": { "type": "number" },
+        "gamma": { "type": "number" },
+        "note": { "type": "string" }
+      }
     }
   },
   "$defs": {

@@ -58,8 +58,8 @@ def test_seeded_models_match_the_agent_code():
 
 def test_unknown_role_and_purpose():
     with pytest.raises(ModelRoutingError) as caught:
-        resolve_model("colorist")
-    assert "colorist" in str(caught.value)
+        resolve_model("gaffer")
+    assert "gaffer" in str(caught.value)
     with pytest.raises(ModelRoutingError):
         resolve_model("qa", purpose="dialogue")
 

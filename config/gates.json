@@ -17,6 +17,7 @@
     "generation": true,
     "dailies": true,
     "edit": true,
-    "sound": true
+    "sound": true,
+    "color-mix": true
   }
 }

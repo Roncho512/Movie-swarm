@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "grade.schema.json",
+  "title": "Grade",
+  "description": "One production's color grade. The base can also live on look.json. Scene and shot adjustments are stated here and applied by the Colorist. This file does not name a film.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "base": { "$ref": "#/$defs/values" },
+    "scenes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/scene" }
+    },
+    "shots": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/shot" }
+    },
+    "lut": {
+      "type": ["string", "null"],
+      "description": "A .cube LUT inside this production, or null when the grade is filters only."
+    },
+    "curves": {
+      "type": ["string", "null"],
+      "description": "Optional curve points, as pairs such as 0/0 0.5/0.4 1/1. Applied with the ffmpeg curves filter when set."
+    },
+    "consistency": { "$ref": "#/$defs/tolerance" }
+  },
+  "$defs": {
+    "values": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "time_of_day": { "type": "string", "minLength": 1 },
+        "contrast": { "type": "number" },
+        "saturation": { "type": "number" },
+        "warmth": { "type": "number" },
+        "brightness": { "type": "number" },
+        "gamma": { "type": "number" },
+        "note": { "type": "string" }
+      }
+    },
+    "scene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scene_id"],
+      "properties": {
+        "scene_id": { "type": "string", "minLength": 1 },
+        "time_of_day": { "type": "string", "minLength": 1 },
+        "contrast": { "type": "number" },
+        "saturation": { "type": "number" },
+        "warmth": { "type": "number" },
+        "brightness": { "type": "number" },
+        "gamma": { "type": "number" },
+        "note": { "type": "string" }
+      }
+    },
+    "shot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shot_id"],
+      "properties": {
+        "shot_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "time_of_day": { "type": "string", "minLength": 1 },
+        "contrast": { "type": "number" },
+        "saturation": { "type": "number" },
+        "warmth": { "type": "number" },
+        "brightness": { "type": "number" },
+        "gamma": { "type": "number" },
+        "note": { "type": "string" }
+      }
+    },
+    "tolerance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "brightness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "How far mean brightness may differ between adjacent shots in one scene, on a 0 to 1 scale."
+        },
+        "color": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "How far mean color may differ between adjacent shots in one scene, on a 0 to 1 scale."
+        }
+      }
+    }
+  }
+}

@@ -544,3 +544,66 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: Approving the gate does not spend money and does not generate audio. A flagged sheet can still be approved by Ron. The sheet does not approve itself. `sound_approved` stays false.
 - Who decided: Cursor cloud agent. Pending Ron's approval at merge.
 
+## D64 — Color and mix wait on picture lock and the sound gate
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D57 made the edit gate picture lock. D63 put the sound gate in front of color and mix. Phase 7 is that stage.
+- Decision: The Colorist and the Re-recording Mixer do not run unless Ron has approved both the edit gate and the sound gate. The Director calls `colorist` with `grade` and `mixer` with `mix`. The call also waits for the treatment and the previs gate. It does not wait for the color-mix gate, because the plans are what Ron reads.
+- Consequences: Tests prove the refusal on Harbor Night. The Last Marker is not graded or mixed. Nothing is spent.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D65 — The grade is stated once and applied by scene
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D30 says film facts stay in the production folder. A grade is one of those facts.
+- Decision: The Colorist reads `look/look.json` and, when the production has one, `look/grade.json`. The base grade is stated once for the whole cut. A scene adjustment is one object, applied to every shot in that scene. A shot adjustment is written only when the production names that shot. The plan is `color/grade-plan.json`, checked against `grade-plan.schema.json`, plus `color/grade-plan.md`. Numbers the production does not supply stay neutral. The engine does not invent a look. When ffmpeg is installed, each shot is graded with eq and colorbalance. A curves string or a `.cube` LUT in the grade file is applied when the production supplies one. The preview is 160 by 90.
+- Consequences: Harbor Night's look file is the proof. A different film uses its own files. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D66 — Adjacent shots in a scene are checked for color
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: A grade that treats one scene as one light should not leave neighboring shots looking like different days.
+- Decision: Adjacent shots in the same scene are compared. ffmpeg signalstats reads average brightness and average color. A difference past the tolerance is a flag. The tolerance comes from `look/grade.json` when that file sets `consistency`. Otherwise it is 0.12 on a 0 to 1 scale for brightness and the same for color. Shots in different scenes are not compared. When ffmpeg is missing, or it cannot read the picture, that pair is skipped and the grade plan is still written.
+- Consequences: A flag blocks ready-for-approval. The shots stay in the plan. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D67 — The mix ducks under dialogue and fades at scene changes
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D58 times cues to the locked cut. The mix has to turn that sheet into levels.
+- Decision: The Mixer reads the cue sheet and the stems. Dialogue is the priority stem, at unity unless the production says otherwise. Music and effects are beds, and they duck under each dialogue cue. A scene change gets a short fade. The studio defaults are dialogue at 0 dB, effects at -8 dB, music at -12 dB, an extra -8 dB of ducking, and a 0.5 second fade. `audio/mix-targets.json` can replace any of those. The plan is `color/mix-plan.json`, checked against `mix-plan.schema.json`, plus `color/mix-plan.md`.
+- Consequences: A production with no mix-targets file still gets a plan. The defaults are not a film's facts. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D68 — Loudness uses a cited standard, and a miss is a flag
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: A mix needs a target that is not borrowed from one film. D62 already refuses to invent a price when the rate card has no row.
+- Decision: The loudness target is EBU R128 unless the production sets another one in `audio/mix-targets.json`. EBU R128 sets programme loudness at -23.0 LUFS and the maximum true peak at -1.0 dBTP. A mix more than 0.5 LU from the target is flagged. The citation is stored on the plan, including https://tech.ebu.ch/docs/r/r128.pdf. When ffmpeg is installed it renders `color/mix.wav` and measures with ebur128, falling back to loudnorm. Outside the target is a flag and the plan is not marked ready. When ffmpeg is missing, the render and the measurement are skipped and the plan is still written. The estimate stays unknown. It is not stored as zero.
+- Consequences: Spent on the proof stays $0.00. A production can name a different target without a code change.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D69 — Color and mix do not add a budget line
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D28 locked the $500 split. A new finishing stage should not invent a new line or a new price.
+- Decision: The Colorist is checked against the editor allocation. The Mixer is checked against the sound-designer allocation, which is the Sound line. No new line is added to the split. The grade uses Claude Haiku 5.5. The mix render uses ffmpeg. A notes purpose on the mixer also names Claude Haiku 5.5. The names are in `config/model-routing.json`. This build does not call the model. No key is read. A paid grade or mix rate is unknown because `config/generation-rates.json` has no row for one.
+- Consequences: The locked split is unchanged. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D70 — The color-mix gate sits in front of final delivery
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D3 says a person reviews each stage. Phase 8 is final delivery. It should not start on a grade and a mix Ron has not approved.
+- Decision: Add a gate named `color-mix` in `config/gates.json`. It starts on. The grade and the mix can be written while the gate is closed. Ron approves it with the existing approve-gate command. Final delivery waits on that approval. This phase does not build final delivery, and it does not approve the gate. When ffmpeg is installed, the graded picture and the mix are married into `color/married-preview.mp4`. `color_mix_approved` stays false on both plans.
+- Consequences: Approving the gate does not spend money and does not deliver a finished file. A flagged plan can still be approved by Ron. The plan does not approve itself.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+

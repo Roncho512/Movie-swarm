@@ -12,13 +12,21 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from movie_swarm.color_mix import run_color_mix
 from movie_swarm.dailies import run_dailies
 from movie_swarm.edit import run_edit
 from movie_swarm.generation import run_picture
 from movie_swarm.line_producer import Authorization, LineProducer
 from movie_swarm.paths import repo_root
 from movie_swarm.previs import run_previs
-from movie_swarm.roles import CALLABLE, DAILIES_BILLING, PHASE2_BILLING, PHASE2_CREW, SOUND_BILLING
+from movie_swarm.roles import (
+    CALLABLE,
+    COLOR_MIX_BILLING,
+    DAILIES_BILLING,
+    PHASE2_BILLING,
+    PHASE2_CREW,
+    SOUND_BILLING,
+)
 from movie_swarm.sound import run_sound
 
 
@@ -88,6 +96,12 @@ _COMMANDS = {
     "dailies": {
         "commands": {"review": True},
     },
+    "colorist": {
+        "commands": {"grade": True},
+    },
+    "mixer": {
+        "commands": {"mix": True},
+    },
 }
 
 _PHASE2_OUTPUTS = {
@@ -137,6 +151,7 @@ def dispatch_call(
         PHASE2_BILLING.get(call.agent)
         or DAILIES_BILLING.get(call.agent)
         or SOUND_BILLING.get(call.agent)
+        or COLOR_MIX_BILLING.get(call.agent)
         or call.agent
     )
     try:
@@ -162,6 +177,10 @@ def dispatch_call(
         runner = lambda current: run_picture(producer, current)
     elif handler is None and call.agent in {"sound-designer", "composer"} and call.command in {"spot", "generate"}:
         runner = lambda current: run_sound(producer, current)
+    elif handler is None and call.agent == "colorist" and call.command == "grade":
+        runner = lambda current: run_color_mix(producer, current)
+    elif handler is None and call.agent == "mixer" and call.command == "mix":
+        runner = lambda current: run_color_mix(producer, current)
     else:
         runner = handler or default_handler
     try:

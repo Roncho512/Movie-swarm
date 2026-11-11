@@ -24,5 +24,14 @@
       "description": "Available fluorescent light. No sun."
     }
   ],
-  "palette": ["cool gray", "fluorescent green"]
+  "palette": ["cool gray", "fluorescent green"],
+  "grade": {
+    "time_of_day": "night",
+    "contrast": 1.04,
+    "saturation": 0.82,
+    "warmth": -0.18,
+    "brightness": -0.02,
+    "gamma": 1.0,
+    "note": "Base grade for the whole cut, from this look."
+  }
 }
