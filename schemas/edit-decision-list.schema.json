@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "edit-decision-list.schema.json",
+  "title": "Edit Decision List",
+  "description": "The Editor's cut. JSON is the source of truth. A CMX3600 file is a reading copy of the same events. The editor does not invent shots. Picture lock stays false until Ron approves the edit gate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "production_id",
+    "kind",
+    "created_at",
+    "target_runtime_seconds",
+    "tolerance_seconds",
+    "runtime_seconds",
+    "runtime_delta_seconds",
+    "within_tolerance",
+    "runtime_note",
+    "ready_for_picture_lock",
+    "picture_lock",
+    "spent_usd",
+    "order_source",
+    "sources",
+    "events",
+    "scene_markers",
+    "blockers",
+    "continuity",
+    "render",
+    "model",
+    "draft_method"
+  ],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "kind": {
+      "type": "string",
+      "enum": ["rough-cut", "picture-lock"],
+      "description": "A rough cut is the assembly. A picture-lock file is that same cut when it is ready for Ron. His approval is the edit gate, not this field."
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "target_runtime_seconds": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "description": "From the production brief, then the scene manifest, then the treatment. Null when none of those name a runtime."
+    },
+    "tolerance_seconds": {
+      "type": "number",
+      "minimum": 0,
+      "description": "How far the cut may sit from the target. A production editing-style file can set it. Otherwise it is one second or ten percent of the target, whichever is larger."
+    },
+    "runtime_seconds": { "type": "number", "minimum": 0 },
+    "runtime_delta_seconds": {
+      "type": "number",
+      "description": "Runtime minus target. Positive is over. Negative is under. Zero when there is no target."
+    },
+    "within_tolerance": { "type": "boolean" },
+    "runtime_note": { "type": "string" },
+    "ready_for_picture_lock": {
+      "type": "boolean",
+      "description": "True only when every storyboard shot has a circled take, adjacent cuts do not break a locked prop, and the runtime is inside the tolerance."
+    },
+    "picture_lock": {
+      "type": "boolean",
+      "description": "False until Ron approves the edit gate. This file does not approve itself."
+    },
+    "spent_usd": { "type": "number", "const": 0 },
+    "order_source": { "type": "string", "minLength": 1 },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["order", "dailies", "editing_style", "runtime"],
+      "properties": {
+        "order": { "type": "string", "minLength": 1 },
+        "dailies": { "type": "string", "minLength": 1 },
+        "editing_style": { "type": ["string", "null"] },
+        "runtime": { "type": ["string", "null"] }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/event" }
+    },
+    "scene_markers": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/marker" }
+    },
+    "blockers": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/blocker" }
+    },
+    "continuity": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/continuity" }
+    },
+    "render": { "$ref": "#/$defs/render" },
+    "model": { "type": "string" },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic"] }
+  },
+  "$defs": {
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event",
+        "shot_id",
+        "scene_id",
+        "take_id",
+        "source_file",
+        "source_in",
+        "source_out",
+        "record_in",
+        "record_out",
+        "duration_seconds",
+        "transition",
+        "transition_duration_seconds"
+      ],
+      "properties": {
+        "event": { "type": "integer", "minimum": 1 },
+        "shot_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "scene_id": { "type": "string", "minLength": 1 },
+        "take_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "source_file": { "type": "string", "minLength": 1 },
+        "source_in": { "type": "number", "minimum": 0 },
+        "source_out": { "type": "number", "minimum": 0 },
+        "record_in": { "type": "number", "minimum": 0 },
+        "record_out": { "type": "number", "minimum": 0 },
+        "duration_seconds": { "type": "number", "exclusiveMinimum": 0 },
+        "transition": { "type": "string", "enum": ["cut", "dissolve", "fade"] },
+        "transition_duration_seconds": { "type": "number", "minimum": 0 }
+      }
+    },
+    "marker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scene_id", "label", "record_in"],
+      "properties": {
+        "scene_id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "record_in": { "type": "number", "minimum": 0 }
+      }
+    },
+    "blocker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shot_id", "kind", "routed_to", "detail"],
+      "properties": {
+        "shot_id": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "enum": ["missing-coverage"] },
+        "routed_to": { "type": "string", "enum": ["dailies", "generation"] },
+        "detail": { "type": "string", "minLength": 1 }
+      }
+    },
+    "continuity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from_shot_id", "to_shot_id", "status", "detail"],
+      "properties": {
+        "from_shot_id": { "type": "string", "minLength": 1 },
+        "to_shot_id": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "enum": ["pass", "fail"] },
+        "detail": { "type": "string", "minLength": 1 }
+      }
+    },
+    "render": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "path", "note"],
+      "properties": {
+        "status": { "type": "string", "enum": ["skipped", "rendered", "failed"] },
+        "path": { "type": ["string", "null"] },
+        "note": { "type": "string" }
+      }
+    }
+  }
+}

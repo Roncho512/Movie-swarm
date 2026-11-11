@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from movie_swarm.dailies import run_dailies
+from movie_swarm.edit import run_edit
 from movie_swarm.generation import run_picture
 from movie_swarm.line_producer import Authorization, LineProducer
 from movie_swarm.paths import repo_root
@@ -60,7 +61,7 @@ _COMMANDS = {
         "commands": {"dry-run": True},
     },
     "editor": {
-        "commands": {"dry-run": False},
+        "commands": {"dry-run": False, "assemble": True},
     },
     "qa": {
         "commands": {"dry-run": False},
@@ -146,6 +147,8 @@ def dispatch_call(
 
     if handler is None and call.agent == "dailies" and call.command == "review":
         runner = lambda current: run_dailies(producer, current)
+    elif handler is None and call.agent == "editor" and call.command == "assemble":
+        runner = lambda current: run_edit(producer, current)
     elif handler is None and call.agent == "production" and call.command in {"plan", "generate"}:
         runner = lambda current: run_picture(producer, current)
     else:

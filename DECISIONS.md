@@ -436,3 +436,57 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: If the estimate fits, the report says so and charges nothing. If it is over the line, or there is no locked fix-loop line, the list is kept and marked not cleared to spend. Nothing is charged. A missing file is a reject, not a prompt retake. Spent on the proof stays $0.00.
 - Who decided: Cursor cloud agent. Pending Ron's approval at merge.
 
+## D52 — The cut is an edit decision list
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D50 left the editor routed and not run. Circled takes need a cut Ron can read before sound.
+- Decision: The Editor reads the dailies report, the storyboard order, and the scene structure. It writes `edit/rough-cut.json`, checked against `edit-decision-list.schema.json`, plus `edit/rough-cut.md` and a CMX3600 reading copy at `edit/assembly.edl`. JSON is the source of truth. Each event names the shot, the circled take, source in and out, duration, and a transition. The default transition is a cut. A dissolve or a fade is used when the storyboard frame or `edit/editing-style.json` asks for one. Scene markers come from the scene manifest, then the treatment.
+- Consequences: The Director calls `editor` / `assemble`. The call still waits for the treatment, the previs gate, the editor's own gate, and the dailies gate. It does not spend. Tests prove it on Harbor Night. The Last Marker is not cut.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D53 — Trim toward the brief, and do not invent a shot
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: A rough cut has to land near the runtime the production asked for. The editor must not add a shot the storyboard does not have.
+- Decision: The target runtime is `target_runtime_seconds` on the production brief, then on the scene manifest, then the sum of the treatment's scene durations. A cut that runs long is shortened across the circled shots, down to half a second when the shot is longer than that. A cut that runs short is reported and not padded. The tolerance is `runtime_tolerance_seconds` in `edit/editing-style.json` when that file sets one, otherwise one second or ten percent of the target, whichever is larger. The report states the over or the under.
+- Consequences: Storyboard order wins over the shot list. Durations on the board win over a different number on the shot list. The editor does not add a shot to fill time.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D54 — A shot with no circled take is a blocker
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D47 circles a take before it can be cut. A gap in coverage should not be filled by the editor.
+- Decision: A storyboard shot with no circled take is left out of the timeline. The edit decision list records a missing-coverage blocker. A retake is routed to generation. A reject, or a shot dailies never reviewed, is routed to dailies. The detail says the shot was not invented.
+- Consequences: The cut is not ready for picture lock while a blocker remains. Nothing is charged. This phase does not call generate.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D55 — Locked props are checked across adjacent cuts
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D11 and D48 check a prop inside one shot. A cut can still break the lock between two shots that both show it.
+- Decision: For each adjacent pair in the cut, the editor runs the same locked-phrase check the Prop Master and the Script Supervisor use. The text is the shot description plus the dailies notes for the circled take. A forbidden phrase on either side, or a required phrase that one shot states and the next does not, is a continuity flag. The shot stays in the cut. The flag blocks picture lock.
+- Consequences: A prop that is not in both shots is not compared. The engine does not name a film's props. The phrases come from the production's prop file.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D56 — The preview is local, and optional
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: Ron needs a picture of the cut, and the build machine may not have ffmpeg. D6 keeps the editor cheap.
+- Decision: When ffmpeg is installed, the editor renders `edit/rough-cut.mp4` at 160 by 90. Cuts are concatenated. A dissolve or a fade uses a short crossfade. When ffmpeg is missing, or a source file is missing, the preview is skipped and the edit decision list is still written. The assembly model stays ffmpeg. A notes purpose names Claude Haiku 5.5. This build does not call it.
+- Consequences: No key is read. Spent on the proof stays $0.00. The preview is not picture lock.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D57 — Picture lock is a gate, and sound waits
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D3 says a person reviews each stage. Phase 6 is sound. It should not start on a cut Ron has not locked.
+- Decision: Add a gate named `edit` in `config/gates.json`. It starts on. The editor can write the cut while the gate is closed, because that cut is what Ron reads. A clean cut also writes `edit/picture-lock.json` with `picture_lock` still false. Ron approves the edit gate with the existing approve-gate command. That approval is picture lock. The sound designer waits for it, after the treatment, the previs gate, and the sound designer's own gate.
+- Consequences: This phase does not approve the gate. Approving it does not spend money and does not generate sound. A cut with a blocker, a continuity flag, or a runtime outside the tolerance does not write the picture-lock file. Sound still waits until Ron approves the gate.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+

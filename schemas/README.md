@@ -46,6 +46,7 @@ When you're debugging why Shot 14 has the wrong lighting, you need to trace the 
 | `sound-prompts.schema.json` | The prompts a production asks the sound program to generate. The program does not keep its own copy. |
 | `takes-manifest.schema.json` | Generated takes for one production. Each take names a shot and a clip or frame file. |
 | `dailies-report.schema.json` | Circle, retake, or reject for each take, plus the retake list and its estimate. |
+| `edit-decision-list.schema.json` | The Editor's cut. Ordered circled takes, source in and out, transitions, and scene markers. JSON is the source of truth. |
 | `continuity-report.schema.json` | QA findings with issue routing. Drives the feedback loop. |
 | `run-state.schema.json` | One production run: stage, status, artifacts, and spend against the cap. |
 | `gate-config.schema.json` | Review switches and the film budget cap. |

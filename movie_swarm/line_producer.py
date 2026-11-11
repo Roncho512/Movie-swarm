@@ -20,6 +20,7 @@ from movie_swarm.roles import (
     DAILIES_BILLING,
     DAILIES_CREW,
     DAILIES_STAGE,
+    EDIT_STAGE,
     GATED_CREW,
     GENERATION_STAGE,
     PHASE2_BILLING,
@@ -486,6 +487,16 @@ class LineProducer:
                 "Approve or reject the dailies gate before the editor runs. "
                 "Read dailies/dailies-report.md. Circled takes stay out of the edit until you approve."
             )
+        rough_cut = self.production_dir / "edit" / "rough-cut.md"
+        if (
+            rough_cut.is_file()
+            and is_stage_gated(EDIT_STAGE, self.config_path)
+            and not self.gate_is_open(EDIT_STAGE)
+        ):
+            lines.append(
+                "Approve or reject the edit gate before sound runs. "
+                "Read edit/rough-cut.md. That approval is picture lock."
+            )
         return lines
 
     def _still_waiting(self) -> bool:
@@ -596,6 +607,11 @@ class LineProducer:
             return self._pause_gate(
                 DAILIES_STAGE,
                 "The dailies gate is still closed. Ron has not approved the circled takes, so the editor was not called.",
+            )
+        if stage == "sound-designer" and is_stage_gated(EDIT_STAGE, self.config_path) and not self.gate_is_open(EDIT_STAGE):
+            return self._pause_gate(
+                EDIT_STAGE,
+                "The edit gate is still closed. Ron has not approved picture lock, so sound was not called.",
             )
         return None
 
