@@ -44,6 +44,9 @@ PHASE2_BILLING = {
 
 PREVIS_STAGE = "previs"
 
+# A paid image, video, or audio call waits here even after the stage gate is open.
+GENERATION_STAGE = "generation"
+
 PREP_STAGES = (
     "director",
     "line-producer",

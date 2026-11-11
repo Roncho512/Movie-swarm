@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sound-prompts.schema.json",
+  "title": "Sound Prompts",
+  "description": "The prompts one production wants generated as sound. The sound program reads this file. It does not keep a copy of its own.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id", "sfx", "dialogue", "music"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "note": { "type": "string" },
+    "sfx": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/asset" }
+    },
+    "dialogue": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/asset" }
+    },
+    "music": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/asset" }
+    }
+  },
+  "$defs": {
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset_id", "asset_type", "prompt", "dest_path"],
+      "properties": {
+        "asset_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "asset_type": { "type": "string", "enum": ["sfx", "dialogue", "music", "ambient"] },
+        "prompt": { "type": "string" },
+        "dest_path": { "type": "string", "minLength": 1 },
+        "duration": { "type": "number", "exclusiveMinimum": 0 },
+        "prompt_influence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "text": { "type": "string" },
+        "voice_id": { "type": ["string", "null"] },
+        "assigned_shots": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "layer_notes": { "type": "string" }
+      }
+    }
+  }
+}

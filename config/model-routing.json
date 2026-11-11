@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "roles": {
     "line-producer": {
       "provider": "anthropic",
@@ -75,7 +75,11 @@
       "provider": "fal.ai",
       "model": "seedance-2.0",
       "source": "agents/05-production/src/config.py",
-      "notes": "The production program calls Seedance 2.0 on fal.ai today. D6: final video is planned on Gemini Omni 1.2 Flash, with cheap previews. Seedance and Kling stay Director-routed alternates. This file still records the program that runs today.",
+      "notes": "The older production program still calls Seedance 2.0 on fal.ai. The generation pipeline uses the purposes below. Preview and final use Gemini Omni 1.2 Flash, the cheap picture model. Seedance and Kling stay alternates on the rate card. A routing override can name one for a shot. A dry run reads no key.",
+      "purposes": {
+        "preview": "gemini-omni-1.2-flash",
+        "final": "gemini-omni-1.2-flash"
+      },
       "endpoints": {
         "text-to-video": "bytedance/seedance-2.0/text-to-video",
         "image-to-video": "bytedance/seedance-2.0/image-to-video",

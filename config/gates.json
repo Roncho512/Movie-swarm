@@ -13,6 +13,7 @@
     "editor": true,
     "qa": true,
     "fix-loop": true,
-    "previs": true
+    "previs": true,
+    "generation": true
   }
 }

@@ -12,6 +12,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from movie_swarm.generation import run_picture
 from movie_swarm.line_producer import Authorization, LineProducer
 from movie_swarm.paths import repo_root
 from movie_swarm.previs import run_previs
@@ -35,6 +36,7 @@ class CrewCall:
     production_dir: str | None = None
     llm: object | None = None
     image_client: object | None = None
+    client: object | None = None
 
 
 @dataclass
@@ -50,7 +52,7 @@ class DispatchResult:
 # because they would read or write the cut.
 _COMMANDS = {
     "production": {
-        "commands": {"estimate": True, "dry-run": True},
+        "commands": {"estimate": True, "dry-run": True, "plan": True, "generate": True},
     },
     "sound-designer": {
         "commands": {"dry-run": True},
@@ -132,8 +134,15 @@ def dispatch_call(
         return DispatchResult(status="refused", message=str(exc))
     if not auth.allowed:
         return DispatchResult(status="paused", message=auth.message, request_id=auth.request_id)
+    if call.agent == "production" and call.command == "generate":
+        block = producer.paid_generation_block()
+        if block is not None:
+            return DispatchResult(status="paused", message=block.message, request_id=block.request_id)
 
-    runner = handler or default_handler
+    if handler is None and call.agent == "production" and call.command in {"plan", "generate"}:
+        runner = lambda current: run_picture(producer, current)
+    else:
+        runner = handler or default_handler
     try:
         output = runner(call)
     except Exception as exc:

@@ -19,6 +19,7 @@ from src.config import (
     Endpoint, Resolution, ShotSpec, Tier, estimate_cost
 )
 from src.pipeline import (
+    ProductionPipeline,
     build_payload, load_shot_list, select_endpoint, _endpoint_type
 )
 
@@ -277,6 +278,28 @@ def test_load_real_shot_list():
     # All shots sorted by sequence position
     positions = [s.sequence_position for s in shots]
     assert positions == sorted(positions)
+
+
+def test_paid_run_is_refused_before_the_provider(tmp_path, monkeypatch):
+    import pytest
+
+    called = []
+    monkeypatch.setattr("src.pipeline.generate_shot", lambda *args, **kwargs: called.append(True))
+    shot_list = tmp_path / "shot-list.json"
+    shot_list.write_text(json.dumps({
+        "shots": [{
+            "shot_id": "s01-sh01",
+            "scene_number": 1,
+            "shot_number": 1,
+            "sequence_position": 1,
+            "generation_prompt": "A dock at night.",
+            "target_duration_seconds": 4,
+        }]
+    }), encoding="utf-8")
+    pipeline = ProductionPipeline(shot_list, tmp_path / "out")
+    with pytest.raises(RuntimeError, match="generation gate"):
+        pipeline.run(dry_run=False)
+    assert called == []
 
 
 # ---------------------------------------------------------------------------

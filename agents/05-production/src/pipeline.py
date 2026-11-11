@@ -338,6 +338,12 @@ class ProductionPipeline:
             shot_ids: If provided, only generate these shots. Otherwise all.
             dry_run: If True, build payloads and log them but don't call fal.
         """
+        if not dry_run:
+            raise RuntimeError(
+                "Paid generation is closed in this build. "
+                "A real run has to go through the Director, and Ron has to approve the generation gate. "
+                "No provider was called."
+            )
         tier = Tier.FAST if pass_type == "preview" else Tier.STANDARD
         resolution = Resolution.P480 if pass_type == "preview" else Resolution.P720
         subdir = "preview" if pass_type == "preview" else "final"

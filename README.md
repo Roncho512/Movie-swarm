@@ -8,9 +8,11 @@ Phase 0 is on main. It merged on 2026-11-10 in [pull request 1](https://github.c
 
 Phase 1 is on main. It merged on 2026-11-10 in [pull request 3](https://github.com/Roncho512/Movie-swarm/pull/3), merge `da9d54a`. The Line Producer watches the budget, the schedule, the credits, and the gates. The Director reads a screenplay and writes a treatment, which is the plan for the film before anyone generates a shot. Ron approved the Last Marker treatment gate. The $500 stage split is locked on run phase-1. Spent so far: $0.00 of $500.00.
 
-Phase 2 writes the package that stops a bad shot before it is generated. The Prop Master locks hero props. The Script Supervisor checks shots and scenes against that lock. The Cinematographer writes a camera package, a storyboard, and an animatic plan. An animatic is the boards in order, with a duration on each one. The Stunt and Action Coordinator turns the treatment's action beats into shots. Ron approved the storyboard previs gate on 2026-11-10. The note is "Approve the storyboard previs gate." The storyboard status is approved. No images were generated. Spent so far: $0.00 of $500.00. Phase 2's done-when is met. It is waiting for Ron to merge it.
+Phase 2 is on main. It merged on 2026-11-10 in [pull request 4](https://github.com/Roncho512/Movie-swarm/pull/4) and [pull request 5](https://github.com/Roncho512/Movie-swarm/pull/5), merge `f6f52d4`. The storyboard is one beat per shot: 41 shots, plus the three scene 3 shots Ron added, 44 in all. Ron approved the previs gate. The note is "Approve the storyboard previs gate." No images were generated.
 
-Film facts stay in the production folder. The engine does not know that this film's exhaust is on the right, that the watch is on the left wrist, that the bike is a 1965, that the story is 1967, or that the look is Sergio Leone. Those sentences live in `productions/the-last-marker/`. A different film uses its own files.
+Phase 3 builds the studio, not the film. Ron's direction on 2026-11-10 is to prove the picture tools on a synthetic production first. Harbor Night, under `tests/fixtures/`, is that production. The studio can quote any production, put locked prop phrases into a prompt, and refuse a paid call until Ron approves a new gate called `generation`. A gate is a switch that makes a stage wait for Ron. This build does not call a provider. Spent so far: $0.00 of $500.00. The Last Marker is not generated in this phase. Its approved previs stays where it is. Making that film is the last phase, after the studio is finished.
+
+Film facts stay in the production folder. The engine does not know that this film's exhaust is on the right, that the watch is on the left wrist, that the bike is a 1965, that the story is 1967, or that the look is Sergio Leone. Those sentences live in `productions/the-last-marker/`. A different film uses its own files. The pilot sound prompts moved out of the sound program and into `productions/the-last-marker/audio/sound-prompts.json`.
 
 The continuity check on the old pilot shot list found 17 missing locks. Each one is the Triumph shown without the locked exhaust phrase. The new storyboard states the locks. No money was spent.
 
@@ -87,7 +89,7 @@ python3 scripts/line-producer.py --production productions/the-last-marker --run 
   --stage previs --decision approved --by ron --note "The phase 2 package can go forward."
 ```
 
-A picture call does not run until you have approved the treatment, the previs package, and that stage. This example only prices shots. It does not generate video.
+A picture call does not run until you have approved the treatment, the previs package, and that stage. This example only prices shots with the older production estimator. It does not generate video.
 
 ```bash
 python3 scripts/director.py --production productions/the-last-marker --run phase-1 dispatch \
@@ -95,11 +97,26 @@ python3 scripts/director.py --production productions/the-last-marker --run phase
   --shot-list productions/the-last-marker/shot-lists/shot-list.json
 ```
 
+Ask for a generation plan. A generation plan is a dry-run quote: the generator, the clip length, the takes allowed, and the price, set against the locked split. It does not spend, and it does not need the generation gate. This phase proved the command on Harbor Night. It did not write a plan for The Last Marker.
+
+```bash
+python3 scripts/director.py --production path/to/a-production --run phase-1 dispatch \
+  --agent production --crew-command plan --estimate 0 \
+  --output-dir path/to/a-folder
+```
+
+A generate call is the paid path. It pauses until you approve the generation gate. Even after that approval, this build's client does not call a provider.
+
+```bash
+python3 scripts/line-producer.py --production path/to/a-production --run phase-1 approve-gate \
+  --stage generation --decision approved --by ron --note "A paid generation may be prepared."
+```
+
 The same commands work from the agent folders as `python3 -m src.cli`, with the same flags.
 
 ## What the checks do
 
-`python3 -m pytest tests -q` runs the shared checks. They cover the Phase 0 foundation, the Phase 1 rules, and the Phase 2 package: the cap, approvals, the treatment checklist, each screenplay format, the question round trip, a crew call that must pass the Line Producer first, locked props, a continuity check, a camera package, storyboards, and an action breakdown. One fixture is The Last Marker. Another is Harbor Night, a tiny second film, so the engine is not proven only on this one.
+`python3 -m pytest tests -q` runs the shared checks. They cover the Phase 0 foundation, the Phase 1 rules, the Phase 2 package, and the Phase 3 quote: the cap, approvals, the treatment checklist, each screenplay format, the question round trip, a crew call that must pass the Line Producer first, locked props, a continuity check, a camera package, storyboards, an action breakdown, a dry-run generation plan, the generation gate, and a prompt that keeps a locked phrase. One fixture is The Last Marker. Another is Harbor Night, a tiny second film, so the engine is not proven only on this one. Phase 3's picture checks use Harbor Night.
 
 Three older agents have their own checks, because each one uses a folder named `src`:
 
@@ -143,7 +160,7 @@ The sample film is The Last Marker, in `productions/the-last-marker/`.
 | `treatment/treatment.md` | The approved treatment. |
 | `treatment/treatment.json` | The same treatment in the form the checks can read. Status: approved. |
 | `treatment/questions.json` | Round 1, closed. Ron's answers are in the file. |
-| `runs/phase-1/` | The run record. Treatment gate approved. Stage split locked. Previs gate waiting. Spent $0.00 of $500.00. |
+| `runs/phase-1/` | The run record. Treatment gate approved. Previs gate approved. Generation gate not approved. Stage split locked. Spent $0.00 of $500.00. |
 | `props/prop-definitions.json` | The locked attributes for this film, written as production data. |
 | `props/hero-props.json` | The same lock, after the Prop Master copies it. |
 | `look/look.json` | This film's lenses, framing, and lighting. |
@@ -151,6 +168,7 @@ The sample film is The Last Marker, in `productions/the-last-marker/`.
 | `storyboard/` | One beat per shot, the look stated once, and an animatic. No images were generated. Shots that show the featured watch are listed, each with one sentence on why. Scene 3 also has the empty canteen, the circling buzzards, and the hard cut from a buzzard's face to his eyes. |
 | `continuity/continuity-check.json` | Drift findings. The old pilot shot list is missing the locked exhaust phrase. |
 | `stunts/action-breakdown.json` | The treatment's two action beats, broken into shots. |
+| `audio/sound-prompts.json` | The pilot sound prompts. The sound program reads this file. It does not keep a copy. |
 
 Hero props for this film are the 1965 Triumph TR6SC and the Breitling Top Time. Ron locked the exhaust on the right and the watch on the left wrist. Those sentences are in the production files above. They are not in the studio code.
 

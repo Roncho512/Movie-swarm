@@ -1,6 +1,6 @@
 # Agent 05: Production
 
-Video generation agent for the AI Movie Production Swarm. Reads a shot list from the Cinematographer, generates video clips via Seedance 2.0 on fal.ai, validates outputs, and produces structured clip metadata for the Editor and QA agents.
+Video generation agent for the AI Movie Production Swarm. Reads a shot list from the Cinematographer and can build a Seedance request. A live run is refused in this build. A paid call has to go through the Director and Ron's generation gate, and this build does not connect a provider.
 
 ## Setup
 

@@ -94,6 +94,7 @@ def test_engine_source_does_not_name_the_sample_film():
         repo_root() / "agents" / "10-script-supervisor",
         repo_root() / "agents" / "11-prop-master",
         repo_root() / "agents" / "12-stunt-coordinator",
+        repo_root() / "agents" / "06-sound-designer" / "src",
     ]
     offenders = []
     for root in roots:

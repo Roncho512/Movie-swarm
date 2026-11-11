@@ -14,83 +14,15 @@ Get your API key from [elevenlabs.io](https://elevenlabs.io) → Developers → 
 
 ## Usage
 
-### Search for a voice (for dialogue)
+Prompts are read from the production, at `audio/sound-prompts.json`. This program does not keep a film's prompts. A dry run writes the manifest and does not call ElevenLabs. A run without `--dry-run` is refused. This build has no live audio client, and a paid call also has to pass the generation gate.
 
 ```bash
-python3 -m src.cli voices "mexican male"
+python3 -m src.cli sfx path/to/shot-list.json ./output --dry-run
+python3 -m src.cli sfx path/to/shot-list.json ./output --library path/to/audio/sound-prompts.json --dry-run
 ```
 
-### Generate sound effects (dry run)
+The Last Marker prompts now live in `productions/the-last-marker/audio/sound-prompts.json`. That file is production data. It is not part of this program.
 
-```bash
-python3 -m src.cli sfx ../../productions/the-last-marker/shot-lists/shot-list.json ./output --dry-run
-```
+## Output
 
-### Generate specific SFX
-
-```bash
-python3 -m src.cli sfx ../../productions/the-last-marker/shot-lists/shot-list.json ./output --assets engine-healthy engine-death desert-wind-light
-```
-
-### Generate all SFX
-
-```bash
-python3 -m src.cli sfx ../../productions/the-last-marker/shot-lists/shot-list.json ./output
-```
-
-### Generate dialogue
-
-```bash
-python3 -m src.cli dialogue ../../productions/the-last-marker/shot-lists/shot-list.json ./output --voice-id YOUR_VOICE_ID
-```
-
-### Generate closing guitar music
-
-```bash
-python3 -m src.cli music ../../productions/the-last-marker/shot-lists/shot-list.json ./output
-```
-
-### Generate everything at once
-
-```bash
-python3 -m src.cli all ../../productions/the-last-marker/shot-lists/shot-list.json ./output --voice-id YOUR_VOICE_ID
-```
-
-## Audio Assets for The Last Marker
-
-### Sound Effects (13 assets)
-- **Engine states**: healthy cruise, skip/misfire, sputtering death, kick-start fail, kick-start catch, rough idle
-- **Environment**: desert wind (light), desert silence
-- **Foley**: tire on hardpan, pebble spray, boot on kick lever, cooling metal ticking, spark plug pull
-
-### Dialogue (1 asset)
-- "Primero llegas. Despues compites." — the only spoken line in the film
-
-### Music (1 asset)
-- Closing nylon-string guitar — three notes, Mexican folk phrase, played twice with silence between
-
-## Output Structure
-
-```
-output/
-├── sfx/
-│   ├── engine-healthy.mp3
-│   ├── engine-skip.mp3
-│   ├── engine-death.mp3
-│   └── ...
-├── dialogue/
-│   └── vega-primero-llegas.mp3
-├── music/
-│   └── closing-guitar.mp3
-└── audio-manifest.json
-```
-
-## Integration Points
-
-- **Upstream**: Shot list (sound_notes) from Cinematographer; clip metadata from Production
-- **Downstream**: Editor agent uses audio-manifest.json to layer audio over video clips
-- **Orchestrator**: Generation log feeds back for cost tracking
-
-## Estimated Cost
-
-~$8-16 total for The Last Marker (13 SFX + 1 dialogue + 1 music track).
+A dry run writes `audio-manifest.json` in the output folder. The `production_id` comes from the prompt file, or from the shot list when the prompt file does not name one.

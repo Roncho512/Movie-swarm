@@ -55,7 +55,7 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Date: 2026-11-10
 - Context: The pipeline needs one film to prove each phase, not a new story every time.
 - Decision: The Last Marker stays the test production through every phase.
-- Consequences: New checks and new roles are tried on this production first. Its files stay in `productions/the-last-marker/`.
+- Consequences: New checks and new roles are tried on this production first. Its files stay in `productions/the-last-marker/`. D41 keeps it as the film the finished studio will make, and proves the studio phases on Harbor Night before that.
 - Who decided: Ron
 
 ## D8 — A Leone western, without copying a score
@@ -248,7 +248,7 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Date: 2026-11-10
 - Context: The exhaust side, the watch wrist, the bike's model year, the story year, and the Leone look are facts about The Last Marker. If the studio code knows them, the next film inherits them.
 - Decision: Nothing film-specific may be hard-coded in the studio code, the agents, the schemas, or the defaults. Those facts belong only under `productions/the-last-marker/`. The Prop Master and the Script Supervisor read whatever hero props and locked attributes a production defines. The Cinematographer builds a camera package from the production's chosen look. A different film can use another look with no code change.
-- Consequences: Phase 2 reads `props/prop-definitions.json` and `look/look.json` from the production. Tests include Harbor Night, a second tiny production with a scarf and a documentary look. The shared treatment draft no longer invents this film's props, theme, or tone. The pilot sound library is still inside the sound program. Moving it is open.
+- Consequences: Phase 2 reads `props/prop-definitions.json` and `look/look.json` from the production. Tests include Harbor Night, a second tiny production with a scarf and a documentary look. The shared treatment draft no longer invents this film's props, theme, or tone. D45 moves the pilot sound prompts into the production folder.
 - Who decided: Ron
 
 ## D31 — One previs gate for the phase 2 package
@@ -335,6 +335,59 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Date: 2026-11-10
 - Context: Ron read the storyboard, including the scene 3 danger shots, and said, "Approve the storyboard previs gate."
 - Decision: Approve the previs gate for The Last Marker. The approval covers the storyboard at commit 48d84b0. The storyboard status is approved, with that note. No images are generated.
-- Consequences: Run phase-1 records Ron's yes on the previs gate. Picture calls still wait for their own stage gates. Spent stays $0.00 of $500.00. This does not merge the branch.
+- Consequences: Run phase-1 records Ron's yes on the previs gate. Picture calls still wait for their own stage gates, and a paid call also waits for the generation gate. Spent stays $0.00 of $500.00. This does not merge the branch.
 - Who decided: Ron
+
+## D41 — Build the studio first
+
+- Date: 2026-11-10
+- Context: Ron changed direction after the previs gate was approved. The approved boards can wait. The studio should be proven before anyone generates The Last Marker.
+- Decision: Build the studio, and make the film later. New picture tools are proven on Harbor Night, or on another synthetic fixture. Do not write a generation plan for The Last Marker in this phase. The last phase is the first film: the finished studio makes The Last Marker from its approved previs.
+- Consequences: Phase 3 does not edit that production except to move the pilot sound prompts into its folder. That move is engine cleanup from D30. No images and no video are generated. Spent stays $0.00 of $500.00.
+- Who decided: Ron
+
+## D42 — A generation gate before any paid call
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-10
+- Context: The treatment gate, the stage gate, and the previs gate already stop a crew call. A paid provider call needs its own yes, so a quote can be written while the money stays locked.
+- Decision: Add a gate named `generation` in `config/gates.json`. It starts on. A plan or an estimate does not need it. A generate call does. The older production and sound programs refuse a live call in this build, because no live client is connected.
+- Consequences: Ron's yes is a Line Producer approval of the generation gate. This phase does not approve it. The default client returns not-sent and does not open a network connection. Tests use a fake client.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D43 — The quote uses published rates
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-10
+- Context: A price has to come from a published page, and the same estimator has to work for any production.
+- Decision: `config/generation-rates.json` holds the per-second rates read on 2026-11-10. Gemini Omni 1.2 Flash is $0.07 per second at 720p (Google, 2026-11-05). Seedance 2.0 is $0.3034 per second at 720p, and the fast tier is $0.2419 (fal.ai, read 2026-11-10). Kling 4.0 with no input video is $0.157 per second at 720p (Kling's API pricing, read 2026-11-10). The plan marks every line that is an assumption. A model that is not on the card is not given a price.
+- Consequences: The default quote uses Omni for the preview and the final, because that is the cheap picture model. Seedance and Kling are priced only when a routing override names them. Stills and sound stay at $0 on this card, and the plan says why. The retake reserve is one extra preview of every priced shot. The fix-loop reserve is the locked allocation, not a new price.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D44 — Locked phrases go into the prompt
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-10
+- Context: D11 says a prop is checked before generation and again on the frames. The frames do not exist yet.
+- Decision: When a locked prop is in the shot, the prompt gains a required phrase before it can be sent. A forbidden phrase blocks the call. The phrases come from the production's prop file. After the client returns, `review_dailies` records those phrases. It does not watch a frame and it does not call a model.
+- Consequences: Harbor Night's scarf phrase is added in the tests. The Dailies Reviewer is a stub. Watching the picture is phase 4.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D45 — Sound prompts live in the production folder
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-10
+- Context: D30 left the pilot sound prompts inside the sound program. A film's prompts are film facts.
+- Decision: The sound program loads `audio/sound-prompts.json` from the production. The Last Marker prompts moved to `productions/the-last-marker/audio/sound-prompts.json`. A production with no file gets an empty library. A live audio call is refused in this build.
+- Consequences: The sound program no longer names a film. This closes the loose end in D30.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D46 — The quote reads the cheap model, and the old program stays put
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-10
+- Context: D6 names Gemini Omni 1.2 Flash for the picture, with Seedance and Kling as alternates. The older production program still calls Seedance.
+- Decision: `config/model-routing.json` keeps `production.model` as `seedance-2.0`, because that is what the older program calls. The preview and final purposes are `gemini-omni-1.2-flash`. The generation pipeline reads those purposes. It does not call the model.
+- Consequences: A routing override can point one shot at Seedance or Kling, and the quote uses that row on the rate card. No provider is called.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
 
