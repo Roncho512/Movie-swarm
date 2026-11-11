@@ -4,6 +4,8 @@
 
 Reviews assembled cuts for continuity errors, visual inconsistencies, audio sync issues, and narrative gaps. Acts as the final quality gate before a cut is approved. Sends structured revision requests back to the Orchestrator for routing to the appropriate specialist agent.
 
+Delivery QC is a separate local pass. It checks duration, resolution, frame rate, loudness, black frames, frozen frames, and caption timing with ffprobe and ffmpeg. It lives in `movie_swarm/delivery.py`. It does not call the Claude model this skill names.
+
 ## Inputs
 
 | Input | Source |

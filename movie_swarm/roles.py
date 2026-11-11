@@ -61,6 +61,10 @@ SOUND_STAGE = "sound"
 # Final delivery waits until Ron approves it.
 COLOR_MIX_STAGE = "color-mix"
 
+# The package can be written while this gate is closed.
+# Ron's approval marks the film delivered.
+DELIVERY_STAGE = "delivery"
+
 # The Composer bills against the Sound line, which is the sound-designer allocation.
 SOUND_BILLING = {
     "composer": "sound-designer",
@@ -71,6 +75,11 @@ SOUND_BILLING = {
 COLOR_MIX_BILLING = {
     "colorist": "editor",
     "mixer": "sound-designer",
+}
+
+# Delivery bills against the editor allocation. No new line is added.
+DELIVERY_BILLING = {
+    "post-supervisor": "editor",
 }
 
 # A dailies call is an estimate. It is checked against the fix-loop ceiling and not charged.
@@ -87,7 +96,11 @@ SOUND_CREW = ("composer",)
 # The call waits for picture lock and the sound gate. It does not wait on color-mix.
 COLOR_MIX_CREW = ("colorist", "mixer")
 
-CALLABLE = PICTURE_CREW + PHASE2_CREW + DAILIES_CREW + SOUND_CREW + COLOR_MIX_CREW
+# The Post Supervisor writes the package Ron reads at the delivery gate.
+# The call waits for the color-mix gate. It does not wait on the delivery gate.
+DELIVERY_CREW = ("post-supervisor",)
+
+CALLABLE = PICTURE_CREW + PHASE2_CREW + DAILIES_CREW + SOUND_CREW + COLOR_MIX_CREW + DELIVERY_CREW
 
 PREP_STAGES = (
     "director",

@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "delivery-manifest.schema.json",
+  "title": "Delivery Manifest",
+  "description": "The package list: files, SHA-256 checksums, the film spend against the cap, the stage split, and every gate record. The delivery gate stamps this file when the film is delivered. This file does not name a film.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "production_id",
+    "kind",
+    "created_at",
+    "ready_for_delivery_approval",
+    "delivery_approved",
+    "delivered",
+    "approved_by",
+    "approved_at",
+    "approval_note",
+    "spent_usd",
+    "qc_verdict",
+    "qc_report",
+    "plan",
+    "location",
+    "spend",
+    "gates",
+    "files",
+    "budget",
+    "models",
+    "standards",
+    "checksum",
+    "draft_method"
+  ],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "kind": { "type": "string", "const": "delivery-manifest" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "ready_for_delivery_approval": { "type": "boolean" },
+    "delivery_approved": { "type": "boolean" },
+    "delivered": { "type": "boolean" },
+    "approved_by": { "type": ["string", "null"] },
+    "approved_at": { "type": ["string", "null"], "format": "date-time" },
+    "approval_note": { "type": "string" },
+    "spent_usd": { "type": "number", "const": 0 },
+    "qc_verdict": { "type": "string", "enum": ["pass", "fail"] },
+    "qc_report": { "type": "string" },
+    "plan": { "type": "string" },
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relative", "setting", "resolved"],
+      "properties": {
+        "relative": { "type": "string" },
+        "setting": { "type": ["string", "null"] },
+        "resolved": { "type": "string" }
+      }
+    },
+    "spend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spent_usd", "budget_cap_usd", "within_cap", "currency", "stage_split", "stage_spent", "rate_status", "note"],
+      "properties": {
+        "spent_usd": { "type": "number", "minimum": 0 },
+        "budget_cap_usd": { "type": "number", "exclusiveMinimum": 0 },
+        "within_cap": { "type": "boolean" },
+        "currency": { "type": "string", "const": "USD" },
+        "stage_split": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z0-9-]+$" },
+          "additionalProperties": { "type": "number", "minimum": 0 }
+        },
+        "stage_spent": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z0-9-]+$" },
+          "additionalProperties": { "type": "number", "minimum": 0 }
+        },
+        "rate_status": { "type": "string", "enum": ["unknown", "published"] },
+        "note": { "type": "string" }
+      }
+    },
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stage", "decision", "by", "decided_at", "note"],
+        "properties": {
+          "stage": { "type": "string", "minLength": 1 },
+          "decision": { "type": "string", "enum": ["approved", "rejected", "pending"] },
+          "by": { "type": ["string", "null"] },
+          "decided_at": { "type": ["string", "null"], "format": "date-time" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "role", "sha256", "bytes", "status", "label"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "role": { "type": "string", "enum": ["plan", "captions", "master", "variant", "poster", "qc"] },
+          "sha256": { "type": ["string", "null"] },
+          "bytes": { "type": ["integer", "null"], "minimum": 0 },
+          "status": { "type": "string", "enum": ["present", "not-rendered"] },
+          "label": { "type": "string" }
+        }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stage", "estimated_usd", "rate_status", "note"],
+      "properties": {
+        "stage": { "type": "string" },
+        "estimated_usd": { "type": ["number", "null"] },
+        "rate_status": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    },
+    "models": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["post-supervisor", "notes", "render", "qc"],
+      "properties": {
+        "post-supervisor": { "type": "string" },
+        "notes": { "type": "string" },
+        "render": { "type": "string" },
+        "qc": { "type": "string" }
+      }
+    },
+    "standards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "citation"],
+        "properties": {
+          "id": { "type": "string" },
+          "citation": { "type": "string" }
+        }
+      }
+    },
+    "checksum": { "type": "string" },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic"] }
+  }
+}

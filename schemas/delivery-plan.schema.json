@@ -1,0 +1,239 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "delivery-plan.schema.json",
+  "title": "Delivery Plan",
+  "description": "The Post Supervisor's plan for the locked cut. Sizes and captions come from the production's delivery spec, or from a cited platform default. The delivery gate stays unapproved until it is approved. This file does not name a film.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "production_id",
+    "kind",
+    "created_at",
+    "cut_runtime_seconds",
+    "spent_usd",
+    "spec_source",
+    "spec_note",
+    "defaults_used",
+    "ready_for_delivery_approval",
+    "delivery_approved",
+    "sources",
+    "master",
+    "variants",
+    "poster",
+    "captions",
+    "loudness",
+    "qc_tolerances",
+    "location",
+    "standards",
+    "render",
+    "budget",
+    "models",
+    "draft_method"
+  ],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "kind": { "type": "string", "const": "delivery-plan" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "cut_runtime_seconds": { "type": "number", "minimum": 0 },
+    "spent_usd": { "type": "number", "const": 0 },
+    "spec_source": { "type": ["string", "null"] },
+    "spec_note": { "type": "string" },
+    "defaults_used": { "type": "array", "items": { "type": "string" } },
+    "ready_for_delivery_approval": { "type": "boolean" },
+    "delivery_approved": {
+      "type": "boolean",
+      "description": "False on the plan. The manifest is what the delivery gate stamps."
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["edit", "cue_sheet", "mix", "grade", "spec"],
+      "properties": {
+        "edit": { "type": "string" },
+        "cue_sheet": { "type": ["string", "null"] },
+        "mix": { "type": ["string", "null"] },
+        "grade": { "type": ["string", "null"] },
+        "spec": { "type": ["string", "null"] }
+      }
+    },
+    "master": { "$ref": "#/$defs/master" },
+    "variants": { "type": "array", "items": { "$ref": "#/$defs/variant" } },
+    "poster": { "$ref": "#/$defs/poster" },
+    "captions": { "$ref": "#/$defs/captions" },
+    "loudness": { "$ref": "#/$defs/loudness" },
+    "qc_tolerances": { "$ref": "#/$defs/tolerances" },
+    "location": { "$ref": "#/$defs/location" },
+    "standards": { "type": "array", "items": { "$ref": "#/$defs/standard" } },
+    "render": { "$ref": "#/$defs/render" },
+    "budget": { "$ref": "#/$defs/budget" },
+    "models": { "$ref": "#/$defs/models" },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic"] }
+  },
+  "$defs": {
+    "master": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["codec", "encoder", "container", "width", "height", "frame_rate", "crf", "profile", "filename", "citation", "note"],
+      "properties": {
+        "codec": { "type": "string" },
+        "encoder": { "type": "string" },
+        "container": { "type": "string" },
+        "width": { "type": "integer", "minimum": 2 },
+        "height": { "type": "integer", "minimum": 2 },
+        "frame_rate": { "type": "number", "exclusiveMinimum": 0 },
+        "crf": { "type": ["number", "null"] },
+        "profile": { "type": "string" },
+        "filename": { "type": "string", "minLength": 1 },
+        "citation": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    },
+    "variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "aspect_ratio", "width", "height", "frame_rate", "crop", "use", "filename", "safe"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "aspect_ratio": { "type": "string" },
+        "width": { "type": "integer", "minimum": 2 },
+        "height": { "type": "integer", "minimum": 2 },
+        "frame_rate": { "type": "number", "exclusiveMinimum": 0 },
+        "crop": { "type": "string" },
+        "use": { "type": "string" },
+        "filename": { "type": "string" },
+        "safe": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["action_inset_percent", "graphics_inset_percent", "citation", "guidance"],
+          "properties": {
+            "action_inset_percent": { "type": "number" },
+            "graphics_inset_percent": { "type": "number" },
+            "citation": { "type": "string" },
+            "guidance": { "type": "string" }
+          }
+        }
+      }
+    },
+    "poster": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shot_id", "filename", "time_seconds", "width", "height", "note", "source_file"],
+      "properties": {
+        "shot_id": { "type": "string" },
+        "filename": { "type": "string" },
+        "time_seconds": { "type": "number", "minimum": 0 },
+        "width": { "type": "integer", "minimum": 2 },
+        "height": { "type": "integer", "minimum": 2 },
+        "note": { "type": "string" },
+        "source_file": { "type": ["string", "null"] }
+      }
+    },
+    "captions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "formats", "cues", "citation", "files", "burned_file"],
+      "properties": {
+        "mode": { "type": "string" },
+        "formats": { "type": "array", "items": { "type": "string" } },
+        "cues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["cue_id", "start_seconds", "end_seconds", "text"],
+            "properties": {
+              "cue_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+              "start_seconds": { "type": "number" },
+              "end_seconds": { "type": "number" },
+              "text": { "type": "string" }
+            }
+          }
+        },
+        "citation": { "type": "string" },
+        "files": { "type": "array", "items": { "type": "string" } },
+        "burned_file": { "type": ["string", "null"] }
+      }
+    },
+    "loudness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["integrated_lufs", "true_peak_dbtp", "tolerance_lufs", "standard", "citation", "source"],
+      "properties": {
+        "integrated_lufs": { "type": "number" },
+        "true_peak_dbtp": { "type": "number" },
+        "tolerance_lufs": { "type": "number", "minimum": 0 },
+        "standard": { "type": "string" },
+        "citation": { "type": "string" },
+        "source": { "type": "string" }
+      }
+    },
+    "tolerances": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["duration_tolerance_seconds", "frame_rate_tolerance", "black_max_seconds", "freeze_max_seconds", "loudness_tolerance_lufs"],
+      "properties": {
+        "duration_tolerance_seconds": { "type": "number", "minimum": 0 },
+        "frame_rate_tolerance": { "type": "number", "minimum": 0 },
+        "black_max_seconds": { "type": "number", "minimum": 0 },
+        "freeze_max_seconds": { "type": "number", "minimum": 0 },
+        "loudness_tolerance_lufs": { "type": "number", "minimum": 0 }
+      }
+    },
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relative", "setting", "resolved"],
+      "properties": {
+        "relative": { "type": "string", "minLength": 1 },
+        "setting": { "type": ["string", "null"] },
+        "resolved": { "type": "string", "minLength": 1 }
+      }
+    },
+    "standard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "citation"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "citation": { "type": "string" }
+      }
+    },
+    "render": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "note", "master", "variants", "poster", "burned"],
+      "properties": {
+        "status": { "type": "string", "enum": ["rendered", "skipped", "failed"] },
+        "note": { "type": "string" },
+        "master": { "type": ["string", "null"] },
+        "variants": { "type": "array", "items": { "type": "string" } },
+        "poster": { "type": ["string", "null"] },
+        "burned": { "type": ["string", "null"] }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stage", "estimated_usd", "rate_status", "note"],
+      "properties": {
+        "stage": { "type": "string" },
+        "estimated_usd": { "type": ["number", "null"] },
+        "rate_status": { "type": "string", "enum": ["unknown", "published"] },
+        "note": { "type": "string" }
+      }
+    },
+    "models": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["post-supervisor", "notes", "render", "qc"],
+      "properties": {
+        "post-supervisor": { "type": "string" },
+        "notes": { "type": "string" },
+        "render": { "type": "string" },
+        "qc": { "type": "string" }
+      }
+    }
+  }
+}

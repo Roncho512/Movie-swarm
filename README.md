@@ -18,7 +18,9 @@ Phase 5 is on main. It merged on 2026-11-11 in [pull request 8](https://github.c
 
 Phase 6 is on main. It merged on 2026-11-11 in [pull request 9](https://github.com/Roncho512/Movie-swarm/pull/9), merge `8d0de69`. After picture lock, the Sound Designer and the Composer spot a cue sheet onto the cut: dialogue, sound effects, foley, ambience, and music. Each cue has a start and end, the shots it belongs to, a prompt, and a source of generated, library, or silence. Music follows `audio/score-brief.json` when the production has one, including the shots that brief leaves silent. A cue has to sit inside the cut. An effect tied to a shot is flagged when it lands outside a short sync tolerance. A prop sound is flagged when that prop is not in the shot. The plan is priced from the rate card against the Sound line. That card has no audio rate, so the price is marked unknown. A paid call waits on the generation gate. When ffmpeg is installed, placeholder stems and a temp mix are rendered. When it is not, the cue sheet is still written. Ron approves a `sound` gate before color and mix. The proof is Harbor Night plus tiny synthetic audio. Nothing was spent. The Last Marker was not spotted.
 
-Phase 7 is in review. After the edit gate and the sound gate are both approved, the Colorist grades the locked picture and the Re-recording Mixer mixes the stems. A grade plan is the color: one base grade for the whole cut, plus one adjustment per scene, read from `look/look.json` and from `look/grade.json` when the production has one. A mix plan is the sound: a level for each stem, dialogue in front, music and effects ducked under dialogue, and a fade at each scene change. Loudness is checked against EBU R128, or against `audio/mix-targets.json` when the production sets its own target. EBU R128 is a published delivery standard: -23.0 LUFS, true peak no higher than -1.0 dBTP. The rate card has no color or mix price, so that estimate is marked unknown and is not stored as zero. When ffmpeg is installed, it renders a low-resolution graded preview, the mix, and a married preview of picture plus sound. When it is not, the plans are still written. Ron approves a `color-mix` gate before final delivery. The proof is Harbor Night plus tiny synthetic video and audio. Nothing was spent. The Last Marker was not graded or mixed.
+Phase 7 is on main. It merged on 2026-11-11 in [pull request 10](https://github.com/Roncho512/Movie-swarm/pull/10), merge `82fdbf5`. After the edit gate and the sound gate are both approved, the Colorist grades the locked picture and the Re-recording Mixer mixes the stems. A grade plan is the color: one base grade for the whole cut, plus one adjustment per scene, read from `look/look.json` and from `look/grade.json` when the production has one. A mix plan is the sound: a level for each stem, dialogue in front, music and effects ducked under dialogue, and a fade at each scene change. Loudness is checked against EBU R128, or against `audio/mix-targets.json` when the production sets its own target. EBU R128 is a published delivery standard: -23.0 LUFS, true peak no higher than -1.0 dBTP. The rate card has no color or mix price, so that estimate is marked unknown and is not stored as zero. When ffmpeg is installed, it renders a low-resolution graded preview, the mix, and a married preview of picture plus sound. When it is not, the plans are still written. Ron approves a `color-mix` gate before final delivery. The proof is Harbor Night plus tiny synthetic video and audio. Nothing was spent. The Last Marker was not graded or mixed.
+
+Phase 8 is in review. This is the last studio phase before the first film. The Post Supervisor reads `delivery/delivery-spec.json` from the production folder and writes a delivery package: a master file, the web or social variants the spec asks for, a poster frame, and captions timed from the dialogue cues. QC checks duration, resolution, frame rate, loudness, black frames, frozen frames, and caption timing. The report is JSON plus a short Markdown table. A delivery manifest lists the files, a SHA-256 checksum for each one that was written, the film spend against the $500 cap, the stage split, and every gate record. The package folder follows `MOVIE_SWARM_ASSET_ROOT` or `config/assets.json`. No drive path is hard-coded. Ron approves a `delivery` gate to mark the film delivered. One command, `scripts/studio.py`, walks Harbor Night from the treatment through that package and stops at each gate. A test harness can approve those gates. The command line cannot. The generation gate stays closed. Nothing was spent. The Last Marker was not delivered.
 
 Film facts stay in the production folder. The engine does not know that this film's exhaust is on the right, that the watch is on the left wrist, that the bike is a 1965, that the story is 1967, or that the look is Sergio Leone. Those sentences live in `productions/the-last-marker/`. A different film uses its own files. The pilot sound prompts moved out of the sound program and into `productions/the-last-marker/audio/sound-prompts.json`.
 
@@ -181,11 +183,67 @@ python3 scripts/line-producer.py --production path/to/a-production --run phase-1
   --stage color-mix --decision approved --by ron --note "Final delivery can start."
 ```
 
+Package the locked cut. This does not spend. The sizes, the variants, the poster shot, and the caption mode come from `delivery/delivery-spec.json`. When that file leaves a field out, the plan uses a cited platform default and says so. Captions are built from the dialogue cues. When ffmpeg is installed, it renders the master, the variants, and the poster. When it is not, the plan and the caption sidecars are still written. QC then checks each file. The manifest is the package list.
+
+```bash
+python3 scripts/director.py --production path/to/a-production --run phase-1 --offline dispatch \
+  --agent post-supervisor --crew-command deliver --estimate 0
+```
+
+Read `delivery/delivery-plan.md`, `delivery/qc-report.md`, and `delivery/delivery-manifest.md`. Approve the delivery gate to mark the film delivered.
+
+```bash
+python3 scripts/line-producer.py --production path/to/a-production --run phase-1 approve-gate \
+  --stage delivery --decision approved --by ron --note "The film is delivered."
+```
+
 The same commands work from the agent folders as `python3 -m src.cli`, with the same flags.
+
+## How to make a film with the studio
+
+This is the path from a treatment to a delivered file. A gate is a switch that makes a stage wait for Ron. The studio command stops at the first closed gate. Approve that gate, then run the command again. It does not approve anything by itself, and it does not spend.
+
+Practice on Harbor Night. It is the synthetic fixture under `tests/fixtures/harbor-night`. Copy it if you do not want to write into the fixture:
+
+```bash
+cp -a tests/fixtures/harbor-night /tmp/harbor-night
+python3 scripts/studio.py --production /tmp/harbor-night --run studio-1
+```
+
+The first run stops at the treatment gate. Nothing after that is written yet. Approve the gate, then run the same command again:
+
+```bash
+python3 scripts/line-producer.py --production /tmp/harbor-night --run studio-1 approve-gate \
+  --stage treatment --decision approved --by ron --note "Lock the treatment and the split."
+python3 scripts/studio.py --production /tmp/harbor-night --run studio-1
+```
+
+Keep going. Each run stops at the next closed gate and tells you the name. The order is:
+
+1. `treatment`. Read `treatment/treatment.md`. Approving it locks the $500 split.
+2. `previs`. The prop lock, the continuity check, the camera package, the storyboard, and the action breakdown are written first. Then you approve them.
+3. `production`. This lets the generation quote be written. It does not open a paid call.
+4. `dailies`. If the production has no takes manifest, the offline run writes synthetic placeholder clips and says so in `takes/placeholder.txt`. Those are not generated pictures. A real takes file is left alone.
+5. `editor`. This lets the circled takes be cut.
+6. `edit`. That approval is picture lock. Read `edit/rough-cut.md` first.
+7. `sound-designer`. This lets the cue sheet be spotted.
+8. `sound`. Read `sound/cue-sheet.md`. Color and mix wait on this approval.
+9. `color-mix`. The grade and the mix are written first. Read `color/grade-plan.md` and `color/mix-plan.md`.
+10. `delivery`. The package is written first. Read the QC report and the manifest. Approving this gate marks the film delivered.
+
+The generation gate is not in that list. Leave it closed until you are ready to pay for pictures. This build's client still does not call a provider after that approval. Harbor Night's offline run spends $0.00.
+
+A real production is the same two commands, with that film's folder instead of `/tmp/harbor-night`. If it has no treatment yet, draft one first with `scripts/director.py` and the `intake` command, answer the questions, and then start the studio command. Do not run this path on The Last Marker until the first-film phase. Its approved previs stays where it is.
+
+The delivery spec is `delivery/delivery-spec.json` in the production folder. Harbor Night's spec asks for a small H.264 master, a 16:9 web file, a 9:16 center crop, sidecar captions, and a poster from shot `s01-sh01`. A different film puts its own sizes in that file. The package is written under `delivery/` inside the production folder unless you set a drive. Set `MOVIE_SWARM_ASSET_ROOT`, or set `asset_root` in `config/assets.json`. The code does not name a drive.
+
+When ffmpeg is installed, the package can include `master.mp4` (or a ProRes master when the spec asks and the encoder exists), the variant files, `poster.png`, `captions.srt`, and `captions.vtt`. When ffmpeg is missing, those picture files are skipped and the plan, the captions, the QC report, and the manifest are still written.
+
+Tests can call `run_studio(..., auto_approve=True)`. That is a test harness. It records the approver as `test-auto-approve`, not as Ron, and it still leaves the generation gate closed. `scripts/studio.py` and the Director's `studio` command do not pass that flag. Do not use it on a real film.
 
 ## What the checks do
 
-`python3 -m pytest tests -q` runs the shared checks. They cover the Phase 0 foundation, the Phase 1 rules, the Phase 2 package, the Phase 3 quote, the Phase 4 dailies review, the Phase 5 edit, the Phase 6 cue sheet, and the Phase 7 grade and mix: the cap, approvals, the treatment checklist, each screenplay format, the question round trip, a crew call that must pass the Line Producer first, locked props, a continuity check, a camera package, storyboards, an action breakdown, a dry-run generation plan, the generation gate, a prompt that keeps a locked phrase, a circled take, a forbidden prop phrase, a missing file, a shot-list mismatch, the dailies report checklist, the dailies gate in front of the editor, storyboard order, a missing-coverage blocker, a runtime trim, the edit decision list checklist, a locked prop that breaks across a cut, the edit gate in front of sound, cues inside the cut, a sync tolerance flag, a prop sound outside the frame, a paid sound call refused while the generation gate is closed, the Sound line on the rate card, a grade read from the look, a scene grade stated once, a color mismatch between adjacent shots, dialogue ducking, a loudness miss, and the color-mix gate in front of final delivery. One fixture is The Last Marker. Another is Harbor Night, a tiny second film, so the engine is not proven only on this one. Phase 3, Phase 4, Phase 5, Phase 6, and Phase 7 picture and sound checks use Harbor Night.
+`python3 -m pytest tests -q` runs the shared checks. They cover the Phase 0 foundation, the Phase 1 rules, the Phase 2 package, the Phase 3 quote, the Phase 4 dailies review, the Phase 5 edit, the Phase 6 cue sheet, the Phase 7 grade and mix, and the Phase 8 delivery package: the cap, approvals, the treatment checklist, each screenplay format, the question round trip, a crew call that must pass the Line Producer first, locked props, a continuity check, a camera package, storyboards, an action breakdown, a dry-run generation plan, the generation gate, a prompt that keeps a locked phrase, a circled take, a forbidden prop phrase, a missing file, a shot-list mismatch, the dailies report checklist, the dailies gate in front of the editor, storyboard order, a missing-coverage blocker, a runtime trim, the edit decision list checklist, a locked prop that breaks across a cut, the edit gate in front of sound, cues inside the cut, a sync tolerance flag, a prop sound outside the frame, a paid sound call refused while the generation gate is closed, the Sound line on the rate card, a grade read from the look, a scene grade stated once, a color mismatch between adjacent shots, dialogue ducking, a loudness miss, the color-mix gate in front of final delivery, a delivery spec read from the production, caption timing, a QC pass, a forced QC fail, a manifest with checksums and spend, the delivery gate, and a studio run that stops at each gate unless a test harness approves them. One fixture is The Last Marker. Another is Harbor Night, a tiny second film, so the engine is not proven only on this one. Phase 3 through Phase 8 picture, sound, and delivery checks use Harbor Night.
 
 Three older agents have their own checks, because each one uses a folder named `src`:
 
@@ -206,7 +264,7 @@ Environment variables, by name only. Do not commit a key.
 | Name | Used for |
 |---|---|
 | `ANTHROPIC_API_KEY` | The Director and the Line Producer, when you want a real model. Without it, the draft is offline and labeled that way. |
-| `MOVIE_SWARM_ASSET_ROOT` | Optional folder for finished media. Overrides the file below. |
+| `MOVIE_SWARM_ASSET_ROOT` | Optional folder for the delivery package. Overrides the file below. |
 | `FAL_KEY` | The production agent, when it really generates video. This phase does not do that. |
 | `ELEVENLABS_API_KEY` | The sound agent, when it really generates audio. This phase does not do that. |
 

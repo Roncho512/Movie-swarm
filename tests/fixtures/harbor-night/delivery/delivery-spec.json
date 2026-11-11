@@ -1,0 +1,42 @@
+{
+  "version": "1.0.0",
+  "production_id": "harbor-night",
+  "folder": "delivery",
+  "master": {
+    "codec": "h264",
+    "width": 320,
+    "height": 180,
+    "frame_rate": 24
+  },
+  "variants": [
+    {
+      "id": "web-16x9",
+      "aspect_ratio": "16:9",
+      "width": 160,
+      "height": 90,
+      "use": "web"
+    },
+    {
+      "id": "social-9x16",
+      "aspect_ratio": "9:16",
+      "width": 90,
+      "height": 160,
+      "use": "social",
+      "crop": "center"
+    }
+  ],
+  "poster": {
+    "shot_id": "s01-sh01"
+  },
+  "captions": {
+    "mode": "sidecar",
+    "formats": ["srt", "vtt"]
+  },
+  "qc": {
+    "duration_tolerance_seconds": 0.75,
+    "frame_rate_tolerance": 0.1,
+    "black_max_seconds": 0.5,
+    "freeze_max_seconds": 0.5,
+    "loudness_tolerance_lufs": 2.0
+  }
+}

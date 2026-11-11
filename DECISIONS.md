@@ -607,3 +607,84 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: Approving the gate does not spend money and does not deliver a finished file. A flagged plan can still be approved by Ron. The plan does not approve itself.
 - Who decided: Cursor cloud agent. Pending Ron's approval at merge.
 
+## D71 — Final delivery waits on the color-mix gate
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D70 put the color-mix gate in front of final delivery. Phase 8 is that stage.
+- Decision: The Post Supervisor does not run unless Ron has approved the color-mix gate. The Director calls `post-supervisor` with `deliver`. The call also waits for the treatment and the previs gate. It does not wait for the delivery gate, because the package is what Ron reads.
+- Consequences: Tests prove the refusal on Harbor Night. The Last Marker is not packaged. Nothing is spent.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D72 — The delivery spec is production data
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D30 says film facts stay in the production folder. A master size and a list of variants are those facts.
+- Decision: The Post Supervisor reads `delivery/delivery-spec.json` when the production has one. The plan is `delivery/delivery-plan.json`, checked against `delivery-plan.schema.json`, plus `delivery/delivery-plan.md`. A missing field uses a cited platform default: 1920 by 1080 from ITU-R BT.709, high-quality H.264 from ITU-T H.264, ProRes 422 HQ from Apple's ProRes white paper when the encoder exists and the spec leaves the codec open, a 1280 by 720 web file from YouTube's published upload encoding, and safe-area insets from EBU R95. The spec can replace any of them. The engine does not invent a film's frame.
+- Consequences: Harbor Night's spec is the proof. A different film uses its own file. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D73 — Captions are timed from the dialogue cues
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D58 times dialogue on the locked cut. A delivered file needs those words on screen or beside the file.
+- Decision: Sidecar captions are written as SubRip (SRT) and W3C WebVTT. The start, the end, and the words come from the dialogue cues. A cue past the cut is a QC fail. The spec can ask for burned-in captions as well. The sidecars are still written. When ffmpeg cannot burn them, the plan says so and the sidecars remain.
+- Consequences: A production with no dialogue cues gets empty caption files. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D74 — QC is local, and a miss is a fail
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D49 already checks a take with ffprobe and ffmpeg, without a paid model. A delivered file needs the same kind of check against the spec.
+- Decision: QC writes `delivery/qc-report.json`, checked against `qc-report.schema.json`, and `delivery/qc-report.md`. Each row is pass, fail, or skipped. The checks are duration, resolution, frame rate, loudness against the production target or EBU R128, black stretches, frozen stretches, and caption timing. The tools are ffprobe, blackdetect, and freezedetect, the same local checks the dailies reviewer uses. The QA program's Claude model is not called. A missing file or a missing tool is skipped. A fail makes the verdict fail. The package is still saved.
+- Consequences: A flagged package can still be approved by Ron. The report does not approve itself. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D75 — The manifest lists files, checksums, spend, and gates
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D4 says the output is a finished video. The package has to say what was delivered, what it cost, and who approved each stage.
+- Decision: The manifest is `delivery/delivery-manifest.json`, checked against `delivery-manifest.schema.json`, plus a Markdown reading copy. Each file has a SHA-256 checksum, cited to FIPS 180-4, when the file is on disk. A file that was not rendered is listed without a checksum. The spend block shows the film total against the cap and the locked stage split, including what each line has spent. Every recorded gate decision is copied: who, when, and the note. A configured gate with no decision is pending. No delivery rate is on the rate card, so that price is unknown and is not stored as zero.
+- Consequences: Spent on the proof stays $0.00. The checksum is of the file on disk. It is not invented.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D76 — The delivery folder is a setting
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D9 says finished files belong on Ron's external drive, and the path is not set. A later film should not require a code change to name the drive.
+- Decision: The package is written under `delivery/` inside the production folder unless `MOVIE_SWARM_ASSET_ROOT` or `asset_root` in `config/assets.json` is set. The spec may name a different relative folder. An absolute path in the spec is refused. The resolved path and the setting name are stored on the manifest and in `delivery/location.json`. The code does not contain a drive path.
+- Consequences: With no setting, the proof stays in the production folder. Setting the asset root moves only the delivery package. Earlier working files stay put.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D77 — The delivery gate marks the film delivered
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D3 says a person reviews each stage. Phase 9 should not treat a package as delivered because the file exists.
+- Decision: Add a gate named `delivery` in `config/gates.json`. It starts on. The package can be written while the gate is closed. Ron approves it with the existing approve-gate command. That approval stamps `delivered` on the manifest, records who approved it and when, and sets the run status to completed. The manifest does not stamp itself.
+- Consequences: Approving the gate does not spend money and does not generate a picture. A QC fail can still be approved by Ron. The generation gate is a separate switch and stays closed.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D78 — The studio command stops at each gate
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D41 says the studio is built before the film. The stages now exist, and a person should be able to walk them without approving by accident.
+- Decision: `scripts/studio.py`, and the Director command `studio`, run the offline pipeline on a production from the treatment through delivery. The default stops at the first gate that is not approved. Run it again after that approval. The order is treatment, previs, production, dailies, editor, edit, sound-designer, sound, color-mix, and delivery. The generation gate is not approved. When no takes manifest exists, the walk writes synthetic placeholders and labels them. A real takes manifest is left alone. `run_studio(..., auto_approve=True)` is a test harness. It records the approver as `test-auto-approve`. The command line does not set it.
+- Consequences: Harbor Night is the proof. The Last Marker is not walked. Nothing is spent.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D79 — Delivery uses the cheap admin model and adds no budget line
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D6 says cheap models for admin work. D28 locked the $500 split. A packaging stage should not invent a model call or a new price.
+- Decision: The Post Supervisor is checked against the editor allocation. No new line is added to the split. The role uses Claude Haiku 5.5 for a note. The render uses ffmpeg. QC is local. The names are in `config/model-routing.json`. This build does not call the model. No key is read. A paid delivery rate is unknown because `config/generation-rates.json` has no row for one.
+- Consequences: The locked split is unchanged. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+

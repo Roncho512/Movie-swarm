@@ -10,7 +10,8 @@
     "Sound is not priced. This card has no audio-only rate, so the sound-designer line stays at $0.",
     "Dailies review does not call a paid model in this build, so the review itself is $0. A retake is estimated as one preview and checked against the fix-loop line. It is not spent here.",
     "The fix-loop reserve is the locked fix-loop allocation when the split has one. It is not a new price. If the split has no fix-loop line, the reserve is $0.",
-    "Color and mix are not priced. This card has no grade or mix rate, so a paid color or mix call is unknown. This build does not make one."
+    "Color and mix are not priced. This card has no grade or mix rate, so a paid color or mix call is unknown. This build does not make one.",
+    "Delivery is not priced. This card has no packaging rate, so a paid delivery call is unknown. This build does not make one."
   ],
   "generators": [
     {

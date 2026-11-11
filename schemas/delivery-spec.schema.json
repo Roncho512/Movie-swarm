@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "delivery-spec.schema.json",
+  "title": "Delivery Spec",
+  "description": "One production's delivery request: master size, variants, poster shot, captions, and QC tolerances. The engine does not invent these. A missing field uses a cited platform default.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "folder": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Relative folder for the package. A drive is chosen with the asset root setting, not with an absolute path here."
+    },
+    "safe_action_inset_percent": { "type": "number", "minimum": 0, "maximum": 40 },
+    "safe_graphics_inset_percent": { "type": "number", "minimum": 0, "maximum": 40 },
+    "master": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "codec": { "type": "string", "minLength": 1 },
+        "width": { "type": "integer", "minimum": 2 },
+        "height": { "type": "integer", "minimum": 2 },
+        "frame_rate": { "type": "number", "exclusiveMinimum": 0 },
+        "container": { "type": "string" },
+        "crf": { "type": "number", "minimum": 0, "maximum": 51 }
+      }
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "width", "height"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "aspect_ratio": { "type": "string" },
+          "width": { "type": "integer", "minimum": 2 },
+          "height": { "type": "integer", "minimum": 2 },
+          "use": { "type": "string" },
+          "crop": { "type": "string" }
+        }
+      }
+    },
+    "poster": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "shot_id": { "type": "string", "minLength": 1 },
+        "width": { "type": "integer", "minimum": 2 },
+        "height": { "type": "integer", "minimum": 2 }
+      }
+    },
+    "captions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "type": "string", "enum": ["sidecar", "burned-in", "both"] },
+        "formats": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["srt", "vtt"] }
+        }
+      }
+    },
+    "loudness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "integrated_lufs": { "type": "number" },
+        "true_peak_dbtp": { "type": "number" },
+        "tolerance_lufs": { "type": "number", "minimum": 0 },
+        "standard": { "type": "string" }
+      }
+    },
+    "qc": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "duration_tolerance_seconds": { "type": "number", "minimum": 0 },
+        "frame_rate_tolerance": { "type": "number", "minimum": 0 },
+        "black_max_seconds": { "type": "number", "minimum": 0 },
+        "freeze_max_seconds": { "type": "number", "minimum": 0 },
+        "loudness_tolerance_lufs": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}
