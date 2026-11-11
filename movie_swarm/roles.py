@@ -49,6 +49,10 @@ GENERATION_STAGE = "generation"
 DAILIES_CREW = ("dailies",)
 DAILIES_STAGE = "dailies"
 
+# Picture lock. The editor writes the cut while this gate is closed.
+# Sound waits until Ron approves it.
+EDIT_STAGE = "edit"
+
 # A dailies call is an estimate. It is checked against the fix-loop ceiling and not charged.
 # The dollar amount stays the split already locked. No new bucket is added.
 DAILIES_BILLING = {

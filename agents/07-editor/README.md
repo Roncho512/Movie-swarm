@@ -1,5 +1,7 @@
 # Agent 07: Editor
 
+The studio Editor that the Director calls is `movie_swarm/edit.py`, command `assemble`. It cuts circled takes after the dailies gate and writes an edit decision list. Picture lock is the `edit` gate. Sound waits on it. The commands below are the older assembly program. The Director does not run them.
+
 Video and audio assembly agent for the AI Movie Production Swarm. Takes selected video clips and audio assets from the Sound Designer, assembles them into a rough cut via FFmpeg.
 
 ## Setup

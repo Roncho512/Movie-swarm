@@ -15,6 +15,7 @@
     "fix-loop": true,
     "previs": true,
     "generation": true,
-    "dailies": true
+    "dailies": true,
+    "edit": true
   }
 }
