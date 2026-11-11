@@ -16,6 +16,7 @@
     "previs": true,
     "generation": true,
     "dailies": true,
-    "edit": true
+    "edit": true,
+    "sound": true
   }
 }

@@ -53,13 +53,26 @@ DAILIES_STAGE = "dailies"
 # Sound waits until Ron approves it.
 EDIT_STAGE = "edit"
 
+# The cue sheet can be written while this gate is closed.
+# Color and mix wait until Ron approves it. That stage is not built here.
+SOUND_STAGE = "sound"
+
+# The Composer bills against the Sound line, which is the sound-designer allocation.
+SOUND_BILLING = {
+    "composer": "sound-designer",
+}
+
 # A dailies call is an estimate. It is checked against the fix-loop ceiling and not charged.
 # The dollar amount stays the split already locked. No new bucket is added.
 DAILIES_BILLING = {
     "dailies": "fix-loop",
 }
 
-CALLABLE = PICTURE_CREW + PHASE2_CREW + DAILIES_CREW
+# The Composer spots music onto the locked cut. The cue sheet is the review,
+# so this call does not wait on the sound gate.
+SOUND_CREW = ("composer",)
+
+CALLABLE = PICTURE_CREW + PHASE2_CREW + DAILIES_CREW + SOUND_CREW
 
 PREP_STAGES = (
     "director",

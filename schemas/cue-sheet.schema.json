@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cue-sheet.schema.json",
+  "title": "Cue Sheet",
+  "description": "The Sound Designer and the Composer spot cues onto a picture-locked cut. JSON is the source of truth. The sound gate stays unapproved until Ron says so. This file does not name a film.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "production_id",
+    "kind",
+    "created_at",
+    "cut_runtime_seconds",
+    "sync_tolerance_seconds",
+    "ready_for_sound_approval",
+    "sound_approved",
+    "spent_usd",
+    "cut_source",
+    "sources",
+    "cues",
+    "sync",
+    "continuity",
+    "unplaced",
+    "budget",
+    "render",
+    "models",
+    "draft_method"
+  ],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "kind": { "type": "string", "const": "cue-sheet" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "cut_runtime_seconds": { "type": "number", "minimum": 0 },
+    "sync_tolerance_seconds": {
+      "type": "number",
+      "minimum": 0,
+      "description": "How far an effect may sit from the shot it is tied to. A production file can set it. Otherwise it is half a second."
+    },
+    "ready_for_sound_approval": {
+      "type": "boolean",
+      "description": "True only when every cue is inside the cut, no cue names a missing shot, effects land within the sync tolerance, and prop sounds stay with the shots that show the prop."
+    },
+    "sound_approved": {
+      "type": "boolean",
+      "description": "False until Ron approves the sound gate. This file does not approve itself."
+    },
+    "spent_usd": { "type": "number", "const": 0 },
+    "cut_source": { "type": "string", "minLength": 1 },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["edit", "sound_prompts", "score_brief", "props"],
+      "properties": {
+        "edit": { "type": "string", "minLength": 1 },
+        "sound_prompts": { "type": ["string", "null"] },
+        "score_brief": { "type": ["string", "null"] },
+        "props": { "type": ["string", "null"] }
+      }
+    },
+    "cues": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/cue" }
+    },
+    "sync": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "continuity": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "unplaced": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "budget": { "$ref": "#/$defs/budget" },
+    "render": { "$ref": "#/$defs/render" },
+    "models": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sound-designer", "composer"],
+      "properties": {
+        "sound-designer": { "type": "string" },
+        "composer": { "type": "string" }
+      }
+    },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic"] }
+  },
+  "$defs": {
+    "cue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cue_id",
+        "type",
+        "start_seconds",
+        "end_seconds",
+        "shot_ids",
+        "prompt",
+        "description",
+        "source",
+        "prop_id",
+        "role",
+        "model"
+      ],
+      "properties": {
+        "cue_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "type": { "type": "string", "enum": ["dialogue", "sfx", "foley", "ambience", "music"] },
+        "start_seconds": { "type": "number" },
+        "end_seconds": { "type": "number" },
+        "shot_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "prompt": { "type": "string" },
+        "description": { "type": "string" },
+        "source": { "type": "string", "enum": ["generated", "library", "silence"] },
+        "prop_id": { "type": ["string", "null"] },
+        "role": { "type": "string", "enum": ["sound-designer", "composer"] },
+        "model": { "type": "string" }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cue_id", "status", "kind", "detail"],
+      "properties": {
+        "cue_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "status": { "type": "string", "enum": ["pass", "fail"] },
+        "kind": {
+          "type": "string",
+          "enum": ["clear", "outside-cut", "missing-shot", "tolerance", "prop-sound"]
+        },
+        "detail": { "type": "string", "minLength": 1 }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stage",
+        "locked_usd",
+        "spent_on_stage_usd",
+        "estimated_usd",
+        "rate_status",
+        "within_allocation",
+        "models_without_a_rate",
+        "note"
+      ],
+      "properties": {
+        "stage": { "type": "string", "const": "sound-designer" },
+        "locked_usd": { "type": ["number", "null"], "minimum": 0 },
+        "spent_on_stage_usd": { "type": "number", "minimum": 0 },
+        "estimated_usd": { "type": ["number", "null"], "minimum": 0 },
+        "rate_status": { "type": "string", "enum": ["unknown", "priced", "not-charged"] },
+        "within_allocation": { "type": ["boolean", "null"] },
+        "models_without_a_rate": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    },
+    "render": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "dialogue", "effects", "music", "mix", "note"],
+      "properties": {
+        "status": { "type": "string", "enum": ["skipped", "rendered", "failed"] },
+        "dialogue": { "type": ["string", "null"] },
+        "effects": { "type": ["string", "null"] },
+        "music": { "type": ["string", "null"] },
+        "mix": { "type": ["string", "null"] },
+        "note": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "version": "1.5.0",
+  "version": "1.6.0",
   "roles": {
     "line-producer": {
       "provider": "anthropic",
@@ -92,12 +92,24 @@
     "sound-designer": {
       "provider": "elevenlabs",
       "model": "elevenlabs",
-      "source": "agents/06-sound-designer/src/elevenlabs_client.py",
-      "notes": "Dialogue and sound effects pass these model ids. Score uses the ElevenLabs music compose call, which takes no model id.",
+      "source": "movie_swarm/sound.py",
+      "notes": "Dialogue, effects, and score name the generators a paid call would use. Spotting is computed in code from the production's sound prompts. The spot and notes purposes are Claude Haiku 5.5. This build does not call them. A paid call waits on the generation gate.",
       "purposes": {
         "dialogue": "eleven_v3",
         "sfx": "eleven_text_to_sound_v2",
-        "score": "elevenlabs-music-compose"
+        "score": "elevenlabs-music-compose",
+        "spot": "claude-haiku-5-5",
+        "notes": "claude-haiku-5-5"
+      }
+    },
+    "composer": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/sound.py",
+      "notes": "Score spotting is computed in code from the production's score brief. A cheap model may reword the note. This build does not call it. No key is read. A paid music call would use the sound-designer score model, and it waits on the generation gate.",
+      "purposes": {
+        "spot": "claude-haiku-5-5",
+        "notes": "claude-haiku-5-5"
       }
     },
     "editor": {

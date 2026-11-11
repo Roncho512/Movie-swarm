@@ -10,6 +10,19 @@
     "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
     "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
     "note": { "type": "string" },
+    "sync_tolerance_seconds": {
+      "type": "number",
+      "minimum": 0,
+      "description": "How far an effect may sit from the shot it is tied to. When this is absent, spotting uses half a second."
+    },
+    "foley": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/asset" }
+    },
+    "ambience": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/asset" }
+    },
     "sfx": {
       "type": "array",
       "items": { "$ref": "#/$defs/asset" }
@@ -30,7 +43,10 @@
       "required": ["asset_id", "asset_type", "prompt", "dest_path"],
       "properties": {
         "asset_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
-        "asset_type": { "type": "string", "enum": ["sfx", "dialogue", "music", "ambient"] },
+        "asset_type": {
+          "type": "string",
+          "enum": ["sfx", "dialogue", "music", "ambient", "ambience", "foley"]
+        },
         "prompt": { "type": "string" },
         "dest_path": { "type": "string", "minLength": 1 },
         "duration": { "type": "number", "exclusiveMinimum": 0 },
@@ -41,7 +57,10 @@
           "type": "array",
           "items": { "type": "string", "minLength": 1 }
         },
-        "layer_notes": { "type": "string" }
+        "layer_notes": { "type": "string" },
+        "prop_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "source": { "type": "string", "enum": ["generated", "library", "silence"] },
+        "start_offset_seconds": { "type": "number" }
       }
     }
   }

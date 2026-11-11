@@ -76,6 +76,16 @@
         "attributes": {
           "type": "array",
           "items": { "$ref": "#/$defs/attribute" }
+        },
+        "sound": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["prompt"],
+          "description": "The sound this prop makes when it is in frame. The words come from the production.",
+          "properties": {
+            "prompt": { "type": "string", "minLength": 1 },
+            "source": { "type": "string", "enum": ["generated", "library", "silence"] }
+          }
         }
       }
     }

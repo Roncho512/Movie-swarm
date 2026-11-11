@@ -16,6 +16,8 @@ Phase 4 is in review. After generation, every take is reviewed before it can be 
 
 Phase 5 is in review. It is built on the Phase 4 branch, which is not merged. Ron merges Phase 4 first. The Editor assembles the circled takes into a rough cut. An edit decision list is the cut: which take, where it starts and ends, and how it joins the next shot. JSON is the source of truth. A CMX3600 file is a reading copy of the same cut. The editor trims toward the runtime in the production brief and does not invent a shot. A shot with no circled take is a blocker sent back to dailies or generation. Locked props are checked across adjacent cuts. When ffmpeg is installed, a small preview is rendered. When it is not, the edit decision list is still written. Ron approves a new `edit` gate before sound. That approval is picture lock. The proof is Harbor Night plus tiny synthetic clips. Nothing was spent. The Last Marker was not cut.
 
+Phase 6 is in review. It is built on the Phase 5 branch, which is not merged. Ron merges Phase 4, then Phase 5, then this one. After picture lock, the Sound Designer and the Composer spot a cue sheet onto the cut: dialogue, sound effects, foley, ambience, and music. Each cue has a start and end, the shots it belongs to, a prompt, and a source of generated, library, or silence. Music follows `audio/score-brief.json` when the production has one, including the shots that brief leaves silent. A cue has to sit inside the cut. An effect tied to a shot is flagged when it lands outside a short sync tolerance. A prop sound is flagged when that prop is not in the shot. The plan is priced from the rate card against the Sound line. That card has no audio rate, so the price is marked unknown. A paid call waits on the generation gate. When ffmpeg is installed, placeholder stems and a temp mix are rendered. When it is not, the cue sheet is still written. Ron approves a new `sound` gate before color and mix. The proof is Harbor Night plus tiny synthetic audio. Nothing was spent. The Last Marker was not spotted.
+
 Film facts stay in the production folder. The engine does not know that this film's exhaust is on the right, that the watch is on the left wrist, that the bike is a 1965, that the story is 1967, or that the look is Sergio Leone. Those sentences live in `productions/the-last-marker/`. A different film uses its own files. The pilot sound prompts moved out of the sound program and into `productions/the-last-marker/audio/sound-prompts.json`.
 
 The continuity check on the old pilot shot list found 17 missing locks. Each one is the Triumph shown without the locked exhaust phrase. The new storyboard states the locks. No money was spent.
@@ -145,11 +147,27 @@ python3 scripts/line-producer.py --production path/to/a-production --run phase-1
   --stage edit --decision approved --by ron --note "Picture lock."
 ```
 
+Spot sound and score onto that cut. This does not spend. It also waits until you have approved the treatment, the previs package, and the sound designer's own gate. Prompts come from `audio/sound-prompts.json`. Music comes from `audio/score-brief.json` when that file exists. A prop can carry a sound in the prop file. The cue plays only in shots that show the prop.
+
+```bash
+python3 scripts/director.py --production path/to/a-production --run phase-1 --offline dispatch \
+  --agent sound-designer --crew-command spot --estimate 0
+python3 scripts/director.py --production path/to/a-production --run phase-1 --offline dispatch \
+  --agent composer --crew-command spot --estimate 0
+```
+
+Read `sound/cue-sheet.md`. The checklist is `sound/cue-sheet.json`. When ffmpeg is installed, placeholder stems land in `sound/stems/`. A generate call is the paid path. It pauses until you approve the generation gate. This build's client does not call a provider.
+
+```bash
+python3 scripts/line-producer.py --production path/to/a-production --run phase-1 approve-gate \
+  --stage sound --decision approved --by ron --note "Color and mix can start."
+```
+
 The same commands work from the agent folders as `python3 -m src.cli`, with the same flags.
 
 ## What the checks do
 
-`python3 -m pytest tests -q` runs the shared checks. They cover the Phase 0 foundation, the Phase 1 rules, the Phase 2 package, the Phase 3 quote, the Phase 4 dailies review, and the Phase 5 edit: the cap, approvals, the treatment checklist, each screenplay format, the question round trip, a crew call that must pass the Line Producer first, locked props, a continuity check, a camera package, storyboards, an action breakdown, a dry-run generation plan, the generation gate, a prompt that keeps a locked phrase, a circled take, a forbidden prop phrase, a missing file, a shot-list mismatch, the dailies report checklist, the dailies gate in front of the editor, storyboard order, a missing-coverage blocker, a runtime trim, the edit decision list checklist, a locked prop that breaks across a cut, and the edit gate in front of sound. One fixture is The Last Marker. Another is Harbor Night, a tiny second film, so the engine is not proven only on this one. Phase 3, Phase 4, and Phase 5 picture checks use Harbor Night.
+`python3 -m pytest tests -q` runs the shared checks. They cover the Phase 0 foundation, the Phase 1 rules, the Phase 2 package, the Phase 3 quote, the Phase 4 dailies review, the Phase 5 edit, and the Phase 6 cue sheet: the cap, approvals, the treatment checklist, each screenplay format, the question round trip, a crew call that must pass the Line Producer first, locked props, a continuity check, a camera package, storyboards, an action breakdown, a dry-run generation plan, the generation gate, a prompt that keeps a locked phrase, a circled take, a forbidden prop phrase, a missing file, a shot-list mismatch, the dailies report checklist, the dailies gate in front of the editor, storyboard order, a missing-coverage blocker, a runtime trim, the edit decision list checklist, a locked prop that breaks across a cut, the edit gate in front of sound, cues inside the cut, a sync tolerance flag, a prop sound outside the frame, a paid sound call refused while the generation gate is closed, and the Sound line on the rate card. One fixture is The Last Marker. Another is Harbor Night, a tiny second film, so the engine is not proven only on this one. Phase 3, Phase 4, Phase 5, and Phase 6 picture and sound checks use Harbor Night.
 
 Three older agents have their own checks, because each one uses a folder named `src`:
 

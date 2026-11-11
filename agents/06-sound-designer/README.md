@@ -1,5 +1,7 @@
 # Agent 06: Sound Designer
 
+The studio Sound Designer and Composer that the Director calls live in `movie_swarm/sound.py`, command `spot`. After Ron approves picture lock, they write a cue sheet timed to the cut. The Composer reads `audio/score-brief.json`. Placeholder stems are rendered when ffmpeg is installed. A paid call waits on the generation gate. Ron approves a `sound` gate before color and mix. The commands below are the older prompt library. The Director's dry-run still uses them. A run without `--dry-run` is refused.
+
 Audio generation agent for the AI Movie Production Swarm. Generates dialogue, sound effects, ambient audio, and musical score via ElevenLabs. Reads the shot list's `sound_notes` to determine what audio is needed per shot, generates assets, and outputs a structured audio manifest for the Editor agent.
 
 ## Setup

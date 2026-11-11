@@ -1,0 +1,35 @@
+{
+  "version": "1.0.0",
+  "production_id": "harbor-night",
+  "note": "Synthetic prompts for the Harbor Night fixture. The sound program reads this file.",
+  "sync_tolerance_seconds": 0.5,
+  "sfx": [
+    {
+      "asset_id": "dock-water",
+      "asset_type": "sfx",
+      "prompt": "Quiet water against wood.",
+      "dest_path": "sfx/dock-water.wav",
+      "assigned_shots": ["s01-sh01"]
+    }
+  ],
+  "dialogue": [
+    {
+      "asset_id": "ada-line",
+      "asset_type": "dialogue",
+      "prompt": "A short line.",
+      "text": "Hold.",
+      "dest_path": "dialogue/ada-line.wav",
+      "assigned_shots": ["s01-sh01"]
+    }
+  ],
+  "music": [],
+  "ambience": [
+    {
+      "asset_id": "room",
+      "asset_type": "ambient",
+      "prompt": "A quiet room.",
+      "dest_path": "ambience/room.wav",
+      "assigned_shots": ["s01-sh01", "s01-sh02"]
+    }
+  ]
+}

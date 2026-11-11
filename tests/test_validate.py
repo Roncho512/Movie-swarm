@@ -329,6 +329,86 @@ def test_each_schema_accepts_a_minimal_document():
             ],
             "retakes": [],
         },
+        "cue-sheet.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "kind": "cue-sheet",
+            "created_at": "2026-01-01T00:00:00Z",
+            "cut_runtime_seconds": 4,
+            "sync_tolerance_seconds": 0.5,
+            "ready_for_sound_approval": True,
+            "sound_approved": False,
+            "spent_usd": 0,
+            "cut_source": "edit/picture-lock.json",
+            "sources": {
+                "edit": "edit/picture-lock.json",
+                "sound_prompts": None,
+                "score_brief": None,
+                "props": None,
+            },
+            "cues": [
+                {
+                    "cue_id": "line-s01-sh01",
+                    "type": "dialogue",
+                    "start_seconds": 0,
+                    "end_seconds": 4,
+                    "shot_ids": ["s01-sh01"],
+                    "prompt": "A short line.",
+                    "description": "A short line.",
+                    "source": "generated",
+                    "prop_id": None,
+                    "role": "sound-designer",
+                    "model": "eleven_v3",
+                }
+            ],
+            "sync": [
+                {
+                    "cue_id": "line-s01-sh01",
+                    "status": "pass",
+                    "kind": "clear",
+                    "detail": "The cue stays inside the cut.",
+                }
+            ],
+            "continuity": [
+                {
+                    "cue_id": "line-s01-sh01",
+                    "status": "pass",
+                    "kind": "clear",
+                    "detail": "No locked prop sound is on this cue.",
+                }
+            ],
+            "unplaced": [],
+            "budget": {
+                "stage": "sound-designer",
+                "locked_usd": None,
+                "spent_on_stage_usd": 0,
+                "estimated_usd": None,
+                "rate_status": "unknown",
+                "within_allocation": None,
+                "models_without_a_rate": ["eleven_v3"],
+                "note": "The estimate is unknown.",
+            },
+            "render": {
+                "status": "skipped",
+                "dialogue": None,
+                "effects": None,
+                "music": None,
+                "mix": None,
+                "note": "ffmpeg is not installed.",
+            },
+            "models": {"sound-designer": "claude-haiku-5-5", "composer": "claude-haiku-5-5"},
+            "draft_method": "offline-deterministic",
+        },
+        "score-brief.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "tempo_bpm": 72,
+            "instrumentation": ["piano"],
+            "motifs": [
+                {"motif_id": "hold", "description": "A held note.", "shot_ids": ["s01-sh01"]}
+            ],
+            "silence": [{"shot_id": "s01-sh02", "reason": "Leave this shot quiet."}],
+        },
     }
     on_disk = {path.name for path in schemas_dir().glob("*.schema.json")}
     assert on_disk == set(samples)

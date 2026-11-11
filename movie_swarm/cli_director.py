@@ -49,12 +49,13 @@ def main(argv: list[str] | None = None) -> int:
             "cinematographer",
             "stunt-coordinator",
             "dailies",
+            "composer",
         ],
     )
     dispatch.add_argument(
         "--crew-command",
         required=True,
-        choices=["estimate", "dry-run", "plan", "generate", "lock", "check", "package", "boards", "breakdown", "review", "assemble"],
+        choices=["estimate", "dry-run", "plan", "generate", "lock", "check", "package", "boards", "breakdown", "review", "assemble", "spot"],
     )
     dispatch.add_argument("--estimate", type=float, required=True, help="Dollars to check against the cap. An estimate command is usually 0.")
     dispatch.add_argument("--shot-list")
