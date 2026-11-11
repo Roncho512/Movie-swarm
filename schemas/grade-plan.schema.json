@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "grade-plan.schema.json",
+  "title": "Grade Plan",
+  "description": "The Colorist's grade for a picture-locked cut. The base is stated once. A scene adjustment is stated once and applied to the shots in that scene. The color-mix gate stays unapproved until Ron says so. This file does not name a film.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "production_id",
+    "kind",
+    "created_at",
+    "cut_runtime_seconds",
+    "ready_for_color_mix_approval",
+    "color_mix_approved",
+    "spent_usd",
+    "cut_source",
+    "sources",
+    "look_reference",
+    "base",
+    "adjustments",
+    "applied",
+    "consistency",
+    "lut",
+    "render",
+    "budget",
+    "models",
+    "draft_method"
+  ],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "kind": { "type": "string", "const": "grade-plan" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "cut_runtime_seconds": { "type": "number", "minimum": 0 },
+    "ready_for_color_mix_approval": {
+      "type": "boolean",
+      "description": "True when no adjacent shots in the same scene were flagged for brightness or color. A skipped measurement does not block this."
+    },
+    "color_mix_approved": {
+      "type": "boolean",
+      "description": "False until Ron approves the color-mix gate. This file does not approve itself."
+    },
+    "spent_usd": { "type": "number", "const": 0 },
+    "cut_source": { "type": "string", "minLength": 1 },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["edit", "look", "grade"],
+      "properties": {
+        "edit": { "type": "string", "minLength": 1 },
+        "look": { "type": "string", "minLength": 1 },
+        "grade": { "type": ["string", "null"] }
+      }
+    },
+    "look_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["look_name", "summary", "palette", "lighting"],
+      "properties": {
+        "look_name": { "type": "string", "minLength": 1 },
+        "summary": { "type": "string", "minLength": 1 },
+        "palette": { "type": "array", "items": { "type": "string" } },
+        "lighting": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "base": { "$ref": "#/$defs/grade_values" },
+    "adjustments": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/adjustment" }
+    },
+    "applied": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/applied" }
+    },
+    "consistency": { "$ref": "#/$defs/consistency" },
+    "lut": { "type": ["string", "null"] },
+    "render": { "$ref": "#/$defs/render" },
+    "budget": { "$ref": "#/$defs/budget" },
+    "models": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["colorist", "render"],
+      "properties": {
+        "colorist": { "type": "string" },
+        "render": { "type": "string" }
+      }
+    },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic"] }
+  },
+  "$defs": {
+    "grade_values": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["time_of_day", "contrast", "saturation", "warmth", "brightness", "gamma", "source"],
+      "properties": {
+        "time_of_day": { "type": "string", "minLength": 1 },
+        "contrast": { "type": "number" },
+        "saturation": { "type": "number" },
+        "warmth": { "type": "number" },
+        "brightness": { "type": "number" },
+        "gamma": { "type": "number" },
+        "source": { "type": "string", "minLength": 1 }
+      }
+    },
+    "adjustment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adjustment_id",
+        "scope",
+        "scene_id",
+        "shot_id",
+        "shot_ids",
+        "time_of_day",
+        "contrast",
+        "saturation",
+        "warmth",
+        "brightness",
+        "gamma",
+        "note"
+      ],
+      "properties": {
+        "adjustment_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "scope": { "type": "string", "enum": ["scene", "shot"] },
+        "scene_id": { "type": "string", "minLength": 1 },
+        "shot_id": { "type": ["string", "null"] },
+        "shot_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "time_of_day": { "type": "string", "minLength": 1 },
+        "contrast": { "type": "number" },
+        "saturation": { "type": "number" },
+        "warmth": { "type": "number" },
+        "brightness": { "type": "number" },
+        "gamma": { "type": "number" },
+        "note": { "type": "string" }
+      }
+    },
+    "applied": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "shot_id",
+        "scene_id",
+        "adjustment_id",
+        "time_of_day",
+        "contrast",
+        "saturation",
+        "warmth",
+        "brightness",
+        "gamma"
+      ],
+      "properties": {
+        "shot_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "scene_id": { "type": "string", "minLength": 1 },
+        "adjustment_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "time_of_day": { "type": "string", "minLength": 1 },
+        "contrast": { "type": "number" },
+        "saturation": { "type": "number" },
+        "warmth": { "type": "number" },
+        "brightness": { "type": "number" },
+        "gamma": { "type": "number" }
+      }
+    },
+    "consistency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["brightness_tolerance", "color_tolerance", "tolerance_source", "checks"],
+      "properties": {
+        "brightness_tolerance": { "type": "number", "minimum": 0 },
+        "color_tolerance": { "type": "number", "minimum": 0 },
+        "tolerance_source": { "type": "string", "minLength": 1 },
+        "checks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/check" }
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "shot_id",
+        "previous_shot_id",
+        "scene_id",
+        "status",
+        "kind",
+        "brightness_delta",
+        "color_delta",
+        "detail"
+      ],
+      "properties": {
+        "shot_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "previous_shot_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "scene_id": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "enum": ["pass", "fail", "skipped"] },
+        "kind": { "type": "string", "enum": ["clear", "brightness", "color", "both", "unmeasured"] },
+        "brightness_delta": { "type": ["number", "null"] },
+        "color_delta": { "type": ["number", "null"] },
+        "detail": { "type": "string", "minLength": 1 }
+      }
+    },
+    "render": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "preview", "married", "note"],
+      "properties": {
+        "status": { "type": "string", "enum": ["skipped", "rendered", "failed"] },
+        "preview": { "type": ["string", "null"] },
+        "married": { "type": ["string", "null"] },
+        "note": { "type": "string" }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stage", "estimated_usd", "rate_status", "note"],
+      "properties": {
+        "stage": { "type": "string", "const": "editor" },
+        "estimated_usd": { "type": ["number", "null"] },
+        "rate_status": { "type": "string", "enum": ["unknown", "priced", "not-charged"] },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

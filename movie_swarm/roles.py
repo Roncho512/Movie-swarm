@@ -54,12 +54,23 @@ DAILIES_STAGE = "dailies"
 EDIT_STAGE = "edit"
 
 # The cue sheet can be written while this gate is closed.
-# Color and mix wait until Ron approves it. That stage is not built here.
+# Color and mix wait until Ron approves it.
 SOUND_STAGE = "sound"
+
+# The grade and the mix can be written while this gate is closed.
+# Final delivery waits until Ron approves it.
+COLOR_MIX_STAGE = "color-mix"
 
 # The Composer bills against the Sound line, which is the sound-designer allocation.
 SOUND_BILLING = {
     "composer": "sound-designer",
+}
+
+# Color bills against the editor allocation. The mix bills against the Sound line.
+# The dollar amounts stay the split already locked. No new bucket is added.
+COLOR_MIX_BILLING = {
+    "colorist": "editor",
+    "mixer": "sound-designer",
 }
 
 # A dailies call is an estimate. It is checked against the fix-loop ceiling and not charged.
@@ -72,7 +83,11 @@ DAILIES_BILLING = {
 # so this call does not wait on the sound gate.
 SOUND_CREW = ("composer",)
 
-CALLABLE = PICTURE_CREW + PHASE2_CREW + DAILIES_CREW + SOUND_CREW
+# The Colorist and the Mixer write the plans Ron reads at the color-mix gate.
+# The call waits for picture lock and the sound gate. It does not wait on color-mix.
+COLOR_MIX_CREW = ("colorist", "mixer")
+
+CALLABLE = PICTURE_CREW + PHASE2_CREW + DAILIES_CREW + SOUND_CREW + COLOR_MIX_CREW
 
 PREP_STAGES = (
     "director",

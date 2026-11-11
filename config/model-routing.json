@@ -1,5 +1,5 @@
 {
-  "version": "1.6.0",
+  "version": "1.7.0",
   "roles": {
     "line-producer": {
       "provider": "anthropic",
@@ -141,6 +141,26 @@
       "notes": "Dailies watches picture. This build does not call the model. Tests pass a fake vision client. A text file beside a frame can stand in for the description. No key is read.",
       "purposes": {
         "review": "gemini-omni-1.2-flash"
+      }
+    },
+    "colorist": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/color_mix.py",
+      "notes": "The grade is computed in code from the production's look and grade file. A cheap model may reword the note. This build does not call it. ffmpeg applies eq, colorbalance, curves, or a LUT when it is installed. No key is read.",
+      "purposes": {
+        "grade": "claude-haiku-5-5",
+        "notes": "claude-haiku-5-5"
+      }
+    },
+    "mixer": {
+      "provider": "local",
+      "model": "ffmpeg",
+      "source": "movie_swarm/color_mix.py",
+      "notes": "The mix plan is computed in code from the cue sheet and the stems. ffmpeg renders the mix and measures loudness when it is installed. A cheap model, Claude Haiku 5.5, may reword the note. This build does not call it. No key is read.",
+      "purposes": {
+        "mix": "ffmpeg",
+        "notes": "claude-haiku-5-5"
       }
     }
   },

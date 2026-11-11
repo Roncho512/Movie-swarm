@@ -85,10 +85,11 @@ def test_ron_approved_the_storyboard_previs_gate():
 
 
 def test_engine_source_does_not_name_the_sample_film():
-    """Film facts stay out of the engine, including dailies, the edit, and sound.
+    """Film facts stay out of the engine, including dailies, the edit, sound, and color and mix.
 
-    The phase 4 reviewer, the phase 5 editor, and the phase 6 sound stage live
-    under the folders below, so this scan covers them without a separate list.
+    The phase 4 reviewer, the phase 5 editor, the phase 6 sound stage, and the
+    phase 7 color and mix stage live under the folders below, so this scan
+    covers them without a separate list.
     """
     banned = ("leone", "spaghetti", "triumph", "breitling", "baja", "morricone", "1965", "1967")
     roots = [

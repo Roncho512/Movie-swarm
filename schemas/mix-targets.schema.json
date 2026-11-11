@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mix-targets.schema.json",
+  "title": "Mix Targets",
+  "description": "One production's mix levels and loudness target. When this file is absent, the mixer uses EBU R128 for loudness and studio defaults for stem levels. This file does not name a film.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "integrated_lufs": { "type": "number" },
+    "true_peak_dbtp": { "type": "number" },
+    "tolerance_lufs": { "type": "number", "minimum": 0 },
+    "standard": { "type": "string", "minLength": 1 },
+    "citation": { "type": "string", "minLength": 1 },
+    "dialogue_db": { "type": "number" },
+    "effects_db": { "type": "number" },
+    "music_db": { "type": "number" },
+    "duck_db": { "type": "number" },
+    "fade_seconds": { "type": "number", "minimum": 0 }
+  }
+}

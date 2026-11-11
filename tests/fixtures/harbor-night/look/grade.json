@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "production_id": "harbor-night",
+  "scenes": [
+    {
+      "scene_id": "s01",
+      "time_of_day": "night",
+      "contrast": 1.12,
+      "saturation": 0.7,
+      "warmth": -0.28,
+      "brightness": -0.06,
+      "gamma": 0.98,
+      "note": "This scene stays under the available practical light."
+    }
+  ],
+  "shots": [],
+  "lut": null,
+  "consistency": {
+    "brightness": 0.08,
+    "color": 0.08
+  }
+}

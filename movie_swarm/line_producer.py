@@ -17,6 +17,9 @@ from movie_swarm.handoff import read_handoff, write_handoff
 from movie_swarm.money import as_money, money_number
 from movie_swarm.roles import (
     CALLABLE,
+    COLOR_MIX_BILLING,
+    COLOR_MIX_CREW,
+    COLOR_MIX_STAGE,
     DAILIES_BILLING,
     DAILIES_CREW,
     DAILIES_STAGE,
@@ -255,6 +258,7 @@ class LineProducer:
             PHASE2_BILLING.get(stage)
             or DAILIES_BILLING.get(stage)
             or SOUND_BILLING.get(stage)
+            or COLOR_MIX_BILLING.get(stage)
             or stage
         )
         self._require_known_stage(billing)
@@ -513,6 +517,17 @@ class LineProducer:
             lines.append(
                 "Approve or reject the sound gate before color and mix. Read sound/cue-sheet.md."
             )
+        grade_plan = self.production_dir / "color" / "grade-plan.md"
+        mix_plan = self.production_dir / "color" / "mix-plan.md"
+        if (
+            (grade_plan.is_file() or mix_plan.is_file())
+            and is_stage_gated(COLOR_MIX_STAGE, self.config_path)
+            and not self.gate_is_open(COLOR_MIX_STAGE)
+        ):
+            lines.append(
+                "Approve or reject the color-mix gate before final delivery. "
+                "Read color/grade-plan.md and color/mix-plan.md."
+            )
         return lines
 
     def _still_waiting(self) -> bool:
@@ -614,6 +629,26 @@ class LineProducer:
                 return self._pause_gate(
                     EDIT_STAGE,
                     "The edit gate is still closed. Ron has not approved picture lock, so sound was not called.",
+                )
+            return None
+        if stage in COLOR_MIX_CREW:
+            if is_stage_gated(PREVIS_STAGE, self.config_path) and not self.gate_is_open(PREVIS_STAGE):
+                return self._pause_gate(
+                    PREVIS_STAGE,
+                    (
+                        "The previs gate is still closed. Previs is the phase 2 package: props, continuity, "
+                        "camera, storyboards, and stunts. Ron has not reviewed it, so color and mix were not called."
+                    ),
+                )
+            if is_stage_gated(EDIT_STAGE, self.config_path) and not self.gate_is_open(EDIT_STAGE):
+                return self._pause_gate(
+                    EDIT_STAGE,
+                    "The edit gate is still closed. Ron has not approved picture lock, so color and mix were not called.",
+                )
+            if is_stage_gated(SOUND_STAGE, self.config_path) and not self.gate_is_open(SOUND_STAGE):
+                return self._pause_gate(
+                    SOUND_STAGE,
+                    "The sound gate is still closed. Ron has not approved the cue sheet, so color and mix were not called.",
                 )
             return None
         if stage in PHASE2_CREW or stage in DAILIES_CREW:

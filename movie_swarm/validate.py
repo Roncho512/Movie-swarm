@@ -49,6 +49,10 @@ _SCHEMA_BY_FILENAME = {
     "picture-lock.json": "edit-decision-list.schema.json",
     "cue-sheet.json": "cue-sheet.schema.json",
     "score-brief.json": "score-brief.schema.json",
+    "grade.json": "grade.schema.json",
+    "grade-plan.json": "grade-plan.schema.json",
+    "mix-plan.json": "mix-plan.schema.json",
+    "mix-targets.json": "mix-targets.schema.json",
 }
 
 _QUESTIONS_ROUND = re.compile(r"^questions-round-\d+\.json$")
