@@ -53,6 +53,10 @@ When you're debugging why Shot 14 has the wrong lighting, you need to trace the 
 | `grade-plan.schema.json` | The Colorist's grade. A base for the whole cut, and one adjustment per scene. |
 | `mix-targets.schema.json` | One production's stem levels and loudness target. Optional. EBU R128 is the default. |
 | `mix-plan.schema.json` | The Re-recording Mixer's levels, dialogue ducking, scene fades, and loudness check. |
+| `delivery-spec.schema.json` | One production's delivery request: master size, variants, poster shot, captions, and QC tolerances. |
+| `delivery-plan.schema.json` | The Post Supervisor's plan. Sizes come from the spec, or from a cited platform default. |
+| `qc-report.schema.json` | Pass, fail, or skipped for each delivery check. |
+| `delivery-manifest.schema.json` | Files, SHA-256 checksums, spend against the cap, the stage split, and every gate record. |
 | `continuity-report.schema.json` | QA findings with issue routing. Drives the feedback loop. |
 | `run-state.schema.json` | One production run: stage, status, artifacts, and spend against the cap. |
 | `gate-config.schema.json` | Review switches and the film budget cap. |

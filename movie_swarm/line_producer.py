@@ -21,6 +21,9 @@ from movie_swarm.roles import (
     COLOR_MIX_CREW,
     COLOR_MIX_STAGE,
     DAILIES_BILLING,
+    DELIVERY_BILLING,
+    DELIVERY_CREW,
+    DELIVERY_STAGE,
     DAILIES_CREW,
     DAILIES_STAGE,
     EDIT_STAGE,
@@ -259,6 +262,7 @@ class LineProducer:
             or DAILIES_BILLING.get(stage)
             or SOUND_BILLING.get(stage)
             or COLOR_MIX_BILLING.get(stage)
+            or DELIVERY_BILLING.get(stage)
             or stage
         )
         self._require_known_stage(billing)
@@ -345,7 +349,20 @@ class LineProducer:
         self.record["gate_decisions"].append(item)
         self.record["schedule"][stage] = "approved" if decision == "approved" else "rejected"
         self._close_gate_requests(stage, decision, by, note)
-        if decision == "approved":
+        if decision == "approved" and stage == DELIVERY_STAGE:
+            from movie_swarm.delivery import mark_delivered
+
+            stamped = mark_delivered(
+                self.production_dir,
+                by=by,
+                note=note,
+                decided_at=item["decided_at"],
+            )
+            self.run.data["status"] = "completed"
+            self.run.data["stage"] = DELIVERY_STAGE
+            who = "Ron" if by.casefold() == "ron" else by
+            message = f"{who} approved the delivery gate. The film is delivered. {stamped}"
+        elif decision == "approved":
             self.run.data["status"] = "running" if not self._still_waiting() else "waiting-for-review"
             message = f"Ron approved the {stage} gate."
         else:
@@ -528,6 +545,17 @@ class LineProducer:
                 "Approve or reject the color-mix gate before final delivery. "
                 "Read color/grade-plan.md and color/mix-plan.md."
             )
+        manifest = self.production_dir / "delivery" / "delivery-manifest.json"
+        pointer = self.production_dir / "delivery" / "location.json"
+        if (
+            (manifest.is_file() or pointer.is_file())
+            and is_stage_gated(DELIVERY_STAGE, self.config_path)
+            and not self.gate_is_open(DELIVERY_STAGE)
+        ):
+            lines.append(
+                "Approve or reject the delivery gate to mark the film delivered. "
+                "Read the delivery manifest and the QC report."
+            )
         return lines
 
     def _still_waiting(self) -> bool:
@@ -649,6 +677,24 @@ class LineProducer:
                 return self._pause_gate(
                     SOUND_STAGE,
                     "The sound gate is still closed. Ron has not approved the cue sheet, so color and mix were not called.",
+                )
+            return None
+        if stage in DELIVERY_CREW:
+            if is_stage_gated(PREVIS_STAGE, self.config_path) and not self.gate_is_open(PREVIS_STAGE):
+                return self._pause_gate(
+                    PREVIS_STAGE,
+                    (
+                        "The previs gate is still closed. Previs is the phase 2 package: props, continuity, "
+                        "camera, storyboards, and stunts. Ron has not reviewed it, so final delivery was not called."
+                    ),
+                )
+            if is_stage_gated(COLOR_MIX_STAGE, self.config_path) and not self.gate_is_open(COLOR_MIX_STAGE):
+                return self._pause_gate(
+                    COLOR_MIX_STAGE,
+                    (
+                        "The color-mix gate is still closed. Ron has not approved the grade and the mix, "
+                        "so final delivery was not called."
+                    ),
                 )
             return None
         if stage in PHASE2_CREW or stage in DAILIES_CREW:

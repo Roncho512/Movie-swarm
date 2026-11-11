@@ -18,6 +18,7 @@
     "dailies": true,
     "edit": true,
     "sound": true,
-    "color-mix": true
+    "color-mix": true,
+    "delivery": true
   }
 }

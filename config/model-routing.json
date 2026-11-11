@@ -1,5 +1,5 @@
 {
-  "version": "1.7.0",
+  "version": "1.8.0",
   "roles": {
     "line-producer": {
       "provider": "anthropic",
@@ -161,6 +161,18 @@
       "purposes": {
         "mix": "ffmpeg",
         "notes": "claude-haiku-5-5"
+      }
+    },
+    "post-supervisor": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/delivery.py",
+      "notes": "Packaging is computed in code from the production's delivery spec. QC is a local technical pass and does not call the QA program's model. A cheap model may reword a note. This build does not call it. ffmpeg renders when it is installed. No key is read.",
+      "purposes": {
+        "package": "claude-haiku-5-5",
+        "notes": "claude-haiku-5-5",
+        "render": "ffmpeg",
+        "qc": "local"
       }
     }
   },

@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from movie_swarm.color_mix import run_color_mix
+from movie_swarm.delivery import run_delivery
 from movie_swarm.dailies import run_dailies
 from movie_swarm.edit import run_edit
 from movie_swarm.generation import run_picture
@@ -102,6 +103,9 @@ _COMMANDS = {
     "mixer": {
         "commands": {"mix": True},
     },
+    "post-supervisor": {
+        "commands": {"deliver": True},
+    },
 }
 
 _PHASE2_OUTPUTS = {
@@ -181,6 +185,8 @@ def dispatch_call(
         runner = lambda current: run_color_mix(producer, current)
     elif handler is None and call.agent == "mixer" and call.command == "mix":
         runner = lambda current: run_color_mix(producer, current)
+    elif handler is None and call.agent == "post-supervisor" and call.command == "deliver":
+        runner = lambda current: run_delivery(producer, current)
     else:
         runner = handler or default_handler
     try:

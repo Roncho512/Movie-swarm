@@ -12,6 +12,7 @@ from pathlib import Path
 from movie_swarm.director import Director, DirectorError
 from movie_swarm.dispatch import CrewCall
 from movie_swarm.llm import client_from_environment
+from movie_swarm.studio import StudioError, run_studio
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -52,12 +53,13 @@ def main(argv: list[str] | None = None) -> int:
             "composer",
             "colorist",
             "mixer",
+            "post-supervisor",
         ],
     )
     dispatch.add_argument(
         "--crew-command",
         required=True,
-        choices=["estimate", "dry-run", "plan", "generate", "lock", "check", "package", "boards", "breakdown", "review", "assemble", "spot", "grade", "mix"],
+        choices=["estimate", "dry-run", "plan", "generate", "lock", "check", "package", "boards", "breakdown", "review", "assemble", "spot", "grade", "mix", "deliver"],
     )
     dispatch.add_argument("--estimate", type=float, required=True, help="Dollars to check against the cap. An estimate command is usually 0.")
     dispatch.add_argument("--shot-list")
@@ -65,10 +67,15 @@ def main(argv: list[str] | None = None) -> int:
     dispatch.add_argument("--takes", help="Takes manifest for the dailies reviewer")
     dispatch.add_argument("--note", default="")
 
+    sub.add_parser(
+        "studio",
+        help="Run the offline studio from the treatment through delivery. Stops at each gate. Does not approve and does not spend.",
+    )
+
     args = parser.parse_args(argv)
     try:
         return _run(args)
-    except DirectorError as exc:
+    except (DirectorError, StudioError) as exc:
         print(exc)
         return 1
 
@@ -93,6 +100,21 @@ def _run(args) -> int:
         print(f"Required questions still open: {result['open_required']}")
         print("Status: draft. Ron has not approved it.")
         return 0
+    if args.command == "studio":
+        result = run_studio(args.production, run_id=args.run, auto_approve=False)
+        print(result["message"])
+        print(f"Status: {result['status']}")
+        if result["stopped_at"]:
+            print(f"Stopped at: {result['stopped_at']}")
+        if result["completed"]:
+            print("Completed: " + ", ".join(result["completed"]))
+        print(f"Spent: ${result['spent_usd']:.2f}")
+        print(f"Generation gate: {result['generation_gate']}")
+        if result["status"] == "complete":
+            return 0
+        if result["status"] == "stopped":
+            return 2
+        return 1
     call = CrewCall(
         agent=args.agent,
         command=args.crew_command,
