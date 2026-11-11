@@ -1,0 +1,34 @@
+{
+  "version": "1.0.0",
+  "production_id": "harbor-night",
+  "status": "draft",
+  "characters": [
+    {
+      "character_id": "ada",
+      "name": "Ada",
+      "aliases": [],
+      "locked_spec": "Short hair. No added effect.",
+      "makeup": "none named",
+      "hair": "short",
+      "effects": [],
+      "changes": [
+        {
+          "scene_id": "s01",
+          "makeup": "none named",
+          "hair": "short",
+          "effects": []
+        }
+      ],
+      "attributes": [
+        {
+          "attribute_id": "hair",
+          "label": "hair",
+          "value": "short",
+          "must_be_stated_when_visible": true,
+          "required_phrases": ["short hair"],
+          "forbidden_phrases": ["long hair"]
+        }
+      ]
+    }
+  ]
+}

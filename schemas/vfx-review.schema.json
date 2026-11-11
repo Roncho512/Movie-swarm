@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vfx-review.schema.json",
+  "title": "VFX Review",
+  "description": "The VFX Supervisor's read of the dailies. A circled VFX shot that no longer shows its note is drift. This is not a new gate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id", "verdict", "shots", "checked_at"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "verdict": { "type": "string", "enum": ["clear", "drift"] },
+    "summary": { "type": "string" },
+    "sources": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "shots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["shot_id", "task", "dailies_verdict", "status", "detail"],
+        "properties": {
+          "shot_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "task": { "type": "string", "minLength": 1 },
+          "dailies_verdict": { "type": "string", "minLength": 1 },
+          "status": { "type": "string", "enum": ["pass", "fail", "not-reviewed"] },
+          "detail": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
+    "model": { "type": ["string", "null"] },
+    "checked_at": { "type": "string", "format": "date-time" }
+  }
+}

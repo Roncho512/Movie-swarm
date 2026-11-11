@@ -6,7 +6,7 @@ Movie Swarm takes a screenplay and works toward a finished short video. A treatm
 
 Ron is the executive producer. He reviews at the gates. A gate is an on/off switch for one stage. While the switch is on, that stage waits for Ron. The Line Producer records his yes or no. The Director has the creative calls, and cannot approve itself.
 
-Film facts stay in the production folder. The studio code, the agent instructions, the schemas, and the defaults do not name a film's props, years, or look. The Prop Master and the Script Supervisor read whatever hero props and locked attributes a production defines. The Cinematographer builds a camera package from that production's look file, or from the treatment when no lenses were named. Harbor Night, a tiny fixture under `tests/fixtures/`, uses a scarf and a documentary look. The same code runs it. This rule is D30.
+Film facts stay in the production folder. The studio code, the agent instructions, the schemas, and the defaults do not name a film's props, years, or look. The Prop Master and the Script Supervisor read whatever hero props and locked attributes a production defines. Wardrobe and makeup use the same kind of lock when the production defines them. The Cinematographer builds a camera package from that production's look file, or from the treatment when no lenses were named. Harbor Night, a tiny fixture under `tests/fixtures/`, uses a scarf and a documentary look. The same code runs it. This rule is D30.
 
 ## Where it runs
 
@@ -26,6 +26,7 @@ Generation runs on provider servers, not on the laptop that holds the repo. Vide
 | `agents/04-cinematographer/` | Camera package and storyboard. The program is in `movie_swarm/`. |
 | `agents/05-production/` through `09-fix-loop/` | Coded crew: video, sound, edit, QA, and the fix loop. |
 | `agents/10-script-supervisor/`, `11-prop-master/`, `12-stunt-coordinator/` | Phase 2 roles. The programs are in `movie_swarm/`. |
+| `agents/13-assistant-director/` through `18-vfx-supervisor/` | Phase 8.6 roles: schedule, lighting, grip, wardrobe, makeup, and VFX. The programs are in `movie_swarm/`. |
 | `movie_swarm/` | Shared code: checklists, the run record, gates, money, the Director, the Line Producer, the phase 2 package, the generation quote, the dailies review, the edit, sound and score, color and mix, delivery, the offline studio run, and the live provider gate. |
 | `config/` | Gates, the $500 cap, model names, and the asset root. |
 | `schemas/` | The checklists. |
@@ -108,9 +109,9 @@ Gate file, if you prefer a file to flags:
 
 A spend that would break a ceiling writes `runs/<run-id>/requests/req-001.json`. Approve or reject it with `decide`. Approving a real spend books the money, even if it is past the cap. That overage stays visible in the status. Approving a dry-run hold does not book money. It allows that one checked call.
 
-Crew the Director can call: `prop-master`, `script-supervisor`, `cinematographer`, `stunt-coordinator`, `production`, `sound-designer`, `composer`, `editor`, `qa`, `fix-loop`, `dailies`, `colorist`, `mixer`, `post-supervisor`. The Director command `studio`, and `scripts/studio.py`, walk those calls from the treatment through delivery and stop at each closed gate. They do not approve a gate. A test may pass `auto_approve=True` to `run_studio`. That records the approver as `test-auto-approve`. The command line does not pass it. The generation gate stays closed either way.
+Crew the Director can call: `prop-master`, `script-supervisor`, `cinematographer`, `stunt-coordinator`, `costume-designer`, `makeup-hair`, `gaffer`, `key-grip`, `assistant-director`, `vfx-supervisor`, `production`, `sound-designer`, `composer`, `editor`, `qa`, `fix-loop`, `dailies`, `colorist`, `mixer`, `post-supervisor`. The Director command `studio`, and `scripts/studio.py`, walk those calls from the treatment through delivery and stop at each closed gate. They do not approve a gate. A test may pass `auto_approve=True` to `run_studio`. That records the approver as `test-auto-approve`. The command line does not pass it. The generation gate stays closed either way.
 
-Phase 2 commands are `lock`, `check`, `package`, `boards`, and `breakdown`. They read the approved treatment. They write files. They do not require the previs gate to be open already, because those files are what Ron reviews. Ron approved that gate for The Last Marker on 2026-11-10. The estimate is checked against an existing ceiling in the locked split and is not charged.
+Phase 2 commands are `lock`, `check`, `package`, `boards`, `breakdown`, `plan`, `schedule`, and `review` for the VFX pass that reads dailies. They read the approved treatment. They write files. They do not require the previs gate to be open already, because those files are what Ron reviews. Ron approved that gate for The Last Marker on 2026-11-10. The estimate is checked against an existing ceiling in the locked split and is not charged.
 
 Picture commands are `estimate`, `dry-run`, `plan`, and `generate`. Estimate and dry-run are the older local price check. A plan is the generation quote. It waits until Ron has approved the treatment, the previs gate, and that stage, and it does not spend. Generate is the paid path. It also waits for the generation gate. It calls fal only when the Director command also passes `--live`. The Line Producer command `test-shot` is the one-shot version of that call. The dailies command is `review`. It reads a takes manifest and writes the report. It waits for the treatment and the previs gate. It does not wait for its own gate, because the report is the review. The editor command `assemble` writes the cut. It waits for the treatment, the previs gate, the editor's own gate, and the dailies gate. It does not wait for the edit gate, because the cut is the review. The older editor dry-run is still only routed. QA and the fix loop are routed and named. Their commands are not run here. Sound waits for the edit gate, which is picture lock. The sound designer and the composer command `spot` writes the cue sheet. It waits for the treatment, the previs gate, the sound designer's gate, and the edit gate. It does not wait for the sound gate, because the sheet is the review. `generate` is the paid path. It also waits for the generation gate. The older sound dry-run is still the local prompt check. The Composer's estimate is checked against the sound-designer allocation, which is the Sound line. The colorist command `grade` and the mixer command `mix` write the finishing plans. They wait for the treatment, the previs gate, the edit gate, and the sound gate. They do not wait for the color-mix gate, because the plans are the review. The Post Supervisor command `deliver` writes the package. It waits for the color-mix gate. It does not wait for the delivery gate, because the package is the review. Approving that gate stamps the manifest.
 
@@ -140,9 +141,9 @@ Hands off to: the Script Supervisor and the Cinematographer, through that locked
 
 ## Script Supervisor
 
-Inputs: the locked hero props, the treatment scenes, `storyboard/shot-list.json` when it exists, and `shot-lists/shot-list.json` when it exists.
+Inputs: the locked hero props, `wardrobe/costume-lock.json` when it exists, `makeup/makeup-lock.json` when it exists, the treatment scenes, `storyboard/shot-list.json` when it exists, and `shot-lists/shot-list.json` when it exists.
 
-Outputs: `continuity/continuity-check.json`. A finding is a contradiction (a forbidden phrase) or a missing lock (a shot shows the prop and never states a required phrase). The phrases come from the prop file.
+Outputs: `continuity/continuity-check.json`. A finding is a contradiction (a forbidden phrase) or a missing lock (a shot shows the prop or the person and never states a required phrase). The phrases come from those locked files.
 
 Hands off to: Ron, at the previs gate. This is not the QA report. QA reads a cut, later.
 
@@ -160,7 +161,55 @@ Inputs: `action_and_stunt_beats` on the approved treatment.
 
 Outputs: `stunts/action-breakdown.json`. Each beat becomes shots. A beat that is not physically possible is marked. The safety line is the same for every film: one movement per shot, no real impact, no real fall, no real fire.
 
-Hands off to: the Cinematographer and production, through that breakdown. Does not add a beat the treatment does not name.
+Hands off to: the Cinematographer and production, through that breakdown. Does not add a beat the treatment does not name. The Assistant Director reads the same file and flags the shots that match a beat.
+
+## Costume Designer
+
+Inputs: `wardrobe/costume-definitions.json` when the production has one, otherwise a wardrobe line on the approved treatment.
+
+Outputs: `wardrobe/costume-lock.json`, checked against `costume-lock.schema.json`, and a short Markdown note. Each character has a garment, a color, a condition, and a change for each scene that shows them. Required and forbidden phrases travel with the lock, the same shape the Prop Master uses.
+
+Hands off to: the Script Supervisor and the Assistant Director, through that locked file. Does not invent a garment.
+
+## Makeup and Hair
+
+Inputs: `makeup/makeup-definitions.json` when the production has one, otherwise a makeup or hair line on the approved treatment.
+
+Outputs: `makeup/makeup-lock.json`, checked against `makeup-lock.schema.json`. Makeup, hair, and effects (dirt, sweat, wounds, aging, or whatever the production named) are locked by scene.
+
+Hands off to: the Script Supervisor and the Dailies Reviewer, through that locked file. Does not invent an effect.
+
+## Gaffer
+
+Inputs: the camera package, `look/look.json` when the production has one, the shot list, and the scenes.
+
+Outputs: `lighting/lighting-plan.json`, checked against `lighting-plan.schema.json`. Each scene has a key, a fill, practicals, a time of day, a color temperature, a contrast ratio, and a prompt note. A value the production did not state is `not named`. Shots in one scene that name a different time of day, or that do not share one lighting note, are flagged.
+
+Hands off to: the Key Grip and production, through that plan.
+
+## Key Grip
+
+Inputs: the shot list, the camera package, and the lighting plan.
+
+Outputs: `grip/grip-plan.json`, checked against `grip-plan.schema.json`. Each shot names a support (sticks, dolly, crane, handheld, steadicam, head, or the movement left as written) and a rigging note taken from the gaffer. When the camera package names one support and the shot list names another, the shot list wins and the row says they disagree.
+
+Hands off to: production, through that plan.
+
+## Assistant Director
+
+Inputs: the shot list, the scene manifest when the production has one (otherwise the treatment scenes), the stunt breakdown, and the lighting plan.
+
+Outputs: `schedule/shooting-schedule.json`, checked against `shooting-schedule.schema.json`. It is the call sheet. Shots stay in storyboard order. Days group by location. Setups group by scene, time of day, and the gaffer's source. Each shot lists cast and props. A shot that matches a stunt beat carries that beat's safety line.
+
+Hands off to: production, through that schedule. Does not add a gate.
+
+## VFX Supervisor
+
+Inputs: the shot list, `vfx/vfx-needs.json` when the production has one, and, for the review, `dailies/dailies-report.json`.
+
+Outputs: `vfx/vfx-breakdown.json`, checked against `vfx-breakdown.schema.json`. Each row is a shot, a task, a method, and a risk. A shot is included when the needs file names it, or when the shot's own text names an effect. Turnover notes are addressed to the editor and the colorist. The editor's reading copy and the colorist's reading copy quote those notes when the breakdown exists. `vfx/vfx-review.json` compares the circled takes with the breakdown.
+
+Hands off to: the editor and the colorist, through the turnover notes. Hands off to production, through the breakdown. The review does not add a gate.
 
 ## Production
 
@@ -184,7 +233,7 @@ The verdict is one of three words. Circle means the take can be cut. Retake mean
 
 Four checks:
 
-- Continuity uses the same locked phrases as the Prop Master and the Script Supervisor. The shot list says which props are in frame. The description of the picture must include a required phrase and must not include a forbidden phrase. The description comes from a vision client. Tests pass a fake client. With no client, a text file beside the frame is the description. If neither is there, the description is empty and a required phrase cannot pass. No model is called.
+- Continuity uses the same locked phrases as the Prop Master and the Script Supervisor. The shot list says which props are in frame, and which people are in frame. Wardrobe and makeup use that same check when a lock file exists. The description of the picture must include a required phrase and must not include a forbidden phrase. The description comes from a vision client. Tests pass a fake client. With no client, a text file beside the frame is the description. If neither is there, the description is empty and a required phrase cannot pass. No model is called.
 - Shot match compares that description with the shot list: the framing word, the subject, and, for a clip, the duration. Duration matches when it is within half a second or 20 percent of the shot length, whichever is larger, and only when ffprobe could read it.
 - Look match compares the description with phrases in `look/look.json`. A film with no look file skips this check.
 - Technical checks need no paid call. The file must exist and must not be empty. When ffprobe is installed it reads duration, size, and frame rate. When ffmpeg is installed, a black stretch of half a second or more is a retake, and a frozen clip is a retake only if the shot list asked for camera movement. A static hold is not a freeze. If those tools are missing, or cannot read the file, that part is skipped and the file check still stands.
@@ -219,7 +268,7 @@ Outputs: `edit/rough-cut.json`, checked against `edit-decision-list.schema.json`
 
 The order is the storyboard animatic. The editor does not invent a shot. It trims a long cut toward the target runtime and reports the over or the under. It does not pad a short cut. The tolerance is one second or ten percent of the target, whichever is larger, unless the editing-style file sets `runtime_tolerance_seconds`. A shot with no circled take is a missing-coverage blocker. A retake is routed to generation. Anything else goes back to dailies.
 
-Adjacent shots in the cut are checked with the same locked phrases the Prop Master and the Script Supervisor use. The text is the shot description plus the dailies notes. A locked prop that changes across the cut is flagged. The shots stay in the cut. The flag blocks picture lock.
+Adjacent shots in the cut are checked with the same locked phrases the Prop Master and the Script Supervisor use. The text is the shot description plus the dailies notes. A locked prop, a locked garment, or locked makeup that changes across the cut is flagged. The shots stay in the cut. The flag blocks picture lock.
 
 When ffmpeg is installed, the editor renders `edit/rough-cut.mp4` at 160 by 90. When it is not, the preview is skipped and the edit decision list is still written. The assembly tool is ffmpeg. A notes model is named and not called. Nothing is spent.
 
@@ -281,7 +330,7 @@ Hands off to: Ron, at the delivery gate. That approval is the film delivered.
 
 `scripts/studio.py`, and the Director command `studio`, walk one production from the treatment through delivery. The default stops at the first gate Ron has not approved. Run it again after that approval. The order of stops is treatment, previs, production, dailies, editor, edit, sound-designer, sound, color-mix, and delivery. The generation gate is not approved by this walk. A quote is written. A paid generate call is not.
 
-When the production has no takes manifest, the walk writes synthetic placeholder clips, or stills when ffmpeg is missing, and a note in `takes/placeholder.txt`. A sidecar text file is the picture description, so dailies can circle a take without a vision model. A production that already has a takes manifest keeps those files.
+The previs step also writes wardrobe, makeup, the lighting plan, the grip plan, the shooting schedule, and the VFX breakdown. After dailies, the same walk writes the VFX review. When the production has no takes manifest, the walk writes synthetic placeholder clips, or stills when ffmpeg is missing, and a note in `takes/placeholder.txt`. A sidecar text file is the picture description, so dailies can circle a take without a vision model. A production that already has a takes manifest keeps those files.
 
 `run_studio(..., auto_approve=True)` is a test harness. It records each approval as `test-auto-approve`. It is not the default. The command line does not set it. It does not approve the generation gate.
 

@@ -1,5 +1,5 @@
 {
-  "version": "1.9.0",
+  "version": "1.10.0",
   "roles": {
     "line-producer": {
       "provider": "anthropic",
@@ -161,6 +161,61 @@
       "purposes": {
         "mix": "ffmpeg",
         "notes": "claude-haiku-5-5"
+      }
+    },
+    "assistant-director": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/assistant_director.py",
+      "notes": "The shooting schedule is computed in code from the shot list, the scenes, and the stunt breakdown. A cheap model may reword the note. This build does not call it. No key is read.",
+      "purposes": {
+        "schedule": "claude-haiku-5-5"
+      }
+    },
+    "gaffer": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/gaffer.py",
+      "notes": "The lighting plan is copied from the camera package and the look. A cheap model may reword the note. This build does not call it. No key is read. No color temperature is invented.",
+      "purposes": {
+        "plan": "claude-haiku-5-5"
+      }
+    },
+    "key-grip": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/grip.py",
+      "notes": "Support follows the shot list. Rigging follows the gaffer. A cheap model may reword the note. This build does not call it. No key is read.",
+      "purposes": {
+        "plan": "claude-haiku-5-5"
+      }
+    },
+    "costume-designer": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/costume.py",
+      "notes": "Locks the wardrobe the production already defined. A model reply that changes a garment is discarded. Cheap model. No key is read on the offline path.",
+      "purposes": {
+        "lock": "claude-haiku-5-5"
+      }
+    },
+    "makeup-hair": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/makeup.py",
+      "notes": "Locks makeup, hair, and effects the production already defined. A model reply that changes them is discarded. Cheap model. No key is read on the offline path.",
+      "purposes": {
+        "lock": "claude-haiku-5-5"
+      }
+    },
+    "vfx-supervisor": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/vfx.py",
+      "notes": "The breakdown and the dailies review are computed in code from the production's VFX notes and the dailies report. A cheap model may reword the note. This build does not call it. No key is read.",
+      "purposes": {
+        "breakdown": "claude-haiku-5-5",
+        "review": "claude-haiku-5-5"
       }
     },
     "post-supervisor": {

@@ -751,3 +751,66 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: The default test shot on Harbor Night refuses until a routing override names Seedance, or until an endpoint for Gemini is added from a cited source. Nothing is spent either way.
 - Who decided: Cursor cloud agent. Pending Ron's approval at merge.
 
+## D87 — Six prep roles, and no new gate
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: The previs package had a Prop Master, a Script Supervisor, a Cinematographer, and a Stunt Coordinator. A shooting schedule, a lighting plan, camera support, wardrobe, makeup, and a VFX breakdown were not roles yet. D3 already puts a gate on every stage that spends or that hands work to the next paid stage.
+- Decision: Add the Assistant Director, the Gaffer, the Key Grip, the Costume Designer, Makeup and Hair, and the VFX Supervisor. They write their files while the previs gate is closed, the same way the phase 2 package does. The VFX review is written with the dailies report. No new gate is added. The Director calls them through the Line Producer. The calls do not spend.
+- Consequences: `scripts/studio.py` writes the six files before it stops at the previs gate, and it writes the VFX review before it stops at the dailies gate. The generation gate stays closed. Harbor Night is the proof. The Last Marker folder is not changed.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D88 — The new roles bill against the locked split
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D28 locked the $500 split. The new roles were not given their own dollars. A dry run is checked and not charged, the same way D32 checks the phase 2 estimates.
+- Decision: The Assistant Director is checked against the line producer allocation ($5). Scheduling is admin. The Gaffer and the Key Grip are checked against the cinematographer allocation ($10). The Costume Designer and Makeup and Hair are checked against the art director allocation ($25). The VFX Supervisor, including the dailies review, is checked against the editor allocation ($15). The breakdown and the turnover are notes for the editor and the colorist, so the review stays on that same line instead of the fix-loop retake reserve. No new line is added. The locked amounts stay Production $270, Sound $55, Fix loop $50, QA $45, Art $25, Director $20, Editor $15, Cinematographer $10, Screenwriter $5, Line Producer $5.
+- Consequences: A $0 document pass fits. A larger estimate pauses on that ceiling. The split is unchanged. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D89 — Wardrobe and makeup use the prop lock
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D11 and D33 lock a prop with required phrases and forbidden phrases. A coat or a haircut can drift the same way, and the checker must not know which film it is reading.
+- Decision: Costume definitions live in `wardrobe/costume-definitions.json`. Makeup definitions live in `makeup/makeup-definitions.json`. The lock copies garment, color, condition, makeup, hair, effects, and the change by scene. Phrases are checked the way props are: a forbidden phrase is a contradiction, and a shot that shows the person and never states a required phrase is a missing lock. The Script Supervisor reads the locked files. Dailies and the edit use the same check when the shot lists the person. A production with no file gets no invented garment and no invented effect.
+- Consequences: Harbor Night locks a coat and short hair from its own files. A shot that says the coat is light, or the hair is long, is drift. The engine does not name a garment of its own.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D90 — Light and grip copy the camera plan
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D34 copies lenses and lighting from the production's look. A gaffer plan that invented a color temperature, or a grip plan that invented a rig, would put one film's light into the next.
+- Decision: The Gaffer copies key, fill, practicals, time of day, color temperature, and contrast ratio from the camera package, the look, and the scene heading. A number or a ratio the production did not write is `not named`. The prompt note is those same words. Shots in one scene that disagree about the time of day are flagged. The Key Grip reads the shot's movement for the support. Rigging quotes the gaffer's practicals and fill, and does not add a source. If the camera package names one support and the shot list names another, the shot list wins and the row says they disagree.
+- Consequences: Harbor Night's plan says night and the fluorescent practical from its look file. It does not store a Kelvin number. A static shot is sticks even when the package says handheld, and the note says so. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D91 — The call sheet groups the shot list and flags stunts
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: Production needs an order: which shots share a place, a setup, a cast, and a prop, and which of them are safety beats. That order should not be a new approval.
+- Decision: The Assistant Director reads the shot list, the scene manifest when the production has one, otherwise the treatment scenes, the lighting plan, and the stunt breakdown. The schedule keeps storyboard order. Days group by location. Setups group by scene, time of day, and the gaffer's source. A shot whose text matches a stunt beat carries that beat's safety line. The file is `schedule/shooting-schedule.json`. It is handed to production. It does not open the production gate by itself.
+- Consequences: Harbor Night is one night exterior, one setup, and the step onto the dock is flagged from the stunt breakdown. No beat was added. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D92 — VFX is a breakdown, then a dailies read
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: Some shots need compositing. The editor and the colorist need to know which ones before the cut and the grade. D3 does not require a separate gate for a note Ron already reads at previs and at dailies.
+- Decision: `vfx/vfx-needs.json` lists the production's tasks. The breakdown includes a shot when that file names it, or when the shot text itself names an effect. Each row has the task, the method, and the risk. Turnover notes are addressed to the editor and the colorist, and their reading copies quote the notes when the breakdown exists. After dailies, the review checks that a circled VFX shot still shows the note. A miss is drift. The review does not spend and does not add a gate.
+- Consequences: Harbor Night's needs file marks the practical lamp as a composite. A circled take that drops that note is drift. A shot that does not ask for an effect is not given one. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D93 — The new roles use the cheap admin model
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D6 says cheap models for admin. These six roles compute a checklist from files the production already wrote. They are not a writing pass and they are not a picture call.
+- Decision: The Assistant Director, the Gaffer, the Key Grip, the Costume Designer, Makeup and Hair, and the VFX Supervisor use Claude Haiku 5.5. The names are in `config/model-routing.json`. A model reply that changes a locked garment, a locked effect, the schedule, the lighting plan, the grip plan, or the breakdown is discarded. The offline path does not call the model and does not read a key. None of these commands pass `--live`. They cannot bypass the generation gate, the budget, or the key.
+- Consequences: With no key, the files are labeled `offline-deterministic` and still name the model they would have used. Harbor Night's proof spends $0.00. The provider rules from D80 through D86 are unchanged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+

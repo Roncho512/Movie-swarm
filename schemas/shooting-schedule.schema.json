@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "shooting-schedule.schema.json",
+  "title": "Shooting Schedule",
+  "description": "The Assistant Director's call sheet. Shots stay in storyboard order and are grouped by location and setup. Safety flags come from the stunt breakdown.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id", "kind", "days", "safety", "source"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "kind": { "type": "string", "enum": ["shooting-schedule"] },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shots", "scenes", "stunts", "lighting"],
+      "properties": {
+        "shots": { "type": "string", "minLength": 1 },
+        "scenes": { "type": "string", "minLength": 1 },
+        "stunts": { "type": ["string", "null"] },
+        "lighting": { "type": ["string", "null"] }
+      }
+    },
+    "days": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/day" }
+    },
+    "safety": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/safety" }
+    },
+    "shot_count": { "type": "integer", "minimum": 0 },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
+    "model": { "type": ["string", "null"] },
+    "note": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "shot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["order", "shot_id", "scene_id", "cast", "props", "safety"],
+      "properties": {
+        "order": { "type": "integer", "minimum": 1 },
+        "shot_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "scene_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "cast": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "props": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "safety": { "type": "boolean" }
+      }
+    },
+    "setup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["setup_id", "scene_ids", "lighting_setup", "time_of_day", "cast", "props", "shots"],
+      "properties": {
+        "setup_id": { "type": "string", "pattern": "^setup-[0-9]+$" },
+        "scene_ids": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+        },
+        "lighting_setup": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "time_of_day": { "type": "string", "minLength": 1 },
+        "cast": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "props": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "shots": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/shot" }
+        }
+      }
+    },
+    "day": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["day_id", "location", "int_ext", "time_of_day", "setups"],
+      "properties": {
+        "day_id": { "type": "string", "pattern": "^day-[0-9]+$" },
+        "location": { "type": "string", "minLength": 1 },
+        "int_ext": { "type": "string", "minLength": 1 },
+        "time_of_day": { "type": "string", "minLength": 1 },
+        "setups": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/setup" }
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shot_id", "beat_id", "plausible", "note"],
+      "properties": {
+        "shot_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "beat_id": { "type": "string", "minLength": 1 },
+        "stunt_shot_id": { "type": "string" },
+        "plausible": { "type": "boolean" },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

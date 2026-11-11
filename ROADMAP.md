@@ -22,6 +22,8 @@ Phase 8 merged to main on 2026-11-11 via PR https://github.com/Roncho512/Movie-s
 
 Phase 8.5 is in review. The provider clients can call Anthropic, fal, and ElevenLabs. A call is sent only when the generation gate is approved, the estimate fits the stage line and the $500 cap, the key is in the environment, and `--live` is passed. Offline stays the default. The test shot command prepares exactly one picture call and records it. It was not run live. The rate card still has no audio, color, or delivery price, and no fal address for Gemini Omni or Kling. Spent: $0.00 of $500.00.
 
+Phase 8.6 sits on that branch and is not merged. Six prep roles join the previs package: Assistant Director, Gaffer, Key Grip, Costume Designer, Makeup and Hair, and VFX Supervisor. Wardrobe and makeup are locked and checked the way props are. The VFX breakdown is written before the production gate. The VFX review is written with the dailies. No new gate was added. The locked $500 split did not change. The proof is Harbor Night. The Last Marker folder was not changed. Spent: $0.00 of $500.00.
+
 ## Phases
 
 Each studio phase is proven on a synthetic fixture. The Last Marker is not the proof. Its approved previs waits for the last phase.
@@ -38,6 +40,7 @@ Each studio phase is proven on a synthetic fixture. The Last Marker is not the p
 | 7 | Color and mix: a grade plan from the production's look, a mix plan from the cue sheet, loudness against a cited target, and a color-mix gate before final delivery. | Done, merged 2026-11-11, PR #10, merge 82fdbf5. Proven on Harbor Night and synthetic video and audio. No paid call. Spent $0.00 of $500.00. |
 | 8 | Final delivery: a master, variants, a poster, captions, QC, and a manifest, plus an offline studio run that stops at each gate. | Done, merged 2026-11-11, PR #11, merge 3fa56c0. Proven on Harbor Night and synthetic media. No paid call. Spent $0.00 of $500.00. |
 | 8.5 | Provider wiring: real HTTP clients for Anthropic, fal, and ElevenLabs, behind the generation gate, the stage line, the key, and `--live`. Offline stays the default. One test-shot command. | In review. Proven on Harbor Night with a fake HTTP transport. No live call. Spent $0.00 of $500.00. |
+| 8.6 | Crew the previs package was missing: Assistant Director, Gaffer, Key Grip, Costume Designer, Makeup and Hair, and VFX Supervisor. Wardrobe and makeup are checked like props. VFX is broken down before production and reviewed with the dailies. No new gate. No new budget line. | In review, stacked on Phase 8.5. Proven on Harbor Night. No live call. Spent $0.00 of $500.00. The Last Marker folder was not changed. |
 | 9 | First film: the finished studio makes The Last Marker from its approved previs. | Not started |
 
 ## Gates
@@ -83,11 +86,11 @@ These are made. The write-up is in [DECISIONS.md](DECISIONS.md).
 - The older video program still calls Seedance, and QA still calls its current Claude model. The generation pipeline quotes Gemini Omni 1.2 Flash. A live call for that model is refused because the rate card has no fal address for it. Connecting that address is still open, and it still waits on Ron's generation-gate approval and `--live`.
 - Audio, color, and delivery have no published price in this repo. A live call for one of them is refused unless Ron approves a one-call price override.
 
-Phase 1 records technical choices D15 through D22. Phase 2 records D31 through D37. Phase 3 records D42 through D46. Phase 4 records D47 through D51. Phase 5 records D52 through D57. Phase 6 records D58 through D63. Phase 7 records D64 through D70. Phase 8 records D71 through D79. Phase 8.5 records D80 through D86. They are proposals from the build. Ron has not accepted or rejected them in a decision entry. They are not closed.
+Phase 1 records technical choices D15 through D22. Phase 2 records D31 through D37. Phase 3 records D42 through D46. Phase 4 records D47 through D51. Phase 5 records D52 through D57. Phase 6 records D58 through D63. Phase 7 records D64 through D70. Phase 8 records D71 through D79. Phase 8.5 records D80 through D86. Phase 8.6 records D87 through D93. They are proposals from the build. Ron has not accepted or rejected them in a decision entry. They are not closed.
 
 ## What comes next
 
-Ron reviews Phase 8.5. Phases 4 through 8 are merged. He can accept or reject D47 through D86. Merging does not approve a paid run, the dailies gate, the edit gate, the sound gate, the color-mix gate, or the delivery gate on The Last Marker. The generation gate stays closed until he approves it on a run. `--live` was not used.
+Ron reviews Phase 8.5 and Phase 8.6. Phases 4 through 8 are merged. He can accept or reject D47 through D93. Merging does not approve a paid run, the dailies gate, the edit gate, the sound gate, the color-mix gate, or the delivery gate on The Last Marker. The generation gate stays closed until he approves it on a run. `--live` was not used. Phase 8.6 did not add a gate and did not change the locked split.
 
 The next phase is the first film. The Last Marker is made from its approved previs, still inside the $500 cap. Before that run can leave the machine, these are still open:
 

@@ -732,6 +732,71 @@ def test_each_schema_accepts_a_minimal_document():
             "checksum": "SHA-256.",
             "draft_method": "offline-deterministic",
         },
+        "costume-lock.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "status": "locked",
+            "characters": [],
+        },
+        "makeup-lock.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "status": "locked",
+            "characters": [],
+        },
+        "lighting-plan.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "continuity": "clear",
+            "source": {"camera": None, "look": None, "shots": "storyboard/shot-list.json", "scenes": "treatment/treatment.json"},
+            "scenes": [
+                {
+                    "scene_id": "s01",
+                    "time_of_day": "not named",
+                    "key": "not named",
+                    "fill": "not named",
+                    "practicals": "not named",
+                    "color_temperature": "not named",
+                    "contrast_ratio": "not named",
+                    "prompt_note": "Time of day: not named.",
+                    "shot_ids": [],
+                    "continuity": {"verdict": "clear", "findings": []},
+                }
+            ],
+        },
+        "grip-plan.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "source": {"shots": "storyboard/shot-list.json", "camera": None, "lighting": None},
+            "shots": [],
+        },
+        "shooting-schedule.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "kind": "shooting-schedule",
+            "source": {"shots": "storyboard/shot-list.json", "scenes": "treatment/treatment.json", "stunts": None, "lighting": None},
+            "days": [],
+            "safety": [],
+        },
+        "vfx-needs.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "items": [],
+        },
+        "vfx-breakdown.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "source": {"shots": "storyboard/shot-list.json", "needs": None},
+            "shots": [],
+            "turnover": [],
+        },
+        "vfx-review.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "verdict": "clear",
+            "shots": [],
+            "checked_at": "2026-01-01T00:00:00Z",
+        },
     }
     on_disk = {path.name for path in schemas_dir().glob("*.schema.json")}
     assert on_disk == set(samples)

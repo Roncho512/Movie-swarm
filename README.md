@@ -24,6 +24,8 @@ Phase 8 is on main. It merged on 2026-11-11 in [pull request 11](https://github.
 
 Phase 8.5 wires the provider clients. A provider is the company that makes the picture, the sound, or the text. Anthropic is the text provider. fal is the picture provider. ElevenLabs is the sound provider. A real call is sent only when all four of these are true: the generation gate is approved, the estimate fits the remaining money on that stage line and under the $500 cap, the key for that provider is in the environment, and the command was given `--live`. Offline stays the default. A test shot is one picture call for one shot. The command is on the Line Producer. It was not run live. The rate card still has no price for audio, color, or delivery, and no fal address for Gemini Omni or Kling, so those calls are refused. Spent so far: $0.00 of $500.00. The Last Marker was not generated.
 
+Phase 8.6 adds six prep roles, on top of the Phase 8.5 branch. The Assistant Director writes a shooting schedule and a call sheet from the shot list and the scenes, and flags stunt beats. The Gaffer writes a lighting plan from the camera package. The Key Grip writes camera support and rigging from that plan and the shot list. The Costume Designer and Makeup and Hair lock per-character specs the way the Prop Master locks props. The Script Supervisor, the dailies review, and the edit check those locks for drift. The VFX Supervisor writes a breakdown and turnover notes for the editor and the colorist, then reviews the VFX shots after dailies. No new gate was added. The new roles bill against lines that are already in the locked split. The proof is Harbor Night. Nothing was spent. The Last Marker folder was not changed.
+
 Film facts stay in the production folder. The engine does not know that this film's exhaust is on the right, that the watch is on the left wrist, that the bike is a 1965, that the story is 1967, or that the look is Sergio Leone. Those sentences live in `productions/the-last-marker/`. A different film uses its own files. The pilot sound prompts moved out of the sound program and into `productions/the-last-marker/audio/sound-prompts.json`.
 
 The continuity check on the old pilot shot list found 17 missing locks. Each one is the Triumph shown without the locked exhaust phrase. The new storyboard states the locks. No money was spent.
@@ -85,16 +87,30 @@ Write the phase 2 package. These calls do not spend money. They pause until the 
 python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
   --agent prop-master --crew-command lock --estimate 0
 python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+  --agent costume-designer --crew-command lock --estimate 0
+python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+  --agent makeup-hair --crew-command lock --estimate 0
+python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
   --agent cinematographer --crew-command package --estimate 0
 python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
   --agent cinematographer --crew-command boards --estimate 0
 python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
-  --agent script-supervisor --crew-command check --estimate 0
+  --agent gaffer --crew-command plan --estimate 0
+python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+  --agent key-grip --crew-command plan --estimate 0
 python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
   --agent stunt-coordinator --crew-command breakdown --estimate 0
+python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+  --agent assistant-director --crew-command schedule --estimate 0
+python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+  --agent vfx-supervisor --crew-command breakdown --estimate 0
+python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+  --agent script-supervisor --crew-command check --estimate 0
 ```
 
-Approve the package after you have read the files under `props/`, `continuity/`, `camera/`, `storyboard/`, and `stunts/`.
+Wardrobe definitions, when the production has them, live in `wardrobe/costume-definitions.json`. Makeup and hair live in `makeup/makeup-definitions.json`. VFX notes live in `vfx/vfx-needs.json`. A production with none of those files still gets a lock or a breakdown, and the role does not invent a garment, an effect, or a shot.
+
+Approve the package after you have read the files under `props/`, `wardrobe/`, `makeup/`, `continuity/`, `camera/`, `storyboard/`, `lighting/`, `grip/`, `schedule/`, `stunts/`, and `vfx/`.
 
 ```bash
 python3 scripts/line-producer.py --production productions/the-last-marker --run phase-1 approve-gate \
@@ -132,7 +148,14 @@ python3 scripts/director.py --production path/to/a-production --run phase-1 --of
   --takes path/to/takes-manifest.json
 ```
 
-Read `dailies/dailies-report.md`. Then approve the circled takes. Until you do, the editor does not run.
+Read `dailies/dailies-report.md`. The VFX review reads that report and the breakdown:
+
+```bash
+python3 scripts/director.py --production path/to/a-production --run phase-1 --offline dispatch \
+  --agent vfx-supervisor --crew-command review --estimate 0
+```
+
+Then approve the circled takes. Until you do, the editor does not run. The VFX review does not add a gate.
 
 ```bash
 python3 scripts/line-producer.py --production path/to/a-production --run phase-1 approve-gate \
@@ -223,9 +246,9 @@ python3 scripts/studio.py --production /tmp/harbor-night --run studio-1
 Keep going. Each run stops at the next closed gate and tells you the name. The order is:
 
 1. `treatment`. Read `treatment/treatment.md`. Approving it locks the $500 split.
-2. `previs`. The prop lock, the continuity check, the camera package, the storyboard, and the action breakdown are written first. Then you approve them.
+2. `previs`. The prop lock, wardrobe, makeup, the continuity check, the camera package, the storyboard, the lighting plan, the grip plan, the shooting schedule, the action breakdown, and the VFX breakdown are written first. Then you approve them.
 3. `production`. This lets the generation quote be written. It does not open a paid call.
-4. `dailies`. If the production has no takes manifest, the offline run writes synthetic placeholder clips and says so in `takes/placeholder.txt`. Those are not generated pictures. A real takes file is left alone.
+4. `dailies`. If the production has no takes manifest, the offline run writes synthetic placeholder clips and says so in `takes/placeholder.txt`. Those are not generated pictures. A real takes file is left alone. The VFX review is written with the dailies report.
 5. `editor`. This lets the circled takes be cut.
 6. `edit`. That approval is picture lock. Read `edit/rough-cut.md` first.
 7. `sound-designer`. This lets the cue sheet be spotted.
@@ -272,7 +295,7 @@ Text calls use `ANTHROPIC_API_KEY`. Sound calls use `ELEVENLABS_API_KEY`. The Di
 
 ## What the checks do
 
-`python3 -m pytest tests -q` runs the shared checks. They cover the Phase 0 foundation, the Phase 1 rules, the Phase 2 package, the Phase 3 quote, the Phase 4 dailies review, the Phase 5 edit, the Phase 6 cue sheet, the Phase 7 grade and mix, the Phase 8 delivery package, and the Phase 8.5 provider gate: the cap, approvals, the treatment checklist, each screenplay format, the question round trip, a crew call that must pass the Line Producer first, locked props, a continuity check, a camera package, storyboards, an action breakdown, a dry-run generation plan, the generation gate, a prompt that keeps a locked phrase, a circled take, a forbidden prop phrase, a missing file, a shot-list mismatch, the dailies report checklist, the dailies gate in front of the editor, storyboard order, a missing-coverage blocker, a runtime trim, the edit decision list checklist, a locked prop that breaks across a cut, the edit gate in front of sound, cues inside the cut, a sync tolerance flag, a prop sound outside the frame, a paid sound call refused while the generation gate is closed, the Sound line on the rate card, a grade read from the look, a scene grade stated once, a color mismatch between adjacent shots, dialogue ducking, a loudness miss, the color-mix gate in front of final delivery, a delivery spec read from the production, caption timing, a QC pass, a forced QC fail, a manifest with checksums and spend, the delivery gate, a studio run that stops at each gate unless a test harness approves them, an offline default, a closed generation gate, a missing key, an over-budget call, an unknown price, a ledger estimate and a reported actual, a re-run that does not charge again, a retry and a timeout, and a key that never appears in the saved output. The provider tests use a fake HTTP transport. They do not open a network connection. One fixture is The Last Marker. Another is Harbor Night, a tiny second film, so the engine is not proven only on this one. Phase 3 through Phase 8.5 picture, sound, delivery, and provider checks use Harbor Night. The provider checks do not call The Last Marker.
+`python3 -m pytest tests -q` runs the shared checks. They cover the Phase 0 foundation, the Phase 1 rules, the Phase 2 package, the Phase 3 quote, the Phase 4 dailies review, the Phase 5 edit, the Phase 6 cue sheet, the Phase 7 grade and mix, the Phase 8 delivery package, and the Phase 8.5 provider gate: the cap, approvals, the treatment checklist, each screenplay format, the question round trip, a crew call that must pass the Line Producer first, locked props, a continuity check, a camera package, storyboards, an action breakdown, a dry-run generation plan, the generation gate, a prompt that keeps a locked phrase, a circled take, a forbidden prop phrase, a missing file, a shot-list mismatch, the dailies report checklist, the dailies gate in front of the editor, storyboard order, a missing-coverage blocker, a runtime trim, the edit decision list checklist, a locked prop that breaks across a cut, the edit gate in front of sound, cues inside the cut, a sync tolerance flag, a prop sound outside the frame, a paid sound call refused while the generation gate is closed, the Sound line on the rate card, a grade read from the look, a scene grade stated once, a color mismatch between adjacent shots, dialogue ducking, a loudness miss, the color-mix gate in front of final delivery, a delivery spec read from the production, caption timing, a QC pass, a forced QC fail, a manifest with checksums and spend, the delivery gate, a studio run that stops at each gate unless a test harness approves them, an offline default, a closed generation gate, a missing key, an over-budget call, an unknown price, a ledger estimate and a reported actual, a re-run that does not charge again, a retry and a timeout, a key that never appears in the saved output, a shooting schedule, a lighting plan, a grip plan, locked wardrobe, locked makeup, a VFX breakdown, wardrobe and makeup drift, and a studio run that still stops at each gate. The provider tests use a fake HTTP transport. They do not open a network connection. One fixture is The Last Marker. Another is Harbor Night, a tiny second film, so the engine is not proven only on this one. Phase 3 through Phase 8.5 picture, sound, delivery, and provider checks use Harbor Night. The provider checks do not call The Last Marker.
 
 Three older agents have their own checks, because each one uses a folder named `src`:
 

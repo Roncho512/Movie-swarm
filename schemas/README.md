@@ -71,6 +71,14 @@ When you're debugging why Shot 14 has the wrong lighting, you need to trace the 
 | `camera-package.schema.json` | The Cinematographer's package, copied from that look. |
 | `storyboard.schema.json` | Board prompts and an animatic plan. Images can be left ungenerated. |
 | `action-breakdown.schema.json` | Shot-by-shot action breakdown from the treatment's beats. |
+| `costume-lock.schema.json` | Locked wardrobe: garment, color, condition, and the change by scene. |
+| `makeup-lock.schema.json` | Locked makeup, hair, and effects, including the change by scene. |
+| `lighting-plan.schema.json` | The Gaffer's plan. Unstated values stay `not named`. |
+| `grip-plan.schema.json` | Camera support and rigging for each shot. |
+| `shooting-schedule.schema.json` | The Assistant Director's call sheet. |
+| `vfx-needs.schema.json` | One production's list of effects. |
+| `vfx-breakdown.schema.json` | Task, method, risk, and turnover for the editor and the colorist. |
+| `vfx-review.schema.json` | The VFX read of the dailies. |
 
 ## Versioning
 

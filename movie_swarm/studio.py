@@ -20,7 +20,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from movie_swarm.continuity import load_prop_lock
+from movie_swarm.continuity import load_costume_lock, load_makeup_lock, load_prop_lock
 from movie_swarm.director import Director
 from movie_swarm.dispatch import CrewCall
 from movie_swarm.handoff import write_handoff
@@ -80,6 +80,7 @@ def run_studio(
         completed.append("plan")
         _placeholders(folder)
         _dispatch(director, run_id, "dailies", "review")
+        _dispatch(director, run_id, "vfx-supervisor", "review")
         completed.append("dailies")
         _require_circles(folder)
         stopped = _need(producer, "dailies", auto_approve, completed)
@@ -171,10 +172,16 @@ def _need(producer: LineProducer, gate: str, auto_approve: bool, completed: list
 def _previs(director: Director, run_id: str) -> None:
     for agent, command in (
         ("prop-master", "lock"),
+        ("costume-designer", "lock"),
+        ("makeup-hair", "lock"),
         ("cinematographer", "package"),
         ("cinematographer", "boards"),
-        ("script-supervisor", "check"),
+        ("gaffer", "plan"),
+        ("key-grip", "plan"),
         ("stunt-coordinator", "breakdown"),
+        ("assistant-director", "schedule"),
+        ("vfx-supervisor", "breakdown"),
+        ("script-supervisor", "check"),
     ):
         _dispatch(director, run_id, agent, command)
 
@@ -207,6 +214,8 @@ def _placeholders(folder: Path) -> None:
         raise StudioError("The shot list is empty, so placeholders were not made.")
     look = _read_json(folder / "look" / "look.json")
     lock = load_prop_lock(folder)
+    costume = load_costume_lock(folder)
+    makeup = load_makeup_lock(folder)
     ffmpeg = shutil.which("ffmpeg")
     takes = []
     frames = folder / "frames"
@@ -228,7 +237,7 @@ def _placeholders(folder: Path) -> None:
             dest.write_bytes(_PNG)
             kind = "frame"
             relative = f"frames/{shot_id}.png"
-        text = _placeholder_text(shot, look, lock)
+        text = _placeholder_text(shot, look, lock, costume, makeup)
         Path(str(dest) + ".txt").write_text(text + "\n", encoding="utf-8")
         takes.append(
             {
@@ -277,7 +286,7 @@ def _moving_clip(dest: Path, duration: float) -> None:
         raise StudioError("ffmpeg could not make a placeholder clip.")
 
 
-def _placeholder_text(shot: dict, look: dict | None, lock: dict | None) -> str:
+def _placeholder_text(shot: dict, look: dict | None, lock: dict | None, costume=None, makeup=None) -> str:
     parts = [
         str(shot.get("shot_type") or ""),
         str(shot.get("description") or ""),
@@ -288,6 +297,8 @@ def _placeholder_text(shot: dict, look: dict | None, lock: dict | None) -> str:
         parts.append(str(look.get("summary") or ""))
         parts.append(str(look.get("look_name") or ""))
     parts.extend(_required_phrases(shot, lock))
+    parts.extend(_character_phrases(shot, costume))
+    parts.extend(_character_phrases(shot, makeup))
     return "\n".join(part.strip() for part in parts if part and str(part).strip())
 
 
@@ -304,6 +315,35 @@ def _required_phrases(shot: dict, lock: dict | None) -> list[str]:
             continue
         for attribute in prop.get("attributes") or []:
             if not isinstance(attribute, dict):
+                continue
+            for phrase in attribute.get("required_phrases") or []:
+                text = str(phrase).strip()
+                if text and text not in phrases:
+                    phrases.append(text)
+    return phrases
+
+
+def _character_phrases(shot: dict, lock: dict | None) -> list[str]:
+    if not lock:
+        return []
+    blob = json.dumps(shot).casefold()
+    listed = {
+        str(name).casefold()
+        for name in (shot.get("characters_in_shot") or shot.get("characters") or [])
+        if str(name).strip()
+    }
+    phrases = []
+    for character in lock.get("characters") or []:
+        if not isinstance(character, dict):
+            continue
+        names = [character.get("character_id"), character.get("name"), *(character.get("aliases") or [])]
+        visible = any(name and str(name).casefold() in listed for name in names) or any(
+            name and len(str(name)) >= 2 and str(name).casefold() in blob for name in names
+        )
+        if not visible:
+            continue
+        for attribute in character.get("attributes") or []:
+            if not isinstance(attribute, dict) or not attribute.get("must_be_stated_when_visible"):
                 continue
             for phrase in attribute.get("required_phrases") or []:
                 text = str(phrase).strip()

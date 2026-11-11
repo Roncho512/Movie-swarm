@@ -29,6 +29,12 @@ PHASE2_CREW = (
     "prop-master",
     "cinematographer",
     "stunt-coordinator",
+    "assistant-director",
+    "gaffer",
+    "key-grip",
+    "costume-designer",
+    "makeup-hair",
+    "vfx-supervisor",
 )
 
 # Which locked ceiling a phase 2 estimate is checked against.
@@ -38,6 +44,53 @@ PHASE2_BILLING = {
     "prop-master": "art-director",
     "cinematographer": "cinematographer",
     "stunt-coordinator": "production",
+    "assistant-director": "line-producer",
+    "gaffer": "cinematographer",
+    "key-grip": "cinematographer",
+    "costume-designer": "art-director",
+    "makeup-hair": "art-director",
+    "vfx-supervisor": "editor",
+}
+
+# Who each prep role reads, and who receives the file. The dollars stay in PHASE2_BILLING.
+CREW_MAP = {
+    "assistant-director": {
+        "name": "Assistant Director",
+        "receives_from": [
+            "cinematographer",
+            "stunt-coordinator",
+            "prop-master",
+            "costume-designer",
+            "makeup-hair",
+            "gaffer",
+        ],
+        "hands_to": ["production"],
+    },
+    "gaffer": {
+        "name": "Gaffer",
+        "receives_from": ["cinematographer"],
+        "hands_to": ["key-grip", "production"],
+    },
+    "key-grip": {
+        "name": "Key Grip",
+        "receives_from": ["cinematographer", "gaffer"],
+        "hands_to": ["production"],
+    },
+    "costume-designer": {
+        "name": "Costume Designer",
+        "receives_from": ["director"],
+        "hands_to": ["script-supervisor", "assistant-director"],
+    },
+    "makeup-hair": {
+        "name": "Makeup and Hair",
+        "receives_from": ["director"],
+        "hands_to": ["script-supervisor", "dailies"],
+    },
+    "vfx-supervisor": {
+        "name": "VFX Supervisor",
+        "receives_from": ["cinematographer", "dailies"],
+        "hands_to": ["editor", "colorist", "production"],
+    },
 }
 
 PREVIS_STAGE = "previs"

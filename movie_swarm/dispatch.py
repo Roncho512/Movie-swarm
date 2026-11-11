@@ -96,6 +96,24 @@ _COMMANDS = {
     "stunt-coordinator": {
         "commands": {"breakdown": True},
     },
+    "assistant-director": {
+        "commands": {"schedule": True},
+    },
+    "gaffer": {
+        "commands": {"plan": True},
+    },
+    "key-grip": {
+        "commands": {"plan": True},
+    },
+    "costume-designer": {
+        "commands": {"lock": True},
+    },
+    "makeup-hair": {
+        "commands": {"lock": True},
+    },
+    "vfx-supervisor": {
+        "commands": {"breakdown": True, "review": True},
+    },
     "dailies": {
         "commands": {"review": True},
     },
@@ -129,6 +147,32 @@ _PHASE2_OUTPUTS = {
     "stunt-coordinator": (
         ("action-breakdown", "stunts/action-breakdown.json", "action-breakdown.schema.json"),
         ("action-notes", "stunts/action-breakdown.md", None),
+    ),
+    "assistant-director": (
+        ("shooting-schedule", "schedule/shooting-schedule.json", "shooting-schedule.schema.json"),
+        ("shooting-schedule-notes", "schedule/shooting-schedule.md", None),
+    ),
+    "gaffer": (
+        ("lighting-plan", "lighting/lighting-plan.json", "lighting-plan.schema.json"),
+        ("lighting-notes", "lighting/lighting-plan.md", None),
+    ),
+    "key-grip": (
+        ("grip-plan", "grip/grip-plan.json", "grip-plan.schema.json"),
+        ("grip-notes", "grip/grip-plan.md", None),
+    ),
+    "costume-designer": (
+        ("costume-lock", "wardrobe/costume-lock.json", "costume-lock.schema.json"),
+        ("costume-notes", "wardrobe/costume-lock.md", None),
+    ),
+    "makeup-hair": (
+        ("makeup-lock", "makeup/makeup-lock.json", "makeup-lock.schema.json"),
+        ("makeup-notes", "makeup/makeup-lock.md", None),
+    ),
+    "vfx-supervisor": (
+        ("vfx-breakdown", "vfx/vfx-breakdown.json", "vfx-breakdown.schema.json"),
+        ("vfx-notes", "vfx/vfx-breakdown.md", None),
+        ("vfx-review", "vfx/vfx-review.json", "vfx-review.schema.json"),
+        ("vfx-review-notes", "vfx/vfx-review.md", None),
     ),
 }
 
@@ -255,8 +299,9 @@ def _register_phase2(producer: LineProducer, agent: str) -> None:
     producer.set_stage("previs", "waiting-for-review")
     producer.run.data["notes"] = (
         "The phase 2 package is waiting on Ron. "
-        "Previs means the prop lock, the continuity check, the camera package, "
-        "the storyboard, and the action breakdown. The Director did not approve them."
+        "Previs means the prop lock, wardrobe, makeup, the continuity check, the camera package, "
+        "the storyboard, the lighting plan, the grip plan, the shooting schedule, "
+        "the action breakdown, and the VFX breakdown. The Director did not approve them."
     )
     producer.run.save()
     _ensure_credits(producer)
@@ -270,6 +315,12 @@ def _ensure_credits(producer: LineProducer) -> None:
         ("Prop Master", "Prop Master"),
         ("Cinematographer", "Cinematographer"),
         ("Stunt and Action Coordinator", "Stunt and Action Coordinator"),
+        ("Assistant Director", "Assistant Director"),
+        ("Gaffer", "Gaffer"),
+        ("Key Grip", "Key Grip"),
+        ("Costume Designer", "Costume Designer"),
+        ("Makeup and Hair", "Makeup and Hair"),
+        ("VFX Supervisor", "VFX Supervisor"),
     ):
         if role not in have:
             producer.record["credits"].append({"role": role, "name": name})

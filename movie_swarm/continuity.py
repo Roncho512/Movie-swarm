@@ -188,7 +188,12 @@ def _labels(props_in_frame) -> list[str]:
 
 
 def _names(prop: dict) -> list[str]:
-    names = [prop.get("prop_id") or "", prop.get("name") or "", *(prop.get("aliases") or [])]
+    names = [
+        prop.get("prop_id") or "",
+        prop.get("character_id") or "",
+        prop.get("name") or "",
+        *(prop.get("aliases") or []),
+    ]
     return [str(name) for name in names if str(name).strip()]
 
 
@@ -206,3 +211,70 @@ def _in_frame(prop: dict, labels: list[str], prompt: str) -> bool:
 
 def _contains(text: str, phrase: str) -> bool:
     return phrase.casefold() in text.casefold()
+
+
+def load_costume_lock(production_dir: str | Path) -> dict | None:
+    """Locked wardrobe, or the production's costume definitions when that is all there is."""
+    from movie_swarm.costume import load_for_check
+
+    return load_for_check(Path(production_dir))
+
+
+def load_makeup_lock(production_dir: str | Path) -> dict | None:
+    """Locked makeup and hair, or the definitions when that is all there is."""
+    from movie_swarm.makeup import load_for_check
+
+    return load_for_check(Path(production_dir))
+
+
+def locked_character_drift(
+    description: str,
+    characters_in_frame,
+    lock: dict | None,
+    scene_id: str | None = None,
+) -> dict:
+    """Compare a picture description with locked wardrobe or makeup.
+
+    The character list comes from the shot, the same way a prop list does.
+    A forbidden phrase is drift. A required phrase that never appears is drift.
+    An attribute that names a scene is checked only in that scene.
+    """
+    text = description or ""
+    if not lock:
+        return {"checked": False, "reasons": [], "required_missing": [], "forbidden_hit": []}
+    reasons: list[str] = []
+    required_missing: list[str] = []
+    forbidden_hit: list[str] = []
+    labels = _labels(characters_in_frame)
+    saw = False
+    for character in lock.get("characters") or []:
+        if not isinstance(character, dict) or not _in_frame(character, labels, ""):
+            continue
+        saw = True
+        name = str(character.get("name") or character.get("character_id") or "character")
+        for attribute in character.get("attributes") or []:
+            if not isinstance(attribute, dict) or not _attribute_scene(attribute, scene_id):
+                continue
+            _collect_phrases(
+                text,
+                name=name,
+                required=attribute.get("required_phrases") or [],
+                forbidden=attribute.get("forbidden_phrases") or [],
+                must_state=bool(attribute.get("must_be_stated_when_visible")),
+                reasons=reasons,
+                required_missing=required_missing,
+                forbidden_hit=forbidden_hit,
+            )
+    return {
+        "checked": saw,
+        "reasons": reasons,
+        "required_missing": required_missing,
+        "forbidden_hit": forbidden_hit,
+    }
+
+
+def _attribute_scene(attribute: dict, scene_id: str | None) -> bool:
+    wanted = str(attribute.get("scene_id") or "").strip()
+    if not wanted:
+        return True
+    return bool(scene_id) and str(scene_id) == wanted

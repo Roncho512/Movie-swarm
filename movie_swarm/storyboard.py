@@ -15,6 +15,8 @@ from pathlib import Path
 
 from movie_swarm.handoff import write_handoff
 from movie_swarm.previs_common import approved_treatment, model_name, now, read_brief, save_pair
+from movie_swarm.costume import load_locked as load_costumes
+from movie_swarm.makeup import load_locked as load_makeup
 from movie_swarm.prop_master import locked_path
 from movie_swarm.script_intake import load_source
 
@@ -95,11 +97,12 @@ def build_boards(production_dir: Path, llm=None, image_client=None) -> dict:
     brief = read_brief(production_dir)
     package = _package(production_dir)
     props = _props(production_dir)
+    character_locks = [lock for lock in (load_costumes(production_dir), load_makeup(production_dir)) if lock]
     featured = brief.get("featured_product") if isinstance(brief.get("featured_product"), dict) else None
     script_scenes = _script_scenes(production_dir, brief)
     model = model_name("cinematographer", "boards")
     shots, frames, placements = _frames(
-        treatment, package, props, featured, script_scenes, image_client
+        treatment, package, props, character_locks, featured, script_scenes, image_client
     )
     created = now()
     shot_list = {
@@ -174,7 +177,7 @@ def _script_scenes(production_dir: Path, brief: dict) -> list[dict]:
         return []
 
 
-def _frames(treatment, package, props, featured, script_scenes, image_client):
+def _frames(treatment, package, props, character_locks, featured, script_scenes, image_client):
     shots = []
     frames = []
     placements = []
@@ -203,7 +206,11 @@ def _frames(treatment, package, props, featured, script_scenes, image_client):
                 transition_out = "hold" if beat.get("hold_out") else "cut"
             lens = _lens_for(package, shot_type)
             camera = _camera_line(shot_type, lens, light)
+            people = _people(action, treatment)
             in_frame, lock_line = _props_for_beat(props, action)
+            character_line = _character_line(people, character_locks, action)
+            if character_line:
+                lock_line = f"{lock_line} {character_line}".strip()
             prompt = _prompt(action, camera, lock_line)
             if featured and _mentions_product(action, featured):
                 why = _placement_why(featured, action, shot_type)
@@ -221,7 +228,7 @@ def _frames(treatment, package, props, featured, script_scenes, image_client):
                 "camera_movement": _MOVE.get(shot_type, "static"),
                 "framing_notes": _FRAMING.get(shot_type, "The subject of this beat."),
                 "generation_prompt": prompt,
-                "negative_prompt": _negative(in_frame),
+                "negative_prompt": _negative(in_frame, people, character_locks, action),
                 "tool_routing": {
                     "primary_tool": "veo-3.1-lite",
                     "rationale": "Storyboard pass. A prompt for this beat, not a finished picture.",
@@ -234,7 +241,6 @@ def _frames(treatment, package, props, featured, script_scenes, image_client):
                 "continuity_notes": lock_line or "No locked prop is in this frame.",
                 "color_notes": light or "Light stays with the package.",
             }
-            people = _people(action, treatment)
             if people:
                 shot["characters_in_shot"] = people
             prop_refs, vehicle_refs = _shot_refs(in_frame)
@@ -548,13 +554,43 @@ def _prompt(action: str, camera: str, lock_line: str) -> str:
     return " ".join(part for part in parts if part)
 
 
-def _negative(in_frame: list[dict]) -> str:
+def _character_line(people: list[str], locks: list[dict], text: str) -> str:
+    lines = []
+    for lock in locks:
+        for character in lock.get("characters") or []:
+            if not isinstance(character, dict) or not _person_in_shot(character, people, text):
+                continue
+            missing = _missing_phrase(character, text)
+            if missing and missing not in lines:
+                lines.append(missing)
+    return " ".join(lines)
+
+
+def _person_in_shot(character: dict, people: list[str], text: str) -> bool:
+    names = [str(character.get("name") or ""), str(character.get("character_id") or "")]
+    names.extend(str(name) for name in character.get("aliases") or [])
+    folded_people = {person.casefold() for person in people}
+    for name in names:
+        if len(name) >= 2 and (name.casefold() in folded_people or name.casefold() in text.casefold()):
+            return True
+    return False
+
+
+def _negative(in_frame: list[dict], people: list[str] | None = None, locks: list[dict] | None = None, text: str = "") -> str:
     phrases = []
     for item in in_frame:
         for attribute in item["prop"].get("attributes") or []:
             for phrase in attribute.get("forbidden_phrases") or []:
                 if phrase not in phrases:
                     phrases.append(phrase)
+    for lock in locks or []:
+        for character in lock.get("characters") or []:
+            if not isinstance(character, dict) or not _person_in_shot(character, people or [], text):
+                continue
+            for attribute in character.get("attributes") or []:
+                for phrase in attribute.get("forbidden_phrases") or []:
+                    if phrase not in phrases:
+                        phrases.append(phrase)
     if not phrases:
         return "Do not add a prop that this beat does not show."
     return "Do not show: " + "; ".join(phrases) + "."

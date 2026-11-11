@@ -1,0 +1,35 @@
+{
+  "version": "1.0.0",
+  "production_id": "harbor-night",
+  "status": "draft",
+  "characters": [
+    {
+      "character_id": "ada",
+      "name": "Ada",
+      "aliases": [],
+      "locked_spec": "A dark coat, worn.",
+      "garment": "coat",
+      "color": "dark",
+      "condition": "worn",
+      "changes": [
+        {
+          "scene_id": "s01",
+          "garment": "coat",
+          "color": "dark",
+          "condition": "worn",
+          "note": "The coat stays for the whole scene."
+        }
+      ],
+      "attributes": [
+        {
+          "attribute_id": "coat",
+          "label": "coat",
+          "value": "dark coat",
+          "must_be_stated_when_visible": true,
+          "required_phrases": ["dark coat"],
+          "forbidden_phrases": ["light coat", "no coat"]
+        }
+      ]
+    }
+  ]
+}
