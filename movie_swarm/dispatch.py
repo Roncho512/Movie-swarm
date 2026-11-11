@@ -12,11 +12,12 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from movie_swarm.dailies import run_dailies
 from movie_swarm.generation import run_picture
 from movie_swarm.line_producer import Authorization, LineProducer
 from movie_swarm.paths import repo_root
 from movie_swarm.previs import run_previs
-from movie_swarm.roles import CALLABLE, PHASE2_BILLING, PHASE2_CREW
+from movie_swarm.roles import CALLABLE, DAILIES_BILLING, PHASE2_BILLING, PHASE2_CREW
 
 
 class DispatchError(Exception):
@@ -37,6 +38,7 @@ class CrewCall:
     llm: object | None = None
     image_client: object | None = None
     client: object | None = None
+    takes: str | None = None
 
 
 @dataclass
@@ -77,6 +79,9 @@ _COMMANDS = {
     },
     "stunt-coordinator": {
         "commands": {"breakdown": True},
+    },
+    "dailies": {
+        "commands": {"review": True},
     },
 }
 
@@ -123,7 +128,7 @@ def dispatch_call(
             message=f"{call.agent} has no '{call.command}' command here. Commands: {known}.",
         )
     description = call.note or f"{call.agent} {call.command}"
-    billing = PHASE2_BILLING.get(call.agent, call.agent)
+    billing = PHASE2_BILLING.get(call.agent) or DAILIES_BILLING.get(call.agent) or call.agent
     try:
         auth: Authorization = producer.authorize_crew(
             call.agent,
@@ -139,7 +144,9 @@ def dispatch_call(
         if block is not None:
             return DispatchResult(status="paused", message=block.message, request_id=block.request_id)
 
-    if handler is None and call.agent == "production" and call.command in {"plan", "generate"}:
+    if handler is None and call.agent == "dailies" and call.command == "review":
+        runner = lambda current: run_dailies(producer, current)
+    elif handler is None and call.agent == "production" and call.command in {"plan", "generate"}:
         runner = lambda current: run_picture(producer, current)
     else:
         runner = handler or default_handler

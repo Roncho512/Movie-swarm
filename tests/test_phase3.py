@@ -166,7 +166,7 @@ def test_an_open_gate_still_uses_the_offline_client(tmp_path):
     offline = generate_shots(production, client=OfflineGenerationClient(), gate_open=True)
     assert all(item["response"]["status"] == "not-sent" for item in offline["shots"])
     assert all(item["review"]["watched"] is False for item in offline["shots"])
-    assert all(item["review"]["status"] == "stub" for item in offline["shots"])
+    assert all(item["review"]["status"] == "not-reviewed" for item in offline["shots"])
     assert "scarf on the right shoulder" in offline["shots"][0]["review"]["phrases"]
 
 

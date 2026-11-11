@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "takes-manifest.schema.json",
+  "title": "Takes Manifest",
+  "description": "The generated takes a Dailies Reviewer watches. Each take points at a clip or a frame and at a shot id from the shot list. The reviewer does not generate the files.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id", "takes"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "takes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["take_id", "shot_id", "file"],
+        "properties": {
+          "take_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "shot_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "file": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Path to the clip or frame, relative to the production folder unless it is absolute."
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["clip", "frame"],
+            "description": "A frame is a still. A clip is checked for duration, black frames, and frozen motion when the tools exist."
+          },
+          "prompt": { "type": "string" }
+        }
+      }
+    }
+  }
+}

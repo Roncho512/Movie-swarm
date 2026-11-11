@@ -249,6 +249,19 @@ def generate_shots(
     }
 
 
+def quote_preview_usd(shot: dict, routing_path=None) -> float | None:
+    """The price of one preview of this shot. None when the model is not on the rate card.
+
+    This is an estimate. It does not spend and it does not call a provider.
+    """
+    card = load_rate_card()
+    model, _override = _resolve("preview", shot, routing_path)
+    priced = _pass_cost(shot, model, card)
+    if not priced["priced"]:
+        return None
+    return money_number(priced["usd"])
+
+
 def run_picture(producer, call) -> str:
     """The Director's plan and generate commands. Neither one spends."""
     allocations = _locked_split(producer)

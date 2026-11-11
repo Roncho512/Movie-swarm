@@ -69,6 +69,90 @@ def enforce_prompt(prompt: str, props_in_frame, lock: dict | None) -> PromptEnfo
     return PromptEnforcement(prompt=text, added=added, blocked=blocked, props_in_frame=seen)
 
 
+def locked_picture_drift(description: str, props_in_frame, lock: dict | None) -> dict:
+    """Compare a picture description with the production's locked phrases.
+
+    The prop list comes from the shot, not from the description. A missing
+    picture would otherwise hide the prop and skip the check. A forbidden
+    phrase is drift. A required phrase that never appears is drift. Facts on
+    the same lock file are checked the same way. This does not know which
+    film it is reading.
+    """
+    text = description or ""
+    if not lock:
+        return {"checked": False, "reasons": [], "required_missing": [], "forbidden_hit": []}
+    reasons: list[str] = []
+    required_missing: list[str] = []
+    forbidden_hit: list[str] = []
+    labels = _labels(props_in_frame)
+    saw_prop = False
+    for prop in lock.get("props") or []:
+        if not isinstance(prop, dict) or not _in_frame(prop, labels, ""):
+            continue
+        saw_prop = True
+        name = str(prop.get("name") or prop.get("prop_id") or "prop")
+        for attribute in prop.get("attributes") or []:
+            if not isinstance(attribute, dict):
+                continue
+            _collect_phrases(
+                text,
+                name=name,
+                required=attribute.get("required_phrases") or [],
+                forbidden=attribute.get("forbidden_phrases") or [],
+                must_state=bool(attribute.get("must_be_stated_when_visible")),
+                reasons=reasons,
+                required_missing=required_missing,
+                forbidden_hit=forbidden_hit,
+            )
+    for fact in lock.get("facts") or []:
+        if not isinstance(fact, dict):
+            continue
+        _collect_phrases(
+            text,
+            name=str(fact.get("label") or fact.get("fact_id") or "fact"),
+            required=fact.get("required_phrases") or [],
+            forbidden=fact.get("forbidden_phrases") or [],
+            must_state=bool(fact.get("must_be_stated")),
+            reasons=reasons,
+            required_missing=required_missing,
+            forbidden_hit=forbidden_hit,
+        )
+    return {
+        "checked": saw_prop or bool(lock.get("facts")),
+        "reasons": reasons,
+        "required_missing": required_missing,
+        "forbidden_hit": forbidden_hit,
+    }
+
+
+def _collect_phrases(
+    text: str,
+    *,
+    name: str,
+    required,
+    forbidden,
+    must_state: bool,
+    reasons: list[str],
+    required_missing: list[str],
+    forbidden_hit: list[str],
+) -> None:
+    required_phrases = [str(phrase) for phrase in required if str(phrase).strip()]
+    forbidden_phrases = [str(phrase) for phrase in forbidden if str(phrase).strip()]
+    for phrase in forbidden_phrases:
+        if _contains(text, phrase) and phrase not in forbidden_hit:
+            forbidden_hit.append(phrase)
+            reasons.append(
+                f"{name} drifts. The picture description contains a forbidden phrase: {phrase}."
+            )
+    if must_state and required_phrases and not any(_contains(text, phrase) for phrase in required_phrases):
+        phrase = required_phrases[0]
+        if phrase not in required_missing:
+            required_missing.append(phrase)
+            reasons.append(
+                f"{name} is missing from the picture. A required phrase was not in the description: {phrase}."
+            )
+
+
 def expected_phrases(prompt: str, props_in_frame, lock: dict | None) -> list[str]:
     """The required phrases a later picture check would look for."""
     if not lock:

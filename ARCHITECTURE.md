@@ -26,7 +26,7 @@ Generation runs on provider servers, not on the laptop that holds the repo. Vide
 | `agents/04-cinematographer/` | Camera package and storyboard. The program is in `movie_swarm/`. |
 | `agents/05-production/` through `09-fix-loop/` | Coded crew: video, sound, edit, QA, and the fix loop. |
 | `agents/10-script-supervisor/`, `11-prop-master/`, `12-stunt-coordinator/` | Phase 2 roles. The programs are in `movie_swarm/`. |
-| `movie_swarm/` | Shared code: checklists, the run record, gates, money, the Director, the Line Producer, the phase 2 package, and the generation quote. |
+| `movie_swarm/` | Shared code: checklists, the run record, gates, money, the Director, the Line Producer, the phase 2 package, the generation quote, and the dailies review. |
 | `config/` | Gates, the $500 cap, model names, and the asset root. |
 | `schemas/` | The checklists. |
 | `productions/the-last-marker/` | The test film. |
@@ -48,9 +48,11 @@ Generation runs on provider servers, not on the laptop that holds the repo. Vide
 
 **Budget cap.** The film cap is $500 in `config/gates.json`. Landing on $500 is allowed. Going over pauses the spend and writes an approval request. Retakes use the same cap. After Ron approves the treatment, each stage also has its own ceiling. A retake spends from that stage's ceiling and from the film cap.
 
-**Model routing.** `config/model-routing.json` names the model for each role. The Line Producer and the question list use Claude Haiku 5.5. The Director's draft uses Claude Sonnet 5.5. The final treatment pass uses Claude Opus 5.5. The older video program still calls Seedance 2.0. The generation pipeline reads the production role's preview and final purposes, which name Gemini Omni 1.2 Flash. Seedance and Kling stay alternates. A routing override can name one for a shot. The quote prices only models listed in `config/generation-rates.json`.
+**Model routing.** `config/model-routing.json` names the model for each role. The Line Producer and the question list use Claude Haiku 5.5. The Director's draft uses Claude Sonnet 5.5. The final treatment pass uses Claude Opus 5.5. The older video program still calls Seedance 2.0. The generation pipeline reads the production role's preview and final purposes, which name Gemini Omni 1.2 Flash. The dailies role names that same picture model, because a later build may watch the clip with it. This build does not call it. Seedance and Kling stay alternates. A routing override can name one for a shot. The quote prices only models listed in `config/generation-rates.json`.
 
 **Generation gate.** `config/gates.json` has a `generation` switch. It starts on. Opening it is Ron's recorded yes on a run. A plan does not ask. A generate call does, after the treatment, the stage, and the previs gate are already open. This build's client still does not call a provider when the gate is open.
+
+**Dailies gate.** `config/gates.json` has a `dailies` switch. It starts on. The review can be written while the switch is closed, because that report is what Ron reads. The editor does not run until Ron approves it, even if the editor's own gate is already open.
 
 **Asset root.** Finished video can live on an external drive. Set `MOVIE_SWARM_ASSET_ROOT`, or set `asset_root` in `config/assets.json`. Until one of those is set, files stay in the production folder. Nothing is moved by itself.
 
@@ -72,6 +74,7 @@ The choices already made are in [DECISIONS.md](DECISIONS.md). Short form:
 - Docs and code land in the same pull request (D14).
 - Film facts stay in the production folder (D30). The pilot sound prompts moved there (D45, pending Ron's approval at merge).
 - The studio is built before the film (D41). Harbor Night proves a new picture tool. The Last Marker waits for the last phase.
+- Dailies review circles, retakes, or rejects each take before the edit (D47 through D51, pending Ron's approval at merge). The editor waits on that gate.
 
 ## Interfaces
 
@@ -92,11 +95,11 @@ Gate file, if you prefer a file to flags:
 
 A spend that would break a ceiling writes `runs/<run-id>/requests/req-001.json`. Approve or reject it with `decide`. Approving a real spend books the money, even if it is past the cap. That overage stays visible in the status. Approving a dry-run hold does not book money. It allows that one checked call.
 
-Crew the Director can call: `prop-master`, `script-supervisor`, `cinematographer`, `stunt-coordinator`, `production`, `sound-designer`, `editor`, `qa`, `fix-loop`.
+Crew the Director can call: `prop-master`, `script-supervisor`, `cinematographer`, `stunt-coordinator`, `production`, `sound-designer`, `editor`, `qa`, `fix-loop`, `dailies`.
 
 Phase 2 commands are `lock`, `check`, `package`, `boards`, and `breakdown`. They read the approved treatment. They write files. They do not require the previs gate to be open already, because those files are what Ron reviews. Ron approved that gate for The Last Marker on 2026-11-10. The estimate is checked against an existing ceiling in the locked split and is not charged.
 
-Picture commands are `estimate`, `dry-run`, `plan`, and `generate`. Estimate and dry-run are the older local price check. A plan is the generation quote. It waits until Ron has approved the treatment, the previs gate, and that stage, and it does not spend. Generate is the paid path. It also waits for the generation gate. Editor, QA, and the fix loop are routed and named. Their commands are not run here, because they would read or write the cut.
+Picture commands are `estimate`, `dry-run`, `plan`, and `generate`. Estimate and dry-run are the older local price check. A plan is the generation quote. It waits until Ron has approved the treatment, the previs gate, and that stage, and it does not spend. Generate is the paid path. It also waits for the generation gate. The dailies command is `review`. It reads a takes manifest and writes the report. It waits for the treatment and the previs gate. It does not wait for its own gate, because the report is the review. Editor, QA, and the fix loop are routed and named. Their commands are not run here, because they would read or write the cut. The editor also waits for the dailies gate.
 
 ## Line Producer
 
@@ -154,9 +157,28 @@ Outputs: clip files, clip metadata, and a cost report, when a real run is allowe
 
 Before a prompt is sent, a locked prop that is in the shot must have its required phrase in the prompt. A forbidden phrase blocks the call. The phrases come from the production's prop file.
 
-After a client returns, `review_dailies` records those phrases. It does not watch a frame and it does not call a model. That hook is the Dailies Reviewer stub. Watching the picture is a later studio phase.
+After a client returns, `review_dailies` records the phrases it would check and marks the shot `not-reviewed`. It does not open the file and it does not call a model. The review that circles a take is a separate dailies call.
 
-Hands off to: Ron, through the plan, before any money moves. Hands off to the editor and QA, through clip metadata, once a later phase generates real clips. Today the paid call stops at the generation gate, and the default client does not leave the machine.
+Hands off to: Ron, through the plan, before any money moves. Hands off to the Dailies Reviewer, through the takes manifest, once clips exist. Today the paid call stops at the generation gate, and the default client does not leave the machine.
+
+## Dailies Reviewer
+
+Inputs: the production folder, `takes/takes-manifest.json` (or a path passed to the call), the shot list, `props/prop-definitions.json` or the locked hero props, and `look/look.json` when the production has one. Each take names a shot id and a clip or frame file.
+
+Outputs: `dailies/dailies-report.json`, checked against `dailies-report.schema.json`, and `dailies/dailies-report.md`, a table of each shot, the best take, the verdict, and the reasons. A retake row carries a prompt fix for the next generation call and a preview estimate.
+
+The verdict is one of three words. Circle means the take can be cut. Retake means generate it again. Reject means the file is missing or empty, so there is nothing to watch.
+
+Four checks:
+
+- Continuity uses the same locked phrases as the Prop Master and the Script Supervisor. The shot list says which props are in frame. The description of the picture must include a required phrase and must not include a forbidden phrase. The description comes from a vision client. Tests pass a fake client. With no client, a text file beside the frame is the description. If neither is there, the description is empty and a required phrase cannot pass. No model is called.
+- Shot match compares that description with the shot list: the framing word, the subject, and, for a clip, the duration. Duration matches when it is within half a second or 20 percent of the shot length, whichever is larger, and only when ffprobe could read it.
+- Look match compares the description with phrases in `look/look.json`. A film with no look file skips this check.
+- Technical checks need no paid call. The file must exist and must not be empty. When ffprobe is installed it reads duration, size, and frame rate. When ffmpeg is installed, a black stretch of half a second or more is a retake, and a frozen clip is a retake only if the shot list asked for camera movement. A static hold is not a freeze. If those tools are missing, or cannot read the file, that part is skipped and the file check still stands.
+
+The retake estimate is one preview per shot that needs another generation, priced from `config/generation-rates.json`. It is compared with the locked fix-loop line, minus anything already spent on that line. Over the line, the list is kept and marked not cleared to spend. Nothing is charged either way. The prompt fix is text for the Phase 3 generate step. This phase does not call it.
+
+Hands off to: Ron, at the dailies gate. Hands off to the editor only after that approval. Hands off to production, through the prompt fixes, when a retake is cleared.
 
 ## Sound Designer
 
@@ -168,7 +190,7 @@ Hands off to: the editor, through the audio manifest.
 
 ## Editor
 
-Inputs: the selected clips and, when used, a mix file.
+Inputs: the selected clips and, when used, a mix file. The call also waits for the dailies gate, so circled takes are the ones Ron has approved.
 
 Outputs: a rough cut and an edit decision list. Probe and assemble are not run by the Director in this phase.
 
@@ -219,8 +241,8 @@ flowchart TD
 ## Not in this phase
 
 - A full orchestrator that runs every future role by itself.
-- A Dailies Reviewer that watches the picture. The hook is a stub.
-- Edit and assembly, sound and score beyond the prompt file, color and mix, or a finished delivery. Those are later studio phases, each proven on a fixture.
+- A paid vision model. Dailies names Gemini Omni 1.2 Flash and does not call it. The description is a fake client or a text file beside the frame.
+- Edit and assembly, sound and score beyond the prompt file, color and mix, or a finished delivery. Those are later studio phases, each proven on a fixture. The editor is still only routed. The dailies gate is what stops it.
 - The Last Marker as a generated film. The approved previs stays. The first film phase is what makes it.
 - Color, a composer, Foley, a mixer, or a test audience.
 - QA on the full finished cut, or a Post Supervisor in place of the fix loop.

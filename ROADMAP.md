@@ -1,6 +1,6 @@
 # Roadmap
 
-Status as of 2026-11-10.
+Status as of 2026-11-11.
 
 ## Where things stand
 
@@ -8,7 +8,9 @@ Phase 0 merged to main on 2026-11-10 via PR https://github.com/Roncho512/Movie-s
 
 Phase 2 merged to main on 2026-11-10 via PR https://github.com/Roncho512/Movie-swarm/pull/4 and PR https://github.com/Roncho512/Movie-swarm/pull/5, merge commit f6f52d4. The previs package is written. The storyboard is one beat per shot: 41 shots, plus the three scene 3 shots, 44 in all. Ron approved the previs gate with the note "Approve the storyboard previs gate." No images were generated. Spent: $0.00 of $500.00.
 
-Ron then changed direction. Build the studio first. Make the film later. Phase 3 is the generation studio: a quote, cost-conscious routing, locked phrases on the prompt, and a gate in front of any paid call. It is proven on Harbor Night, a synthetic fixture. It does not write a generation plan for The Last Marker, and it does not generate a frame. The pilot sound prompts now live in that film's folder, which is engine cleanup, not a film run.
+Ron then changed direction. Build the studio first. Make the film later. Phase 3 merged to main on 2026-11-10 via PR https://github.com/Roncho512/Movie-swarm/pull/6, merge commit 1355ad4. The generation studio quotes any production, routes the cheap picture model, puts locked phrases on the prompt, and stops a paid call until Ron approves the generation gate. It was proven on Harbor Night. It did not write a generation plan for The Last Marker, and it did not generate a frame. The pilot sound prompts live in that film's folder, which was engine cleanup, not a film run. Spent: $0.00 of $500.00.
+
+Phase 4 is in review. The Dailies Reviewer watches each generated take and writes a circle, retake, or reject. A takes manifest lists the files. The report is JSON plus a readable table. A retake carries a prompt fix and an estimate against the fix-loop line. Nothing is spent. The editor waits until Ron approves the dailies gate. The proof is Harbor Night and tiny synthetic frames. The Last Marker is not reviewed in this phase.
 
 ## Phases
 
@@ -19,8 +21,8 @@ Each studio phase is proven on a synthetic fixture. The Last Marker is not the p
 | 0 | Cleanup and foundation: shared handoff checks, run state, gates, the $500 cap, model routing, asset root, CI | Done, merged 2026-11-10, PR #1, merge c3696890 |
 | 1 | Line Producer and Director core, with treatment intake | Done, merged 2026-11-10, PR #3, merge da9d54a |
 | 2 | Prevent bad shots: Script Supervisor, Production Designer/Prop Master with locked hero-prop specs, camera package, storyboards/animatic, Stunt and Action Coordinator | Done, merged 2026-11-10, PRs #4 and #5, merge f6f52d4 |
-| 3 | Generation studio: quote any production, route the cheap picture model, stop a paid call until Ron approves the generation gate, put locked phrases into the prompt | In review. Proven on Harbor Night. No pictures were generated. Spent $0.00 of $500.00. |
-| 4 | Dailies review: watch real frames against the locked phrases. Proven on a synthetic fixture. | Not started |
+| 3 | Generation studio: quote any production, route the cheap picture model, stop a paid call until Ron approves the generation gate, put locked phrases into the prompt | Done, merged 2026-11-10, PR #6, merge 1355ad4. Proven on Harbor Night. No pictures were generated. Spent $0.00 of $500.00. |
+| 4 | Dailies review: circle, retake, or reject each take against locked phrases, the shot list, the look, and local technical checks. A gate blocks the editor until Ron approves the circled takes. | In review. Proven on Harbor Night and synthetic frames. No paid call. Spent $0.00 of $500.00. |
 | 5 | Edit and assembly. Proven on a synthetic fixture. | Not started |
 | 6 | Sound and score, using the production's sound prompts. Proven on a synthetic fixture. | Not started |
 | 7 | Color and mix. Proven on a synthetic fixture. | Not started |
@@ -29,9 +31,9 @@ Each studio phase is proven on a synthetic fixture. The Last Marker is not the p
 
 ## Gates
 
-Every stage switch in `config/gates.json` is on, including the new generation gate. Ron reviews each stage until that part of the crew is reliable. The end goal is smaller: Ron approves the look, and Ron approves the final cut. Turning a switch off is an edit to the config file, done later on purpose. It is not a code change.
+Every stage switch in `config/gates.json` is on, including the generation gate and the dailies gate. Ron reviews each stage until that part of the crew is reliable. The end goal is smaller: Ron approves the look, and Ron approves the final cut. Turning a switch off is an edit to the config file, done later on purpose. It is not a code change.
 
-On run phase-1, Ron approved the treatment gate. That locked the $500 split. Ron approved the previs gate on 2026-11-10. The generation gate is not approved. A plan can be quoted without it. A paid call cannot. Other stage switches stay on.
+On run phase-1, Ron approved the treatment gate. That locked the $500 split. Ron approved the previs gate on 2026-11-10. The generation gate is not approved. A plan can be quoted without it. A paid call cannot. The dailies gate is not approved. The editor cannot run until it is. Other stage switches stay on.
 
 ## Closed decisions
 
@@ -69,8 +71,8 @@ These are made. The write-up is in [DECISIONS.md](DECISIONS.md).
 - The folder path on the Ron Workspace drive. The switch exists. The path is not set.
 - The older video program still calls Seedance, and QA still calls its current Claude model. The generation pipeline quotes Gemini Omni 1.2 Flash and does not call it. Connecting a live client is a later step, after Ron approves the generation gate.
 
-Phase 1 records technical choices D15 through D22. Phase 2 records D31 through D37. Phase 3 records D42 through D46. They are proposals from the build, pending Ron's approval at merge. They are not closed.
+Phase 1 records technical choices D15 through D22. Phase 2 records D31 through D37. Phase 3 records D42 through D46. Phase 4 records D47 through D51. They are proposals from the build, pending Ron's approval at merge. They are not closed.
 
 ## What comes next
 
-Ron reviews this phase. He can accept or reject D42 through D46. Merging does not approve a paid run. The generation gate stays closed until he approves it on a run. The next studio phase is dailies review: watch a real frame against the locked phrases, on a fixture, still without making The Last Marker.
+Ron reviews this phase. He can accept or reject D47 through D51. Merging does not approve a paid run, and it does not approve the dailies gate on The Last Marker. The generation gate stays closed until he approves it on a run. The next studio phase is the edit, proven on a fixture, still without making The Last Marker.

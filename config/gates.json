@@ -14,6 +14,7 @@
     "qa": true,
     "fix-loop": true,
     "previs": true,
-    "generation": true
+    "generation": true,
+    "dailies": true
   }
 }

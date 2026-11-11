@@ -245,6 +245,46 @@ def test_each_schema_accepts_a_minimal_document():
             "dialogue": [],
             "music": [],
         },
+        "takes-manifest.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "takes": [
+                {"take_id": "s01-sh01-t01", "shot_id": "s01-sh01", "file": "frames/s01-sh01.png", "kind": "frame"}
+            ],
+        },
+        "dailies-report.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "reviewed_at": "2026-01-01T00:00:00Z",
+            "spent_usd": 0,
+            "fix_loop_reserve_usd": 50,
+            "retake_estimate_usd": 0,
+            "within_fix_loop": True,
+            "shots": [
+                {
+                    "shot_id": "s01-sh01",
+                    "verdict": "circle",
+                    "best_take": "s01-sh01-t01",
+                    "reasons": ["Circled."],
+                    "takes": [
+                        {
+                            "take_id": "s01-sh01-t01",
+                            "file": "frames/s01-sh01.png",
+                            "verdict": "circle",
+                            "reasons": ["Circled."],
+                            "description_source": "client",
+                            "checks": {
+                                "technical": {"status": "pass", "detail": "The file is on disk."},
+                                "continuity": {"status": "pass"},
+                                "shot_match": {"status": "pass"},
+                                "look_match": {"status": "skipped"},
+                            },
+                        }
+                    ],
+                }
+            ],
+            "retakes": [],
+        },
     }
     on_disk = {path.name for path in schemas_dir().glob("*.schema.json")}
     assert on_disk == set(samples)

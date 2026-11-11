@@ -87,7 +87,7 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Date: 2026-11-10
 - Context: The May pilot drifted. The exhaust side and the watch wrist did not stay put.
 - Decision: Hero props get locked specs, with multi-angle reference images. A Script Supervisor checks them before generation. A Dailies Reviewer checks them after, on the real frames.
-- Consequences: The treatment has a slot for the locked spec and for those images. The Script Supervisor is the before-generation check. The Dailies Reviewer is still Phase 3. D27 locked this film's sidedness. D30 says the checker reads the production's prop file and does not hard-code it.
+- Consequences: The treatment has a slot for the locked spec and for those images. The Script Supervisor is the before-generation check. D27 locked this film's sidedness. D30 says the checker reads the production's prop file and does not hard-code it. D47 is the frame check this decision named. Phase 3 left that check as a stub.
 - Who decided: Ron
 
 ## D12 — A stunt and action role
@@ -370,7 +370,7 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Date: 2026-11-10
 - Context: D11 says a prop is checked before generation and again on the frames. The frames do not exist yet.
 - Decision: When a locked prop is in the shot, the prompt gains a required phrase before it can be sent. A forbidden phrase blocks the call. The phrases come from the production's prop file. After the client returns, `review_dailies` records those phrases. It does not watch a frame and it does not call a model.
-- Consequences: Harbor Night's scarf phrase is added in the tests. The Dailies Reviewer is a stub. Watching the picture is phase 4.
+- Consequences: Harbor Night's scarf phrase is added in the tests. The generation step records the phrases and does not watch a frame. D47 is the review that watches the picture.
 - Who decided: Cursor cloud agent. Pending Ron's approval at merge.
 
 ## D45 — Sound prompts live in the production folder
@@ -389,5 +389,50 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Context: D6 names Gemini Omni 1.2 Flash for the picture, with Seedance and Kling as alternates. The older production program still calls Seedance.
 - Decision: `config/model-routing.json` keeps `production.model` as `seedance-2.0`, because that is what the older program calls. The preview and final purposes are `gemini-omni-1.2-flash`. The generation pipeline reads those purposes. It does not call the model.
 - Consequences: A routing override can point one shot at Seedance or Kling, and the quote uses that row on the rate card. No provider is called.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D47 — A takes manifest in, a dailies report out
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D11 says the frames are checked after generation. Phase 3 recorded the phrases and did not open a picture. The editor should not cut a take Ron has not circled.
+- Decision: The Dailies Reviewer reads a production folder and a takes manifest. The checklist is `schemas/takes-manifest.schema.json`. Each take names a shot id and a clip or frame file. The review writes `dailies/dailies-report.json`, checked against `dailies-report.schema.json`, and a Markdown table. Each shot has a best take, a verdict, and reasons. The verdict is circle, retake, or reject.
+- Consequences: The Director calls it with `dailies` / `review`. The call waits for the treatment and the previs gate. It does not spend. Tests prove it on Harbor Night. The Last Marker is not reviewed.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D48 — The four checks read the production's files
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: A review that hard-codes a prop, a side, or a look would leak one film into the next. D30 already forbids that.
+- Decision: Continuity reuses the locked required and forbidden phrases. The shot list says which props are in frame, so a missing prop is still checked. Shot match asks the description for the shot-list framing word and for a subject word, and compares clip duration when a duration was read. The tolerance is half a second or 20 percent of the shot length, whichever is larger. Look match asks the description for a phrase from `look/look.json`. The description comes from a vision client the caller passes. Tests pass a fake client. With no client, a text file beside the frame is the description. If neither is there, the description is empty. No model is called.
+- Consequences: A forbidden phrase is a retake. A required phrase that never appears is a retake. A framing or subject miss is a retake. A look file that is absent skips the look check. The engine does not name a film's props or look.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D49 — Technical checks are local, and optional
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: Some failures do not need a model. A missing file is one. A black or frozen clip is another. The build machine may not have ffmpeg.
+- Decision: A missing or empty file is a reject, and the vision client is not called. When ffprobe is installed it reads duration, size, and frame rate. When ffmpeg is installed, a black stretch of half a second or more is a retake. A frozen clip is a retake only when the shot list asked for camera movement. A static hold is not treated as a freeze. A still frame is not scanned for duration, black, or freeze. If the tools are missing, or cannot read the file, those checks are skipped and the file check still stands.
+- Consequences: The review runs on a machine without ffmpeg. Tests cover the skip, and they cover a black clip and a frozen moving shot when ffmpeg is installed.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D50 — The dailies gate blocks the editor
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D3 says a person reviews each stage until the crew is trusted. Circled takes should not reach the cut on the reviewer's own say.
+- Decision: Add a gate named `dailies` in `config/gates.json`. It starts on. The review can be written while the gate is closed. Ron approves it with the existing approve-gate command. The editor call waits for that approval, after the treatment, the previs gate, and the editor's own gate.
+- Consequences: This phase does not approve the gate. Approving it does not spend money and does not run the edit. The editor command is still only routed.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D51 — A retake is an estimate against the fix-loop line
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D5 says retakes count against the $500 cap. D43 priced a retake reserve as one extra preview and kept the fix-loop figure as the locked allocation. The review must not spend, and it must not offer a retake list the line cannot hold.
+- Decision: Each shot whose best take is a retake is estimated as one preview, using the same rate card as the generation quote. The sum is compared with the locked fix-loop allocation, minus what that stage has already spent. The prompt fix is text for the next production generate call. It names the locked phrases to state, the forbidden phrases to drop, and the shot-list framing and subject when those failed. The report routes that text to `production generate`. This phase does not call generate.
+- Consequences: If the estimate fits, the report says so and charges nothing. If it is over the line, or there is no locked fix-loop line, the list is kept and marked not cleared to spend. Nothing is charged. A missing file is a reject, not a prompt retake. Spent on the proof stays $0.00.
 - Who decided: Cursor cloud agent. Pending Ron's approval at merge.
 

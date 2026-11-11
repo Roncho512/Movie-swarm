@@ -31,8 +31,6 @@ PHASE2_CREW = (
     "stunt-coordinator",
 )
 
-CALLABLE = PICTURE_CREW + PHASE2_CREW
-
 # Which locked ceiling a phase 2 estimate is checked against.
 # The dollar amounts stay the split Ron already locked. No new bucket is added.
 PHASE2_BILLING = {
@@ -46,6 +44,18 @@ PREVIS_STAGE = "previs"
 
 # A paid image, video, or audio call waits here even after the stage gate is open.
 GENERATION_STAGE = "generation"
+
+# The Dailies Reviewer writes the report Ron reads. The editor waits on this gate.
+DAILIES_CREW = ("dailies",)
+DAILIES_STAGE = "dailies"
+
+# A dailies call is an estimate. It is checked against the fix-loop ceiling and not charged.
+# The dollar amount stays the split already locked. No new bucket is added.
+DAILIES_BILLING = {
+    "dailies": "fix-loop",
+}
+
+CALLABLE = PICTURE_CREW + PHASE2_CREW + DAILIES_CREW
 
 PREP_STAGES = (
     "director",
