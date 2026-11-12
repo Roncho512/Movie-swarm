@@ -29,6 +29,7 @@ from pathlib import Path
 
 from movie_swarm.assets import ASSET_ROOT_ENV, load_asset_config, resolve_asset
 from movie_swarm.duration import clip_lengths, request_value, seconds_text
+from movie_swarm.paths import config_dir
 from movie_swarm.http_retry import (
     HttpConnectionError,
     HttpResult,
@@ -80,16 +81,91 @@ _CLIENT_REJECTED = {400, 401, 403, 404, 405, 422}
 
 @dataclass
 class CallSettings:
-    """Knobs for one live attempt. Tests pass a fake transport and a sleeper."""
+    """Knobs for one live attempt. Tests pass a fake transport and a sleeper.
+
+    ``poll_interval`` is the first pause between fal status checks. ``None``
+    reads ``config/providers.json``. ``0`` does not pause, and the loop stops
+    after ``max_polls`` checks. That is how the tests stay off the clock.
+    ``wait_seconds`` is the total pause budget. ``None`` reads the same file.
+    """
 
     transport: object | None = None
     sleeper: object = time.sleep
     attempts: int = 3
     timeout: float = 60
-    poll_interval: float = 2.0
-    max_polls: int = 40
+    poll_interval: float | None = None
+    poll_interval_max: float | None = None
+    wait_seconds: float | None = None
+    progress_every: float | None = None
+    max_polls: int | None = None
+    progress: object | None = None
     rates_path: str | Path | None = None
     price_override: float | None = None
+    providers_path: str | Path | None = None
+
+
+_POLL_DEFAULTS = {
+    "wait_seconds": 600.0,
+    "backoff_start_seconds": 5.0,
+    "backoff_step_seconds": 5.0,
+    "backoff_max_seconds": 15.0,
+    "progress_every_seconds": 30.0,
+}
+
+
+def load_provider_config(path: str | Path | None = None) -> dict:
+    """Provider timing. A missing or unreadable file uses the coded defaults."""
+    file = Path(path) if path else config_dir() / "providers.json"
+    if not file.is_file():
+        return {}
+    try:
+        data = json.loads(file.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def poll_window(settings: CallSettings) -> dict:
+    """The fal wait: total seconds, the first pause, the step, and the cap."""
+    fal = load_provider_config(settings.providers_path).get("fal") or {}
+    if not isinstance(fal, dict):
+        fal = {}
+    start = _poll_number(settings.poll_interval, fal, "backoff_start_seconds")
+    maximum = _poll_number(settings.poll_interval_max, fal, "backoff_max_seconds")
+    if maximum < start:
+        maximum = start
+    step = _poll_number(None, fal, "backoff_step_seconds")
+    wait = _poll_number(settings.wait_seconds, fal, "wait_seconds")
+    every = _poll_number(settings.progress_every, fal, "progress_every_seconds")
+    if settings.max_polls is not None:
+        cap = settings.max_polls
+    elif start <= 0:
+        cap = 40
+    else:
+        cap = 10000
+    return {
+        "start": start,
+        "maximum": maximum,
+        "step": step,
+        "wait": wait,
+        "every": every,
+        "max_polls": cap,
+    }
+
+
+def _poll_number(override, fal: dict, key: str) -> float:
+    if override is not None:
+        try:
+            return float(override)
+        except (TypeError, ValueError):
+            return _POLL_DEFAULTS[key]
+    try:
+        number = float(fal.get(key, _POLL_DEFAULTS[key]))
+    except (TypeError, ValueError):
+        return _POLL_DEFAULTS[key]
+    if number <= 0:
+        return _POLL_DEFAULTS[key]
+    return number
 
 
 def billing_stage(role: str) -> str:
@@ -386,6 +462,7 @@ def run_provider_call(
             entry_id,
             estimate_usd=money_number(estimate),
             actual_usd=None,
+            actual_source="estimate",
             request_hash=request_hash,
             call_phase="reserved",
         )
@@ -768,7 +845,11 @@ def _poll_fal(
     headers = {"Authorization": f"Key {key}"}
     status_url = _fal_queue_url(status_url) or _fal_status_url(endpoint, request_id)
     result_url = _fal_queue_url(response_url) or _fal_result_url(endpoint, request_id)
-    for _poll in range(settings.max_polls):
+    window = poll_window(settings)
+    waited = 0.0
+    interval = window["start"]
+    last_progress = 0.0
+    for _poll in range(window["max_polls"]):
         response = send_with_retry(
             transport,
             method="GET",
@@ -812,8 +893,32 @@ def _poll_fal(
                 )
             detail = data.get("error") or state
             raise ProviderFailure(redact(str(detail)))
-        settings.sleeper(settings.poll_interval)
+        if interval <= 0:
+            continue
+        remaining = window["wait"] - waited
+        if remaining <= 0:
+            break
+        sleep_for = min(interval, remaining)
+        settings.sleeper(sleep_for)
+        waited += sleep_for
+        if window["every"] > 0 and waited - last_progress >= window["every"] - 1e-9:
+            _announce_wait(settings, waited, state, data)
+            last_progress = waited
+        if waited >= window["wait"] - 1e-9:
+            break
+        interval = min(window["maximum"], interval + window["step"])
     raise HttpTimeout("The provider did not finish before the poll limit.")
+
+
+def _announce_wait(settings: CallSettings, waited: float, state: str, data: dict) -> None:
+    """One short line while fal is still working. No key, no request body."""
+    status = state or "UNKNOWN"
+    line = f"Waiting {int(waited)}s. fal status {status}."
+    position = data.get("queue_position")
+    if position is not None and position != "":
+        line = f"{line} Queue position {position}."
+    printer = settings.progress or print
+    printer(line)
 
 
 def _finish(
@@ -851,10 +956,12 @@ def _finish(
         )
 
     booked = estimate if actual is None else actual
+    source = "estimate" if actual is None else "provider"
     if actual is None:
         description = (
             f"Settled. Estimate ${money_number(estimate):.2f}. "
             "The provider did not report a dollar amount, so the booked amount stays the estimate. "
+            "The ledger records this as an estimate, not a measured charge. "
             f"Request {request_hash[:12]}."
         )
     else:
@@ -872,6 +979,7 @@ def _finish(
         entry_id,
         estimate_usd=money_number(estimate),
         actual_usd=None if actual is None else money_number(actual),
+        actual_source=source,
         request_hash=request_hash,
         call_phase="settled",
     )
@@ -885,6 +993,7 @@ def _finish(
             "entry_id": entry_id,
             "estimate_usd": money_number(estimate),
             "actual_usd": None if actual is None else money_number(actual),
+            "actual_source": source,
             "output": output,
             "text": text,
         }
@@ -896,7 +1005,10 @@ def _finish(
         + (
             f"The provider reported ${money_number(actual):.2f}. "
             if actual is not None
-            else "The provider did not report a dollar amount. The booked amount stays the estimate. "
+            else (
+                "The provider did not report a dollar amount. The booked amount stays the estimate. "
+                "The ledger records this as an estimate, not a measured charge. "
+            )
         )
         + f"The file is {output}, under { _location_name() }. The pipeline stays at this stage."
     )

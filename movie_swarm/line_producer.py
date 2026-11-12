@@ -530,6 +530,12 @@ class LineProducer:
             f"Status: {_plain_status(data['status'])}",
             f"Spent: ${spent:.2f} of ${cap:.2f}",
         ]
+        estimated = estimate_backed_spend(self.record)
+        if estimated > 0:
+            lines.append(
+                f"${money_number(estimated):.2f} of that spend is still the estimate. "
+                "The provider did not report a dollar amount for it."
+            )
         film = load_film_budget(self.production_dir)
         if film is not None:
             lines.extend(report_from_record(self.production_dir, self.record, spent))
@@ -1385,6 +1391,29 @@ class LineProducer:
                 numbers.append(match)
         nxt = (max(numbers) if numbers else 0) + 1
         return f"{prefix}-{nxt:03d}"
+
+
+def estimate_backed_spend(record: dict):
+    """Booked dollars that are still the quote.
+
+    A release takes that entry off the total. A provider-reported charge is
+    not included. The number is what status should not call a measured cost.
+    """
+    released = {
+        item.get("releases_entry_id")
+        for item in record.get("ledger") or []
+        if item.get("kind") == "release"
+    }
+    total = as_money(0)
+    for item in record.get("ledger") or []:
+        if item.get("kind") != "generation":
+            continue
+        if item.get("actual_source") != "estimate":
+            continue
+        if item.get("entry_id") in released:
+            continue
+        total += as_money(item.get("amount_usd") or 0)
+    return total
 
 
 def _decision(value: str) -> str:

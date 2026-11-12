@@ -61,6 +61,7 @@ When you're debugging why Shot 14 has the wrong lighting, you need to trace the 
 | `run-state.schema.json` | One production run: stage, status, artifacts, and spend against the cap. |
 | `gate-config.schema.json` | Review switches and the film budget cap. |
 | `model-routing.schema.json` | Which generator each role uses, plus optional per-shot overrides. |
+| `providers.schema.json` | How long a fal picture call waits, and how the pauses between status checks grow. |
 | `asset-config.schema.json` | Where finished media lives. Null keeps the current in-repo paths. |
 | `treatment.schema.json` | The Director's plan. Draft until the Line Producer records Ron's approval. |
 | `director-questions.schema.json` | One round of questions for Ron. Answers live in the file. |

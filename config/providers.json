@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "fal": {
+    "wait_seconds": 600,
+    "backoff_start_seconds": 5,
+    "backoff_step_seconds": 5,
+    "backoff_max_seconds": 15,
+    "progress_every_seconds": 30,
+    "note": "A Seedance job can take a few minutes. wait_seconds is the total time spent pausing between status checks. The first pause is backoff_start_seconds. Each later pause grows by backoff_step_seconds until backoff_max_seconds. A progress line prints about every progress_every_seconds. --wait on a test shot replaces wait_seconds for that one call."
+  }
+}
