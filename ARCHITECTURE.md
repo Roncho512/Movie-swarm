@@ -27,7 +27,8 @@ Generation runs on provider servers, not on the laptop that holds the repo. Vide
 | `agents/05-production/` through `09-fix-loop/` | Coded crew: video, sound, edit, QA, and the fix loop. |
 | `agents/10-script-supervisor/`, `11-prop-master/`, `12-stunt-coordinator/` | Phase 2 roles. The programs are in `movie_swarm/`. |
 | `agents/13-assistant-director/` through `18-vfx-supervisor/` | Phase 8.6 roles: schedule, lighting, grip, wardrobe, makeup, and VFX. The programs are in `movie_swarm/`. |
-| `movie_swarm/` | Shared code: checklists, the run record, gates, money, the Director, the Line Producer, the phase 2 package, the generation quote, the dailies review, the edit, sound and score, color and mix, delivery, the offline studio run, and the live provider gate. |
+| `agents/19-title-graphic-design/` | Title and Graphic Design. Research, the brand guide, and the graphic specs. The program is in `movie_swarm/`. |
+| `movie_swarm/` | Shared code: checklists, the run record, gates, money, the Director, the Line Producer, the phase 2 package, the generation quote, the dailies review, the edit, sound and score, color and mix, delivery, title and graphic design, the offline studio run, and the live provider gate. |
 | `config/` | Gates, the $500 cap, model names, and the asset root. |
 | `schemas/` | The checklists. |
 | `productions/the-last-marker/` | The test film. |
@@ -211,6 +212,22 @@ Outputs: `vfx/vfx-breakdown.json`, checked against `vfx-breakdown.schema.json`. 
 
 Hands off to: the editor and the colorist, through the turnover notes. Hands off to production, through the breakdown. The review does not add a gate.
 
+## Title and Graphic Design
+
+Inputs: the approved treatment, the screenplay when the production has one, the production brief, `visual-style-bible.json` when the production has one, director notes when they exist, and `look/look.json`. The Art Director still owns the in-film look. This role reads that work. It does not replace it.
+
+Outputs: `graphics/research.json`, checked against `graphics-research.schema.json`, and a short Markdown note. Each item is sourced, with the file and the field, or marked inferred. Then `graphics/brand-guide.json`, checked against `graphics-brand-guide.schema.json`. Fonts, palette values, the wordmark, layout and safe area, image treatment, and the do's and don'ts are built only from that research. Every rule traces to a research item. The guide has a version and a change log. If the style bible or the look changes, the research is written again and the guide is rebuilt and logged. Then `graphics/graphics.json`, checked against `graphics-package.schema.json`: the main title, TITLE CARD lines from the screenplay, end credits from the Line Producer credit record, subtitle styling with no cue times, a designed key-art spec, and collateral specs for a 16:9 thumbnail, a 9:16 thumbnail, and a social card. When ffmpeg is installed and the production named a size, a flat placeholder can be rendered. When it is not, the specs are still written.
+
+The storyboard still skips TITLE CARD lines. Those lines are picked up here.
+
+A graphics gate starts closed. Research and the draft guide are written with the previs package. Building a graphic is a hard error when the research is missing, or when the guide is missing or still a draft. Ron's approval of the graphics gate approves the guide.
+
+The designed poster is `graphics/key-art-poster.png`. The frame grab from the locked cut stays `poster.png`. They are different files.
+
+Hands off to: the editor and the colorist, through a note on their reading copies, before the master. Hands off to the Post Supervisor at delivery. The manifest lists the graphics files when the package is present. QA checks spelling, credits, safe areas, and resolution against the guide. Subtitle timing stays with the Post Supervisor.
+
+The role bills to the Art line, the same $25 the Costume Designer and Makeup and Hair use. No new budget line is added. The admin model is Claude Haiku 5.5. This build does not call it. Nothing is spent.
+
 ## Production
 
 Inputs: a shot list JSON.
@@ -328,9 +345,9 @@ Hands off to: Ron, at the delivery gate. That approval is the film delivered.
 
 ## Studio run
 
-`scripts/studio.py`, and the Director command `studio`, walk one production from the treatment through delivery. The default stops at the first gate Ron has not approved. Run it again after that approval. The order of stops is treatment, previs, production, dailies, editor, edit, sound-designer, sound, color-mix, and delivery. The generation gate is not approved by this walk. A quote is written. A paid generate call is not.
+`scripts/studio.py`, and the Director command `studio`, walk one production from the treatment through delivery. The default stops at the first gate Ron has not approved. Run it again after that approval. The order of stops is treatment, previs, graphics, production, dailies, editor, edit, sound-designer, sound, color-mix, and delivery. The generation gate is not approved by this walk. A quote is written. A paid generate call is not.
 
-The previs step also writes wardrobe, makeup, the lighting plan, the grip plan, the shooting schedule, and the VFX breakdown. After dailies, the same walk writes the VFX review. When the production has no takes manifest, the walk writes synthetic placeholder clips, or stills when ffmpeg is missing, and a note in `takes/placeholder.txt`. A sidecar text file is the picture description, so dailies can circle a take without a vision model. A production that already has a takes manifest keeps those files.
+The previs step also writes wardrobe, makeup, the lighting plan, the grip plan, the shooting schedule, the VFX breakdown, the title research, and the draft brand guide. After the graphics gate, the same walk writes the graphic specs. After dailies, it writes the VFX review. Before the master, it refreshes the graphics from the credit record. When the production has no takes manifest, the walk writes synthetic placeholder clips, or stills when ffmpeg is missing, and a note in `takes/placeholder.txt`. A sidecar text file is the picture description, so dailies can circle a take without a vision model. A production that already has a takes manifest keeps those files.
 
 `run_studio(..., auto_approve=True)` is a test harness. It records each approval as `test-auto-approve`. It is not the default. The command line does not set it. It does not approve the generation gate.
 

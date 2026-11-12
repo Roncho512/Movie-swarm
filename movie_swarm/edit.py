@@ -243,9 +243,15 @@ def write_edit(edl: dict, production_dir: str | Path) -> tuple[Path, Path, Path]
     cmx_path = folder / "assembly.edl"
     lock_path = folder / "picture-lock.json"
     write_handoff(data_path, edl, schema="edit-decision-list")
+    from movie_swarm.graphics import overlay_markdown
     from movie_swarm.vfx import turnover_markdown
 
-    text_path.write_text(render_report(edl) + turnover_markdown(production_dir, "editor"), encoding="utf-8")
+    text_path.write_text(
+        render_report(edl)
+        + turnover_markdown(production_dir, "editor")
+        + overlay_markdown(production_dir, "editor"),
+        encoding="utf-8",
+    )
     cmx_path.write_text(render_cmx(edl), encoding="utf-8")
     if edl["ready_for_picture_lock"]:
         locked = json.loads(json.dumps(edl))

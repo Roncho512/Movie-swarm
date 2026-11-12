@@ -218,6 +218,17 @@
         "review": "claude-haiku-5-5"
       }
     },
+    "title-graphic-design": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/graphics.py",
+      "notes": "Research, the brand guide, and the graphic specs are computed in code from the production's documents. A reply that adds a fact is discarded. This build does not call the model. No key is read. None of these commands pass --live.",
+      "purposes": {
+        "research": "claude-haiku-5-5",
+        "guide": "claude-haiku-5-5",
+        "build": "claude-haiku-5-5"
+      }
+    },
     "post-supervisor": {
       "provider": "anthropic",
       "model": "claude-haiku-5-5",

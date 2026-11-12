@@ -35,6 +35,7 @@ PHASE2_CREW = (
     "costume-designer",
     "makeup-hair",
     "vfx-supervisor",
+    "title-graphic-design",
 )
 
 # Which locked ceiling a phase 2 estimate is checked against.
@@ -50,6 +51,7 @@ PHASE2_BILLING = {
     "costume-designer": "art-director",
     "makeup-hair": "art-director",
     "vfx-supervisor": "editor",
+    "title-graphic-design": "art-director",
 }
 
 # Who each prep role reads, and who receives the file. The dollars stay in PHASE2_BILLING.
@@ -91,7 +93,15 @@ CREW_MAP = {
         "receives_from": ["cinematographer", "dailies"],
         "hands_to": ["editor", "colorist", "production"],
     },
+    "title-graphic-design": {
+        "name": "Title and Graphic Design",
+        "receives_from": ["director", "art-director", "line-producer"],
+        "hands_to": ["editor", "colorist", "post-supervisor"],
+    },
 }
+
+# The brand guide is the review. Graphics are built only after this gate is open.
+GRAPHICS_STAGE = "graphics"
 
 PREVIS_STAGE = "previs"
 

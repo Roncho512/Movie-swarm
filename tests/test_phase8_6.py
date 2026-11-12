@@ -338,6 +338,7 @@ def test_crew_map_billing_and_dispatch(tmp_path):
         "costume-designer",
         "makeup-hair",
         "vfx-supervisor",
+        "title-graphic-design",
     }
     assert all(role in PHASE2_CREW for role in CREW_MAP)
     assert PHASE2_BILLING["assistant-director"] == "line-producer"
@@ -346,6 +347,7 @@ def test_crew_map_billing_and_dispatch(tmp_path):
     assert PHASE2_BILLING["costume-designer"] == "art-director"
     assert PHASE2_BILLING["makeup-hair"] == "art-director"
     assert PHASE2_BILLING["vfx-supervisor"] == "editor"
+    assert PHASE2_BILLING["title-graphic-design"] == "art-director"
     assert CREW_MAP["assistant-director"]["hands_to"] == ["production"]
     assert "stunt-coordinator" in CREW_MAP["assistant-director"]["receives_from"]
     assert CREW_MAP["vfx-supervisor"]["hands_to"] == ["editor", "colorist", "production"]
@@ -476,6 +478,7 @@ def test_studio_still_stops_at_each_gate(tmp_path):
 
     producer = LineProducer.open(production, "studio-1")
     producer.approve_gate("previs", "approved", "ron", note="The package can go forward.")
+    producer.approve_gate("graphics", "approved", "ron", note="The brand guide can be used.")
     producer.approve_gate("production", "approved", "ron", note="A quote can be written.")
     third = run_studio(production, run_id="studio-1")
     assert third["status"] == "stopped", third["message"]

@@ -814,3 +814,48 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: With no key, the files are labeled `offline-deterministic` and still name the model they would have used. Harbor Night's proof spends $0.00. The provider rules from D80 through D86 are unchanged.
 - Who decided: Cursor cloud agent. Pending Ron's approval at merge.
 
+## D94 — Title and Graphic Design, and a graphics gate
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: No role owns a film's graphic identity. The Art Director owns the in-film look. The Post Supervisor grabs one frame for the poster. The storyboard skips TITLE CARD lines. Titles, credits, subtitle styling, a designed poster, and collateral have nowhere to live.
+- Decision: Add Title and Graphic Design. The role writes research, then a brand guide, then the graphic specs. Research and the draft guide are written with the previs package, while a new graphics gate stays closed. Building a graphic waits until that gate approves the guide. The Director calls the role through the Line Producer. The calls do not spend.
+- Consequences: `scripts/studio.py` writes the research and the draft guide before it stops at the previs gate, and it writes the graphic specs after the graphics gate. The generation gate stays closed. Harbor Night is the proof. The Last Marker folder is not changed.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D95 — The role bills to the Art line
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: D28 locked the $500 split. Costume and makeup already bill to the art director allocation. A new line would change that lock.
+- Decision: Title and Graphic Design is checked against the art director allocation ($25). No new line is added. The locked amounts stay Production $270, Sound $55, Fix loop $50, QA $45, Art $25, Director $20, Editor $15, Cinematographer $10, Screenwriter $5, Line Producer $5.
+- Consequences: A $0 document pass fits. A larger estimate pauses on the Art ceiling. The split is unchanged. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D96 — Research, then the guide, then the graphics
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: A title treatment that is not grounded in the film's own documents would put one film's lettering into the next. The guide has to stay tied to the look as the look changes.
+- Decision: `graphics/research.json` is written first from the treatment, the screenplay, the brief, the style bible, and the director's notes. Each item is sourced, with the file and the field, or marked inferred. `graphics/brand-guide.json` is built only from that research. Every rule traces to a research item. Fonts, palette values, the wordmark, layout and safe area, image treatment, and the do's and don'ts live there. The guide carries a version and a change log. If the style bible or the look changes, the research is written again and the guide is rebuilt, logged, and returned to draft. A graphic is a hard error when the research is missing, or when the guide is missing or unapproved. Title cards are read from TITLE CARD lines in the screenplay. The storyboard still skips those lines. End credits are copied from the Line Producer credit record. No name is added. Subtitle styling is specified here. Cue times stay with the Post Supervisor.
+- Consequences: Harbor Night's guide uses the colors in its style bible and does not name a typeface the documents do not name. A changed look produces a new draft and a log line. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D97 — The designed poster is key-art-poster.png
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: The delivery package already writes `poster.png` as one frame from the locked cut. A designed marketing poster needs its own file, or the two jobs get mixed.
+- Decision: The frame grab stays `poster.png`. The designed poster, with the title, an optional tagline, and a billing block, is `graphics/key-art-poster.png`. Thumbnails are `graphics/thumbnail-16x9.png` and `graphics/thumbnail-9x16.png`. The social card is `graphics/social-card.png`. Sizes come from the production's delivery spec or treatment. A size the documents do not name is left unnamed. When ffmpeg is installed and a size is named, a flat placeholder can be rendered. When it is not, the spec is still written. The delivery manifest lists these files when the graphics package is present. QA checks spelling, credits, safe areas, and resolution against the guide. Title and credit overlays are handed to the editor and the colorist before the master.
+- Consequences: A delivery with no graphics package still writes `poster.png` the same way. A delivery with a package lists both files and does not treat them as the same poster. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D98 — Title and Graphic Design uses the cheap admin model
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: D6 says cheap models for admin. This role computes a checklist from files the production already wrote. It is not a writing pass and it is not a picture call. D80 through D86 still govern any live call.
+- Decision: Title and Graphic Design uses Claude Haiku 5.5. The name is in `config/model-routing.json`. A model reply that adds a fact is discarded. The offline path does not call the model and does not read a key. None of these commands pass `--live`. They cannot bypass the generation gate, the budget, or the key.
+- Consequences: With no key, the files are labeled `offline-deterministic` and still name the model they would have used. Harbor Night's proof spends $0.00. The provider rules from D80 through D86 are unchanged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+

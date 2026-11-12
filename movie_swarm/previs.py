@@ -15,6 +15,7 @@ from movie_swarm.prop_master import lock_props
 from movie_swarm.script_supervisor import check_continuity
 from movie_swarm.storyboard import build_boards
 from movie_swarm.stunts import build_breakdown
+from movie_swarm.graphics import build_graphics, write_guide, write_research
 from movie_swarm.vfx import build_breakdown as build_vfx
 from movie_swarm.vfx import review_vfx
 
@@ -68,4 +69,13 @@ def run_previs(call) -> str:
     if call.agent == "vfx-supervisor" and call.command == "review":
         document = review_vfx(production, llm=llm)
         return f"VFX review: {document['verdict']}. File: vfx/vfx-review.json"
+    if call.agent == "title-graphic-design" and call.command == "research":
+        document = write_research(production, llm=llm)
+        return f"Graphics research: {len(document['items'])} item(s). File: graphics/research.json"
+    if call.agent == "title-graphic-design" and call.command == "guide":
+        document = write_guide(production, llm=llm)
+        return f"Brand guide: {document['status']}. File: graphics/brand-guide.json"
+    if call.agent == "title-graphic-design" and call.command == "build":
+        document = build_graphics(production, llm=llm)
+        return f"Graphics: {len(document['title_cards'])} title card(s). File: graphics/graphics.json"
     raise ValueError(f"{call.agent} has no phase 2 command named {call.command}.")

@@ -73,6 +73,11 @@ def run_studio(
         stopped = _need(producer, "previs", auto_approve, completed)
         if stopped:
             return stopped
+        stopped = _need(producer, "graphics", auto_approve, completed)
+        if stopped:
+            return stopped
+        _dispatch(director, run_id, "title-graphic-design", "build")
+        completed.append("graphics")
         stopped = _need(producer, "production", auto_approve, completed)
         if stopped:
             return stopped
@@ -181,6 +186,8 @@ def _previs(director: Director, run_id: str) -> None:
         ("stunt-coordinator", "breakdown"),
         ("assistant-director", "schedule"),
         ("vfx-supervisor", "breakdown"),
+        ("title-graphic-design", "research"),
+        ("title-graphic-design", "guide"),
         ("script-supervisor", "check"),
     ):
         _dispatch(director, run_id, agent, command)

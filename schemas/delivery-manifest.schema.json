@@ -101,7 +101,7 @@
         "required": ["path", "role", "sha256", "bytes", "status", "label"],
         "properties": {
           "path": { "type": "string", "minLength": 1 },
-          "role": { "type": "string", "enum": ["plan", "captions", "master", "variant", "poster", "qc"] },
+          "role": { "type": "string", "enum": ["plan", "captions", "master", "variant", "poster", "qc", "graphics"] },
           "sha256": { "type": ["string", "null"] },
           "bytes": { "type": ["integer", "null"], "minimum": 0 },
           "status": { "type": "string", "enum": ["present", "not-rendered"] },

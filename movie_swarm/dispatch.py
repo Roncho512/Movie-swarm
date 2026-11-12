@@ -114,6 +114,9 @@ _COMMANDS = {
     "vfx-supervisor": {
         "commands": {"breakdown": True, "review": True},
     },
+    "title-graphic-design": {
+        "commands": {"research": True, "guide": True, "build": True},
+    },
     "dailies": {
         "commands": {"review": True},
     },
@@ -173,6 +176,14 @@ _PHASE2_OUTPUTS = {
         ("vfx-notes", "vfx/vfx-breakdown.md", None),
         ("vfx-review", "vfx/vfx-review.json", "vfx-review.schema.json"),
         ("vfx-review-notes", "vfx/vfx-review.md", None),
+    ),
+    "title-graphic-design": (
+        ("graphics-research", "graphics/research.json", "graphics-research.schema.json"),
+        ("graphics-research-notes", "graphics/research.md", None),
+        ("brand-guide", "graphics/brand-guide.json", "graphics-brand-guide.schema.json"),
+        ("brand-guide-notes", "graphics/brand-guide.md", None),
+        ("graphics-package", "graphics/graphics.json", "graphics-package.schema.json"),
+        ("graphics-notes", "graphics/graphics.md", None),
     ),
 }
 
@@ -301,7 +312,8 @@ def _register_phase2(producer: LineProducer, agent: str) -> None:
         "The phase 2 package is waiting on Ron. "
         "Previs means the prop lock, wardrobe, makeup, the continuity check, the camera package, "
         "the storyboard, the lighting plan, the grip plan, the shooting schedule, "
-        "the action breakdown, and the VFX breakdown. The Director did not approve them."
+        "the action breakdown, the VFX breakdown, and the title research and brand guide. "
+        "The Director did not approve them."
     )
     producer.run.save()
     _ensure_credits(producer)
@@ -321,6 +333,7 @@ def _ensure_credits(producer: LineProducer) -> None:
         ("Costume Designer", "Costume Designer"),
         ("Makeup and Hair", "Makeup and Hair"),
         ("VFX Supervisor", "VFX Supervisor"),
+        ("Title and Graphic Design", "Title and Graphic Design"),
     ):
         if role not in have:
             producer.record["credits"].append({"role": role, "name": name})

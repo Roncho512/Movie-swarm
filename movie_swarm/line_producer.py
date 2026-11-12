@@ -30,6 +30,7 @@ from movie_swarm.roles import (
     EDIT_STAGE,
     GATED_CREW,
     GENERATION_STAGE,
+    GRAPHICS_STAGE,
     PHASE2_BILLING,
     PHASE2_CREW,
     PICTURE_CREW,
@@ -350,6 +351,16 @@ class LineProducer:
         self.record["gate_decisions"].append(item)
         self.record["schedule"][stage] = "approved" if decision == "approved" else "rejected"
         self._close_gate_requests(stage, decision, by, note)
+        if stage == GRAPHICS_STAGE:
+            from movie_swarm.graphics import record_guide_decision
+
+            record_guide_decision(
+                self.production_dir,
+                decision,
+                by,
+                note,
+                item["decided_at"],
+            )
         if decision == "approved" and stage == DELIVERY_STAGE:
             from movie_swarm.delivery import mark_delivered
 
@@ -495,7 +506,18 @@ class LineProducer:
         if package.is_file() and self.gate_decision("previs") != "approved":
             lines.append(
                 "Approve or reject the previs gate. "
-                "Read the prop lock, the continuity check, the camera package, the storyboard, and the action breakdown."
+                "Read the prop lock, the continuity check, the camera package, the storyboard, the action breakdown, "
+                "and the title research."
+            )
+        guide = self.production_dir / "graphics" / "brand-guide.json"
+        if (
+            guide.is_file()
+            and is_stage_gated(GRAPHICS_STAGE, self.config_path)
+            and not self.gate_is_open(GRAPHICS_STAGE)
+        ):
+            lines.append(
+                "Approve or reject the graphics gate before any title, credit, or poster art is built. "
+                "Read graphics/brand-guide.md."
             )
         if (
             self.gate_decision("previs") == "approved"

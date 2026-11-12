@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "graphics-research.schema.json",
+  "title": "Graphics Research",
+  "description": "What Title and Graphic Design read before designing. Each item is sourced from a production file or marked inferred. The checker does not know which film this is.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id", "items", "fingerprints", "draft_method", "model", "note", "written_at"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/item" }
+    },
+    "fingerprints": { "$ref": "#/$defs/fingerprints" },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
+    "model": { "type": "string", "minLength": 1 },
+    "note": { "type": "string" },
+    "written_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["item_id", "topic", "text", "basis", "source_file", "source_field"],
+      "properties": {
+        "item_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "topic": { "type": "string", "enum": ["director", "setting", "genre", "period", "references"] },
+        "text": { "type": "string", "minLength": 1 },
+        "basis": { "type": "string", "enum": ["sourced", "inferred"] },
+        "source_file": { "type": ["string", "null"], "minLength": 1 },
+        "source_field": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "file_print": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "version", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "version": { "type": ["string", "null"] },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "fingerprints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["style_bible", "look"],
+      "properties": {
+        "style_bible": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/file_print" }] },
+        "look": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/file_print" }] }
+      }
+    }
+  }
+}

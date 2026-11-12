@@ -1,6 +1,6 @@
 # Roadmap
 
-Status as of 2026-11-11.
+Status as of 2026-11-12.
 
 ## Where things stand
 
@@ -24,6 +24,8 @@ Phase 8.5 is in review. The provider clients can call Anthropic, fal, and Eleven
 
 Phase 8.6 sits on that branch and is not merged. Six prep roles join the previs package: Assistant Director, Gaffer, Key Grip, Costume Designer, Makeup and Hair, and VFX Supervisor. Wardrobe and makeup are locked and checked the way props are. The VFX breakdown is written before the production gate. The VFX review is written with the dailies. No new gate was added. The locked $500 split did not change. The proof is Harbor Night. The Last Marker folder was not changed. Spent: $0.00 of $500.00.
 
+Phase 8.7 sits on the Phase 8.6 branch and is not merged. Title and Graphic Design researches the film's graphic identity, writes a brand guide from that research, and then specs titles, title cards, end credits, subtitle styling, a designed poster, and collateral. The Art Director still owns the in-film look. A graphics gate starts closed. The role bills to the Art line. The locked $500 split did not change. The proof is Harbor Night. The Last Marker folder was not changed. Spent: $0.00 of $500.00.
+
 ## Phases
 
 Each studio phase is proven on a synthetic fixture. The Last Marker is not the proof. Its approved previs waits for the last phase.
@@ -41,11 +43,12 @@ Each studio phase is proven on a synthetic fixture. The Last Marker is not the p
 | 8 | Final delivery: a master, variants, a poster, captions, QC, and a manifest, plus an offline studio run that stops at each gate. | Done, merged 2026-11-11, PR #11, merge 3fa56c0. Proven on Harbor Night and synthetic media. No paid call. Spent $0.00 of $500.00. |
 | 8.5 | Provider wiring: real HTTP clients for Anthropic, fal, and ElevenLabs, behind the generation gate, the stage line, the key, and `--live`. Offline stays the default. One test-shot command. | In review. Proven on Harbor Night with a fake HTTP transport. No live call. Spent $0.00 of $500.00. |
 | 8.6 | Crew the previs package was missing: Assistant Director, Gaffer, Key Grip, Costume Designer, Makeup and Hair, and VFX Supervisor. Wardrobe and makeup are checked like props. VFX is broken down before production and reviewed with the dailies. No new gate. No new budget line. | In review, stacked on Phase 8.5. Proven on Harbor Night. No live call. Spent $0.00 of $500.00. The Last Marker folder was not changed. |
+| 8.7 | Title and Graphic Design. Research, then a brand guide, then titles, title cards, end credits, subtitle styling, key art, and collateral. A graphics gate starts closed. No new budget line. | On branch, awaiting Ron's merge. Stacked on Phase 8.6. Proven on Harbor Night. No live call. Spent $0.00 of $500.00. The Last Marker folder was not changed. |
 | 9 | First film: the finished studio makes The Last Marker from its approved previs. | Not started |
 
 ## Gates
 
-Every stage switch in `config/gates.json` is on, including the generation gate, the dailies gate, the edit gate, the sound gate, the color-mix gate, and the delivery gate. Ron reviews each stage until that part of the crew is reliable. The end goal is smaller: Ron approves the look, and Ron approves the final cut. Turning a switch off is an edit to the config file, done later on purpose. It is not a code change.
+Every stage switch in `config/gates.json` is on, including the generation gate, the dailies gate, the edit gate, the sound gate, the color-mix gate, the delivery gate, and the graphics gate. Ron reviews each stage until that part of the crew is reliable. The end goal is smaller: Ron approves the look, and Ron approves the final cut. Turning a switch off is an edit to the config file, done later on purpose. It is not a code change.
 
 On run phase-1, Ron approved the treatment gate. That locked the $500 split. Ron approved the previs gate on 2026-11-10. The generation gate is not approved. A plan can be quoted without it. A paid call cannot. The dailies gate is not approved. The editor cannot run until it is. The edit gate is not approved. Sound cannot run until Ron locks picture. The sound gate is not approved. Color and mix cannot run until he approves both picture lock and the cue sheet. The color-mix gate is not approved. Final delivery cannot run until he approves the grade and the mix. The delivery gate is not approved. The film is not delivered until he approves the package. Other stage switches stay on.
 
@@ -86,11 +89,11 @@ These are made. The write-up is in [DECISIONS.md](DECISIONS.md).
 - The older video program still calls Seedance, and QA still calls its current Claude model. The generation pipeline quotes Gemini Omni 1.2 Flash. A live call for that model is refused because the rate card has no fal address for it. Connecting that address is still open, and it still waits on Ron's generation-gate approval and `--live`.
 - Audio, color, and delivery have no published price in this repo. A live call for one of them is refused unless Ron approves a one-call price override.
 
-Phase 1 records technical choices D15 through D22. Phase 2 records D31 through D37. Phase 3 records D42 through D46. Phase 4 records D47 through D51. Phase 5 records D52 through D57. Phase 6 records D58 through D63. Phase 7 records D64 through D70. Phase 8 records D71 through D79. Phase 8.5 records D80 through D86. Phase 8.6 records D87 through D93. They are proposals from the build. Ron has not accepted or rejected them in a decision entry. They are not closed.
+Phase 1 records technical choices D15 through D22. Phase 2 records D31 through D37. Phase 3 records D42 through D46. Phase 4 records D47 through D51. Phase 5 records D52 through D57. Phase 6 records D58 through D63. Phase 7 records D64 through D70. Phase 8 records D71 through D79. Phase 8.5 records D80 through D86. Phase 8.6 records D87 through D93. Phase 8.7 records D94 through D98. They are proposals from the build. Ron has not accepted or rejected them in a decision entry. They are not closed.
 
 ## What comes next
 
-Ron reviews Phase 8.5 and Phase 8.6. Phases 4 through 8 are merged. He can accept or reject D47 through D93. Merging does not approve a paid run, the dailies gate, the edit gate, the sound gate, the color-mix gate, or the delivery gate on The Last Marker. The generation gate stays closed until he approves it on a run. `--live` was not used. Phase 8.6 did not add a gate and did not change the locked split.
+Ron reviews Phase 8.5, Phase 8.6, and Phase 8.7. Phases 4 through 8 are merged. He can accept or reject D47 through D98. Merging does not approve a paid run, the dailies gate, the edit gate, the sound gate, the color-mix gate, the delivery gate, or the graphics gate on The Last Marker. The generation gate stays closed until he approves it on a run. `--live` was not used. Phase 8.6 did not add a gate. Phase 8.7 added a graphics gate that starts closed. Neither phase changed the locked split.
 
 The next phase is the first film. The Last Marker is made from its approved previs, still inside the $500 cap. Before that run can leave the machine, these are still open:
 
