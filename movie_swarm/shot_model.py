@@ -129,9 +129,12 @@ def format_shot_quote(producer, shot: dict, choice: dict, rates_path=None) -> st
     else:
         cost = "unknown"
     duration_part = f"duration {_duration_text(duration)}"
-    billed = priced["billed"] if priced["priced"] else None
-    if billed is not None and duration is not None and as_money(billed) != as_money(duration):
-        duration_part += f", billed {_duration_text(billed)}"
+    pieces = priced["pieces"] if priced["priced"] else []
+    if len(pieces) == 1 and duration is not None and as_money(pieces[0]) != as_money(duration):
+        duration_part += f" (sent as {_duration_text(pieces[0])})"
+    elif len(pieces) > 1:
+        shown = " and ".join(_duration_text(piece) for piece in pieces)
+        duration_part += f" (sent as {shown})"
     tier = choice.get("tier") or "unset"
     line = (
         f"Shot {shot.get('shot_id')}: model {choice['model']}, tier {tier}, "

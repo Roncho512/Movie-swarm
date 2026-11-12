@@ -11,30 +11,48 @@
           "label": "Gemini Omni 1.2 Flash",
           "resolution": "720p",
           "usd_per_second": "0.07",
+          "min_seconds": "3",
+          "max_seconds": "15",
+          "whole_seconds": false,
+          "duration_rule_status": "assumption",
           "status": "known",
           "source": "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/",
           "source_date": "2026-11-05",
-          "note": "The generation rate card publishes $0.07 per second at 720p. This model is unwired and planned. This repo has no fal address for it, so a live call is still refused."
+          "note": "The generation rate card publishes $0.07 per second at 720p. A clip shorter than 3 seconds is quoted at 3. That length rule is an assumption. Whole seconds were not verified, so a length inside 3 to 15 is not rounded. This model is unwired and planned. This repo has no fal address for it, so a live call is still refused."
         },
         "better": {
           "model": "seedance-2.0-fast",
           "label": "Seedance 2.0 fast",
           "resolution": "720p",
           "usd_per_second": "0.2419",
+          "min_seconds": "4",
+          "max_seconds": "15",
+          "whole_seconds": true,
+          "duration_rule_status": "verified",
+          "allowed_resolutions": ["480p", "720p"],
           "status": "known",
           "source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
           "source_date": "2026-11-10",
-          "note": "720p fast with audio is $0.2419 per second. The same number is on the generation rate card."
+          "duration_source": "https://fal.ai/models/bytedance/seedance-2.0/fast/text-to-video/api",
+          "duration_source_date": "2026-11-12",
+          "note": "720p fast with audio is $0.2419 per second. Duration is a whole number from 4 to 15, read from the fal API page on 2026-11-12. A shorter shot is quoted at 4 seconds. The same number is on the generation rate card."
         },
         "best": {
           "model": "seedance-2.0",
           "label": "Seedance 2.0",
           "resolution": "720p",
           "usd_per_second": "0.3034",
+          "min_seconds": "4",
+          "max_seconds": "15",
+          "whole_seconds": true,
+          "duration_rule_status": "verified",
+          "allowed_resolutions": ["480p", "720p", "1080p", "4k"],
           "status": "known",
           "source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
           "source_date": "2026-11-10",
-          "note": "720p with audio is $0.3034 per second. The same number is on the generation rate card."
+          "duration_source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video/api",
+          "duration_source_date": "2026-11-12",
+          "note": "720p with audio is $0.3034 per second. Duration is a whole number from 4 to 15, read from the fal API page on 2026-11-12. A shorter shot is quoted at 4 seconds. The same number is on the generation rate card."
         }
       },
       "top_option": {
@@ -42,11 +60,18 @@
         "label": "Seedance 2.0 1080p",
         "resolution": "1080p",
         "usd_per_second": "0.682",
+        "min_seconds": "4",
+        "max_seconds": "15",
+        "whole_seconds": true,
+        "duration_rule_status": "verified",
+        "allowed_resolutions": ["480p", "720p", "1080p", "4k"],
         "status": "unknown",
         "prefilled": true,
         "source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
         "source_date": "2026-11-12",
-        "note": "Prefilled from the public fal page, about $0.682 per second at 1080p. The generation rate card does not list 1080p, so this rate stays unknown."
+        "duration_source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video/api",
+        "duration_source_date": "2026-11-12",
+        "note": "Prefilled from the public fal page, about $0.682 per second at 1080p. The generation rate card does not list 1080p, so this rate stays unknown. The duration rule is the same verified 4 to 15 whole seconds. 1080p is an accepted resolution on that page."
       }
     },
     "sound-designer": {

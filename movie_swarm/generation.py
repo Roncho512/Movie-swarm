@@ -13,6 +13,7 @@ from pathlib import Path
 
 from movie_swarm.continuity import enforce_prompt, load_prop_lock
 from movie_swarm.dailies import review_dailies
+from movie_swarm.duration import clip_lengths, seconds_text as _seconds_text
 from movie_swarm.models import resolve_model
 from movie_swarm.money import as_money, money_number
 from movie_swarm.rates import generator_rate, load_rate_card, usd_per_second
@@ -341,7 +342,7 @@ def _pass_cost(shot: dict, model: str, card: dict) -> dict:
     if row is None or duration is None:
         reason = "No clip length was given, so this shot is not priced." if duration is None else ""
         return {"priced": False, "usd": as_money(0), "billed": as_money(0), "pieces": [], "notes": [reason] if reason else []}
-    lengths, notes = _clip_lengths(duration, row)
+    lengths, notes = clip_lengths(duration, row)
     billed = _sum(lengths)
     cost = usd_per_second(row) * billed
     return {
@@ -351,46 +352,6 @@ def _pass_cost(shot: dict, model: str, card: dict) -> dict:
         "pieces": [money_number(piece) for piece in lengths],
         "notes": notes,
     }
-
-
-def _clip_lengths(duration, row: dict) -> tuple[list[Decimal], list[str]]:
-    seconds = as_money(duration)
-    notes = []
-    floor = as_money(row["min_seconds"]) if row.get("min_seconds") is not None else None
-    cap = as_money(row["max_seconds"]) if row.get("max_seconds") is not None else None
-    label = row.get("label") or row.get("model")
-    if floor is not None and seconds < floor:
-        notes.append(
-            f"The shot is {_seconds_text(seconds)} seconds. {label} publishes a minimum of "
-            f"{_seconds_text(floor)} seconds, so the quote uses {_seconds_text(floor)}. This is an assumption."
-        )
-        return [floor], notes
-    if cap is None or seconds <= cap:
-        if floor is None and cap is None:
-            notes.append(
-                f"The quote uses the shot length for {label}. This card does not apply a length limit for that generator."
-            )
-        return [seconds], notes
-    pieces = []
-    remaining = seconds
-    while remaining > 0:
-        piece = cap if remaining > cap else remaining
-        if piece <= 0:
-            break
-        if floor is not None and piece < floor:
-            notes.append(
-                f"The last piece was shorter than {_seconds_text(floor)} seconds, so it is quoted at the published minimum. "
-                "This is an assumption."
-            )
-            piece = floor
-        pieces.append(piece)
-        remaining = as_money(remaining - piece)
-        if len(pieces) > 100:
-            break
-    notes.append(
-        f"The shot is longer than {_seconds_text(cap)} seconds, so it is quoted as {len(pieces)} clips. This is an assumption."
-    )
-    return pieces, notes
 
 
 def _resolve(purpose: str, shot: dict, routing_path) -> tuple[str, bool]:
@@ -586,10 +547,3 @@ def _sum(values) -> Decimal:
             continue
         total += as_money(value)
     return total
-
-
-def _seconds_text(value) -> str:
-    number = as_money(value)
-    if number == number.to_integral():
-        return str(int(number))
-    return format(number.normalize(), "f")

@@ -1,6 +1,6 @@
 {
-  "version": "1.2.0",
-  "checked_on": "2026-11-10",
+  "version": "1.3.0",
+  "checked_on": "2026-11-12",
   "assumptions": [
     "Preview and final both use the published 720p Gemini Omni 1.2 Flash rate. Google says a draft can be 360p, and it does not publish a separate 360p price.",
     "Each shot is quoted as two takes: one preview and one final.",
@@ -13,7 +13,10 @@
     "Color and mix are not priced. This card has no grade or mix rate, so a paid color or mix call is unknown. This build does not make one.",
     "Delivery is not priced. This card has no packaging rate, so a paid delivery call is unknown. This build does not make one.",
     "A generator row may name a provider and an endpoint. Those are call addresses already stored in config/model-routing.json. They are not prices. A row without an endpoint cannot be called live.",
-    "Audio, color, and delivery still have no published dollar amount in this repo. A live call for one of those is refused until a per-call price override is approved."
+    "Audio, color, and delivery still have no published dollar amount in this repo. A live call for one of those is refused until a per-call price override is approved.",
+    "Seedance 2.0 and Seedance 2.0 fast accept duration auto, or a whole number of seconds from 4 to 15. A shot is rounded up to the next allowed second and quoted at that length. The rule was read from the fal API pages on 2026-11-12. Fast accepts 480p and 720p. Seedance 2.0 also accepts 1080p and 4k. This row still prices 720p.",
+    "Kling 4.0 on fal accepts a whole number of seconds from 3 to 30, at 720p or 1080p. That duration rule was read from the fal text-to-video page on 2026-11-12. The row still has no endpoint, so a live call is refused. The per-shot multi-prompt minimum of 1 second is not the rule for this row.",
+    "Gemini Omni's 3 to 15 second quote is still an assumption. Whole seconds were not verified for that model, so a length inside that range is not rounded."
   ],
   "generators": [
     {
@@ -23,6 +26,8 @@
       "resolution": "720p",
       "min_seconds": "3",
       "max_seconds": "15",
+      "whole_seconds": false,
+      "duration_rule_status": "assumption",
       "source": "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/",
       "source_date": "2026-11-05",
       "quote": "$0.07 per second for 720p video. Clips run from 3 to 15 seconds.",
@@ -34,33 +39,58 @@
       "label": "Seedance 2.0",
       "usd_per_second": "0.3034",
       "resolution": "720p",
+      "allowed_resolutions": ["480p", "720p", "1080p", "4k"],
+      "min_seconds": "4",
+      "max_seconds": "15",
+      "whole_seconds": true,
+      "duration_format": "string",
+      "duration_rule_status": "verified",
+      "duration_source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video/api",
+      "duration_source_date": "2026-11-12",
       "provider": "fal.ai",
       "endpoint": "bytedance/seedance-2.0/text-to-video",
       "with_audio": true,
       "source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
       "source_date": "2026-11-10",
-      "quote": "720p with audio is $0.3034 per second."
+      "quote": "720p with audio is $0.3034 per second. Duration is auto or a whole number from 4 to 15 seconds."
     },
     {
       "model": "seedance-2.0-fast",
       "label": "Seedance 2.0 fast",
       "usd_per_second": "0.2419",
       "resolution": "720p",
+      "allowed_resolutions": ["480p", "720p"],
+      "min_seconds": "4",
+      "max_seconds": "15",
+      "whole_seconds": true,
+      "duration_format": "string",
+      "duration_rule_status": "verified",
+      "duration_source": "https://fal.ai/models/bytedance/seedance-2.0/fast/text-to-video/api",
+      "duration_source_date": "2026-11-12",
       "provider": "fal.ai",
       "endpoint": "bytedance/seedance-2.0/fast/text-to-video",
       "with_audio": true,
       "source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
       "source_date": "2026-11-10",
-      "quote": "720p fast with audio is $0.2419 per second."
+      "quote": "720p fast with audio is $0.2419 per second. Duration is auto or a whole number from 4 to 15 seconds. 480p and 720p are the resolutions this model accepts."
     },
     {
       "model": "kling-4.0",
       "label": "Kling 4.0",
       "usd_per_second": "0.157",
       "resolution": "720p",
+      "allowed_resolutions": ["720p", "1080p"],
+      "min_seconds": "3",
+      "max_seconds": "30",
+      "whole_seconds": true,
+      "duration_format": "integer",
+      "duration_rule_status": "verified",
+      "duration_source": "https://fal.ai/models/kling/v4/text-to-video/api",
+      "duration_source_date": "2026-11-12",
       "source": "https://kling.ai/document-api/pricing/base/video.md",
       "source_date": "2026-11-10",
-      "quote": "Kling 4.0 with no input video is $0.157 per second at 720p."
+      "quote": "Kling 4.0 with no input video is $0.157 per second at 720p.",
+      "note": "No provider endpoint is configured, so a live call is refused. The fal text-to-video page accepts a whole number of seconds from 3 to 30, at 720p or 1080p. The per-shot multi-prompt minimum of 1 second is not used for this row."
     }
   ]
 }

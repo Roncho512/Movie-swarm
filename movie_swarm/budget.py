@@ -22,6 +22,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
 
+from movie_swarm.duration import billed_runtime
 from movie_swarm.gates import budget_cap_usd
 from movie_swarm.handoff import read_handoff, write_handoff
 from movie_swarm.money import as_money, money_number
@@ -283,7 +284,13 @@ def contingency_used(record: dict) -> Decimal:
     for entry in record.get("ledger") or []:
         if entry.get("kind") == "dry-run":
             continue
-        total += as_money(entry.get("contingency_usd") or 0)
+        amount = as_money(entry.get("contingency_usd") or 0)
+        if entry.get("kind") == "release":
+            total -= amount
+        else:
+            total += amount
+    if total < 0:
+        return as_money(0)
     return total
 
 
@@ -320,9 +327,12 @@ def report_from_record(production_dir: str | Path, record: dict, spent_total: fl
         if entry.get("kind") == "dry-run":
             overages += as_money(entry.get("overage_usd") or 0)
             continue
+        sign = -1 if entry.get("kind") == "release" else 1
         stage = entry.get("stage")
-        spent_by_stage[stage] = spent_by_stage.get(stage, as_money(0)) + as_money(entry.get("amount_usd") or 0)
-        overages += as_money(entry.get("overage_usd") or 0)
+        spent_by_stage[stage] = spent_by_stage.get(stage, as_money(0)) + (
+            sign * as_money(entry.get("amount_usd") or 0)
+        )
+        overages += sign * as_money(entry.get("overage_usd") or 0)
     math = compute(document)
     word, gap = position_word(spent_total, math.total)
     if word == "on":
@@ -566,17 +576,21 @@ def _line_estimate(name, tier, runtime, takes, fix_rate, picture, rates, inputs)
     if name == "production":
         if picture["usd_per_second"] is None:
             return None, picture["status"], picture["note"]
-        amount = as_money(runtime * takes * picture["usd_per_second"])
-        return amount, picture["status"], picture["note"]
+        billed, notes = billed_runtime(runtime, inputs.get("shots") or 1, picture)
+        amount = as_money(billed * takes * picture["usd_per_second"])
+        detail = picture["note"]
+        if billed != runtime and notes:
+            detail = f"{detail} {notes[0]}".strip()
+        return amount, picture["status"], detail
     if name == "fix-loop":
         if picture["usd_per_second"] is None:
             return None, picture["status"], "The fix-loop estimate uses the picture rate. " + picture["note"]
-        amount = as_money(runtime * fix_rate * picture["usd_per_second"])
-        return (
-            amount,
-            picture["status"],
-            "One extra preview for each shot the fix rate counts. Priced at the production tier.",
-        )
+        billed, notes = billed_runtime(runtime, inputs.get("shots") or 1, picture)
+        amount = as_money(billed * fix_rate * picture["usd_per_second"])
+        detail = "One extra preview for each shot the fix rate counts. Priced at the production tier."
+        if billed != runtime and notes:
+            detail = f"{detail} {notes[0]}".strip()
+        return amount, picture["status"], detail
     if name == "sound-designer":
         return _sound_estimate(rates, tier, runtime, inputs)
     if name == MARKETING_STAGE:
@@ -630,7 +644,18 @@ def _rate_row(row: dict, missing: str) -> dict:
         return {"usd_per_second": None, "status": "unknown", "note": missing}
     if status != "known":
         note = note or "This price is prefilled. The repo has not verified it, so the rate stays unknown."
-    return {"usd_per_second": price, "status": status, "note": note}
+    priced = {"usd_per_second": price, "status": status, "note": note}
+    for key in (
+        "min_seconds",
+        "max_seconds",
+        "whole_seconds",
+        "duration_rule_status",
+        "label",
+        "model",
+    ):
+        if key in row:
+            priced[key] = row[key]
+    return priced
 
 
 def _read_json(path: Path) -> dict:
