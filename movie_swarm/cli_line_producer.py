@@ -21,7 +21,9 @@ from movie_swarm.budget import (
 )
 from movie_swarm.line_producer import LineProducer, LineProducerError
 from movie_swarm.llm import LLMError
+from movie_swarm.models import ModelRoutingError
 from movie_swarm.providers import llm_for_command, run_test_shot
+from movie_swarm.shot_model import ShotModelError
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -95,11 +97,13 @@ def main(argv: list[str] | None = None) -> int:
         help="Prepare exactly one picture call for one shot. Sends it only with --live, and only when the gate, the key, and the price all allow it.",
     )
     shot.add_argument("--shot", required=True, help="Shot id, for example s01-sh01")
+    shot.add_argument("--model", help="Picture model id from the rate card. Wins over --tier and the budget.")
+    shot.add_argument("--tier", choices=["good", "better", "best"], help="Picture tier. Wins over the budget tier.")
 
     args = parser.parse_args(argv)
     try:
         return _run(args)
-    except (LineProducerError, BudgetError, OSError, json.JSONDecodeError) as exc:
+    except (LineProducerError, BudgetError, ShotModelError, ModelRoutingError, OSError, json.JSONDecodeError) as exc:
         print(exc)
         return 1
 
@@ -182,6 +186,8 @@ def _run(args) -> int:
             args.shot,
             live=args.live,
             settings=CallSettings(price_override=args.price_override),
+            model=args.model,
+            tier=args.tier,
         )
         print(result["message"])
         if result.get("output"):

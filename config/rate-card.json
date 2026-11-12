@@ -14,7 +14,7 @@
           "status": "known",
           "source": "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/",
           "source_date": "2026-11-05",
-          "note": "The generation rate card publishes $0.07 per second at 720p. This repo has no fal address for this model, so a live call is still refused."
+          "note": "The generation rate card publishes $0.07 per second at 720p. This model is unwired and planned. This repo has no fal address for it, so a live call is still refused."
         },
         "better": {
           "model": "seedance-2.0-fast",

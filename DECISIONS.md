@@ -949,3 +949,66 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: With no key, the files are labeled `offline-deterministic` and still name the model they would have used. Harbor Night's proof spends $0.00. The provider rules from D80 through D86 are unchanged.
 - Who decided: Cursor cloud agent. Pending Ron's approval at merge.
 
+## D109 — Phase 8.9, the key-test fixes
+
+- Status: decided
+- Date: 2026-11-12
+- Context: The first real key test, on an iMac, found that the machine setup, the `.env` file, and the test-shot model did not match the guide. A live call for the routed picture model was refused because that model has no fal address.
+- Decision: Fix those gaps in the engine and the guide. No paid call is made in this phase. The production folder for the first film is not changed.
+- Consequences: The proof stays on Harbor Night. Spent on that proof stays $0.00. The choices for how the fixes work are D110 through D115. Those are proposals.
+- Who decided: Ron, 2026-11-12
+
+## D110 — An unwired picture model is refused
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: D86 refuses a live picture call when the rate row has no endpoint. The routed good tier is Gemini Omni 1.2 Flash, which is in that state. One option was to fall back to the cheapest wired model, Seedance 2.0 fast, and say so. That model costs more than the good tier.
+- Decision: Do not switch models. If the resolved model has no endpoint, the call is refused. The message names the wired picture models and the `--model` or `--tier` flag that selects each one. Gemini Omni 1.2 Flash stays on the rate card as planned, with a price and no endpoint. Kling stays unwired the same way.
+- Consequences: The calculator and a run still name the same model for a tier. A run of the good tier does not silently bill Seedance 2.0 fast. The guide's first real shot names that model on purpose. D86 still holds: only a cited endpoint can be called.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D111 — Test-shot precedence, and tiers that match the budget
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: D105 puts good, better, and best on the budget rate card. A test shot ignored that file and always used the preview purpose, which is the unwired good-tier model. The calculator and a real shot could name different models.
+- Decision: A test shot resolves `--model`, then `--tier`, then the film's `budget.json` tier for that stage, then `config/model-routing.json`. The production tiers in the routing file match the budget rate card. Good is Gemini Omni 1.2 Flash. Better is Seedance 2.0 fast. Best is Seedance 2.0. A model or tier that is not on the rate card is rejected before a call. The generation quote still prices the preview and final purposes, so an existing quote does not change.
+- Consequences: `--model seedance-2.0-fast` and `--tier better` are the same picture model. A film whose budget says best uses Seedance 2.0 when the command does not pass a flag. A film with no budget file still uses the preview purpose.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D112 — The commands load `.env` and do not override the shell
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: D85 keeps keys in the environment. The guide told Ron to copy `.env.example`, and the commands did not read `.env`. He had to load it in the shell.
+- Decision: Every command in `scripts/` loads the repo-root `.env` at start. A variable that is already set is left alone, including a variable set to an empty string. A missing file is ignored. Values are not printed, returned, or logged. python-dotenv is not a dependency. The loader is the standard library.
+- Consequences: Filling `.env` is enough for a later `--live` command. A key exported in the shell still wins. `.env` stays gitignored. `.env.example` stays empty.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D113 — A test shot prints its quote before anything is sent
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: A dry run said that offline is the default and did not show the model, the tier, or the price. Ron could not see the estimate before a live call.
+- Decision: A dry run prints, for the shot, the model, the tier, the provider, the resolution, the duration, the estimated cost from `config/generation-rates.json`, the production line remaining, and the film remaining. It says nothing was sent. The same summary is printed before a `--live` call, before any request is sent.
+- Consequences: The price uses the same per-second math as the generation quote. Seedance 2.0 fast at 720p is $0.2419 per second. Harbor Night's boarded first shot is 2.087 seconds, so that dry run estimates $0.5048. A shot of 4 seconds at the same rate is $0.9676. No key is read for the dry run.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D114 — Doctor checks the machine and does not spend
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: The system Python on the test machine did not have the requirements, and the guide had no install step. There was no free check for ffmpeg, `.env`, or the keys.
+- Decision: `scripts/doctor.py` prints the Python version, whether the requirements import, whether ffmpeg is on the path, whether `.env` is present, whether each of the three keys is set, and whether an asset root is set. Keys are yes or no. Paths and values are not printed for the keys or the asset root. There is no network call unless `--ping` is passed. A ping is Anthropic `GET /v1/models` and ElevenLabs `GET /v1/voices`, and the report is the HTTP status only. fal is not pinged. This repo has no free fal auth check. The line says it is not checked and needs a paid test shot.
+- Consequences: A missing import exits with status 1. A missing key, a missing `.env`, or a missing ffmpeg is reported and does not by itself fail the command. The ElevenLabs key needs the Voices: Read permission for the voice list. The guide says so.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D115 — The readable treatment exists before the gate
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: The guide told Ron to read `treatment/treatment.md` before the treatment gate. Intake writes that file. A copied film that already has `treatment.json` did not get the markdown until the gate was approved.
+- Decision: If `treatment/treatment.json` exists and `treatment/treatment.md` does not, starting the run or stopping at the treatment gate writes the markdown from the JSON. That write does not approve the gate and does not change the JSON. The guide tells Ron to read the markdown, then approve.
+- Consequences: Harbor Night's fixture still has no markdown in the repo. The first status or studio stop on a copy writes it. An approved gate still rewrites both files, as it did before.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+

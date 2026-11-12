@@ -1,5 +1,5 @@
 {
-  "version": "1.11.0",
+  "version": "1.12.0",
   "roles": {
     "line-producer": {
       "provider": "anthropic",
@@ -75,10 +75,15 @@
       "provider": "fal.ai",
       "model": "seedance-2.0",
       "source": "agents/05-production/src/config.py",
-      "notes": "The older production program still calls Seedance 2.0 on fal.ai. The generation pipeline uses the purposes below. Preview and final use Gemini Omni 1.2 Flash, the cheap picture model. Seedance and Kling stay alternates on the rate card. A routing override can name one for a shot. A live call uses the fal queue only when that model's rate row names an endpoint, and only when --live is passed. The default is offline. A dry run reads no key.",
+      "notes": "The older production program still calls Seedance 2.0 on fal.ai. The generation pipeline uses the purposes below. Preview and final use Gemini Omni 1.2 Flash, the cheap picture model. The tiers match the budget rate card. Good is Gemini Omni 1.2 Flash, which is planned and has no endpoint. Better is Seedance 2.0 fast. Best is Seedance 2.0. A test shot uses --model, then --tier, then the film budget's tier for this stage, then this file. A model with no endpoint is refused. The message lists the wired models and the flag. It does not switch models. Seedance and Kling stay on the rate card. A routing override can name one for a shot. A live call uses the fal queue only when that model's rate row names an endpoint, and only when --live is passed. The default is offline. A dry run reads no key.",
       "purposes": {
         "preview": "gemini-omni-1.2-flash",
         "final": "gemini-omni-1.2-flash"
+      },
+      "tiers": {
+        "good": "gemini-omni-1.2-flash",
+        "better": "seedance-2.0-fast",
+        "best": "seedance-2.0"
       },
       "endpoints": {
         "text-to-video": "bytedance/seedance-2.0/text-to-video",

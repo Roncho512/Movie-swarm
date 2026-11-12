@@ -30,6 +30,15 @@
           "purposes": {
             "type": "object",
             "additionalProperties": { "type": "string" }
+          },
+          "tiers": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "good": { "type": "string" },
+              "better": { "type": "string" },
+              "best": { "type": "string" }
+            }
           }
         }
       }
