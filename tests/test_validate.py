@@ -1028,6 +1028,17 @@ def test_each_schema_accepts_a_minimal_document():
             "note": "Sample.",
             "written_at": "2026-01-01T00:00:00Z",
         },
+        "providers.schema.json": {
+            "version": "1.0.0",
+            "fal": {
+                "wait_seconds": 600,
+                "backoff_start_seconds": 5,
+                "backoff_step_seconds": 5,
+                "backoff_max_seconds": 15,
+                "progress_every_seconds": 30,
+                "note": "Sample.",
+            },
+        },
     }
     on_disk = {path.name for path in schemas_dir().glob("*.schema.json")}
     assert on_disk == set(samples)

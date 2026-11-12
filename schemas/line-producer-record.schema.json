@@ -74,6 +74,11 @@
           },
           "estimate_usd": { "type": ["number", "null"], "minimum": 0 },
           "actual_usd": { "type": ["number", "null"], "minimum": 0 },
+          "actual_source": {
+            "type": "string",
+            "enum": ["estimate", "provider"],
+            "description": "Where the booked dollars came from. estimate means the provider did not report a charge, so the amount is still the quote."
+          },
           "request_hash": { "type": ["string", "null"] },
           "call_phase": {
             "anyOf": [

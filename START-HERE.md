@@ -25,7 +25,9 @@ python3 scripts/doctor.py
 
 Fill the three names in `.env`. The commands in `scripts/` load that file. A variable already set in the shell is left as it is. The values are not printed. Do not commit `.env`.
 
-Doctor prints the Python version, whether the requirements import, whether ffmpeg is on the path, whether `.env` is there, and whether each key is set. It prints yes or no. It does not print a key, and it does not use the network. `python3 scripts/doctor.py --ping` asks Anthropic and ElevenLabs with a read-only request and prints the HTTP status. fal is not checked that way. This repo has no free fal auth check. That line says it needs a paid test shot.
+`MOVIE_SWARM_ASSET_ROOT` is optional. Set it in `.env` when finished media should leave the production folder. A non-interactive shell does not read `~/.zshrc`, so a path that lives only there is invisible to these commands. Leave the name empty to keep files in the production folder. Doctor does not print the path.
+
+Doctor prints the Python version, whether the requirements import, whether ffmpeg is on the path, whether `.env` is there, and whether each key is set. It prints yes or no. It does not print a key, and it does not use the network. It also says where the asset root came from, the shell, `.env`, or `config/assets.json`, and whether that folder exists. `python3 scripts/doctor.py --ping` asks Anthropic and ElevenLabs with a read-only request and prints the HTTP status. fal is not checked that way. This repo has no free fal auth check. That line says it needs a paid test shot.
 
 ## 1. Open the film agent
 
@@ -175,6 +177,15 @@ python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 --
   --shot s01-sh01 --model seedance-2.0-fast
 ```
 
+A Seedance job can take a few minutes. The first live fast shot took about four minutes at fal. The command waits 10 minutes by default. While it waits it prints a short line about every 30 seconds: the elapsed time, the fal status such as `IN_QUEUE` or `IN_PROGRESS`, and the queue position when fal sends one. The first pause is 5 seconds. The pause then grows to 15 seconds. The numbers live in `config/providers.json`. To wait a different length on this one call, pass `--wait` with the seconds:
+
+```bash
+python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 --live test-shot \
+  --shot s01-sh01 --model seedance-2.0-fast --wait 900
+```
+
+If the wait ends before fal finishes, the command says the provider did not finish before the poll limit. The estimate stays booked. Nothing is sent again. Run the same command once more. It checks that same request and does not start a new one.
+
 A test shot with no `--model` and no `--tier` uses the film's budget tier, then the routing default. The good tier is Gemini Omni 1.2 Flash. That model is planned and has no fal address, so a live call for it is refused and the message lists the wired models and the flag. It does not switch models on its own.
 
 Going past a line, or past the film budget, pauses the spend and writes `runs/<run-id>/requests/req-001.json`. The status names the request. This records a $20 director spend, then pauses the next dollar, then approves it. The approval does not edit `budget.json`.
@@ -198,7 +209,7 @@ python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 bu
 
 ## 7. Where the film goes
 
-Finished media uses `MOVIE_SWARM_ASSET_ROOT` when that variable is set. Otherwise it uses `asset_root` in `config/assets.json`. That value is null today, so the package stays in the production folder under `delivery/`.
+Finished media uses `MOVIE_SWARM_ASSET_ROOT` when that variable is set. Put the path in `.env` when the shell does not set it. Otherwise it uses `asset_root` in `config/assets.json`. That value is null today, so the package stays in the production folder under `delivery/`. Doctor names the source and whether the folder exists. It does not print the path.
 
 The package holds the master, the variants the delivery spec asked for, a poster frame, captions, the QC report, and `delivery/delivery-manifest.json` with a SHA-256 checksum for each file that was written. When a trailer was cut, the package also has `delivery/marketing/` and a short usage sheet. Posting anything stays with Ron.
 
@@ -213,6 +224,8 @@ The package holds the master, the variants the delivery spec asked for, a poster
 - A live picture call says no endpoint is configured: that model is unwired. Pass `--model seedance-2.0-fast` or `--tier better` for the cheapest wired picture model. The message lists the choices.
 - A live call says the rate is unknown: the rate card has no verified price. Pass `--price-override` only for that one call, and approve the request it writes.
 - A failed call left an estimate on the ledger and produced nothing: `python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 release --entry spend-014 --by ron --note "Nothing was produced."` The original entry stays. The running total goes back down.
+- A live picture call says the provider did not finish before the poll limit: fal is still working. The estimate stays booked. Run the same test shot again. It checks the same request and does not send a new one. Pass `--wait` with more seconds if you want a longer wait on that call.
+- Status says part of the spend is still the estimate: fal did not report a dollar amount. That part of the ledger is the quote, not a measured charge.
 - Intake says the treatment is already approved: do not draft again. Read `treatment/treatment.md`.
 
 ## What each role does

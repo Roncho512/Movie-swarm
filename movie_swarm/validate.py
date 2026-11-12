@@ -32,6 +32,7 @@ _SCHEMA_BY_FILENAME = {
     "run-state.json": "run-state.schema.json",
     "gates.json": "gate-config.schema.json",
     "model-routing.json": "model-routing.schema.json",
+    "providers.json": "providers.schema.json",
     "assets.json": "asset-config.schema.json",
     "treatment.json": "treatment.schema.json",
     "line-producer.json": "line-producer-record.schema.json",

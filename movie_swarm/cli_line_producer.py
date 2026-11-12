@@ -100,6 +100,11 @@ def main(argv: list[str] | None = None) -> int:
     shot.add_argument("--shot", required=True, help="Shot id, for example s01-sh01")
     shot.add_argument("--model", help="Picture model id from the rate card. Wins over --tier and the budget.")
     shot.add_argument("--tier", choices=["good", "better", "best"], help="Picture tier. Wins over the budget tier.")
+    shot.add_argument(
+        "--wait",
+        type=float,
+        help="Seconds to wait for fal to finish this shot. The default is 600, from config/providers.json.",
+    )
 
     release = sub.add_parser(
         "release",
@@ -197,11 +202,14 @@ def _run(args) -> int:
     if args.command == "test-shot":
         from movie_swarm.providers import CallSettings
 
+        if args.wait is not None and args.wait <= 0:
+            print("Pass --wait as a number of seconds greater than zero. Nothing was sent.")
+            return 1
         result = run_test_shot(
             producer,
             args.shot,
             live=args.live,
-            settings=CallSettings(price_override=args.price_override),
+            settings=CallSettings(price_override=args.price_override, wait_seconds=args.wait),
             model=args.model,
             tier=args.tier,
         )

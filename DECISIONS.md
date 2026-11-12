@@ -1048,3 +1048,48 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: A connection error, a client rejection, and a completed result that is an error body all net to $0 and keep the history. A timeout or a server error still leaves the estimate booked. The hand command is how that stuck row is released.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
+## D120 — Phase 8.11, the live-shot cleanup
+
+- Status: decided
+- Date: 2026-11-12
+- Context: The first successful live picture shot used Seedance 2.0 fast, 4 seconds, 720p, through the fal queue. The submit worked. fal took about 241 seconds. The poll gave up after about 90 seconds and left the estimate booked. Two re-runs collected the clip. The re-run checked the same request and did not send a new one. fal did not report a dollar amount. The older picture program still posted a wrapped body. Doctor said the asset root was not set, because a non-interactive shell does not read `~/.zshrc`.
+- Decision: Clean that up in the engine. No paid call is made in this phase. The production folder for the first film is not changed.
+- Consequences: The proof stays on Harbor Night. Spent on that proof stays $0.00. The choices for how the cleanup works are D121 through D124. Those are proposals.
+- Who decided: Ron, 2026-11-12
+
+## D121 — A fal picture call waits ten minutes, and says so while it waits
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: The poll stopped after 40 checks, two seconds apart, about 90 seconds in all. A real Seedance job can take a few minutes. The live one took about four.
+- Decision: The default wait is 600 seconds, from `config/providers.json`. The first pause is 5 seconds. Each later pause grows by 5 seconds until it reaches 15. A progress line prints about every 30 seconds: the elapsed time, the fal status, and the queue position when fal sends one. `--wait` on a test shot replaces the 600 seconds for that one call. A timeout still leaves the estimate booked, and a re-run checks the same request and does not send a new one. The message is the one already used.
+- Consequences: A four-minute Seedance job finishes inside the default wait. A shorter `--wait` can still time out on purpose. Tests pass a pause of zero, so they do not sit on the clock. No live call is made to prove the window.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D122 — The older fal client uses the same queue contract
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: `agents/05-production/src/fal_client.py` posted `{"input": payload}` and built status URLs from the full endpoint path. The generation pipeline was fixed in Phase 8.10. This older program was not. The picture command that the Director still launches imports this file, so the import has to keep working when that process starts from the agent folder.
+- Decision: The queue helpers post the input fields at the top of the body. They poll `status_url` and `response_url` from the submit response, and fall back to the first two path segments. A body with `detail` or `error` fails the call and does not keep the echoed input. Seedance duration is rounded with the same rule as the pipeline. The shared helpers are imported when a queue call runs, not when the file is imported. `generate_shot` still uses the fal SDK. The contract tests use a fake session.
+- Consequences: A caller of the older queue helpers no longer sends the wrapped body or the full-path status URL. The production estimate command still starts. No paid call is made.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D123 — Doctor names where the asset root came from
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: Ron set `MOVIE_SWARM_ASSET_ROOT` in `~/.zshrc`. The film commands load `.env`. A non-interactive shell does not read `~/.zshrc`, so doctor said the asset root was not set. D114 said not to print the path.
+- Decision: `.env.example` lists `MOVIE_SWARM_ASSET_ROOT` with an empty value and a comment. Doctor says whether the value came from the shell, from `.env`, or from `config/assets.json`, and whether that folder exists. It does not print the path. The shell still wins over `.env`.
+- Consequences: A path that lives only in the shell profile is still invisible until it is also in `.env` or the shell that launches the command. No real path is written in the repo.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D124 — A booked cost with no reported dollars is an estimate
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: The live fal result had no dollar amount. The ledger kept the estimate in `amount_usd` and left `actual_usd` null. Status printed that number as spent, which reads like a measured charge.
+- Decision: A settled call whose provider did not report dollars sets `actual_source` to `estimate`. A call that did report dollars sets `actual_source` to `provider`. The booked amount stays the estimate when the source is `estimate`. Status adds a line when any of that spend is still the estimate, and it says the provider did not report a dollar amount. A release takes that entry off the line.
+- Consequences: A report can tell a quote from a measured charge. The running total does not change. The original ledger row stays.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
