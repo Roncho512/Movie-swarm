@@ -1,0 +1,34 @@
+{
+  "version": "1.0.0",
+  "total_usd": 500,
+  "currency": "USD",
+  "line_shares": {
+    "production": 54,
+    "sound-designer": 11,
+    "fix-loop": 10,
+    "qa": 9,
+    "art-director": 5,
+    "director": 4,
+    "editor": 3,
+    "cinematographer": 2,
+    "screenwriter": 1,
+    "line-producer": 1
+  },
+  "contingency_share": 10,
+  "trailer_on": true,
+  "marketing_share": 10,
+  "tiers": {
+    "production": "better",
+    "sound-designer": "good",
+    "fix-loop": "good",
+    "qa": "good",
+    "art-director": "good",
+    "director": "good",
+    "editor": "good",
+    "cinematographer": "good",
+    "screenwriter": "good",
+    "line-producer": "good"
+  },
+  "production_resolution": "720p",
+  "note": "Calculator export. The trailer is a line on this budget."
+}

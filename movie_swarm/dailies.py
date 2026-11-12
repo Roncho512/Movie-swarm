@@ -609,6 +609,11 @@ def _fix_loop_fit(estimate: float, allocations: dict | None, spent: float, has_r
 
 
 def _budget_from_producer(producer) -> tuple[dict | None, float]:
+    from movie_swarm.budget import lines_for_check
+
+    filmed = lines_for_check(producer.production_dir)
+    if filmed is not None:
+        return filmed, float(producer.stage_spent("fix-loop"))
     record = producer.record.get("stage_allocations") or {}
     if record.get("status") != "approved":
         return None, 0.0

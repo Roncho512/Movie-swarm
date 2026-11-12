@@ -262,9 +262,14 @@ def run_sound(producer, call) -> str:
         raise SoundError(
             "The edit gate is still closed. Ron has not approved picture lock, so sound was not spotted."
         )
+    from movie_swarm.budget import lines_for_check
+
+    filmed = lines_for_check(producer.production_dir)
     allocations = {}
     record = producer.record["stage_allocations"]
-    if record.get("status") == "approved":
+    if filmed is not None:
+        allocations = filmed
+    elif record.get("status") == "approved":
         allocations = dict(record.get("split") or {})
     sheet = spot_production(
         production,

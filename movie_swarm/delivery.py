@@ -156,12 +156,21 @@ def run_delivery(producer, call) -> str:
 
     if guide_is_approved(production):
         build_graphics(production)
-    split = dict((producer.record.get("stage_allocations") or {}).get("split") or {})
+    from movie_swarm.budget import file_total, lines_for_check
+
+    filmed = lines_for_check(production)
+    if filmed is not None:
+        split = filmed
+    else:
+        split = dict((producer.record.get("stage_allocations") or {}).get("split") or {})
+    cap = file_total(production)
+    if cap is None:
+        cap = float(producer.run.data["budget_cap_usd"])
     result = deliver_production(
         production,
         color_mix_approved=True,
         spent_usd=float(producer.run.data["cost_usd"]),
-        budget_cap_usd=float(producer.run.data["budget_cap_usd"]),
+        budget_cap_usd=float(cap),
         stage_split=split,
         stage_spent={stage: producer.stage_spent(stage) for stage in split},
         gate_records=list(producer.record.get("gate_decisions") or []),

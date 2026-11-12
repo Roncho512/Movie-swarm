@@ -12,7 +12,19 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
-from movie_swarm.gates import budget_cap_usd, is_stage_gated, load_gate_config, would_exceed_budget
+from movie_swarm.budget import (
+    MARKETING_STAGE,
+    BudgetError,
+    contingency_left,
+    file_total,
+    load_film_budget,
+    load_rate_card,
+    read_estimate_inputs,
+    set_tier,
+    stage_estimate_usd,
+    write_film_budget,
+)
+from movie_swarm.gates import budget_cap_usd, is_stage_gated, load_gate_config
 from movie_swarm.handoff import read_handoff, write_handoff
 from movie_swarm.money import as_money, money_number
 from movie_swarm.redact import redact
@@ -55,6 +67,19 @@ class SpendResult:
 
 
 @dataclass
+class Fit:
+    """How a spend sits on the line, the contingency reserve, and the film budget."""
+
+    fits: bool
+    overage: object
+    contingency: object
+    ceiling: object
+    cap: object
+    blocked_by: str
+    stage_spent: object
+
+
+@dataclass
 class Authorization:
     """Whether a crew call may proceed. A pause writes an approval request."""
 
@@ -94,7 +119,7 @@ class LineProducer:
         stage: str = "treatment",
         config_path: str | Path | None = None,
     ) -> "LineProducer":
-        """Open a run. The cap is copied from the gate config, same as Phase 0."""
+        """Open a run. The cap is the film budget when budget.json exists, otherwise the gate config."""
         production = Path(production_dir)
         if not production.is_dir():
             raise LineProducerError(f"Production folder not found: {production}")
@@ -104,6 +129,7 @@ class LineProducer:
             stage=stage,
             status="waiting-for-review",
             notes="Waiting on Ron.",
+            budget_cap=file_total(production),
             config_path=config_path,
         )
         stages = list(load_gate_config(config_path)["gates"])
@@ -217,7 +243,10 @@ class LineProducer:
             raise LineProducerError("A recorded spend is a generation or a retake. A dry run is not a spend.")
         self._require_known_stage(stage)
         amount = self._check_amount(amount_usd)
-        block = self._block_reason(stage, amount, books_money=True, description=description, crew_gates=True)
+        fit = self._fit(stage, amount, kind)
+        block = self._block_reason(
+            stage, amount, books_money=True, description=description, crew_gates=True, kind=kind, fit=fit
+        )
         if block is not None:
             return SpendResult(
                 recorded=False,
@@ -225,7 +254,15 @@ class LineProducer:
                 message=block.message,
                 request_id=block.request_id,
             )
-        self._book(stage, amount, kind, description, request_id=None)
+        self._book(
+            stage,
+            amount,
+            kind,
+            description,
+            request_id=None,
+            overage_usd=fit.overage,
+            contingency_usd=fit.contingency,
+        )
         total = float(self.run.data["cost_usd"])
         label = "retake" if kind == "retake" else "spend"
         return SpendResult(
@@ -288,6 +325,7 @@ class LineProducer:
             books_money=False,
             description=description,
             crew_gates=False,
+            kind="generation",
         )
         if block is not None:
             return block
@@ -404,13 +442,38 @@ class LineProducer:
         if decision == "approved" and request["books_money"]:
             amount = as_money(request["amount_usd"])
             kind = "retake" if "retake" in (request.get("description") or "").lower() else "generation"
-            self._book(request["stage"], amount, kind, request.get("description") or request["reason"], request_id)
-            self._raise_allocation(request["stage"])
+            fit = self._fit(request["stage"], amount, kind)
+            self._book(
+                request["stage"],
+                amount,
+                kind,
+                request.get("description") or request["reason"],
+                request_id,
+                overage_usd=fit.overage,
+                contingency_usd=fit.contingency,
+            )
+            if load_film_budget(self.production_dir) is None:
+                self._raise_allocation(request["stage"])
+            else:
+                self._apply_tier_if_any(request)
+            cap = self._film_cap()
             message = (
                 f"Ron approved {request_id}. "
                 f"${money_number(amount):.2f} is now spent on {request['stage']}. "
                 f"Film total: ${float(self.run.data['cost_usd']):.2f} "
-                f"of ${float(self.run.data['budget_cap_usd']):.2f}."
+                f"of ${money_number(cap):.2f}."
+            )
+            if load_film_budget(self.production_dir) is not None and fit.overage > 0:
+                message += (
+                    f" Approved overage: ${money_number(fit.overage):.2f}. "
+                    "The budget was not changed."
+                )
+        elif decision == "approved" and request.get("tier"):
+            self._apply_tier_if_any(request)
+            self._mark_approved_overage(request)
+            message = (
+                f"Ron approved {request_id}. The {request['stage']} tier is now {request['tier']}. "
+                "No picture was bought. The budget total was not changed."
             )
         elif decision == "approved":
             message = (
@@ -428,9 +491,11 @@ class LineProducer:
 
     def status_text(self, narration: str = "") -> str:
         """Plain-language status. Numbers come from the ledger, not from a model."""
+        from movie_swarm.budget import report_from_record
+
         data = self.run.data
         spent = float(data["cost_usd"])
-        cap = float(data["budget_cap_usd"])
+        cap = money_number(self._film_cap())
         title = self._title()
         lines = [
             f"{title} — run {data['run_id']}",
@@ -438,13 +503,19 @@ class LineProducer:
             f"Status: {_plain_status(data['status'])}",
             f"Spent: ${spent:.2f} of ${cap:.2f}",
         ]
-        over = as_money(spent) - as_money(cap)
-        if over > 0:
-            lines.append(
-                f"${money_number(over):.2f} of that spend was approved past the ${cap:.2f} cap."
-            )
+        film = load_film_budget(self.production_dir)
+        if film is not None:
+            lines.extend(report_from_record(self.production_dir, self.record, spent))
+        else:
+            over = as_money(spent) - as_money(cap)
+            if over > 0:
+                lines.append(
+                    f"${money_number(over):.2f} of that spend was approved past the ${cap:.2f} cap."
+                )
         allocations = self.record["stage_allocations"]
-        if allocations["status"] == "approved":
+        if film is not None:
+            pass
+        elif allocations["status"] == "approved":
             lines.append("Stage allocations are locked:")
             for stage, amount in allocations["split"].items():
                 lines.append(
@@ -469,6 +540,78 @@ class LineProducer:
         if narration.strip():
             lines.extend(["", narration.strip()])
         return "\n".join(lines)
+
+    def upgrade_tier(self, stage: str, tier: str) -> str:
+        """Move one stage to another tier when the line plus contingency can hold it."""
+        document = load_film_budget(self.production_dir)
+        if document is None:
+            raise LineProducerError("This film has no budget.json. Add one before changing a tier.")
+        try:
+            proposed = set_tier(document, stage, tier)
+            inputs = read_estimate_inputs(self.production_dir)
+            rates = load_rate_card()
+            old, _old_status = stage_estimate_usd(document, stage, inputs, rates)
+            new, _new_status = stage_estimate_usd(proposed, stage, inputs, rates)
+        except BudgetError as exc:
+            raise LineProducerError(str(exc)) from exc
+        if old is None or new is None:
+            reason = (
+                f"The {tier} rate for {stage} is unknown, so the upgrade was not applied. "
+                "Nothing was charged."
+            )
+            block = self._pause_spend(stage, as_money(0), False, f"Tier upgrade {stage} to {tier}.", reason, tier=tier)
+            return block.message
+        delta = new - old
+        if delta < 0:
+            delta = as_money(0)
+        fit = self._fit(stage, delta, "upgrade")
+        if fit.fits:
+            write_film_budget(self.production_dir, proposed)
+            return (
+                f"{stage} is now {tier}. The change fits the line plus contingency. "
+                "The budget total was not changed."
+            )
+        reason = (
+            f"Moving {stage} to {tier} does not fit the line plus contingency. "
+            "Nothing was charged."
+        )
+        block = self._pause_spend(
+            stage,
+            fit.overage if fit.overage > 0 else delta,
+            False,
+            f"Tier upgrade {stage} to {tier}.",
+            reason,
+            tier=tier,
+        )
+        return block.message
+
+    def _apply_tier_if_any(self, request: dict) -> None:
+        tier = request.get("tier")
+        if not tier:
+            return
+        document = load_film_budget(self.production_dir)
+        if document is None:
+            raise LineProducerError("This film has no budget.json, so the tier was not changed.")
+        try:
+            updated = set_tier(document, request["stage"], tier)
+        except BudgetError as exc:
+            raise LineProducerError(str(exc)) from exc
+        write_film_budget(self.production_dir, updated)
+
+    def _mark_approved_overage(self, request: dict) -> None:
+        entry = {
+            "entry_id": self._next_id("spend", [item["entry_id"] for item in self.record["ledger"]]),
+            "stage": request["stage"],
+            "amount_usd": 0.0,
+            "kind": "dry-run",
+            "description": request.get("description") or request["reason"],
+            "recorded_at": _now(),
+            "request_id": request["request_id"],
+        }
+        if as_money(request.get("amount_usd") or 0) > 0:
+            entry["overage_usd"] = money_number(request["amount_usd"])
+        self.record["ledger"].append(entry)
+        self._save_record()
 
     def waiting_lines(self) -> list[str]:
         lines = []
@@ -596,6 +739,8 @@ class LineProducer:
         return self.production_dir.name
 
     def _require_known_stage(self, stage: str) -> None:
+        if stage == MARKETING_STAGE:
+            return
         try:
             is_stage_gated(stage, self.config_path)
         except ValueError as exc:
@@ -610,6 +755,71 @@ class LineProducer:
             raise LineProducerError("A spend cannot be negative.")
         return amount
 
+    def _film_cap(self):
+        film = load_film_budget(self.production_dir)
+        if film is not None:
+            return as_money(film["total_usd"])
+        return as_money(self.run.data["budget_cap_usd"])
+
+    def _fit(self, stage: str, amount, kind: str) -> Fit:
+        """Say whether this spend fits the line, then contingency, then the film budget."""
+        from movie_swarm.budget import lines_for_check
+
+        amount = as_money(amount)
+        film = load_film_budget(self.production_dir)
+        cap = self._film_cap()
+        spent = as_money(self.run.data["cost_usd"])
+        film_room = cap - spent
+        if film_room < 0:
+            film_room = as_money(0)
+        ceiling = None
+        stage_spent = as_money(self.stage_spent(stage))
+        line_room = film_room
+        reserve = as_money(0)
+        if film is not None:
+            filmed = lines_for_check(self.production_dir) or {}
+            ceiling = as_money(filmed.get(stage, 0))
+            line_room = ceiling - stage_spent
+            if line_room < 0:
+                line_room = as_money(0)
+            reserve = contingency_left(film, self.record)
+        elif self.record["stage_allocations"]["status"] == "approved":
+            ceiling = as_money(self.record["stage_allocations"]["split"].get(stage, 0))
+            line_room = ceiling - stage_spent
+            if line_room < 0:
+                line_room = as_money(0)
+        in_line = amount if amount < line_room else line_room
+        if in_line > film_room:
+            in_line = film_room
+        rest = amount - in_line
+        draw = as_money(0)
+        if rest > 0 and film is not None and kind in {"retake", "upgrade"}:
+            draw = rest if rest < reserve else reserve
+            film_after = film_room - in_line
+            if film_after < 0:
+                film_after = as_money(0)
+            if draw > film_after:
+                draw = film_after
+        covered = in_line + draw
+        overage = amount - covered
+        if overage < 0:
+            overage = as_money(0)
+        if amount > film_room:
+            blocked = "cap"
+        elif overage > 0:
+            blocked = "line"
+        else:
+            blocked = "none"
+        return Fit(
+            fits=blocked == "none",
+            overage=overage,
+            contingency=draw,
+            ceiling=ceiling,
+            cap=cap,
+            blocked_by=blocked,
+            stage_spent=stage_spent,
+        )
+
     def _block_reason(
         self,
         stage: str,
@@ -618,42 +828,52 @@ class LineProducer:
         books_money: bool,
         description: str,
         crew_gates: bool,
+        kind: str = "generation",
+        fit: Fit | None = None,
+        tier: str | None = None,
     ) -> Authorization | None:
         if crew_gates and stage in GATED_CREW:
             gate_block = self._crew_gate_block(stage)
             if gate_block is not None:
                 return gate_block
+        fit = fit or self._fit(stage, amount, kind)
+        if fit.fits:
+            return None
         spent = as_money(self.run.data["cost_usd"])
-        cap = as_money(self.run.data["budget_cap_usd"])
-        if would_exceed_budget(amount, spent_usd=spent, cap_usd=cap):
-            projected = money_number(spent + amount)
-            return self._pause_spend(
-                stage,
-                amount,
-                books_money,
-                description,
-                (
-                    f"This ${money_number(amount):.2f} {stage} spend would put the film at "
-                    f"${projected:.2f}, over the ${money_number(cap):.2f} cap. Nothing was charged."
-                ),
+        projected = money_number(spent + as_money(amount))
+        if fit.blocked_by == "cap" and load_film_budget(self.production_dir) is None:
+            reason = (
+                f"This ${money_number(amount):.2f} {stage} spend would put the film at "
+                f"${projected:.2f}, over the ${money_number(fit.cap):.2f} cap. Nothing was charged."
             )
-        allocations = self.record["stage_allocations"]
-        if allocations["status"] == "approved":
-            ceiling = as_money(allocations["split"].get(stage, 0))
-            stage_spent = as_money(self.stage_spent(stage))
-            if stage_spent + amount > ceiling:
-                return self._pause_spend(
-                    stage,
-                    amount,
-                    books_money,
-                    description,
-                    (
-                        f"This ${money_number(amount):.2f} {stage} spend would put that stage at "
-                        f"${money_number(stage_spent + amount):.2f}, over its ${money_number(ceiling):.2f} allocation. "
-                        "The film cap was not the blocker. Nothing was charged."
-                    ),
-                )
-        return None
+        elif fit.blocked_by == "cap":
+            reason = (
+                f"This ${money_number(amount):.2f} {stage} spend would put the film at "
+                f"${projected:.2f}, over the ${money_number(fit.cap):.2f} budget. Nothing was charged."
+            )
+        elif load_film_budget(self.production_dir) is None:
+            reason = (
+                f"This ${money_number(amount):.2f} {stage} spend would put that stage at "
+                f"${money_number(fit.stage_spent + as_money(amount)):.2f}, "
+                f"over its ${money_number(fit.ceiling):.2f} allocation. "
+                "The film cap was not the blocker. Nothing was charged."
+            )
+        else:
+            left = contingency_left(load_film_budget(self.production_dir), self.record)
+            reason = (
+                f"This ${money_number(amount):.2f} {stage} spend would put that line at "
+                f"${money_number(fit.stage_spent + as_money(amount)):.2f}, "
+                f"over its ${money_number(fit.ceiling):.2f} budget line. "
+                f"Contingency left is ${money_number(left):.2f}. Nothing was charged."
+            )
+        return self._pause_spend(
+            stage,
+            amount,
+            books_money,
+            description,
+            reason,
+            tier=tier,
+        )
 
     def _crew_gate_block(self, stage: str) -> Authorization | None:
         """The gates a call must already have open. Phase 2 drafts are the review, so their own gate stays shut."""
@@ -763,9 +983,17 @@ class LineProducer:
         self.run.set_stage(self.run.data["stage"], status="waiting-for-review")
         return Authorization(False, request["reason"] + f" Approval request {request['request_id']} is waiting for Ron.", request["request_id"])
 
-    def _pause_spend(self, stage, amount, books_money: bool, description: str, reason: str) -> Authorization:
+    def _pause_spend(
+        self,
+        stage,
+        amount,
+        books_money: bool,
+        description: str,
+        reason: str,
+        tier: str | None = None,
+    ) -> Authorization:
         existing = self._pending_match("extra-spend", stage, amount)
-        if existing and existing["books_money"] == books_money:
+        if existing and existing["books_money"] == books_money and existing.get("tier") == tier:
             return Authorization(
                 False,
                 existing["reason"] + f" Approval request {existing['request_id']} is waiting for Ron.",
@@ -778,6 +1006,7 @@ class LineProducer:
             reason,
             books_money=books_money,
             description=description,
+            tier=tier,
         )
         self.run.data["status"] = "waiting-for-review"
         self.run.data["notes"] = reason
@@ -788,7 +1017,17 @@ class LineProducer:
             request["request_id"],
         )
 
-    def _new_request(self, kind, stage, amount, reason, *, books_money: bool, description: str) -> dict:
+    def _new_request(
+        self,
+        kind,
+        stage,
+        amount,
+        reason,
+        *,
+        books_money: bool,
+        description: str,
+        tier: str | None = None,
+    ) -> dict:
         request = {
             "request_id": self._next_id("req", [item["request_id"] for item in self.record["requests"]]),
             "kind": kind,
@@ -804,6 +1043,8 @@ class LineProducer:
             "decided_by": None,
             "note": "",
         }
+        if tier:
+            request["tier"] = tier
         self.record["requests"].append(request)
         self._save_record()
         self._write_request_file(request)
@@ -835,7 +1076,17 @@ class LineProducer:
                 return request
         return None
 
-    def _book(self, stage: str, amount, kind: str, description: str, request_id: str | None) -> None:
+    def _book(
+        self,
+        stage: str,
+        amount,
+        kind: str,
+        description: str,
+        request_id: str | None,
+        *,
+        overage_usd=0,
+        contingency_usd=0,
+    ) -> None:
         entry = {
             "entry_id": self._next_id("spend", [item["entry_id"] for item in self.record["ledger"]]),
             "stage": stage,
@@ -845,6 +1096,10 @@ class LineProducer:
             "recorded_at": _now(),
             "request_id": request_id,
         }
+        if as_money(overage_usd) > 0:
+            entry["overage_usd"] = money_number(overage_usd)
+        if as_money(contingency_usd) > 0:
+            entry["contingency_usd"] = money_number(contingency_usd)
         self.record["ledger"].append(entry)
         self._save_record()
         try:
@@ -869,12 +1124,23 @@ class LineProducer:
             raise LineProducerError("There is no treatment to approve yet. The Director has not written one.")
         treatment = load_treatment(self.production_dir)
         budget = treatment.get("constraints_and_budget") or {}
-        split = stage_split if stage_split is not None else budget.get("stage_split") or {}
+        film = load_film_budget(self.production_dir)
+        if film is not None:
+            from movie_swarm.budget import compute
+
+            math = compute(film)
+            split = {name: money_number(amount) for name, amount in math.spendable().items()}
+            split["treatment"] = split.get("treatment", 0)
+            self.run.data["budget_cap_usd"] = money_number(film["total_usd"])
+        else:
+            split = stage_split if stage_split is not None else budget.get("stage_split") or {}
         if not isinstance(split, dict) or not split:
             raise LineProducerError(
                 "The treatment has no stage split. Ron can send one with the approval, as stage names and dollar amounts."
             )
         known = set(load_gate_config(self.config_path)["gates"])
+        if film is not None:
+            known.add(MARKETING_STAGE)
         unknown = sorted(set(split) - known)
         if unknown:
             raise LineProducerError(

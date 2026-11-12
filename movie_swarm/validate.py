@@ -56,6 +56,7 @@ _SCHEMA_BY_FILENAME = {
     "research.json": "graphics-research.schema.json",
     "brand-guide.json": "graphics-brand-guide.schema.json",
     "graphics.json": "graphics-package.schema.json",
+    "budget.json": "film-budget.schema.json",
     "takes-manifest.json": "takes-manifest.schema.json",
     "dailies-report.json": "dailies-report.schema.json",
     "rough-cut.json": "edit-decision-list.schema.json",

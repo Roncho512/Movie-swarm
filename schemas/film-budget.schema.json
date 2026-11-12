@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "film-budget.schema.json",
+  "title": "Film Budget",
+  "description": "One film's budget. Line shares are percentages of the total and add up to 100. Marketing is applied only when the trailer is on, and the other lines scale down so the dollars still match the total. Contingency is a percent held back inside the budget. A film with no budget file keeps the $500 cap and the locked split.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "total_usd",
+    "currency",
+    "line_shares",
+    "contingency_share",
+    "trailer_on",
+    "marketing_share",
+    "tiers"
+  ],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "total_usd": { "type": "number", "exclusiveMinimum": 0 },
+    "currency": { "type": "string", "const": "USD" },
+    "line_shares": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "production",
+        "sound-designer",
+        "fix-loop",
+        "qa",
+        "art-director",
+        "director",
+        "editor",
+        "cinematographer",
+        "screenwriter",
+        "line-producer"
+      ],
+      "properties": {
+        "production": { "type": "number", "minimum": 0, "maximum": 100 },
+        "sound-designer": { "type": "number", "minimum": 0, "maximum": 100 },
+        "fix-loop": { "type": "number", "minimum": 0, "maximum": 100 },
+        "qa": { "type": "number", "minimum": 0, "maximum": 100 },
+        "art-director": { "type": "number", "minimum": 0, "maximum": 100 },
+        "director": { "type": "number", "minimum": 0, "maximum": 100 },
+        "editor": { "type": "number", "minimum": 0, "maximum": 100 },
+        "cinematographer": { "type": "number", "minimum": 0, "maximum": 100 },
+        "screenwriter": { "type": "number", "minimum": 0, "maximum": 100 },
+        "line-producer": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "contingency_share": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Percent of the film budget held back for retakes and tier upgrades. 10 means 10 percent. 0 means none."
+    },
+    "trailer_on": { "type": "boolean" },
+    "marketing_share": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Percent of the film budget for Marketing and Distribution when the trailer is on. 10 means 10 percent. Ignored when the trailer is off."
+    },
+    "tiers": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "enum": ["good", "better", "best"] }
+    },
+    "production_resolution": { "type": "string", "enum": ["720p", "1080p"] },
+    "note": { "type": "string" }
+  }
+}

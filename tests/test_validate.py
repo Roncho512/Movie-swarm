@@ -900,6 +900,29 @@ def test_each_schema_accepts_a_minimal_document():
             "note": "Sample.",
             "written_at": "2026-01-01T00:00:00Z",
         },
+        "film-budget.schema.json": {
+            "version": "1.0.0",
+            "total_usd": 500,
+            "currency": "USD",
+            "line_shares": {
+                "production": 54,
+                "sound-designer": 11,
+                "fix-loop": 10,
+                "qa": 9,
+                "art-director": 5,
+                "director": 4,
+                "editor": 3,
+                "cinematographer": 2,
+                "screenwriter": 1,
+                "line-producer": 1,
+            },
+            "contingency_share": 0,
+            "trailer_on": False,
+            "marketing_share": 10,
+            "tiers": {"production": "better"},
+            "production_resolution": "720p",
+            "note": "Sample budget.",
+        },
     }
     on_disk = {path.name for path in schemas_dir().glob("*.schema.json")}
     assert on_disk == set(samples)

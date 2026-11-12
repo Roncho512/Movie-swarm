@@ -463,6 +463,11 @@ def _fix_loop_reserve(allocations: dict):
 
 
 def _locked_split(producer) -> dict:
+    from movie_swarm.budget import lines_for_check
+
+    filmed = lines_for_check(producer.production_dir)
+    if filmed is not None:
+        return filmed
     record = producer.record["stage_allocations"]
     if record.get("status") != "approved":
         return {}

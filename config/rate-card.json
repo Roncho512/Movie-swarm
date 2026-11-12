@@ -1,0 +1,91 @@
+{
+  "version": "1.0.0",
+  "checked_on": "2026-11-12",
+  "note": "Prefilled public prices. Edit them. A rate this repo cannot verify is unknown. The calculator and the estimate use a prefilled number and still say unknown. A live call keeps using config/generation-rates.json.",
+  "stages": {
+    "production": {
+      "unit": "second",
+      "tiers": {
+        "good": {
+          "model": "gemini-omni-1.2-flash",
+          "label": "Gemini Omni 1.2 Flash",
+          "resolution": "720p",
+          "usd_per_second": "0.07",
+          "status": "known",
+          "source": "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/",
+          "source_date": "2026-11-05",
+          "note": "The generation rate card publishes $0.07 per second at 720p. This repo has no fal address for this model, so a live call is still refused."
+        },
+        "better": {
+          "model": "seedance-2.0-fast",
+          "label": "Seedance 2.0 fast",
+          "resolution": "720p",
+          "usd_per_second": "0.2419",
+          "status": "known",
+          "source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
+          "source_date": "2026-11-10",
+          "note": "720p fast with audio is $0.2419 per second. The same number is on the generation rate card."
+        },
+        "best": {
+          "model": "seedance-2.0",
+          "label": "Seedance 2.0",
+          "resolution": "720p",
+          "usd_per_second": "0.3034",
+          "status": "known",
+          "source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
+          "source_date": "2026-11-10",
+          "note": "720p with audio is $0.3034 per second. The same number is on the generation rate card."
+        }
+      },
+      "top_option": {
+        "model": "seedance-2.0",
+        "label": "Seedance 2.0 1080p",
+        "resolution": "1080p",
+        "usd_per_second": "0.682",
+        "status": "unknown",
+        "prefilled": true,
+        "source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
+        "source_date": "2026-11-12",
+        "note": "Prefilled from the public fal page, about $0.682 per second at 1080p. The generation rate card does not list 1080p, so this rate stays unknown."
+      }
+    },
+    "sound-designer": {
+      "unit": "mixed",
+      "tiers": {
+        "good": {
+          "status": "unknown",
+          "prefilled": true,
+          "speech_usd_per_1k_chars": "0.08",
+          "sfx_usd_per_minute": "0.12",
+          "music_usd_per_minute": "0.15",
+          "speech_model": "eleven_v3",
+          "source": "https://elevenlabs.io/pricing",
+          "source_date": "2026-11-12",
+          "note": "Prefilled public prices. Speech is about $0.08 per 1,000 characters. Sound effects are about $0.12 per minute. Music is about $0.15 per minute. The generation rate card has no audio price, so these stay unknown."
+        },
+        "better": {
+          "status": "unknown",
+          "prefilled": true,
+          "speech_usd_per_1k_chars": "0.08",
+          "sfx_usd_per_minute": "0.12",
+          "music_usd_per_minute": "0.15",
+          "speech_model": "eleven_v3",
+          "source": "https://elevenlabs.io/pricing",
+          "source_date": "2026-11-12",
+          "note": "Same prefilled prices as good. This repo does not publish a separate better audio rate."
+        },
+        "best": {
+          "status": "unknown",
+          "prefilled": true,
+          "speech_usd_per_1k_chars": "0.08",
+          "sfx_usd_per_minute": "0.12",
+          "music_usd_per_minute": "0.15",
+          "speech_model": "eleven_v3",
+          "source": "https://elevenlabs.io/pricing",
+          "source_date": "2026-11-12",
+          "note": "Same prefilled prices as good. This repo does not publish a separate best audio rate."
+        }
+      }
+    }
+  }
+}
