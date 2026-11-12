@@ -43,7 +43,7 @@ def test_doctor_reports_presence_without_values_or_network(tmp_path, monkeypatch
     # An empty shell value is set, so the file must not replace it.
     assert os.environ["FAL_KEY"] == ""
     assert "ELEVENLABS_API_KEY: yes" in text
-    assert "asset root: set (MOVIE_SWARM_ASSET_ROOT)" in text
+    assert "asset root: set from shell (MOVIE_SWARM_ASSET_ROOT), folder missing" in text
     assert SECRET not in text
     assert "eleven-from-file" not in text
     assert str(tmp_path / "drive") not in text

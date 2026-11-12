@@ -42,13 +42,24 @@ def main(argv: list[str] | None = None, *, env_path: str | Path | None = None, t
     )
     args = parser.parse_args(argv)
     env_file = Path(env_path) if env_path is not None else repo_root() / ".env"
-    load_env(env_file)
-    lines, failed = report(env_file=env_file, ping=args.ping, transport=transport)
+    loaded = load_env(env_file)
+    lines, failed = report(
+        env_file=env_file,
+        ping=args.ping,
+        transport=transport,
+        loaded_names=loaded,
+    )
     print("\n".join(lines))
     return 1 if failed else 0
 
 
-def report(*, env_file: Path, ping: bool = False, transport=None) -> tuple[list[str], bool]:
+def report(
+    *,
+    env_file: Path,
+    ping: bool = False,
+    transport=None,
+    loaded_names: list[str] | None = None,
+) -> tuple[list[str], bool]:
     """The check lines, and whether a required import is missing."""
     lines = [f"Python: {sys.version.split()[0]}"]
     missing = missing_requirements()
@@ -62,7 +73,7 @@ def report(*, env_file: Path, ping: bool = False, transport=None) -> tuple[list[
     for name in KEY_NAMES:
         present = "yes" if os_value(name) else "no"
         lines.append(f"{name}: {present}")
-    lines.append(asset_root_line())
+    lines.append(asset_root_line(loaded_names=loaded_names))
     if ping:
         lines.extend(ping_lines(transport or urllib_status))
     return lines, bool(missing)
@@ -107,16 +118,36 @@ def requirement_distributions(path: Path) -> list[str]:
     return names
 
 
-def asset_root_line() -> str:
-    if os_value(ASSET_ROOT_ENV):
-        return f"asset root: set ({ASSET_ROOT_ENV})"
-    try:
-        config = load_asset_config()
-    except Exception:
-        return "asset root: not set"
-    if config.get("asset_root"):
-        return "asset root: set (config/assets.json)"
-    return "asset root: not set"
+def asset_root_line(*, loaded_names: list[str] | None = None) -> str:
+    """Where the asset root came from, and whether that folder is there.
+
+    The path is not printed. ``loaded_names`` is what ``.env`` set on this
+    run. A name that was already in the shell is not in that list.
+    """
+    loaded = set(loaded_names or [])
+    value = os_value(ASSET_ROOT_ENV)
+    source = ""
+    folder = None
+    if value and ASSET_ROOT_ENV not in loaded:
+        source = "shell"
+        folder = Path(value).expanduser()
+    elif value and ASSET_ROOT_ENV in loaded:
+        source = ".env"
+        folder = Path(value).expanduser()
+    else:
+        try:
+            config = load_asset_config()
+        except Exception:
+            return "asset root: not set"
+        raw = config.get("asset_root")
+        if not raw:
+            return "asset root: not set"
+        source = "config/assets.json"
+        folder = Path(str(raw)).expanduser()
+    state = "folder exists" if folder.is_dir() else "folder missing"
+    if source == "config/assets.json":
+        return f"asset root: set from config/assets.json, {state}"
+    return f"asset root: set from {source} ({ASSET_ROOT_ENV}), {state}"
 
 
 def ping_lines(transport) -> list[str]:
