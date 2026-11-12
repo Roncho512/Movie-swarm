@@ -170,6 +170,11 @@ def _run(args) -> int:
         return 0
     if args.command == "answer":
         result = director.answer(args.answers, run_id=args.run)
+        note = result.get("draft_note") or ""
+        if note:
+            print(note)
+        if "output limit" in note.casefold():
+            print("The final pass hit the output limit.")
         print(f"Treatment: {result['treatment']}")
         print(f"Questions: {result['questions']} ({result['questions_status']})")
         print(f"Required questions still open: {result['open_required']}")

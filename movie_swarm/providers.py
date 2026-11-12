@@ -511,6 +511,8 @@ def run_provider_call(
             "text": None,
             "provider_request_id": None,
             "endpoint": endpoint,
+            "purpose": purpose or "",
+            "max_tokens": int(max_tokens or 0),
         }
         cache.setdefault("calls", {})[request_hash] = cached
         _save_cache(producer, cache)
@@ -746,7 +748,16 @@ class GuardedLLM:
             raise WritingQuote(result["message"])
         if result["status"] != "generated" and result["status"] != "replayed":
             raise LLMError(result["message"])
-        return result.get("text") or ""
+        from movie_swarm.llm import ModelReply
+
+        output_tokens = result.get("output_tokens")
+        max_tokens_sent = result.get("max_tokens")
+        return ModelReply(
+            result.get("text") or "",
+            stop_reason=result.get("stop_reason"),
+            output_tokens=None if output_tokens is None else int(output_tokens),
+            max_tokens=None if not max_tokens_sent else int(max_tokens_sent),
+        )
 
 
 def llm_for_command(
@@ -996,6 +1007,10 @@ def _finish(
             relative = _relative_name("text", label, request_hash, ".txt")
             _write_bytes(producer, relative, text.encode("utf-8"))
             output = relative
+            limit = _output_limit(payload, cached.get("max_tokens"))
+            cached["stop_reason"] = limit["stop_reason"]
+            cached["output_tokens"] = limit["output_tokens"]
+            cached["truncated"] = limit["truncated"]
     except (HttpTimeout, HttpConnectionError, HttpStatusError, ProviderFailure) as exc:
         return _keep(
             producer, cache, cached, entry_id, request_hash, estimate, shot_id, cue_id, "failed",
@@ -1071,6 +1086,8 @@ def _finish(
         + money_line
         + f"The file is {output}, under { _location_name() }. The pipeline stays at this stage."
     )
+    if kind == "text" and cached.get("truncated"):
+        message += " " + _limit_sentence(cached)
     producer.run.data["notes"] = redact(message)
     producer.run.save()
     return _stopped(
@@ -1084,6 +1101,10 @@ def _finish(
         output=output,
         text=text,
         cost_usd=booked,
+        stop_reason=cached.get("stop_reason"),
+        output_tokens=cached.get("output_tokens"),
+        max_tokens=cached.get("max_tokens"),
+        truncated=bool(cached.get("truncated")),
     )
 
 
@@ -1183,6 +1204,8 @@ def _replay(producer, stage, request_hash, cached, shot_id, cue_id, estimate) ->
     )
     if cached.get("output"):
         message += f" The file is {cached['output']}."
+    if cached.get("truncated"):
+        message += " " + _limit_sentence(cached)
     return _stopped(
         "replayed",
         message,
@@ -1194,6 +1217,10 @@ def _replay(producer, stage, request_hash, cached, shot_id, cue_id, estimate) ->
         output=cached.get("output"),
         text=cached.get("text"),
         cost_usd=0,
+        stop_reason=cached.get("stop_reason"),
+        output_tokens=cached.get("output_tokens"),
+        max_tokens=cached.get("max_tokens"),
+        truncated=bool(cached.get("truncated")),
     )
 
 
@@ -1251,6 +1278,31 @@ def _find_mark(producer, mark: str, *, approved_only: bool) -> dict | None:
     return found
 
 
+# English is often about 4 characters per token. The paid treatment calls were
+# denser than that. The Opus final pass used about 2.5 characters per input
+# token, so character count / 4 priced the call below what was booked.
+# The quote divides by 3, adds 25 percent, adds a fixed overhead, and rounds up.
+# The ceiling check uses this figure, not the old character count / 4.
+_INPUT_CHARS_PER_TOKEN = 3
+_INPUT_SAFETY_NUMERATOR = 5
+_INPUT_SAFETY_DENOMINATOR = 4
+_INPUT_TOKEN_OVERHEAD = 200
+
+
+def estimate_input_tokens(char_count: int) -> int:
+    """A high input-token estimate from a character count.
+
+    ``ceil(characters / 3 * 1.25) + 200``. Zero characters still count the
+    overhead, so a short call is not quoted as free.
+    """
+    chars = max(int(char_count or 0), 0)
+    if chars == 0:
+        return _INPUT_TOKEN_OVERHEAD
+    divisor = _INPUT_CHARS_PER_TOKEN * _INPUT_SAFETY_DENOMINATOR
+    scaled = (chars * _INPUT_SAFETY_NUMERATOR + divisor - 1) // divisor
+    return scaled + _INPUT_TOKEN_OVERHEAD
+
+
 def quote_text_call(
     model: str,
     system: str,
@@ -1261,15 +1313,14 @@ def quote_text_call(
 ) -> dict:
     """The quote for one text call. Nothing is sent.
 
-    Input tokens are the character count of ``system`` plus ``prompt``,
-    divided by 4. The remainder is dropped. That prompt is the full user
-    message the call would send, including the screenplay. A longer
-    screenplay raises this worst case, and the ceiling check uses it.
-    The line says that number is an estimate. The worst case prices that
-    estimate plus every output token the call is allowed to write.
+    Input tokens are a conservative estimate of ``system`` plus ``prompt``.
+    That prompt is the full user message the call would send, including the
+    screenplay. A longer screenplay raises this worst case, and the ceiling
+    check uses it. The line says that number is an estimate. The worst case
+    prices that estimate plus every output token the call is allowed to write.
     """
     output_tokens = int(max_tokens or 4000)
-    input_tokens = (len(system or "") + len(prompt or "")) // 4
+    input_tokens = estimate_input_tokens(len(system or "") + len(prompt or ""))
     name = model or "(unset)"
     shown = label or name
     row = generator_rate(load_rate_card(rates_path), model) if model else None
@@ -1277,7 +1328,7 @@ def quote_text_call(
     worst = None if prices is None else token_dollars(input_tokens, output_tokens, prices[0], prices[1])
     text = (
         f"Writing quote for {shown}. Model: {name}. "
-        f"Input tokens: {input_tokens} (estimate, character count / 4). "
+        f"Input tokens: {input_tokens} (estimate, character count / 3, plus 25 percent, plus {_INPUT_TOKEN_OVERHEAD} tokens). "
         f"Max output tokens: {output_tokens}."
     )
     if worst is None:
@@ -1694,6 +1745,10 @@ def _stopped(
     output=None,
     text=None,
     cost_usd=None,
+    stop_reason=None,
+    output_tokens=None,
+    max_tokens=None,
+    truncated=False,
 ) -> dict:
     sent = status in {"generated", "replayed"}
     return {
@@ -1709,7 +1764,43 @@ def _stopped(
         "text": redact(text) if text else None,
         "cost_usd": 0 if cost_usd is None else money_number(cost_usd),
         "location": _location_name(),
+        "stop_reason": stop_reason,
+        "output_tokens": output_tokens,
+        "max_tokens": max_tokens,
+        "truncated": bool(truncated),
     }
+
+
+def _output_limit(payload: dict, max_tokens) -> dict:
+    """Whether the provider stopped because the reply filled its output cap."""
+    stop = payload.get("stop_reason") if isinstance(payload, dict) else None
+    usage = payload.get("usage") if isinstance(payload, dict) else None
+    output = None
+    if isinstance(usage, dict) and usage.get("output_tokens") is not None:
+        try:
+            output = int(usage["output_tokens"])
+        except (TypeError, ValueError):
+            output = None
+    limit = None
+    if max_tokens not in (None, ""):
+        try:
+            limit = int(max_tokens)
+        except (TypeError, ValueError):
+            limit = None
+    hit = isinstance(stop, str) and stop.lower() in {"max_tokens", "length"}
+    if output is not None and limit is not None and output >= limit:
+        hit = True
+    return {"stop_reason": stop if isinstance(stop, str) else None, "output_tokens": output, "truncated": hit}
+
+
+def _limit_sentence(cached: dict) -> str:
+    stop = cached.get("stop_reason") or "max_tokens"
+    output = cached.get("output_tokens")
+    limit = cached.get("max_tokens")
+    sentence = f"The reply hit the output limit (stop_reason {stop})."
+    if output is not None and limit:
+        sentence += f" Output tokens {output} reached the max of {limit}."
+    return sentence
 
 
 def _plain(value):

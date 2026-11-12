@@ -29,7 +29,10 @@ from movie_swarm.treatment_doc import (
     load_treatment,
     merge_missing_required,
     merge_sources,
+    merge_treatment_patch,
     questions_path,
+    repair_truncated_json,
+    reply_was_repaired,
     skill_excerpt,
     skill_note,
     treatment_errors,
@@ -48,6 +51,10 @@ class DirectorError(Exception):
 # Characters of screenplay, partial JSON, or one locked file sent on a live draft.
 # A short screenplay fits. A longer file is cut, and the prompt says so.
 DRAFT_SOURCE_CHAR_LIMIT = 120_000
+
+# The final pass rewrites the whole treatment. 8,000 tokens cut a real reply
+# off inside the last field. 16,000 stays inside the model's output limit.
+FINAL_PASS_MAX_TOKENS = 16_000
 
 
 class Director:
@@ -120,55 +127,44 @@ class Director:
         if not self.production_dir.is_dir():
             raise DirectorError(f"Production folder not found: {self.production_dir}")
         self._refuse_if_approved()
-        self._refuse_if_answered()
-        raw, matched = _cached_draft_text(self.production_dir, run_id, request_hash)
+        answered = self._answers_present()
+        try:
+            raw, matched, entry = _cached_draft_text(self.production_dir, run_id, request_hash)
+        except DirectorError:
+            if answered:
+                self._refuse_if_answered()
+            raise
+        try:
+            parsed, dropped = repair_truncated_json(raw)
+        except ValueError as exc:
+            saved = _save_rejected_reply(
+                self.production_dir, run_id, raw, final=_cache_is_final(entry) or answered
+            )
+            raise DirectorError(
+                "The cached reply is not a treatment. "
+                + redact(str(exc))
+                + f" The raw reply was saved to {saved}. No new model call was made. Nothing new was booked."
+            ) from exc
+        final_reply = (
+            _cache_is_final(entry)
+            or reply_was_repaired(raw, dropped)
+            or bool(entry.get("truncated"))
+        )
+        if answered and not final_reply:
+            self._refuse_if_answered()
         brief = _load_brief(self.production_dir)
         screenplay_path = screenplay or _screenplay_from_brief(self.production_dir, brief)
         script = load_source(screenplay_path) if screenplay_path else None
         if script is not None and script.partial:
             script = None
-        cap = _cap(brief)
-        offline = draft_offline(
-            production_id=self.production_dir.name,
-            script=script,
-            brief=brief,
-            cap_usd=cap,
+        repaired = reply_was_repaired(raw, dropped)
+        if answered or _cache_is_final(entry):
+            return self._reconform_final(
+                parsed, dropped, matched, run_id, script, brief, repaired=repaired
+            )
+        return self._reconform_draft(
+            parsed, dropped, matched, run_id, script, brief, repaired=repaired
         )
-        try:
-            drafted, errors = _draft_from_raw(raw, offline, self.production_dir.name)
-        except ValueError as exc:
-            saved = _save_rejected_draft(self.production_dir, run_id, raw)
-            raise DirectorError(
-                "The cached reply is not a treatment. "
-                + redact(str(exc))
-                + f" The raw reply was saved to {saved}. No new model call was made."
-            ) from exc
-        if drafted is None:
-            saved = _save_rejected_draft(self.production_dir, run_id, raw)
-            listed = "\n".join(redact(item) for item in errors)
-            raise DirectorError(
-                "The cached draft still does not match the treatment checklist. "
-                "No new model call was made. The call cost from the original request stays booked.\n"
-                + listed
-                + f"\nThe raw reply was saved to {saved}."
-            )
-        locked = _load_inputs(self.production_dir)
-        drafted = _apply_inputs(drafted, locked, None, False)
-        drafted = force_draft(conform_treatment(drafted, fallback=offline))
-        errors = treatment_errors(drafted)
-        if errors:
-            raise DirectorError(
-                "The cached draft still does not match the treatment checklist. "
-                "No new model call was made.\n" + "\n".join(redact(item) for item in errors)
-            )
-        drafted["draft_note"] = (
-            (drafted.get("draft_note") or "")
-            + f" Reconformed from cached request {matched[:12]}. "
-            "No new model call was made. Nothing new was booked."
-        ).strip()
-        result = self._finish(drafted, script, None, run_id, "model", phrase=False)
-        result["request_hash"] = matched
-        return result
 
     def answer(self, answers: str | Path, run_id: str = "phase-1") -> dict:
         """Read Ron's answers, revise the draft, and keep it unapproved."""
@@ -183,7 +179,7 @@ class Director:
         treatment["draft_method"] = treatment.get("draft_method") or "offline-deterministic"
         pending = unanswered_required(questions)
         if not pending and self.llm is not None:
-            treatment = self._final_pass(treatment)
+            treatment = self._final_pass(treatment, run_id)
         treatment = force_draft(conform_treatment(treatment))
         errors = treatment_errors(treatment)
         if errors:
@@ -209,6 +205,7 @@ class Director:
             "open_required": len(pending),
             "treatment": str(treatment_json_path(self.production_dir)),
             "questions": str(questions_path(self.production_dir)),
+            "draft_note": treatment.get("draft_note") or "",
         }
 
     def dispatch(self, call: CrewCall, run_id: str, handler=None) -> DispatchResult:
@@ -328,31 +325,20 @@ class Director:
         questions["model"] = "claude-haiku-5-5"
         return questions
 
-    def _final_pass(self, treatment: dict) -> dict:
+    def _final_pass(self, treatment: dict, run_id: str) -> dict:
         try:
             raw = self.llm.complete(
                 role="director",
                 purpose="final",
                 system=(
                     "You are the Director writing the final treatment pass. "
-                    "Return the full treatment as one JSON object. "
+                    "Return one JSON object. Return the full treatment, or only the fields you changed. "
                     "Keep every fact Ron answered. status must stay draft. "
                     "You cannot approve the film."
                 ),
                 user=json.dumps(treatment),
-                max_tokens=8000,
+                max_tokens=FINAL_PASS_MAX_TOKENS,
             )
-            revised = force_draft(conform_treatment(extract_json_object(raw)))
-            revised["production_id"] = self.production_dir.name
-            revised["draft_method"] = "model"
-            revised["draft_note"] = "Final pass from the model. Still a draft until Ron approves the gate."
-            if treatment_errors(revised):
-                treatment["draft_note"] = (
-                    (treatment.get("draft_note") or "")
-                    + " The final model pass did not match the checklist, so the earlier draft was kept."
-                ).strip()
-                return treatment
-            return revised
         except WritingQuote:
             raise
         except (LLMError, ValueError) as exc:
@@ -361,6 +347,115 @@ class Director:
                 + f" The final model pass failed ({exc}). The earlier draft was kept."
             ).strip()
             return treatment
+        limit = _output_limit_note(raw, FINAL_PASS_MAX_TOKENS)
+        try:
+            return _revised_final(treatment, str(raw), self.production_dir.name, limit)
+        except ValueError as exc:
+            saved = _save_rejected_final(self.production_dir, run_id, str(raw))
+            treatment["draft_note"] = _final_failure_note(treatment, exc, saved, limit)
+            return treatment
+
+    def _reconform_draft(self, parsed, dropped, matched, run_id, script, brief, *, repaired: bool) -> dict:
+        cap = _cap(brief)
+        offline = draft_offline(
+            production_id=self.production_dir.name,
+            script=script,
+            brief=brief,
+            cap_usd=cap,
+        )
+        drafted, errors = _treatment_from_parsed(parsed, offline, self.production_dir.name)
+        if drafted is None:
+            raise DirectorError(
+                "The cached draft still does not match the treatment checklist. "
+                "No new model call was made. The call cost from the original request stays booked.\n"
+                + "\n".join(redact(item) for item in errors)
+            )
+        locked = _load_inputs(self.production_dir)
+        drafted = _apply_inputs(drafted, locked, None, False)
+        drafted = force_draft(conform_treatment(drafted, fallback=offline))
+        errors = treatment_errors(drafted)
+        if errors:
+            raise DirectorError(
+                "The cached draft still does not match the treatment checklist. "
+                "No new model call was made.\n" + "\n".join(redact(item) for item in errors)
+            )
+        drafted["draft_note"] = _reconform_note(
+            drafted.get("draft_note") or "", matched, dropped, final=False, repaired=repaired
+        )
+        result = self._finish(drafted, script, None, run_id, "model", phrase=False)
+        result["request_hash"] = matched
+        return result
+
+    def _reconform_final(self, parsed, dropped, matched, run_id, script, brief, *, repaired: bool) -> dict:
+        """Write a cached final pass onto the current draft. Does not book and does not wipe answers."""
+        current = _current_treatment(self.production_dir)
+        if current is None:
+            current = draft_offline(
+                production_id=self.production_dir.name,
+                script=script,
+                brief=brief,
+                cap_usd=_cap(brief),
+            )
+        revised = merge_treatment_patch(current, parsed)
+        revised["production_id"] = self.production_dir.name
+        revised = force_draft(conform_treatment(revised, fallback=current))
+        errors = treatment_errors(revised)
+        if errors:
+            revised = merge_missing_required(revised, current)
+            revised = force_draft(conform_treatment(revised, fallback=current))
+            revised["production_id"] = self.production_dir.name
+            revised["draft_method"] = "model"
+            errors = treatment_errors(revised)
+        if errors:
+            raise DirectorError(
+                "The cached final pass still does not match the treatment checklist. "
+                "No new model call was made. Nothing new was booked.\n"
+                + "\n".join(redact(item) for item in errors)
+            )
+        earlier = current.get("draft_note") or ""
+        revised["draft_method"] = "model"
+        revised["draft_note"] = _reconform_note(
+            earlier, matched, dropped, final=True, repaired=repaired
+        )
+        revised["open_questions"] = current.get("open_questions") or []
+        errors = treatment_errors(revised)
+        if errors:
+            raise DirectorError(
+                "The cached final pass still does not match the treatment checklist. "
+                "No new model call was made.\n" + "\n".join(redact(item) for item in errors)
+            )
+        json_path, md_path = write_treatment_files(self.production_dir, revised)
+        producer = self._run(run_id)
+        producer.set_stage("treatment", "waiting-for-review")
+        producer.ensure_artifact("treatment", "treatment/treatment.json", "treatment.schema.json")
+        producer.ensure_artifact("treatment-markdown", "treatment/treatment.md")
+        producer.run.data["notes"] = (
+            "Reconformed the final pass from the provider cache. "
+            "No new model call was made. Nothing new was booked. "
+            "The treatment is still a draft until Ron approves the gate."
+        )
+        producer.run.save()
+        return {
+            "treatment": str(json_path),
+            "treatment_markdown": str(md_path),
+            "questions": str(questions_path(self.production_dir)),
+            "run_id": producer.run.data["run_id"],
+            "drafted_by": "model",
+            "question_count": _question_count(self.production_dir),
+            "status": "draft",
+            "draft_note": revised.get("draft_note") or "",
+            "request_hash": matched,
+        }
+
+    def _answers_present(self) -> bool:
+        path = questions_path(self.production_dir)
+        if not path.is_file():
+            return False
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            return False
+        return any(str(item.get("answer") or "").strip() for item in payload.get("questions", []))
 
     def _run(self, run_id: str) -> LineProducer:
         try:
@@ -607,7 +702,19 @@ def _bounded(text: str, label: str) -> tuple[str, str | None]:
 
 
 def _draft_from_raw(raw: str, offline: dict, production_id: str) -> tuple[dict | None, list[str]]:
-    parsed = extract_json_object(raw)
+    parsed, dropped = repair_truncated_json(raw)
+    drafted, errors = _treatment_from_parsed(parsed, offline, production_id)
+    if drafted is not None and dropped:
+        drafted["draft_note"] = (
+            (drafted.get("draft_note") or "")
+            + " Repaired a truncated reply. Dropped: "
+            + ", ".join(dropped)
+            + "."
+        ).strip()
+    return drafted, errors
+
+
+def _treatment_from_parsed(parsed: dict, offline: dict, production_id: str) -> tuple[dict | None, list[str]]:
     drafted = _stamp_model(
         force_draft(conform_treatment(parsed, fallback=offline)),
         production_id,
@@ -626,6 +733,141 @@ def _draft_from_raw(raw: str, offline: dict, production_id: str) -> tuple[dict |
     if not errors:
         return merged, []
     return None, errors
+
+
+def _revised_final(treatment: dict, raw: str, production_id: str, limit: str) -> dict:
+    parsed, dropped = repair_truncated_json(raw)
+    revised = merge_treatment_patch(treatment, parsed)
+    revised["production_id"] = production_id
+    revised = force_draft(conform_treatment(revised, fallback=treatment))
+    errors = treatment_errors(revised)
+    filled = False
+    if errors:
+        revised = merge_missing_required(revised, treatment)
+        revised = force_draft(conform_treatment(revised, fallback=treatment))
+        revised["production_id"] = production_id
+        errors = treatment_errors(revised)
+        filled = True
+    if errors:
+        raise ValueError("; ".join(errors))
+    revised["draft_method"] = "model"
+    parts = ["Final pass from the model. Still a draft until Ron approves the gate."]
+    if limit:
+        parts.append(limit)
+    if reply_was_repaired(raw, dropped):
+        sentence = "The reply was cut off. It was repaired without a new model call."
+        if dropped:
+            sentence += " Dropped: " + ", ".join(dropped) + "."
+        parts.append(sentence)
+    if filled:
+        parts.append("Missing required fields were filled from the current draft.")
+    fresh = " ".join(parts)
+    earlier = treatment.get("draft_note") or ""
+    revised["draft_note"] = (earlier + " " + fresh).strip() if earlier else fresh
+    return revised
+
+
+def _final_failure_note(treatment: dict, exc: Exception, saved: str, limit: str) -> str:
+    parts = [
+        treatment.get("draft_note") or "",
+        limit,
+        f"The final model pass failed ({exc}). The earlier draft was kept.",
+        f"The raw reply was saved to {saved}.",
+    ]
+    return " ".join(part.strip() for part in parts if part and str(part).strip())
+
+
+def _output_limit_note(raw: str, max_tokens: int) -> str:
+    """A sentence when the provider stopped because the reply filled max_tokens."""
+    stop = getattr(raw, "stop_reason", None)
+    output = getattr(raw, "output_tokens", None)
+    limit = getattr(raw, "max_tokens", None) or max_tokens
+    hit = isinstance(stop, str) and stop.lower() in {"max_tokens", "length"}
+    try:
+        if output is not None and int(output) >= int(limit):
+            hit = True
+    except (TypeError, ValueError):
+        pass
+    if not hit:
+        return ""
+    parts = ["The final pass hit the output limit."]
+    if isinstance(stop, str) and stop:
+        parts.append(f"The provider stop_reason was {stop}.")
+    if output is not None:
+        parts.append(f"Output tokens {int(output)} reached the max of {int(limit)}.")
+    return " ".join(parts)
+
+
+def _reconform_note(
+    earlier: str, matched: str, dropped: list[str], *, final: bool, repaired: bool
+) -> str:
+    if final and repaired:
+        dropped_sentence = (" Dropped: " + ", ".join(dropped) + ".") if dropped else ""
+        fresh = (
+            f"Repaired from a truncated paid reply (request {matched[:12]}). "
+            "No new model call was made. Nothing new was booked."
+            + dropped_sentence
+            + " Missing required fields were filled from the current draft."
+        )
+    else:
+        fresh = (
+            f"Reconformed from cached request {matched[:12]}. "
+            "No new model call was made. Nothing new was booked."
+        )
+        if repaired:
+            fresh += " Repaired a truncated reply."
+            if dropped:
+                fresh += " Dropped: " + ", ".join(dropped) + "."
+    text = (earlier + " " + fresh).strip() if earlier else fresh
+    return text
+
+
+def _cache_is_final(entry: dict) -> bool:
+    purpose = str(entry.get("purpose") or "").lower()
+    stop = str(entry.get("stop_reason") or "").lower()
+    return purpose == "final" or stop in {"max_tokens", "length"} or bool(entry.get("truncated"))
+
+
+def _current_treatment(production_dir: Path) -> dict | None:
+    path = treatment_json_path(production_dir)
+    if not path.is_file():
+        return None
+    try:
+        current = load_treatment(production_dir)
+    except HandoffError:
+        return None
+    if current.get("status") == "approved":
+        return None
+    return current
+
+
+def _question_count(production_dir: Path) -> int:
+    path = questions_path(production_dir)
+    if not path.is_file():
+        return 0
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return 0
+    questions = payload.get("questions")
+    return len(questions) if isinstance(questions, list) else 0
+
+
+def _save_rejected_reply(production_dir: Path, run_id: str, raw: str, *, final: bool) -> str:
+    if final:
+        return _save_rejected_final(production_dir, run_id, raw)
+    return _save_rejected_draft(production_dir, run_id, raw)
+
+
+def _save_rejected_final(production_dir: Path, run_id: str, raw: str) -> str:
+    from movie_swarm.run_state import default_run_state_path
+
+    digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:12]
+    relative = f"runs/{run_id}/rejected-final-{digest}.txt"
+    path = default_run_state_path(production_dir, run_id).parent / f"rejected-final-{digest}.txt"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(redact(raw), encoding="utf-8")
+    return relative
 
 
 def _stamp_model(treatment: dict, production_id: str, *, filled: bool) -> dict:
@@ -687,7 +929,7 @@ def _save_rejected_draft(production_dir: Path, run_id: str, raw: str) -> str:
     return relative
 
 
-def _cached_draft_text(production_dir: Path, run_id: str, request_hash: str) -> tuple[str, str]:
+def _cached_draft_text(production_dir: Path, run_id: str, request_hash: str) -> tuple[str, str, dict]:
     from movie_swarm.assets import resolve_asset
     from movie_swarm.line_producer import record_path
 
@@ -717,10 +959,10 @@ def _cached_draft_text(production_dir: Path, run_id: str, request_hash: str) -> 
     entry = calls[key] if isinstance(calls[key], dict) else {}
     text = entry.get("text") if isinstance(entry, dict) else None
     if isinstance(text, str) and text.strip():
-        return text, key
+        return text, key, entry if isinstance(entry, dict) else {}
     output = entry.get("output") if isinstance(entry, dict) else None
     if isinstance(output, str) and output.strip():
         for candidate in (production_dir / output, resolve_asset(production_dir, output)):
             if candidate.is_file():
-                return candidate.read_text(encoding="utf-8"), key
+                return candidate.read_text(encoding="utf-8"), key, entry if isinstance(entry, dict) else {}
     raise DirectorError("That cached call has no response text. Nothing was called.")

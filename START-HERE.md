@@ -70,11 +70,15 @@ python3 scripts/director.py --production the-last-marker --run first-film-1 --li
 
 Read `treatment/treatment.md`. The treatment stays a draft. The draft call sends the screenplay, up to 120,000 characters, plus `treatment/inputs.json` and the prop locks when the film has them. The quote counts that whole prompt. On the archived copy, a 23,300-character screenplay plus those files is about $0.1042 worst case for the Sonnet draft and about $0.0011 for the Haiku question pass. The $1.00 ceiling still covers both. If the model draft does not match the checklist, the offline draft is kept, the note lists the schema errors, and it says the call cost was booked. The raw reply is under `runs/<run>/rejected-draft-<hash>.txt`.
 
-The same request sent again is free. The provider cache replays it. This prompt is not the one that was paid, so a new intake will not match that call. To conform the saved reply without paying again, pass the request hash from `runs/first-film-1/provider-cache.json`. The first 12 characters are enough when they match one call. This command does not call the model.
+The same request sent again is free. The provider cache replays it. This prompt is not the one that was paid, so a new intake will not match that call. To conform a saved reply without paying again, pass its request hash from `runs/first-film-1/provider-cache.json`. The first 12 characters are enough when they match one call. This command does not call the model.
+
+The Opus final pass on `first-film-1` filled its 8,000 output tokens and the reply was cut off. That call is the cache entry whose ledger row is `spend-005`. Run this from the repo root. Replace `<hash>` with that entry's request hash. The command closes the cut-off JSON, drops the unfinished field, fills anything still required from the current draft, and writes the treatment. It does not call the model and it does not book. An approved treatment is left alone.
 
 ```bash
 python3 scripts/director.py --production the-last-marker --run first-film-1 reconform --request <hash>
 ```
+
+A confirmation such as `Lock.` keeps the drafted text. The final pass allows 16,000 output tokens. If a reply fills that cap, the command says the final pass hit the output limit. A reply that still cannot be read is saved at `runs/<run>/rejected-final-<hash>.txt`.
 
 Picture and audio calls still wait until you approve the generation gate.
 

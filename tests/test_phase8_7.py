@@ -113,7 +113,13 @@ def test_a_changed_look_is_logged_and_the_guide_returns_to_draft(tmp_path):
 
 
 def test_title_cards_credits_and_the_frame_grab_poster(tmp_path, monkeypatch):
-    monkeypatch.setattr("movie_swarm.graphics.shutil.which", lambda name: None if name == "ffmpeg" else shutil.which(name))
+    # Patching graphics.shutil.which replaces shutil.which for every module.
+    # Call the original lookup, or a later ffprobe check calls this wrapper again.
+    original_which = shutil.which
+    monkeypatch.setattr(
+        "movie_swarm.graphics.shutil.which",
+        lambda name, _which=original_which: None if name == "ffmpeg" else _which(name),
+    )
     shots = [_shot("s01-sh01", duration=1)]
     production = _prepare(tmp_path, shots)
     producer = _open(production)

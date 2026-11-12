@@ -18,7 +18,7 @@ from movie_swarm.director import DRAFT_SOURCE_CHAR_LIMIT, Director, DirectorErro
 from movie_swarm.handoff import write_handoff
 from movie_swarm.line_producer import LineProducer
 from movie_swarm.llm import LLMClient, WritingQuote
-from movie_swarm.providers import GuardedLLM, quote_text_call
+from movie_swarm.providers import GuardedLLM, estimate_input_tokens, quote_text_call
 from movie_swarm.treatment_doc import (
     conform_treatment,
     force_draft,
@@ -183,7 +183,7 @@ def test_a_live_draft_sends_the_full_screenplay_and_the_locked_files(tmp_path):
     assert schema["properties"]["version"]["pattern"] in call["system"]
     assert "Do not raise open questions" in call["system"]
     quote = quote_text_call("claude-sonnet-5-5", call["system"], call["user"], call["max_tokens"])
-    assert quote["input_tokens_estimate"] == (len(call["system"]) + len(call["user"])) // 4
+    assert quote["input_tokens_estimate"] == estimate_input_tokens(len(call["system"]) + len(call["user"]))
     sliced = call["user"].replace(script_text, script_text[:12000])
     short = quote_text_call("claude-sonnet-5-5", call["system"], sliced, call["max_tokens"])
     assert "END-OF-SCREENPLAY-MARKER" not in sliced
@@ -422,12 +422,12 @@ def test_the_writing_quote_grows_with_the_user_text(tmp_path):
     assert "Worst case:" in short
     assert "Worst case:" in long
     assert "Nothing was sent." in long
-    assert "estimate, character count / 4" in long
+    assert "estimate, character count / 3, plus 25 percent, plus 200 tokens" in long
     short_tokens = int(short.split("Input tokens: ", 1)[1].split(" ", 1)[0])
     long_tokens = int(long.split("Input tokens: ", 1)[1].split(" ", 1)[0])
     short_worst = float(short.split("Worst case: $", 1)[1].split(" ", 1)[0])
     long_worst = float(long.split("Worst case: $", 1)[1].split(" ", 1)[0])
     assert long_tokens > short_tokens
     assert long_worst > short_worst
-    assert long_tokens == (len("Be brief.") + len("He rides. " * 3000)) // 4
+    assert long_tokens == estimate_input_tokens(len("Be brief.") + len("He rides. " * 3000))
     assert LineProducer.open(production, "run-1").run.data["cost_usd"] == 0

@@ -39,6 +39,18 @@ def test_a_missing_env_file_is_fine(tmp_path):
     assert load_env(tmp_path / "missing.env") == []
 
 
+def test_autoload_stays_off_when_the_suite_skips_the_env_file(tmp_path, monkeypatch):
+    """The suite sets MOVIE_SWARM_SKIP_ENV_FILE. A repo .env must not leak in."""
+    env = tmp_path / ".env"
+    env.write_text("MOVIE_SWARM_ASSET_ROOT=/tmp/should-not-load\n", encoding="utf-8")
+    monkeypatch.setattr("movie_swarm.envfile.repo_root", lambda: tmp_path)
+    monkeypatch.delenv("MOVIE_SWARM_ASSET_ROOT", raising=False)
+    assert load_env() == []
+    assert os.environ.get("MOVIE_SWARM_ASSET_ROOT", "") == ""
+    assert load_env(env) == ["MOVIE_SWARM_ASSET_ROOT"]
+    assert os.environ["MOVIE_SWARM_ASSET_ROOT"] == "/tmp/should-not-load"
+
+
 def test_every_script_loads_the_env_file():
     scripts = repo_root() / "scripts"
     found = [path.name for path in scripts.glob("*.py")]
