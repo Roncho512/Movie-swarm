@@ -1192,3 +1192,48 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: The running total moves from the reserved worst case to the usage cost when the response includes both token counts. A picture call is unchanged: `provider` when fal reports dollars, `estimate` when it does not.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
+## D136 — Phase 8.13, the treatment-draft fix
+
+- Status: decided
+- Date: 2026-11-12
+- Context: On run `first-film-1`, a live Director intake called Claude and was charged $0.0751. The draft call sent the first 12,000 characters of the screenplay and none of the locked files. The reply missed four schema names. The engine kept the offline draft, and the note said no model was called.
+- Decision: Fix that path. Send the screenplay. Send the locked files the film already has. Conform the reply onto the treatment schema. Keep the raw reply when it is still not valid, and say so in the note. Do not make a new paid call to retry a response that is already cached. The choices for how that works are D137 through D140. Those are proposals.
+- Consequences: The offline draft is unchanged. Intake still refuses an approved treatment and a question round that already has answers. No live call was made in this phase. Spent on this step: $0.00.
+- Who decided: Ron, 2026-11-12
+
+## D137 — A live draft sends the screenplay up to 120,000 characters
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: `Director._draft` sent `script.text[:12000]` and the first 6,000 characters of a partial treatment. The screenplay is about 23,000 characters, so the model never saw the end of it. The writing quote counts the characters it is given. A shortened prompt makes the ceiling check look cheaper than the call Ron expects.
+- Decision: `DRAFT_SOURCE_CHAR_LIMIT` is 120,000 characters. The live draft sends the screenplay, and a partial treatment, up to that limit. The same limit applies to each locked file. When a text is longer, the prompt says it was cut and names the original length and the limit. The draft note repeats that sentence. The writing quote uses the system text and the user text that would be sent, character count divided by 4, plus the full max output. It does not quote a shorter copy.
+- Consequences: A short screenplay is sent whole. A file past the limit is cut in the open. The worst case rises with the prompt, and the ceiling check uses that number. The proof uses a fake model.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D138 — Locked inputs and prop locks go in the live prompt
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: `treatment/inputs.json` was merged into the draft after the model replied. The model never saw it. `props/hero-props.json` and `props/prop-definitions.json` were not sent either. D30 says those facts stay in the film folder. The engine must not name one film's props.
+- Decision: When the production folder has `treatment/inputs.json`, the live prompt includes it as locked creative inputs. The draft must follow them and must not re-ask them. When the folder has `props/hero-props.json`, `props/prop-definitions.json`, or a text spec under `props/<name>/`, the prompt includes those as locked prop facts. The system prompt says not to raise an open question about a locked item. The offline draft does not read the prop files. Intake still merges `treatment/inputs.json` afterward, and that merge still does not approve the gate.
+- Consequences: A film with none of those files is unchanged. A film that has them sends the files it has. The proof uses stand-in names, not one film's locks.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D139 — Conform the reply, then keep it if it is still not valid
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: The paid reply used `theme` and `emotional_intent` instead of `theme_and_emotional_intent`, `tone` and `genre` instead of `tone_and_genre`, `deliverables.resolution` null, and version `1.0-treatment-draft`. `treatment_errors` returned those four. The engine returned the offline draft. Its note still said no model was called.
+- Decision: `conform_treatment` maps those names onto the schema. A version that is already major.minor.patch is kept. `1.2` becomes `1.2.0`, and a single number becomes `1.0.0`. Anything else, including `1.0-treatment-draft`, becomes `0.1.0`. A blank deliverable is filled from the offline draft. The system prompt lists the required top-level keys and their formats from the treatment schema. If errors remain, missing required fields are filled from the offline draft and checked again. The offline draft is kept only when the reply is still not valid. The note then says a model was called, the call cost was booked, and lists the schema errors. It does not say that no model was called. The raw reply is saved at `runs/<run>/rejected-draft-<hash>.txt`. Keys in that file and in the note are redacted.
+- Consequences: A reply that only used the wrong names becomes a draft. A reply that is still not valid does not disappear. The command prints that note. The offline path, when no model was called, still says no model was called.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D140 — reconform reads the cache and does not pay again
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: `runs/<run>/provider-cache.json` stores the response text under the request hash. The same request sent again replays that cache and is not charged again. The screenplay and the locked files change the request, so a new intake will not match the call that was already paid.
+- Decision: `director.py reconform --request <hash>` reads that cache, runs the same conform steps, and writes the draft when it is valid. It does not call a model and does not book money. The hash may be the full key or a unique prefix of at least 8 characters. An approved treatment is not overwritten. A question round that already has answers is not wiped. A cache entry that is still not valid is saved as a rejected draft and the treatment file is left as it is.
+- Consequences: The paid reply can be conformed again after this fix without a second charge. A new `--live intake` is a new request and is quoted again. The proof writes a fake cache and does not set a provider key.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+

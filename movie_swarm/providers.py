@@ -716,6 +716,10 @@ class GuardedLLM:
             self.settings.price_override = price_override
 
     def complete(self, *, role: str, purpose: str, system: str, user: str, max_tokens: int = 4000) -> str:
+        """Send one text call. The quote counts this system string and this user string.
+
+        Do not pass a shortened copy. The ceiling check uses that same worst case.
+        """
         from movie_swarm.llm import LLMError, WritingQuote
 
         try:
@@ -1257,9 +1261,12 @@ def quote_text_call(
 ) -> dict:
     """The quote for one text call. Nothing is sent.
 
-    Input tokens are the character count divided by 4. The remainder is
-    dropped. The line says that number is an estimate. The worst case prices
-    that estimate plus every output token the call is allowed to write.
+    Input tokens are the character count of ``system`` plus ``prompt``,
+    divided by 4. The remainder is dropped. That prompt is the full user
+    message the call would send, including the screenplay. A longer
+    screenplay raises this worst case, and the ceiling check uses it.
+    The line says that number is an estimate. The worst case prices that
+    estimate plus every output token the call is allowed to write.
     """
     output_tokens = int(max_tokens or 4000)
     input_tokens = (len(system or "") + len(prompt or "")) // 4
