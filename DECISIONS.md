@@ -1138,3 +1138,57 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: The working film is not committed to the studio repo. No real path is written in the repo. Schema checks, run folders, archives, and media paths follow the production folder. Spent on this step: $0.00. No live call was made.
 - Who decided: Ron, 2026-11-12
 
+## D130 — Claude writing calls get their own approval
+
+- Status: decided
+- Date: 2026-11-12
+- Context: A Claude writing call was sent through the same gate as a picture call. That gate opens after previs. The treatment is drafted while the film is still at the treatment gate. The generation gate is the switch for paid pictures and audio.
+- Decision: Claude writing calls get their own approval, separate from the generation gate.
+- Consequences: A picture or audio call still waits on the generation gate. A text call does not. The choices for how that approval works are D131 through D135. Those are proposals.
+- Who decided: Ron, 2026-11-12
+
+## D131 — A writing approval is one ceiling for the run
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: Intake makes more than one text call: the Director's draft, then the Line Producer's question wording. A per-call price override would stop after the first call and ask Ron to approve a new request for each hash. The ledger already records each call. The approval only needs to say how much writing this run may spend.
+- Decision: `approve-writing --run <id> --by Ron --max-usd <amount> --note ...` records one ceiling on the run. It does not book money and it does not open the generation gate. A later command replaces the ceiling. The ledger is left as it is. Each new text call's worst case has to fit the money left under that ceiling. The call is still checked against the film cap and the stage line.
+- Consequences: One approval covers the draft and the question wording. Picture and audio keep the one-call price override when the rate card has no price.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D132 — --live without that approval prints a quote and sends nothing
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: Ron has to see the price before he approves it. Offline is already the default.
+- Decision: Without `--live`, a text call is not sent. With `--live` and no writing approval, the command prints the model, the input-token estimate (character count divided by 4, labeled as an estimate), the max output tokens, and the worst-case dollars from the rate card, then stops. Nothing is sent. The treatment file is not replaced. With the approval, and with the worst case inside the ceiling, the line, and the cap, the call is sent.
+- Consequences: The first live intake on a run is a quote. The next one, after approve-writing, is the draft.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D133 — A writing call does not need the locked split
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: The stage split locks when Ron approves the treatment. The writing that drafts the treatment happens before that lock. Requiring the lock would leave the new approval with no line to check at the treatment gate.
+- Decision: A writing call checks the film cap and the stage line. When the run's stage split is approved, that line is checked. When it is not, the check uses the lines in `budget.json`. A film with neither a locked split nor a budget file has no line to check, so the call is refused. A locked split is not required for a text call.
+- Consequences: A film at the treatment gate can draft from `budget.json`. Picture and audio calls still require the locked split.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D134 — Text prices come from Anthropic's pricing page
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: The rate card had no dollar amount for a Claude call, so a text call could not be quoted.
+- Decision: `config/generation-rates.json` and `config/rate-card.json` record dollars per million input tokens and per million output tokens for `claude-haiku-5-5`, `claude-sonnet-5-5`, and `claude-opus-5-5`. The page is https://platform.claude.com/docs/en/about-claude/pricing, read on 2026-11-12. Haiku 5.5 is $0.10 and $0.50 for a prompt up to 100,000 tokens, and $0.50 and $2.50 over that. Sonnet 5.5 is $2 and $10. Opus 5.5 is $4 and $20. The worst case uses the input-token estimate and the full max output. Cache, batch, and fast mode are not used. The model id `claude-sonnet-4-20250514` is not listed on that page, so its price is null and a live call for it is refused.
+- Consequences: A quoted writing call uses these numbers. A model with a null price is not sent.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D135 — A finished text call is booked from the reported tokens
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: Anthropic does not return a dollar amount. It returns `input_tokens` and `output_tokens`. D124 marks a picture call with no dollars as an estimate.
+- Decision: After a live text call, the booked amount is the reported input tokens times the input price plus the reported output tokens times the output price. The ledger row sets `actual_source` to `usage`. The estimate stays on the row. If either token count is missing, the booked amount stays the worst-case estimate and `actual_source` is `estimate`.
+- Consequences: The running total moves from the reserved worst case to the usage cost when the response includes both token counts. A picture call is unchanged: `provider` when fal reports dollars, `estimate` when it does not.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+

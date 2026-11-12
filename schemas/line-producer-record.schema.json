@@ -76,8 +76,12 @@
           "actual_usd": { "type": ["number", "null"], "minimum": 0 },
           "actual_source": {
             "type": "string",
-            "enum": ["estimate", "provider"],
-            "description": "Where the booked dollars came from. estimate means the provider did not report a charge, so the amount is still the quote."
+            "enum": ["estimate", "provider", "usage"],
+            "description": "Where the booked dollars came from. estimate means the amount is still the quote. provider means the provider reported dollars. usage means the amount is the reported token counts times the rate card."
+          },
+          "writing": {
+            "type": "boolean",
+            "description": "True when this row is a text call counted against the run's writing approval."
           },
           "request_hash": { "type": ["string", "null"] },
           "call_phase": {
@@ -143,6 +147,19 @@
           "note": { "type": "string" },
           "tier": { "type": ["string", "null"], "enum": ["good", "better", "best", null] }
         }
+      }
+    },
+    "writing_approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Ron's ceiling for text calls on this run. It does not open the generation gate and it does not book money by itself.",
+      "required": ["status", "max_usd", "by", "approved_at"],
+      "properties": {
+        "status": { "type": "string", "enum": ["approved"] },
+        "max_usd": { "type": "number", "exclusiveMinimum": 0 },
+        "by": { "type": "string", "minLength": 1 },
+        "note": { "type": "string" },
+        "approved_at": { "type": "string", "format": "date-time" }
       }
     },
     "schedule": {

@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "checked_on": "2026-11-12",
-  "note": "Prefilled public prices. Edit them. A rate this repo cannot verify is unknown. The calculator and the estimate use a prefilled number and still say unknown. A live call keeps using config/generation-rates.json.",
+  "note": "Prefilled public prices. Edit them. A rate this repo cannot verify is unknown. The calculator and the estimate use a prefilled number and still say unknown. A live call keeps using config/generation-rates.json. The text rows below match that file. They were read from Anthropic's pricing page on 2026-11-12.",
   "stages": {
     "production": {
       "unit": "second",
@@ -112,5 +112,52 @@
         }
       }
     }
+  },
+  "text": {
+    "unit": "tokens",
+    "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+    "source_date": "2026-11-12",
+    "note": "The same dollars per million tokens as config/generation-rates.json. A live writing quote reads that file. Cache, batch, and fast mode are not used. claude-sonnet-4-20250514 is not listed as that id on the pricing page, so its price stays null.",
+    "models": [
+      {
+        "model": "claude-haiku-5-5",
+        "label": "Claude Haiku 5.5",
+        "usd_per_million_input_tokens": "0.10",
+        "usd_per_million_output_tokens": "0.50",
+        "prompt_token_threshold": 100000,
+        "usd_per_million_input_tokens_over_threshold": "0.50",
+        "usd_per_million_output_tokens_over_threshold": "2.50",
+        "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+        "source_date": "2026-11-12",
+        "note": "Prompts up to 100,000 tokens use $0.10 and $0.50. Prompts over 100,000 tokens use $0.50 and $2.50."
+      },
+      {
+        "model": "claude-sonnet-5-5",
+        "label": "Claude Sonnet 5.5",
+        "usd_per_million_input_tokens": "2",
+        "usd_per_million_output_tokens": "10",
+        "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+        "source_date": "2026-11-12",
+        "note": "$2 per million input tokens and $10 per million output tokens."
+      },
+      {
+        "model": "claude-opus-5-5",
+        "label": "Claude Opus 5.5",
+        "usd_per_million_input_tokens": "4",
+        "usd_per_million_output_tokens": "20",
+        "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+        "source_date": "2026-11-12",
+        "note": "$4 per million input tokens and $20 per million output tokens."
+      },
+      {
+        "model": "claude-sonnet-4-20250514",
+        "label": "claude-sonnet-4-20250514",
+        "usd_per_million_input_tokens": null,
+        "usd_per_million_output_tokens": null,
+        "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+        "source_date": "2026-11-12",
+        "note": "The pricing page does not list the model id claude-sonnet-4-20250514. The price is null, so a live call for this id is refused."
+      }
+    ]
   }
 }

@@ -22,6 +22,10 @@ class LLMError(Exception):
     """The model call did not return usable text."""
 
 
+class WritingQuote(LLMError):
+    """``--live`` printed a writing quote and did not send the call."""
+
+
 class LLMClient:
     """One completion. ``role`` and ``purpose`` pick the model from config."""
 

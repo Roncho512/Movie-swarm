@@ -14,7 +14,7 @@ from movie_swarm.dispatch import CrewCall, DispatchResult, dispatch_call
 from movie_swarm.gates import budget_cap_usd
 from movie_swarm.handoff import HandoffError
 from movie_swarm.line_producer import LineProducer, LineProducerError
-from movie_swarm.llm import LLMError
+from movie_swarm.llm import LLMError, WritingQuote
 from movie_swarm.redact import redact
 from movie_swarm.script_intake import ParsedSource, load_source
 from movie_swarm.treatment_doc import (
@@ -207,6 +207,8 @@ class Director:
             if treatment_errors(drafted):
                 return offline, "offline-deterministic"
             return drafted, "model"
+        except WritingQuote:
+            raise
         except (LLMError, ValueError) as exc:
             note = offline.get("draft_note") or ""
             reason = redact(str(exc))
@@ -233,6 +235,8 @@ class Director:
                 max_tokens=2000,
             )
             data = extract_json_object(raw)
+        except WritingQuote:
+            raise
         except (LLMError, ValueError):
             return questions
         by_id = {
@@ -273,6 +277,8 @@ class Director:
                 ).strip()
                 return treatment
             return revised
+        except WritingQuote:
+            raise
         except (LLMError, ValueError) as exc:
             treatment["draft_note"] = (
                 (treatment.get("draft_note") or "")

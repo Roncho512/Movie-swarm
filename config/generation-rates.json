@@ -1,5 +1,5 @@
 {
-  "version": "1.3.0",
+  "version": "1.4.0",
   "checked_on": "2026-11-12",
   "assumptions": [
     "Preview and final both use the published 720p Gemini Omni 1.2 Flash rate. Google says a draft can be 360p, and it does not publish a separate 360p price.",
@@ -16,7 +16,8 @@
     "Audio, color, and delivery still have no published dollar amount in this repo. A live call for one of those is refused until a per-call price override is approved.",
     "Seedance 2.0 and Seedance 2.0 fast accept duration auto, or a whole number of seconds from 4 to 15. A shot is rounded up to the next allowed second and quoted at that length. The rule was read from the fal API pages on 2026-11-12. Fast accepts 480p and 720p. Seedance 2.0 also accepts 1080p and 4k. This row still prices 720p.",
     "Kling 4.0 on fal accepts a whole number of seconds from 3 to 30, at 720p or 1080p. That duration rule was read from the fal text-to-video page on 2026-11-12. The row still has no endpoint, so a live call is refused. The per-shot multi-prompt minimum of 1 second is not the rule for this row.",
-    "Gemini Omni's 3 to 15 second quote is still an assumption. Whole seconds were not verified for that model, so a length inside that range is not rounded."
+    "Gemini Omni's 3 to 15 second quote is still an assumption. Whole seconds were not verified for that model, so a length inside that range is not rounded.",
+    "Claude text prices are dollars per million tokens, read from Anthropic's pricing page on 2026-11-12. A writing quote uses the input-token estimate times the input price, plus the max output tokens times the output price. Haiku 5.5 uses the higher pair when that estimate is over 100,000 tokens. Cache writes, cache reads, batch, and fast mode are not used. The model id claude-sonnet-4-20250514 is not listed on that page, so its price is null and a live call for it is refused."
   ],
   "generators": [
     {
@@ -91,6 +92,55 @@
       "source_date": "2026-11-10",
       "quote": "Kling 4.0 with no input video is $0.157 per second at 720p.",
       "note": "No provider endpoint is configured, so a live call is refused. The fal text-to-video page accepts a whole number of seconds from 3 to 30, at 720p or 1080p. The per-shot multi-prompt minimum of 1 second is not used for this row."
+    }
+  ],
+  "text": [
+    {
+      "model": "claude-haiku-5-5",
+      "label": "Claude Haiku 5.5",
+      "unit": "tokens",
+      "usd_per_million_input_tokens": "0.10",
+      "usd_per_million_output_tokens": "0.50",
+      "prompt_token_threshold": 100000,
+      "usd_per_million_input_tokens_over_threshold": "0.50",
+      "usd_per_million_output_tokens_over_threshold": "2.50",
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "source_date": "2026-11-12",
+      "quote": "Prompts up to 100,000 tokens: $0.10 per million input tokens and $0.50 per million output tokens. Prompts over 100,000 tokens: $0.50 and $2.50.",
+      "note": "Read from Anthropic's pricing page on 2026-11-12. The higher pair applies when the prompt is over 100,000 tokens. The quote uses the pair that matches the input-token estimate."
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "label": "Claude Sonnet 5.5",
+      "unit": "tokens",
+      "usd_per_million_input_tokens": "2",
+      "usd_per_million_output_tokens": "10",
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "source_date": "2026-11-12",
+      "quote": "$2 per million input tokens and $10 per million output tokens.",
+      "note": "Read from Anthropic's pricing page on 2026-11-12. Standard base input and output prices. Cache, batch, and fast mode are not used."
+    },
+    {
+      "model": "claude-opus-5-5",
+      "label": "Claude Opus 5.5",
+      "unit": "tokens",
+      "usd_per_million_input_tokens": "4",
+      "usd_per_million_output_tokens": "20",
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "source_date": "2026-11-12",
+      "quote": "$4 per million input tokens and $20 per million output tokens.",
+      "note": "Read from Anthropic's pricing page on 2026-11-12. Standard base input and output prices. Fast mode is $8 and $40 and is not used."
+    },
+    {
+      "model": "claude-sonnet-4-20250514",
+      "label": "claude-sonnet-4-20250514",
+      "unit": "tokens",
+      "usd_per_million_input_tokens": null,
+      "usd_per_million_output_tokens": null,
+      "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "source_date": "2026-11-12",
+      "quote": "No published price for this model id.",
+      "note": "The pricing page lists Claude Sonnet 4 by display name and does not list the model id claude-sonnet-4-20250514. The price is null, so a live call for this id is refused."
     }
   ]
 }

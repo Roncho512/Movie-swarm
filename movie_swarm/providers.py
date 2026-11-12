@@ -1,6 +1,6 @@
 """Live provider calls for text, picture, and sound.
 
-A real call is sent only when every one of these is true:
+A picture or audio call is sent only when every one of these is true:
 
 - the command passed ``live=True`` (the ``--live`` flag)
 - the generation gate is approved
@@ -8,9 +8,14 @@ A real call is sent only when every one of these is true:
 - the provider key is in the environment
 - the rate card has a price, or Ron has approved a one-call price override
 
-Offline is the default. The same request hash is not sent twice, so a re-run
-does not pay twice. Keys are read from the environment and stripped from
-anything this module saves or returns.
+A text call does not use the generation gate. Offline is still the default.
+``--live`` with no writing approval prints a quote and sends nothing. A
+recorded writing approval for the run, a price on the rate card, and a worst
+case that fits that ceiling, the stage line, and the film cap are what send it.
+
+The same request hash is not sent twice, so a re-run does not pay twice.
+Keys are read from the environment and stripped from anything this module
+saves or returns.
 
 The engine does not name a film. Model names, endpoints, and prices come
 from ``config/model-routing.json`` and ``config/generation-rates.json``.
@@ -38,10 +43,10 @@ from movie_swarm.http_retry import (
     UrllibTransport,
     send_with_retry,
 )
-from movie_swarm.line_producer import LineProducer, record_path
+from movie_swarm.line_producer import LineProducer, record_path, writing_booked
 from movie_swarm.models import resolve_model
 from movie_swarm.money import as_money, money_number
-from movie_swarm.rates import generator_rate, load_rate_card
+from movie_swarm.rates import generator_rate, load_rate_card, token_dollars, token_prices
 from movie_swarm.redact import redact
 from movie_swarm.roles import (
     COLOR_MIX_BILLING,
@@ -49,6 +54,7 @@ from movie_swarm.roles import (
     DELIVERY_BILLING,
     PHASE2_BILLING,
     SOUND_BILLING,
+    TRAILER_BILLING,
 )
 
 FAL_QUEUE = "https://queue.fal.run"
@@ -176,6 +182,7 @@ def billing_stage(role: str) -> str:
         or SOUND_BILLING.get(role)
         or COLOR_MIX_BILLING.get(role)
         or DELIVERY_BILLING.get(role)
+        or TRAILER_BILLING.get(role)
         or role
     )
 
@@ -301,25 +308,45 @@ def run_provider_call(
             shot_id=shot_id,
             cue_id=cue_id,
         )
-    gate = producer.paid_generation_block()
-    if gate is not None:
-        return _stopped("refused", gate.message, shot_id=shot_id, cue_id=cue_id)
+    text_estimate = None
+    if kind == "text":
+        max_tokens = int(max_tokens or 4000)
+        stopped, text_estimate = _writing_preflight(
+            producer,
+            stage=stage,
+            model=model,
+            prompt=prompt,
+            system=system,
+            max_tokens=max_tokens,
+            role=role,
+            purpose=purpose,
+            label=label,
+            rates_path=settings.rates_path,
+            shot_id=shot_id,
+            cue_id=cue_id,
+        )
+        if stopped is not None:
+            return stopped
+    else:
+        gate = producer.paid_generation_block()
+        if gate is not None:
+            return _stopped("refused", gate.message, shot_id=shot_id, cue_id=cue_id)
 
-    allocations = producer.record["stage_allocations"]
-    if allocations.get("status") != "approved":
-        return _stopped(
-            "refused",
-            "The stage split is not locked, so this call has no stage line to check. Nothing was sent.",
-            shot_id=shot_id,
-            cue_id=cue_id,
-        )
-    if stage not in (allocations.get("split") or {}):
-        return _stopped(
-            "refused",
-            f"The locked split has no {stage} line. Nothing was sent.",
-            shot_id=shot_id,
-            cue_id=cue_id,
-        )
+        allocations = producer.record["stage_allocations"]
+        if allocations.get("status") != "approved":
+            return _stopped(
+                "refused",
+                "The stage split is not locked, so this call has no stage line to check. Nothing was sent.",
+                shot_id=shot_id,
+                cue_id=cue_id,
+            )
+        if stage not in (allocations.get("split") or {}):
+            return _stopped(
+                "refused",
+                f"The locked split has no {stage} line. Nothing was sent.",
+                shot_id=shot_id,
+                cue_id=cue_id,
+            )
 
     provider_name = _provider_name(kind, provider, model, settings.rates_path)
     key_var = KEY_FOR.get(provider_name)
@@ -362,7 +389,10 @@ def run_provider_call(
             cue_id=cue_id,
         )
 
-    estimate, billed, price_note = _estimate(model, duration_seconds, settings.rates_path)
+    if kind == "text":
+        estimate, billed, price_note = text_estimate, None, ""
+    else:
+        estimate, billed, price_note = _estimate(model, duration_seconds, settings.rates_path)
     if kind == "video" and row is not None:
         refusal = _video_request_refusal(model, row, duration_seconds)
         if refusal is not None:
@@ -458,14 +488,16 @@ def run_provider_call(
         )
         producer._book(stage, estimate, "generation", description, override_id)
         entry_id = producer.record["ledger"][-1]["entry_id"]
-        producer.annotate_ledger(
-            entry_id,
-            estimate_usd=money_number(estimate),
-            actual_usd=None,
-            actual_source="estimate",
-            request_hash=request_hash,
-            call_phase="reserved",
-        )
+        reserved = {
+            "estimate_usd": money_number(estimate),
+            "actual_usd": None,
+            "actual_source": "estimate",
+            "request_hash": request_hash,
+            "call_phase": "reserved",
+        }
+        if kind == "text":
+            reserved["writing"] = True
+        producer.annotate_ledger(entry_id, **reserved)
         cached = {
             "request_hash": request_hash,
             "status": "reserved",
@@ -553,7 +585,7 @@ def run_provider_call(
         if early is not None:
             return _finish(
                 producer, cache, cached, entry_id, request_hash, estimate, shot_id, cue_id,
-                label, kind, early, override_id, allowance, settings,
+                label, kind, early, override_id, allowance, settings, model,
             )
     try:
         payload = (
@@ -608,7 +640,7 @@ def run_provider_call(
         )
     return _finish(
         producer, cache, cached, entry_id, request_hash, estimate, shot_id, cue_id,
-        label, kind, payload, override_id, allowance, settings,
+        label, kind, payload, override_id, allowance, settings, model,
     )
 
 
@@ -684,7 +716,7 @@ class GuardedLLM:
             self.settings.price_override = price_override
 
     def complete(self, *, role: str, purpose: str, system: str, user: str, max_tokens: int = 4000) -> str:
-        from movie_swarm.llm import LLMError
+        from movie_swarm.llm import LLMError, WritingQuote
 
         try:
             producer = LineProducer.open(self.production_dir, self.run_id)
@@ -706,6 +738,8 @@ class GuardedLLM:
             settings=self.settings,
             label=f"{role}/{purpose}",
         )
+        if result["status"] == "quoted":
+            raise WritingQuote(result["message"])
         if result["status"] != "generated" and result["status"] != "replayed":
             raise LLMError(result["message"])
         return result.get("text") or ""
@@ -923,9 +957,19 @@ def _announce_wait(settings: CallSettings, waited: float, state: str, data: dict
 
 def _finish(
     producer, cache, cached, entry_id, request_hash, estimate, shot_id, cue_id,
-    label, kind, payload, override_id, allowance, settings: CallSettings,
+    label, kind, payload, override_id, allowance, settings: CallSettings, model: str = "",
 ) -> dict:
     actual = _reported_cost(payload)
+    source = "estimate" if actual is None else "provider"
+    usage_note = ""
+    if kind == "text":
+        usage = _usage_dollars(payload, model, settings.rates_path)
+        if usage is None:
+            actual = None
+            source = "estimate"
+        else:
+            actual, usage_note = usage
+            source = "usage"
     output = None
     text = None
     try:
@@ -956,8 +1000,13 @@ def _finish(
         )
 
     booked = estimate if actual is None else actual
-    source = "estimate" if actual is None else "provider"
-    if actual is None:
+    if source == "usage":
+        description = (
+            f"Settled. Estimate ${money_number(estimate):.4f}. "
+            f"Booked ${money_number(actual):.4f} from the reported token usage. "
+            f"{usage_note} Request {request_hash[:12]}."
+        )
+    elif actual is None:
         description = (
             f"Settled. Estimate ${money_number(estimate):.2f}. "
             "The provider did not report a dollar amount, so the booked amount stays the estimate. "
@@ -970,7 +1019,7 @@ def _finish(
             f"The provider reported ${money_number(actual):.2f}. "
             f"Request {request_hash[:12]}."
         )
-    if kind == "text":
+    if kind == "text" and source != "usage":
         usage = _token_note(payload)
         if usage:
             description = f"{description} {usage}"
@@ -1000,16 +1049,22 @@ def _finish(
     )
     cache.setdefault("calls", {})[request_hash] = cached
     _save_cache(producer, cache)
-    message = (
-        f"The provider returned {label}. Estimate ${money_number(estimate):.2f}. "
-        + (
-            f"The provider reported ${money_number(actual):.2f}. "
-            if actual is not None
-            else (
-                "The provider did not report a dollar amount. The booked amount stays the estimate. "
-                "The ledger records this as an estimate, not a measured charge. "
-            )
+    if source == "usage":
+        money_line = (
+            f"Booked ${money_number(actual):.4f} from the reported token usage. "
         )
+    elif actual is not None:
+        money_line = f"The provider reported ${money_number(actual):.2f}. "
+    else:
+        money_line = (
+            "The provider did not report a dollar amount. The booked amount stays the estimate. "
+            "The ledger records this as an estimate, not a measured charge. "
+        )
+    shown = money_number(estimate)
+    estimate_text = f"${shown:.4f}" if kind == "text" else f"${shown:.2f}"
+    message = (
+        f"The provider returned {label}. Estimate {estimate_text}. "
+        + money_line
         + f"The file is {output}, under { _location_name() }. The pipeline stays at this stage."
     )
     producer.run.data["notes"] = redact(message)
@@ -1190,6 +1245,225 @@ def _find_mark(producer, mark: str, *, approved_only: bool) -> dict | None:
             continue
         found = request
     return found
+
+
+def quote_text_call(
+    model: str,
+    system: str,
+    prompt: str,
+    max_tokens: int | None,
+    rates_path=None,
+    label: str = "",
+) -> dict:
+    """The quote for one text call. Nothing is sent.
+
+    Input tokens are the character count divided by 4. The remainder is
+    dropped. The line says that number is an estimate. The worst case prices
+    that estimate plus every output token the call is allowed to write.
+    """
+    output_tokens = int(max_tokens or 4000)
+    input_tokens = (len(system or "") + len(prompt or "")) // 4
+    name = model or "(unset)"
+    shown = label or name
+    row = generator_rate(load_rate_card(rates_path), model) if model else None
+    prices = token_prices(row, input_tokens)
+    worst = None if prices is None else token_dollars(input_tokens, output_tokens, prices[0], prices[1])
+    text = (
+        f"Writing quote for {shown}. Model: {name}. "
+        f"Input tokens: {input_tokens} (estimate, character count / 4). "
+        f"Max output tokens: {output_tokens}."
+    )
+    if worst is None:
+        text += f" The rate card has no published price for {name}."
+    else:
+        text += f" Worst case: ${money_number(worst):.4f} from the rate card."
+    return {
+        "model": name,
+        "input_tokens_estimate": input_tokens,
+        "max_output_tokens": output_tokens,
+        "worst_case_usd": None if worst is None else money_number(worst),
+        "text": text,
+        "worst": worst,
+    }
+
+
+def _writing_preflight(
+    producer: LineProducer,
+    *,
+    stage: str,
+    model: str,
+    prompt: str,
+    system: str | None,
+    max_tokens: int | None,
+    role: str | None,
+    purpose: str | None,
+    label: str,
+    rates_path,
+    shot_id,
+    cue_id,
+):
+    """Quote, approval, and the stage line. Returns ``(stop or None, estimate)``.
+
+    A call that was already reserved keeps going, so a retry does not turn
+    into a second quote. A new call with no writing approval stops here.
+    """
+    quote = quote_text_call(model, system or "", prompt, max_tokens, rates_path, label)
+    request_hash = _request_hash(
+        {
+            "kind": "text",
+            "stage": stage,
+            "provider": "anthropic",
+            "model": model,
+            "endpoint": ANTHROPIC_URL,
+            "prompt": prompt,
+            "system": system or "",
+            "billed_seconds": None,
+            "duration_seconds": None,
+            "shot_id": shot_id or "",
+            "cue_id": cue_id or "",
+            "voice_id": "",
+            "role": role or "",
+            "purpose": purpose or "",
+            "max_tokens": max_tokens or 0,
+            "aspect_ratio": "",
+        }
+    )
+    cached = (_load_cache(producer).get("calls") or {}).get(request_hash) or {}
+    if cached.get("status") in {"settled", "replayed", "failed", "unknown", "sending", "submitted", "reserved"}:
+        estimate = quote["worst"]
+        if estimate is None:
+            estimate = as_money(cached.get("estimate_usd") or 0)
+        return None, estimate
+
+    if quote["worst"] is None:
+        return _stop_writing(
+            "refused", quote["text"], "", shot_id=shot_id, cue_id=cue_id, request_hash=request_hash,
+        ), None
+
+    worst = quote["worst"]
+    approval = producer.record.get("writing_approval") or {}
+    if approval.get("status") != "approved":
+        return _stop_writing(
+            "quoted",
+            quote["text"],
+            "Record a writing approval for this run before a text call is sent.",
+            shot_id=shot_id,
+            cue_id=cue_id,
+            request_hash=request_hash,
+            estimate_usd=worst,
+        ), None
+
+    room = as_money(approval.get("max_usd") or 0) - writing_booked(producer.record)
+    if room < 0:
+        room = as_money(0)
+    if as_money(worst) > room:
+        return _stop_writing(
+            "refused",
+            quote["text"],
+            (
+                f"The writing approval has ${money_number(room):.4f} left "
+                f"of ${money_number(approval.get('max_usd') or 0):.4f}."
+            ),
+            shot_id=shot_id,
+            cue_id=cue_id,
+            request_hash=request_hash,
+            estimate_usd=worst,
+        ), None
+
+    line_stop = _writing_line_stop(
+        producer, stage, worst, quote["text"], shot_id=shot_id, cue_id=cue_id, request_hash=request_hash,
+    )
+    if line_stop is not None:
+        return line_stop, None
+    return None, worst
+
+
+def _writing_line_stop(producer, stage, worst, quote, *, shot_id, cue_id, request_hash):
+    """The run's stage line when it is locked. Otherwise budget.json has to exist.
+
+    The film cap and the budget.json line are checked again with the other
+    spends, once a key is present. This stop is only the missing line.
+    """
+    from movie_swarm.budget import load_film_budget
+
+    allocations = producer.record.get("stage_allocations") or {}
+    locked = allocations.get("status") == "approved"
+    split = allocations.get("split") or {}
+    has_budget = load_film_budget(producer.production_dir) is not None
+    if locked:
+        if stage not in split:
+            return _stop_writing(
+                "refused",
+                quote,
+                f"The locked split has no {stage} line.",
+                shot_id=shot_id,
+                cue_id=cue_id,
+                request_hash=request_hash,
+                estimate_usd=worst,
+            )
+        spent = as_money(producer.stage_spent(stage))
+        ceiling = as_money(split[stage])
+        if spent + as_money(worst) > ceiling:
+            return _stop_writing(
+                "refused",
+                quote,
+                (
+                    f"This ${money_number(worst):.4f} {stage} writing call would put that line at "
+                    f"${money_number(spent + as_money(worst)):.4f}, "
+                    f"over its ${money_number(ceiling):.4f} stage line."
+                ),
+                shot_id=shot_id,
+                cue_id=cue_id,
+                request_hash=request_hash,
+                estimate_usd=worst,
+            )
+        return None
+    if not has_budget:
+        return _stop_writing(
+            "refused",
+            quote,
+            (
+                f"This film has no budget.json, and this run has no locked {stage} line, "
+                "so the call has no line to check."
+            ),
+            shot_id=shot_id,
+            cue_id=cue_id,
+            request_hash=request_hash,
+            estimate_usd=worst,
+        )
+    return None
+
+
+def _stop_writing(status, quote, reason, **kwargs):
+    message = quote if not reason else f"{quote} {reason}"
+    if "Nothing was sent." not in message:
+        message = f"{message} Nothing was sent."
+    return _stopped(status, message, **kwargs)
+
+
+def _usage_dollars(payload, model: str, rates_path):
+    """The dollar amount from reported tokens, or None when usage is missing."""
+    usage = payload.get("usage") if isinstance(payload, dict) else None
+    if not isinstance(usage, dict):
+        return None
+    if usage.get("input_tokens") is None or usage.get("output_tokens") is None:
+        return None
+    try:
+        input_tokens = int(usage["input_tokens"])
+        output_tokens = int(usage["output_tokens"])
+    except (TypeError, ValueError):
+        return None
+    if input_tokens < 0 or output_tokens < 0:
+        return None
+    row = generator_rate(load_rate_card(rates_path), model) if model else None
+    prices = token_prices(row, input_tokens)
+    if prices is None:
+        return None
+    amount = token_dollars(input_tokens, output_tokens, prices[0], prices[1])
+    note = (
+        f"The provider reported {input_tokens} input tokens and {output_tokens} output tokens."
+    )
+    return amount, note
 
 
 def _estimate(model: str, duration, rates_path):

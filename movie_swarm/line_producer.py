@@ -448,6 +448,36 @@ class LineProducer:
         self._save_record()
         return message
 
+    def approve_writing(self, max_usd: float, by: str, note: str = "") -> str:
+        """Record Ron's ceiling for text calls on this run.
+
+        The ceiling does not book money and does not open the generation gate.
+        A later call replaces the ceiling. The ledger is left as it is.
+        """
+        who = by.strip()
+        if not who:
+            raise LineProducerError("Say who approved. For this film, that is Ron.")
+        amount = self._check_amount(max_usd)
+        if amount <= 0:
+            raise LineProducerError("The writing approval needs a maximum above zero.")
+        self.record["writing_approval"] = {
+            "status": "approved",
+            "max_usd": money_number(amount),
+            "by": who,
+            "note": redact(note.strip()),
+            "approved_at": _now(),
+        }
+        self._save_record()
+        booked = writing_booked(self.record)
+        left = amount - booked
+        if left < 0:
+            left = as_money(0)
+        return (
+            f"{who} approved writing calls on this run up to ${money_number(amount):.2f}. "
+            f"${money_number(left):.2f} is left under that ceiling. "
+            "Picture and audio calls still wait on the generation gate. Nothing was sent."
+        )
+
     def decide_request(self, request_id: str, decision: str, by: str, note: str = "") -> str:
         """Approve or reject one spend request. Approving a real spend books it, even past the cap."""
         decision = _decision(decision)
@@ -530,6 +560,14 @@ class LineProducer:
             f"Status: {_plain_status(data['status'])}",
             f"Spent: ${spent:.2f} of ${cap:.2f}",
         ]
+        approval = self.record.get("writing_approval") or {}
+        if approval.get("status") == "approved":
+            booked = writing_booked(self.record)
+            lines.append(
+                f"Writing calls are approved up to ${money_number(approval['max_usd']):.2f}. "
+                f"${money_number(booked):.2f} of that is booked. "
+                "Picture and audio calls still wait on the generation gate."
+            )
         estimated = estimate_backed_spend(self.record)
         if estimated > 0:
             lines.append(
@@ -1391,6 +1429,27 @@ class LineProducer:
                 numbers.append(match)
         nxt = (max(numbers) if numbers else 0) + 1
         return f"{prefix}-{nxt:03d}"
+
+
+def writing_booked(record: dict):
+    """Dollars already booked for text calls on this run.
+
+    A release takes that entry off the ceiling. The number is what the next
+    writing call is checked against.
+    """
+    released = {
+        item.get("releases_entry_id")
+        for item in record.get("ledger") or []
+        if item.get("kind") == "release"
+    }
+    total = as_money(0)
+    for item in record.get("ledger") or []:
+        if item.get("kind") != "generation" or not item.get("writing"):
+            continue
+        if item.get("entry_id") in released:
+            continue
+        total += as_money(item.get("amount_usd") or 0)
+    return total
 
 
 def estimate_backed_spend(record: dict):
