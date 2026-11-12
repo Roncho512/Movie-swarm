@@ -1129,3 +1129,12 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: Harbor Night proves a $100 budget with the trailer on proposes production at $48.60 and marketing at $10.00, and the treatment stays a draft. The Last Marker question proposes the scaled $500 lines.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
+## D129 — Films live outside the studio repo
+
+- Status: decided
+- Date: 2026-11-12
+- Context: The studio repo was holding the engine and the working files for a film. Ron decided in chat on 2026-11-12 that the repo holds the engine only. Each film's working data lives in its own folder outside the repo, under the films root. That root is `MOVIE_SWARM_FILMS_ROOT`, or `MOVIE_SWARM_ASSET_ROOT` when the films root is unset. The same value can come from the shell, from `.env`, or from config. A film folder may be its own small private git repo.
+- Decision: A production is a path, or a name that means `<films root>/<name>`. The commands accept either. An absolute path may be outside this repo. Nothing in the engine requires the folder to sit under this repo. `scripts/new-film.py` creates a skeleton in the films root. `scripts/export-film.py` copies an in-repo production out, checks a checksum list, and leaves the source in place. `productions/the-last-marker` stays in the repo as an archived copy until Ron exports it and a later phase removes it. Harbor Night stays in `tests/fixtures/` as the example. New folders under `productions/` other than `the-last-marker` are ignored.
+- Consequences: The working film is not committed to the studio repo. No real path is written in the repo. Schema checks, run folders, archives, and media paths follow the production folder. Spent on this step: $0.00. No live call was made.
+- Who decided: Ron, 2026-11-12
+

@@ -40,9 +40,9 @@ Phase 8.10 is on main. It merged on 2026-11-12 in [pull request 14](https://gith
 
 Phase 8.11 is on main. It merged on 2026-11-12 in [pull request 15](https://github.com/Roncho512/Movie-swarm/pull/15), merge `c98ef2f`. A Seedance job can take a few minutes, so a fal picture call now waits 10 minutes by default. The pauses start at 5 seconds and grow to 15. A short progress line prints about every 30 seconds. `--wait` sets a different wait for one test shot. A timeout still leaves the estimate booked, and a re-run checks the same request. The older fal queue helpers post the input fields at the top and use the URLs fal returns. Doctor says whether the asset root came from the shell, from `.env`, or from `config/assets.json`, and whether that folder exists. It does not print the path. When fal does not report a dollar amount, the ledger marks `actual_source` as `estimate`, and status says that part of the spend is still the estimate. No paid call was made in that phase. The proof is Harbor Night. The Last Marker folder was not changed.
 
-The first film is underway. Ron said on 2026-11-12 to do The Last Marker from the top. D41 is lifted for `productions/the-last-marker` only. The earlier treatment and previs approvals are in that folder's `archive/`. The live treatment is a draft. Run `first-film-1` stops at the treatment gate. `budget.json` is the quote. Spent on this step: $0.00. No live call was made.
+The first film is underway. Ron said on 2026-11-12 to do The Last Marker from the top. D41 is lifted for that film only. The working film lives in the films folder, outside this repo (D129). `productions/the-last-marker` is an archived copy. The earlier treatment and previs approvals are in that copy's `archive/`. The live treatment is a draft. Run `first-film-1` stops at the treatment gate. `budget.json` is the quote. Spent on this step: $0.00. No live call was made.
 
-Film facts stay in the production folder. The engine does not know that this film's exhaust is on the right, that the watch is on the left wrist, that the bike is a 1965, that the story is 1967, or that the look is Sergio Leone. Those sentences live in `productions/the-last-marker/`. A different film uses its own files. The pilot sound prompts moved out of the sound program and into `productions/the-last-marker/audio/sound-prompts.json`.
+Film facts stay in the production folder. The engine does not know that this film's exhaust is on the right, that the watch is on the left wrist, that the bike is a 1965, that the story is 1967, or that the look is Sergio Leone. Those sentences live in the film folder. A different film uses its own files. The pilot sound prompts moved out of the sound program and into the film's `audio/sound-prompts.json`. The archived copy still has that file.
 
 The continuity check on the old pilot shot list found 17 missing locks. Each one is the Triumph shown without the locked exhaust phrase. The new storyboard states the locks. No money was spent.
 
@@ -60,24 +60,26 @@ python3 -m pytest tests -q
 python3 scripts/validate-schema.py --production productions/the-last-marker
 ```
 
-See where The Last Marker stands:
+That last command checks the archived copy in this repo. The working film is checked the same way with `--production the-last-marker` once `MOVIE_SWARM_FILMS_ROOT` is set, or with the absolute path of the film folder.
+
+See where the working film stands:
 
 ```bash
-python3 scripts/line-producer.py --production productions/the-last-marker --run first-film-1 status
-python3 scripts/line-producer.py --production productions/the-last-marker --run first-film-1 budget
+python3 scripts/line-producer.py --production the-last-marker --run first-film-1 status
+python3 scripts/line-producer.py --production the-last-marker --run first-film-1 budget
 ```
 
 Draft again from the screenplay. This does not approve anything. The live treatment is already a draft, so intake is allowed. It reads `treatment/inputs.json` and `budget.json`, and it replaces the draft. If the treatment were still approved, intake would stop and tell you not to draft again. The draft stays offline unless you pass `--live`. `--offline` is the same default, written out.
 
 ```bash
-python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline intake
+python3 scripts/director.py --production the-last-marker --run first-film-1 --offline intake
 ```
 
-Answer the Director. Open `productions/the-last-marker/treatment/questions.json`. Type each answer in the `answer` field. Leave a field as `null` if you are not ready. Then:
+Answer the Director. Open `treatment/questions.json` in the film folder. Type each answer in the `answer` field. Leave a field as `null` if you are not ready. Then:
 
 ```bash
-python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline answer \
-  --answers productions/the-last-marker/treatment/questions.json
+python3 scripts/director.py --production the-last-marker --run first-film-1 --offline answer \
+  --answers treatment/questions.json
 ```
 
 You can also send a separate answers file:
@@ -94,7 +96,7 @@ You can also send a separate answers file:
 Approve the treatment after you have read `treatment/treatment.md`. This is the only way the treatment becomes approved. It also locks the stage split, which is how the $500 is divided across jobs.
 
 ```bash
-python3 scripts/line-producer.py --production productions/the-last-marker --run first-film-1 approve-gate \
+python3 scripts/line-producer.py --production the-last-marker --run first-film-1 approve-gate \
   --stage treatment --decision approved --by ron --note "Lock the treatment and the split."
 ```
 
@@ -103,27 +105,27 @@ Reject it the same way, with `--decision rejected`. You can put the same fields 
 Write the phase 2 package. These calls do not spend money. They pause until the treatment gate is approved. They do not approve the previs gate.
 
 ```bash
-python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
+python3 scripts/director.py --production the-last-marker --run first-film-1 --offline dispatch \
   --agent prop-master --crew-command lock --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
+python3 scripts/director.py --production the-last-marker --run first-film-1 --offline dispatch \
   --agent costume-designer --crew-command lock --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
+python3 scripts/director.py --production the-last-marker --run first-film-1 --offline dispatch \
   --agent makeup-hair --crew-command lock --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
+python3 scripts/director.py --production the-last-marker --run first-film-1 --offline dispatch \
   --agent cinematographer --crew-command package --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
+python3 scripts/director.py --production the-last-marker --run first-film-1 --offline dispatch \
   --agent cinematographer --crew-command boards --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
+python3 scripts/director.py --production the-last-marker --run first-film-1 --offline dispatch \
   --agent gaffer --crew-command plan --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
+python3 scripts/director.py --production the-last-marker --run first-film-1 --offline dispatch \
   --agent key-grip --crew-command plan --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
+python3 scripts/director.py --production the-last-marker --run first-film-1 --offline dispatch \
   --agent stunt-coordinator --crew-command breakdown --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
+python3 scripts/director.py --production the-last-marker --run first-film-1 --offline dispatch \
   --agent assistant-director --crew-command schedule --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
+python3 scripts/director.py --production the-last-marker --run first-film-1 --offline dispatch \
   --agent vfx-supervisor --crew-command breakdown --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
+python3 scripts/director.py --production the-last-marker --run first-film-1 --offline dispatch \
   --agent script-supervisor --crew-command check --estimate 0
 ```
 
@@ -132,16 +134,16 @@ Wardrobe definitions, when the production has them, live in `wardrobe/costume-de
 Approve the package after you have read the files under `props/`, `wardrobe/`, `makeup/`, `continuity/`, `camera/`, `storyboard/`, `lighting/`, `grip/`, `schedule/`, `stunts/`, and `vfx/`.
 
 ```bash
-python3 scripts/line-producer.py --production productions/the-last-marker --run first-film-1 approve-gate \
+python3 scripts/line-producer.py --production the-last-marker --run first-film-1 approve-gate \
   --stage previs --decision approved --by ron --note "The phase 2 package can go forward."
 ```
 
 A picture call does not run until you have approved the treatment, the previs package, and that stage. This example only prices shots with the older production estimator. It does not generate video.
 
 ```bash
-python3 scripts/director.py --production productions/the-last-marker --run first-film-1 dispatch \
+python3 scripts/director.py --production the-last-marker --run first-film-1 dispatch \
   --agent production --crew-command estimate --estimate 0 \
-  --shot-list productions/the-last-marker/shot-lists/shot-list.json
+  --shot-list shot-lists/shot-list.json
 ```
 
 Ask for a generation plan. A generation plan is a dry-run quote: the generator, the clip length, the takes allowed, and the price, set against the locked split. It does not spend, and it does not need the generation gate. This phase proved the command on Harbor Night. It did not write a plan for The Last Marker.
@@ -332,7 +334,7 @@ python3 -m pytest agents/06-sound-designer/tests -q
 python3 -m pytest agents/08-qa/tests -q
 ```
 
-`python3 scripts/validate-schema.py --production productions/the-last-marker` checks every JSON file in the production against its checklist. A checklist is a schema: a list of required fields. Files that fail are named. A few older pilot files are on a known-mismatch list. They are reported and do not fail the run. A new file that fails does stop the command.
+`python3 scripts/validate-schema.py --production productions/the-last-marker` checks the archived copy. `python3 scripts/validate-schema.py --production the-last-marker` checks the working film when the films root is set. A path outside this repo works the same way. The command checks every JSON file in the production against its checklist. A checklist is a schema: a list of required fields. Files that fail are named. A few older pilot files are on a known-mismatch list. They are reported and do not fail the run, including when that folder has been copied out of the repo. A new file that fails does stop the command.
 
 GitHub runs these checks on every push and every pull request. See `.github/workflows/ci.yml`.
 
@@ -354,11 +356,11 @@ Config files in `config/`:
 | `gates.json` | The $500 film cap, and one on/off switch per stage. On means Ron reviews that stage. Every switch starts on. |
 | `model-routing.json` | Which model each role uses. Change the file, not the code. |
 | `providers.json` | How long a fal picture call waits, and how the pauses between status checks grow. `--wait` on a test shot replaces the wait for that one call. |
-| `assets.json` | Where finished media lives. `null` keeps files in the production folder. |
+| `assets.json` | Where finished media lives, and the films root when `films_root` is set. `null` keeps media in the production folder. |
 
 ## Sample data
 
-The sample film is The Last Marker, in `productions/the-last-marker/`.
+The archived copy of the first film is The Last Marker, in `productions/the-last-marker/`. The working film lives in the films folder. Harbor Night, under `tests/fixtures/`, is the in-repo example.
 
 | File | What it is |
 |---|---|
