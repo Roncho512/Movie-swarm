@@ -154,11 +154,18 @@ A live call that needs a missing key stops and says which name is unset. Nothing
 
 Offline is the default. A real call needs all four of these: the generation gate approved, the estimate inside the line and the film budget, the key in the environment, and `--live` on the command.
 
-One picture call, for one shot, with nothing sent. This is Seedance 2.0 fast at 720p, the cheapest picture model that has a fal address. The dry run prints the model, the tier, the provider, the resolution, the duration, the estimated cost, and the money still left. It says nothing was sent.
+One picture call, for one shot, with nothing sent. The cheapest real Seedance 2.0 fast shot is 4 seconds at 720p. A shorter board is rounded up to 4 seconds, and the estimate uses that length. Harbor Night's first shot is 2.087 seconds, so the dry run says it is sent as 4 seconds and estimates $0.9676. The dry run prints the model, the tier, the provider, the resolution, the duration, the estimated cost, and the money still left. It says nothing was sent.
 
 ```bash
 python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 test-shot \
   --shot s01-sh01 --model seedance-2.0-fast
+```
+
+The dry-run line for that shot is:
+
+```text
+Shot s01-sh01: model seedance-2.0-fast, tier better, provider fal.ai, resolution 720p, duration 2.087 seconds (sent as 4 seconds), estimated cost $0.9676.
+Production line remaining: $270.00. Film remaining: $500.00.
 ```
 
 That shot exists after the studio has written the storyboard. `--tier better` names the same model. Read the estimate. Add `--live` only after you have approved the generation gate and you mean to spend:
@@ -205,6 +212,7 @@ The package holds the master, the variants the delivery spec asked for, a poster
 - A live call says a key is missing: set that name in `.env` or in the shell. Do not put the value in the repo. Doctor says whether each name is set.
 - A live picture call says no endpoint is configured: that model is unwired. Pass `--model seedance-2.0-fast` or `--tier better` for the cheapest wired picture model. The message lists the choices.
 - A live call says the rate is unknown: the rate card has no verified price. Pass `--price-override` only for that one call, and approve the request it writes.
+- A failed call left an estimate on the ledger and produced nothing: `python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 release --entry spend-014 --by ron --note "Nothing was produced."` The original entry stays. The running total goes back down.
 - Intake says the treatment is already approved: do not draft again. Read `treatment/treatment.md`.
 
 ## What each role does

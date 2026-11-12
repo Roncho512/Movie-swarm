@@ -20,6 +20,7 @@ from movie_swarm.budget import (
     write_film_budget,
 )
 from movie_swarm.line_producer import LineProducer, LineProducerError
+from movie_swarm.money import money_number
 from movie_swarm.llm import LLMError
 from movie_swarm.models import ModelRoutingError
 from movie_swarm.providers import llm_for_command, run_test_shot
@@ -100,6 +101,14 @@ def main(argv: list[str] | None = None) -> int:
     shot.add_argument("--model", help="Picture model id from the rate card. Wins over --tier and the budget.")
     shot.add_argument("--tier", choices=["good", "better", "best"], help="Picture tier. Wins over the budget tier.")
 
+    release = sub.add_parser(
+        "release",
+        help="Release a booked estimate that produced nothing. The original ledger entry stays.",
+    )
+    release.add_argument("--entry", required=True, help="Ledger entry id, for example spend-014")
+    release.add_argument("--by", default="ron")
+    release.add_argument("--note", default="")
+
     args = parser.parse_args(argv)
     try:
         return _run(args)
@@ -177,6 +186,13 @@ def _run(args) -> int:
     if args.command == "credit":
         producer.add_credit(args.role, args.name, args.note)
         print(f"Added credit: {args.role} — {args.name}")
+        return 0
+    if args.command == "release":
+        released = producer.release_booked_estimate(args.entry, by=args.by, note=args.note)
+        print(
+            f"Released {args.entry}. ${money_number(released['amount_usd']):.2f} came off the running total. "
+            f"The original entry is still on the ledger. {released['request_id']} records the release."
+        )
         return 0
     if args.command == "test-shot":
         from movie_swarm.providers import CallSettings
