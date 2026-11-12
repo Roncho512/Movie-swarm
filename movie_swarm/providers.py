@@ -103,17 +103,30 @@ def run_test_shot(
     live: bool = False,
     settings: CallSettings | None = None,
     routing_path: str | Path | None = None,
+    model: str | None = None,
+    tier: str | None = None,
+    announce=print,
 ) -> dict:
     """Prepare exactly one picture call for one shot, and send it only when allowed.
 
     The result is also written to ``runs/<run-id>/test-shot.json``. That file
-    has no key in it.
+    has no key in it. A dry run includes the quote. A live call prints that
+    same quote before anything is sent.
     """
     settings = settings or CallSettings()
     folder = producer.production_dir
     from movie_swarm.continuity import enforce_prompt, load_prop_lock
     from movie_swarm.generation import load_shots
+    from movie_swarm.shot_model import format_shot_quote, resolve_shot_model, unwired_note
 
+    if model or tier:
+        resolve_shot_model(
+            folder,
+            model=model,
+            tier=tier,
+            routing_path=routing_path,
+            rates_path=settings.rates_path,
+        )
     shots, _source = load_shots(folder)
     match = [shot for shot in shots if shot.get("shot_id") == shot_id]
     if len(match) != 1:
@@ -136,22 +149,25 @@ def run_test_shot(
         )
         _write_test_record(producer, result)
         return result
-    chosen = resolve_model(
-        "production",
-        purpose="preview",
+    choice = resolve_shot_model(
+        folder,
+        model=model,
+        tier=tier,
+        shot_id=shot_id,
         scene=shot.get("scene_id") or None,
-        shot=shot_id,
-        config_path=routing_path,
+        routing_path=routing_path,
+        rates_path=settings.rates_path,
     )
-    model = str(chosen.get("model") or "")
-    provider = str(chosen.get("provider") or "fal.ai")
+    quote = redact(format_shot_quote(producer, shot, choice, settings.rates_path))
+    if live and announce is not None:
+        announce(quote)
     result = run_provider_call(
         producer,
         live=live,
         kind="video",
         stage="production",
-        provider=provider,
-        model=model,
+        provider=choice["provider"],
+        model=choice["model"],
         prompt=enforced.prompt,
         duration_seconds=shot.get("duration_seconds"),
         shot_id=shot_id,
@@ -159,6 +175,14 @@ def run_test_shot(
         settings=settings,
         label=shot_id,
     )
+    if not live:
+        extra = ""
+        if not choice["wired"]:
+            extra = "\n" + unwired_note(choice["model"], settings.rates_path, routing_path)
+        result["message"] = redact(result["message"].rstrip() + "\n" + quote + extra)
+    result["quote"] = quote
+    result["model"] = choice["model"]
+    result["tier"] = choice["tier"]
     _write_test_record(producer, result)
     return result
 
@@ -234,9 +258,15 @@ def run_provider_call(
     row = generator_rate(load_rate_card(settings.rates_path), model) if model else None
     endpoint = _endpoint(kind, model, row, voice_id)
     if endpoint is None:
+        if kind == "video":
+            from movie_swarm.shot_model import unwired_note
+
+            message = unwired_note(model or "", settings.rates_path)
+        else:
+            message = f"No provider endpoint is configured for {model or '(unset)'}. Nothing was sent."
         return _stopped(
             "refused",
-            f"No provider endpoint is configured for {model or '(unset)'}. Nothing was sent.",
+            message,
             shot_id=shot_id,
             cue_id=cue_id,
         )

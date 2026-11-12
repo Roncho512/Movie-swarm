@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "checked_on": "2026-11-10",
   "assumptions": [
     "Preview and final both use the published 720p Gemini Omni 1.2 Flash rate. Google says a draft can be 360p, and it does not publish a separate 360p price.",
@@ -25,7 +25,9 @@
       "max_seconds": "15",
       "source": "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/",
       "source_date": "2026-11-05",
-      "quote": "$0.07 per second for 720p video. Clips run from 3 to 15 seconds."
+      "quote": "$0.07 per second for 720p video. Clips run from 3 to 15 seconds.",
+      "status": "planned",
+      "note": "Planned. No provider endpoint is configured, so a live call is refused."
     },
     {
       "model": "seedance-2.0",
