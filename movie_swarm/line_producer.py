@@ -234,8 +234,15 @@ class LineProducer:
     def stage_spent(self, stage: str) -> float:
         total = as_money(0)
         for entry in self.record["ledger"]:
-            if entry["stage"] == stage and entry["kind"] != "dry-run":
-                total += as_money(entry["amount_usd"])
+            if entry["stage"] != stage or entry["kind"] == "dry-run":
+                continue
+            amount = as_money(entry["amount_usd"])
+            if entry["kind"] == "release":
+                total -= amount
+            else:
+                total += amount
+        if total < 0:
+            total = as_money(0)
         return money_number(total)
 
     def record_spend(
@@ -1241,6 +1248,80 @@ class LineProducer:
                 return request
         known = ", ".join(item["request_id"] for item in self.record["requests"]) or "none"
         raise LineProducerError(f"No approval request named {request_id}. Requests on this run: {known}.")
+
+    def release_booked_estimate(self, entry_id: str, *, by: str, note: str = "") -> dict:
+        """Take a booked estimate off the running total when nothing was produced.
+
+        The original ledger row stays. A new release row offsets it, and an
+        approved request records who released it.
+        """
+        who = (by or "").strip()
+        if not who:
+            raise LineProducerError("Say who released the estimate.")
+        entry = self.ledger_entry(entry_id)
+        if entry.get("kind") == "release":
+            raise LineProducerError(f"{entry_id} is a release. It cannot be released again.")
+        if entry.get("kind") == "dry-run":
+            raise LineProducerError(f"{entry_id} is a dry run. Nothing was charged.")
+        if any(item.get("releases_entry_id") == entry_id for item in self.record["ledger"]):
+            raise LineProducerError(f"{entry_id} is already released.")
+        actual = entry.get("actual_usd")
+        if actual not in (None, ""):
+            try:
+                reported = as_money(actual)
+            except ValueError:
+                reported = None
+            if reported is not None and reported > 0:
+                raise LineProducerError(
+                    f"{entry_id} has a reported charge of ${money_number(reported):.2f}. "
+                    "A release is for an estimate with nothing produced."
+                )
+        amount = as_money(entry["amount_usd"])
+        if amount <= 0:
+            raise LineProducerError(f"{entry_id} has nothing booked to release.")
+        reason = redact((note or "").strip() or "Released a booked estimate. Nothing was produced.")
+        request = self._new_request(
+            "release",
+            entry["stage"],
+            amount,
+            reason,
+            books_money=False,
+            description=f"release:{entry_id}",
+        )
+        request["status"] = "approved"
+        request["decided_at"] = _now()
+        request["decided_by"] = who
+        request["note"] = reason
+        request["consumed"] = True
+        release = {
+            "entry_id": self._next_id("spend", [item["entry_id"] for item in self.record["ledger"]]),
+            "stage": entry["stage"],
+            "amount_usd": money_number(amount),
+            "kind": "release",
+            "description": f"Released {entry_id}. {reason}",
+            "recorded_at": _now(),
+            "request_id": request["request_id"],
+            "estimate_usd": (
+                money_number(entry["estimate_usd"])
+                if entry.get("estimate_usd") not in (None, "")
+                else money_number(amount)
+            ),
+            "actual_usd": 0,
+            "call_phase": "released",
+            "releases_entry_id": entry_id,
+        }
+        if entry.get("request_hash"):
+            release["request_hash"] = entry["request_hash"]
+        if as_money(entry.get("contingency_usd") or 0) > 0:
+            release["contingency_usd"] = money_number(entry["contingency_usd"])
+        if as_money(entry.get("overage_usd") or 0) > 0:
+            release["overage_usd"] = money_number(entry["overage_usd"])
+        self.record["ledger"].append(release)
+        entry["call_phase"] = "released"
+        self._save_record()
+        self._write_request_file(request)
+        self._adjust_running_total(as_money(0) - amount)
+        return release
 
     def ledger_entry(self, entry_id: str) -> dict:
         for entry in self.record["ledger"]:

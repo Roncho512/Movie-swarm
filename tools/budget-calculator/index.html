@@ -66,6 +66,7 @@
     <tbody id="lines"></tbody>
   </table>
   <p id="summary" class="total"></p>
+  <p id="duration-note"></p>
   <section class="rates">
     <h2>Rates</h2>
     <p>Prefilled from the rate card. Edit them here. A price this repo cannot verify stays marked unknown.</p>
@@ -110,6 +111,41 @@ function dollars(value) {
 function readNumber(id, fallback) {
   const value = Number(document.getElementById(id).value);
   return Number.isFinite(value) ? value : fallback;
+}
+
+const DURATION_RULES = {
+  good: { min: 3, max: 15, whole: false },
+  better: { min: 4, max: 15, whole: true },
+  best: { min: 4, max: 15, whole: true },
+  top: { min: 4, max: 15, whole: true }
+};
+
+function durationRule() {
+  if (document.getElementById("resolution").value === "1080p") return DURATION_RULES.top;
+  return DURATION_RULES[tierChoice.production || "good"] || DURATION_RULES.good;
+}
+
+function clipSeconds(seconds, rule) {
+  let length = rule.whole ? Math.ceil(seconds - 1e-9) : seconds;
+  if (length < 0) length = 0;
+  if (rule.min != null && length < rule.min) return rule.min;
+  if (rule.max == null || length <= rule.max) return length;
+  let total = 0;
+  let remaining = length;
+  let guard = 0;
+  while (remaining > 1e-9 && guard < 100) {
+    let piece = remaining > rule.max ? rule.max : remaining;
+    if (rule.min != null && piece < rule.min) piece = rule.min;
+    total += piece;
+    remaining -= piece;
+    guard += 1;
+  }
+  return total;
+}
+
+function billedRuntime(runtime, shots, rule) {
+  const count = Math.max(1, shots || 1);
+  return clipSeconds(runtime / count, rule) * count;
 }
 
 function pictureRate() {
@@ -157,14 +193,16 @@ function buildBudget() {
 
 function estimateFor(stage, math) {
   const runtime = readNumber("runtime", 60);
+  const shots = readNumber("shots", 1);
   const takes = readNumber("takes", 2);
   const fix = readNumber("fix", 1);
   const picture = pictureRate();
+  const billed = billedRuntime(runtime, shots, durationRule());
   if (stage === "production") {
-    return { amount: picture.price * runtime * takes, status: picture.status };
+    return { amount: picture.price * billed * takes, status: picture.status, billed: billed, runtime: runtime };
   }
   if (stage === "fix-loop") {
-    return { amount: picture.price * runtime * fix, status: picture.status };
+    return { amount: picture.price * billed * fix, status: picture.status, billed: billed, runtime: runtime };
   }
   if (stage === "sound-designer") {
     const minutes = runtime / 60;
@@ -256,6 +294,16 @@ function render() {
     "Lines plus contingency: $" + (spendable / 10000).toFixed(2) +
     " of $" + (math.total / 10000).toFixed(2) +
     ". " + (word.word === "on" ? "On the budget." : word.word + " by $" + word.gap.toFixed(2) + ".");
+  const pictureEstimate = estimateFor("production", math);
+  const durationNote = document.getElementById("duration-note");
+  if (pictureEstimate.billed && Math.abs(pictureEstimate.billed - pictureEstimate.runtime) > 0.0001) {
+    durationNote.textContent =
+      "Picture time is quoted at " + pictureEstimate.billed.toFixed(3) +
+      " seconds. The runtime is " + pictureEstimate.runtime.toFixed(3) +
+      " seconds. A short shot is rounded up to the length the model accepts.";
+  } else {
+    durationNote.textContent = "";
+  }
   document.getElementById("json-out").value = JSON.stringify(exportDocument(), null, 2);
   document.querySelectorAll("[data-tier]").forEach(function (picker) {
     picker.addEventListener("change", function () {

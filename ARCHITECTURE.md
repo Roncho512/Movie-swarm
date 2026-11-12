@@ -99,6 +99,7 @@ The choices already made are in [DECISIONS.md](DECISIONS.md). Short form:
 - Final delivery packages the locked cut from the production's delivery spec (D71 through D79, pending Ron's approval at merge). The delivery gate marks the film delivered.
 - A live provider call waits on `--live`, the generation gate, the stage line, and the key (D80 through D86, pending Ron's approval at merge). Offline stays the default. Audio, color, and delivery stay unpriced.
 - Phase 8.9 loads `.env` at the start of every command in `scripts/` and does not override a variable the shell already set (D112, proposed). A test shot can name a model or a tier. An unwired model is refused (D110, proposed). The quote is printed before anything is sent (D113, proposed). `scripts/doctor.py` checks the machine without spending (D114, proposed). The readable treatment is written before the treatment gate (D115, proposed). Ron gave the go for this phase on 2026-11-12 (D109).
+- Phase 8.10 sends a fal picture call as the documented queue request (D117, proposed). A shot is rounded up to a length the model accepts, and the estimate uses that length (D118, proposed). A rejected call releases the booked estimate and keeps the original ledger row (D119, proposed). Ron gave the go for this fix on 2026-11-12 (D116).
 
 ## Interfaces
 
@@ -106,7 +107,7 @@ Two commands. Both take a production folder and a run id. Neither waits for you 
 
 | Command | What Ron uses it for |
 |---|---|
-| `scripts/line-producer.py` | Start a run, read status, write or report the film budget, record a spend, approve or reject a gate, decide a spend request, add a credit, or prepare one test shot. `--model` and `--tier` choose the picture model for that shot. |
+| `scripts/line-producer.py` | Start a run, read status, write or report the film budget, record a spend, approve or reject a gate, decide a spend request, add a credit, prepare one test shot, or release a booked estimate that produced nothing. `--model` and `--tier` choose the picture model for that shot. `release --entry` names the ledger row. |
 | `scripts/director.py` | Draft a treatment, apply an answers file, call a crew agent. |
 
 Question file: `productions/<id>/treatment/questions.json`. Each question has an `id`, a `topic`, the question, and `answer`. Ron fills `answer`, or sends a separate file shaped as `{ "answers": [ { "id", "answer" } ] }`.
@@ -253,13 +254,13 @@ The role bills to Marketing and Distribution. The Editor is a collaborator and d
 
 Inputs: a shot list JSON.
 
-Outputs: clip files, clip metadata, and a cost report, when a real run is allowed. This phase writes a generation plan, or runs the older local price estimate, or a dry run that builds the request and does not call the video service. The plan reads the storyboard when one exists, otherwise a shot list. For each shot it names the generator, the clip length, the two takes it allows (one preview and one final), and the price. It adds the retake reserve and sets every line against the locked split. Rates come from `config/generation-rates.json`, with the source and the date. A line that is not a published price is marked as an assumption. Stills and sound are not priced on the picture quote, because that card has no rate for them. The sound plan, later, reads the same card and marks an audio rate unknown instead of storing a zero.
+Outputs: clip files, clip metadata, and a cost report, when a real run is allowed. This phase writes a generation plan, or runs the older local price estimate, or a dry run that builds the request and does not call the video service. The plan reads the storyboard when one exists, otherwise a shot list. For each shot it names the generator, the clip length, the two takes it allows (one preview and one final), and the price. It adds the retake reserve and sets every line against the locked split. Rates come from `config/generation-rates.json`, with the source and the date. A line that is not a published price is marked as an assumption. A picture row can also name a minimum length, a maximum length, whole seconds, and the resolutions that model accepts. A short shot is rounded up to the next allowed length, and the quote uses that length. Seedance 2.0 and Seedance 2.0 fast use 4 to 15 whole seconds. That rule was read from the fal API pages. Kling 4.0 on fal uses 3 to 30 whole seconds and still has no endpoint. Gemini Omni's 3 to 15 second quote stays an assumption, and a length inside that range is left as it is. Stills and sound are not priced on the picture quote, because that card has no rate for them. The sound plan, later, reads the same card and marks an audio rate unknown instead of storing a zero.
 
 Before a prompt is sent, a locked prop that is in the shot must have its required phrase in the prompt. A forbidden phrase blocks the call. The phrases come from the production's prop file.
 
 After a client returns, `review_dailies` records the phrases it would check and marks the shot `not-reviewed`. It does not open the file and it does not call a model. The review that circles a take is a separate dailies call.
 
-Hands off to: Ron, through the plan, before any money moves. Hands off to the Dailies Reviewer, through the takes manifest, once clips exist. The default client does not leave the machine. A `--live` call can, after the estimate is reserved on the ledger. The file is written under the asset root when that setting is set.
+Hands off to: Ron, through the plan, before any money moves. Hands off to the Dailies Reviewer, through the takes manifest, once clips exist. The default client does not leave the machine. A `--live` call can, after the estimate is reserved on the ledger. A fal picture call posts the input fields at the top of the JSON body to `https://queue.fal.run/<endpoint>`. Status and result reads use the `status_url` and `response_url` from that response. If those are absent, the URL uses the first two path segments only. A finished body that is an error releases the booked estimate. The original ledger row stays, and a release row offsets it. `release --entry` does the same thing by hand. The file is written under the asset root when that setting is set.
 
 ## Dailies Reviewer
 

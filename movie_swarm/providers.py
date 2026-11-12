@@ -28,6 +28,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from movie_swarm.assets import ASSET_ROOT_ENV, load_asset_config, resolve_asset
+from movie_swarm.duration import clip_lengths, request_value, seconds_text
 from movie_swarm.http_retry import (
     HttpConnectionError,
     HttpResult,
@@ -68,6 +69,13 @@ ALLOWANCE_MARK = "live-allowance:"
 
 class ProviderFailure(Exception):
     """The provider accepted a request and then failed it."""
+
+
+class ProviderRejected(ProviderFailure):
+    """The provider refused the call and produced nothing."""
+
+
+_CLIENT_REJECTED = {400, 401, 403, 404, 405, 422}
 
 
 @dataclass
@@ -279,6 +287,10 @@ def run_provider_call(
         )
 
     estimate, billed, price_note = _estimate(model, duration_seconds, settings.rates_path)
+    if kind == "video" and row is not None:
+        refusal = _video_request_refusal(model, row, duration_seconds)
+        if refusal is not None:
+            return _stopped("refused", refusal, shot_id=shot_id, cue_id=cue_id)
     request_hash = _request_hash(
         {
             "kind": kind,
@@ -400,7 +412,7 @@ def run_provider_call(
         cache["calls"][request_hash] = cached
         _save_cache(producer, cache)
         try:
-            provider_request_id, early = _submit(
+            provider_request_id, early, queue_urls = _submit(
                 kind,
                 endpoint,
                 key,
@@ -426,24 +438,36 @@ def run_provider_call(
         except HttpConnectionError as exc:
             return _release(
                 producer, cache, cached, entry_id, request_hash, shot_id, cue_id,
-                f"The provider could not be reached. {exc} Nothing was booked. The pipeline is still at this stage.",
+                f"The provider could not be reached. {exc} Nothing was booked. "
+                "The booked estimate was released. The original entry stays on the ledger. "
+                "The pipeline is still at this stage.",
             )
         except HttpStatusError as exc:
-            if exc.status in {400, 401, 403, 404}:
+            if exc.status in _CLIENT_REJECTED:
                 return _release(
                     producer, cache, cached, entry_id, request_hash, shot_id, cue_id,
-                    f"{exc} Nothing was booked. The pipeline is still at this stage.",
+                    f"The provider rejected the request. {exc} "
+                    "The booked estimate was released. Nothing was produced. The pipeline is still at this stage.",
                 )
             return _keep(
                 producer, cache, cached, entry_id, request_hash, estimate, shot_id, cue_id, "unknown",
                 f"{exc} The estimate stays booked because the provider may have accepted the call. "
                 "It was not sent again. The pipeline is still at this stage.",
             )
+        except ProviderRejected as exc:
+            return _release(
+                producer, cache, cached, entry_id, request_hash, shot_id, cue_id,
+                f"{exc} The booked estimate was released. The pipeline is still at this stage.",
+            )
         except ProviderFailure as exc:
             return _keep(
                 producer, cache, cached, entry_id, request_hash, estimate, shot_id, cue_id, "unknown",
                 f"{exc} The estimate stays booked. It was not sent again. The pipeline is still at this stage.",
             )
+        if queue_urls.get("status_url"):
+            cached["status_url"] = queue_urls["status_url"]
+        if queue_urls.get("response_url"):
+            cached["response_url"] = queue_urls["response_url"]
         if provider_request_id:
             cached["provider_request_id"] = provider_request_id
             cached["status"] = "submitted"
@@ -455,7 +479,18 @@ def run_provider_call(
                 label, kind, early, override_id, allowance, settings,
             )
     try:
-        payload = _poll_fal(endpoint, key, provider_request_id, settings) if kind == "video" else None
+        payload = (
+            _poll_fal(
+                endpoint,
+                key,
+                provider_request_id,
+                settings,
+                status_url=cached.get("status_url"),
+                response_url=cached.get("response_url"),
+            )
+            if kind == "video"
+            else None
+        )
     except HttpTimeout as exc:
         cached["status"] = "submitted"
         cache["calls"][request_hash] = cached
@@ -470,7 +505,25 @@ def run_provider_call(
             "failed", message, shot_id=shot_id, cue_id=cue_id,
             request_hash=request_hash, estimate_usd=estimate,
         )
-    except (HttpConnectionError, HttpStatusError, ProviderFailure) as exc:
+    except ProviderRejected as exc:
+        return _release(
+            producer, cache, cached, entry_id, request_hash, shot_id, cue_id,
+            f"The provider did not finish the request. {exc} "
+            "The booked estimate was released. The pipeline is still at this stage.",
+        )
+    except HttpStatusError as exc:
+        if exc.status in {400, 422}:
+            return _release(
+                producer, cache, cached, entry_id, request_hash, shot_id, cue_id,
+                f"The provider rejected the request. {exc} "
+                "The booked estimate was released. Nothing was produced. The pipeline is still at this stage.",
+            )
+        return _keep(
+            producer, cache, cached, entry_id, request_hash, estimate, shot_id, cue_id, "failed",
+            f"The provider did not finish the request. {exc} "
+            "The estimate stays booked. It was not sent again. The pipeline is still at this stage.",
+        )
+    except (HttpConnectionError, ProviderFailure) as exc:
         return _keep(
             producer, cache, cached, entry_id, request_hash, estimate, shot_id, cue_id, "failed",
             f"The provider did not finish the request. {exc} "
@@ -603,14 +656,31 @@ def _submit(
     kind, endpoint, key, provider_name, model, prompt, duration, voice_id,
     system, max_tokens, aspect_ratio, row, purpose, settings: CallSettings,
 ):
-    """Send the request. Returns ``(provider_request_id or None, finished payload or None)``."""
+    """Send the request.
+
+    Returns ``(provider_request_id or None, finished payload or None, queue urls)``.
+    A fal picture call sends the input fields at the top of the JSON body.
+    """
     transport = settings.transport or UrllibTransport()
     if kind == "video":
+        allowed = row.get("allowed_resolutions") if row else None
+        resolution = row.get("resolution") if row else None
+        if allowed and resolution and resolution not in allowed:
+            names = ", ".join(str(item) for item in allowed)
+            raise ProviderRejected(
+                f"{model} does not accept {resolution}. Allowed resolutions: {names}. Nothing was produced."
+            )
         payload = {"prompt": prompt}
-        if duration is not None:
+        if duration is not None and row is not None:
+            lengths, _notes = clip_lengths(duration, row)
+            if len(lengths) == 1:
+                payload["duration"] = request_value(lengths[0], row)
+            else:
+                payload["duration"] = request_value(duration, row)
+        elif duration is not None:
             payload["duration"] = _seconds_text(duration)
-        if row and row.get("resolution"):
-            payload["resolution"] = row["resolution"]
+        if resolution:
+            payload["resolution"] = resolution
         if aspect_ratio:
             payload["aspect_ratio"] = aspect_ratio
         if row and row.get("with_audio") is True:
@@ -620,7 +690,7 @@ def _submit(
             method="POST",
             url=f"{FAL_QUEUE}/{endpoint}",
             headers={"Authorization": f"Key {key}", "Content-Type": "application/json"},
-            body={"input": payload},
+            body=payload,
             timeout=settings.timeout,
             attempts=settings.attempts,
             sleeper=settings.sleeper,
@@ -629,8 +699,11 @@ def _submit(
         data = _json_object(response.body)
         request_id = str(data.get("request_id") or "")
         if not request_id:
-            raise ProviderFailure("The provider did not return a request id.")
-        return request_id, None
+            raise ProviderRejected("The provider did not return a request id. Nothing was produced.")
+        return request_id, None, {
+            "status_url": _fal_queue_url(data.get("status_url")),
+            "response_url": _fal_queue_url(data.get("response_url")),
+        }
     if kind == "audio":
         audio_kind = purpose if purpose in {"dialogue", "music", "sfx", "foley", "ambience"} else "sfx"
         if audio_kind == "dialogue":
@@ -657,7 +730,7 @@ def _submit(
             sleeper=settings.sleeper,
             retry_timeout=False,
         )
-        return None, {"audio": response.body, "cost_usd": None}
+        return None, {"audio": response.body, "cost_usd": None}, {}
     response = send_with_retry(
         transport,
         method="POST",
@@ -678,16 +751,23 @@ def _submit(
         sleeper=settings.sleeper,
         retry_timeout=False,
     )
-    return None, _json_object(response.body)
+    return None, _json_object(response.body), {}
 
 
-def _poll_fal(endpoint, key, request_id, settings: CallSettings) -> dict:
+def _poll_fal(
+    endpoint,
+    key,
+    request_id,
+    settings: CallSettings,
+    status_url=None,
+    response_url=None,
+) -> dict:
     if not request_id:
-        raise ProviderFailure("The picture call has no provider request id to check.")
+        raise ProviderRejected("The picture call has no provider request id to check. Nothing was produced.")
     transport = settings.transport or UrllibTransport()
     headers = {"Authorization": f"Key {key}"}
-    status_url = f"{FAL_QUEUE}/{endpoint}/requests/{request_id}/status"
-    result_url = f"{FAL_QUEUE}/{endpoint}/requests/{request_id}"
+    status_url = _fal_queue_url(status_url) or _fal_status_url(endpoint, request_id)
+    result_url = _fal_queue_url(response_url) or _fal_result_url(endpoint, request_id)
     for _poll in range(settings.max_polls):
         response = send_with_retry(
             transport,
@@ -702,6 +782,10 @@ def _poll_fal(endpoint, key, request_id, settings: CallSettings) -> dict:
         )
         data = _json_object(response.body)
         state = str(data.get("status") or "")
+        newer = _fal_queue_url(data.get("response_url"))
+        if newer:
+            result_url = newer
+        problem = _provider_error_message(data)
         if state == "COMPLETED":
             finished = send_with_retry(
                 transport,
@@ -714,8 +798,18 @@ def _poll_fal(endpoint, key, request_id, settings: CallSettings) -> dict:
                 sleeper=settings.sleeper,
                 retry_timeout=True,
             )
-            return _json_object(finished.body)
+            payload = _json_object(finished.body)
+            rejected = _provider_error_message(payload)
+            if rejected:
+                raise ProviderRejected(
+                    f"The provider rejected the request. {rejected} Nothing was produced."
+                )
+            return payload
         if state in {"FAILED", "ERROR"}:
+            if problem:
+                raise ProviderRejected(
+                    f"The provider rejected the request. {problem} Nothing was produced."
+                )
             detail = data.get("error") or state
             raise ProviderFailure(redact(str(detail)))
         settings.sleeper(settings.poll_interval)
@@ -871,14 +965,17 @@ def _keep(producer, cache, cached, entry_id, request_hash, estimate, shot_id, cu
 
 def _release(producer, cache, cached, entry_id, request_hash, shot_id, cue_id, message):
     message = redact(message)
-    producer.set_ledger_amount(entry_id, 0, message)
-    producer.annotate_ledger(
-        entry_id,
-        call_phase="released",
-        actual_usd=0,
-        request_hash=request_hash,
-        description=message,
-    )
+    from movie_swarm.line_producer import LineProducerError
+
+    try:
+        producer.release_booked_estimate(entry_id, by="line-producer", note=message)
+    except LineProducerError:
+        producer.annotate_ledger(
+            entry_id,
+            call_phase="released",
+            actual_usd=0,
+            request_hash=request_hash,
+        )
     cached["status"] = "released"
     cached["entry_id"] = entry_id
     cache.setdefault("calls", {})[request_hash] = cached
@@ -1230,6 +1327,89 @@ def _plain(value):
     if isinstance(value, list):
         return [_plain(item) for item in value]
     return value
+
+
+def _video_request_refusal(model: str, row: dict, duration) -> str | None:
+    """Stop one call that the model's published duration or resolution cannot carry."""
+    allowed = row.get("allowed_resolutions")
+    resolution = row.get("resolution")
+    if allowed and resolution and resolution not in allowed:
+        names = ", ".join(str(item) for item in allowed)
+        return f"{model} does not accept {resolution}. Allowed resolutions: {names}. Nothing was sent."
+    if duration is None:
+        return None
+    lengths, _notes = clip_lengths(duration, row)
+    if len(lengths) <= 1:
+        return None
+    shown = " and ".join(f"{seconds_text(piece)} seconds" for piece in lengths)
+    cap = seconds_text(row["max_seconds"]) if row.get("max_seconds") not in (None, "") else "its maximum"
+    return (
+        f"This shot is {seconds_text(duration)} seconds. {row.get('label') or model} accepts at most "
+        f"{cap} seconds in one call, so the quote is {shown}. One test shot sends one call. Nothing was sent."
+    )
+
+
+def _fal_queue_url(value) -> str | None:
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    if text.startswith(f"{FAL_QUEUE}/"):
+        return text
+    return None
+
+
+def _fal_app_id(endpoint: str) -> str:
+    """The owner and the app. fal status URLs use those two segments, not the full endpoint."""
+    parts = [part for part in str(endpoint).strip("/").split("/") if part]
+    if len(parts) >= 2:
+        return f"{parts[0]}/{parts[1]}"
+    return "/".join(parts)
+
+
+def _fal_status_url(endpoint: str, request_id: str) -> str:
+    return f"{FAL_QUEUE}/{_fal_app_id(endpoint)}/requests/{request_id}/status"
+
+
+def _fal_result_url(endpoint: str, request_id: str) -> str:
+    return f"{FAL_QUEUE}/{_fal_app_id(endpoint)}/requests/{request_id}"
+
+
+def _provider_error_message(data: dict) -> str | None:
+    if not isinstance(data, dict):
+        return None
+    if "detail" in data:
+        return _detail_message(data.get("detail"))
+    error = data.get("error")
+    if error in (None, ""):
+        return None
+    if isinstance(error, dict):
+        text = error.get("message") or error.get("type") or error
+        return redact(str(text))
+    return redact(str(error))
+
+
+def _detail_message(detail) -> str:
+    if isinstance(detail, str):
+        return redact(detail) or "The provider rejected the request."
+    if isinstance(detail, list):
+        parts = []
+        for item in detail:
+            if isinstance(item, dict):
+                loc = [
+                    str(part)
+                    for part in item.get("loc") or []
+                    if str(part) not in {"body", "input"}
+                ]
+                msg = str(item.get("msg") or "rejected")
+                where = ".".join(loc)
+                parts.append(f"{where}: {msg}" if where else msg)
+            else:
+                parts.append(str(item))
+        text = "; ".join(part for part in parts if part) or "The provider rejected the request."
+        return redact(text)
+    if detail in (None, ""):
+        return "The provider rejected the request."
+    return redact(str(detail))
 
 
 def _seconds_text(value) -> str:

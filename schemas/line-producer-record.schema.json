@@ -58,7 +58,7 @@
           "entry_id": { "type": "string", "minLength": 1 },
           "stage": { "type": "string", "minLength": 1 },
           "amount_usd": { "type": "number", "minimum": 0 },
-          "kind": { "type": "string", "enum": ["generation", "retake", "dry-run"] },
+          "kind": { "type": "string", "enum": ["generation", "retake", "dry-run", "release"] },
           "description": { "type": "string" },
           "recorded_at": { "type": "string", "format": "date-time" },
           "request_id": { "type": ["string", "null"] },
@@ -83,6 +83,11 @@
               },
               { "type": "null" }
             ]
+          },
+          "releases_entry_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The ledger entry this release offsets. The original entry stays on the ledger."
           }
         }
       }
@@ -119,7 +124,7 @@
         ],
         "properties": {
           "request_id": { "type": "string", "minLength": 1 },
-          "kind": { "type": "string", "enum": ["extra-spend", "gate"] },
+          "kind": { "type": "string", "enum": ["extra-spend", "gate", "release"] },
           "stage": { "type": "string", "minLength": 1 },
           "amount_usd": { "type": "number", "minimum": 0 },
           "reason": { "type": "string", "minLength": 1 },

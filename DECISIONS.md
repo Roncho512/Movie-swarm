@@ -1012,3 +1012,39 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: Harbor Night's fixture still has no markdown in the repo. The first status or studio stop on a copy writes it. An approved gate still rewrites both files, as it did before.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
+## D116 — Phase 8.10, the fal picture-call fix
+
+- Status: decided
+- Date: 2026-11-12
+- Context: The first live test shot reached fal. The queue accepted the key and returned a request id. The status check used the full endpoint path, and fal returned 405. A result read at the app path came back as a validation error. The body was wrapped under `input`, and the duration was 2.087 seconds. The estimate stayed on the ledger with no actual.
+- Decision: Fix that picture call in the engine. No paid call is made in this phase. The production folder for the first film is not changed.
+- Consequences: The proof stays on Harbor Night. Spent on that proof stays $0.00. The choices for how the fix works are D117 through D119. Those are proposals.
+- Who decided: Ron, 2026-11-12
+
+## D117 — The fal queue body is the input, and polling uses the returned URLs
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: fal's queue REST API takes the model fields at the top of the JSON body, posted to `https://queue.fal.run/` plus the endpoint. The submit response includes `status_url` and `response_url`. Those URLs use the owner and the app, the first two path segments, and a URL built from the full endpoint returns 405. A completed result whose body is an error, or a `detail` list, is a rejection.
+- Decision: Send the payload as the JSON body. Poll `status_url` and `response_url` from the submit response. If either is missing, build the URL from the first two path segments only, on `queue.fal.run`. A result body with `detail` or `error` fails the call. The message names the field and the reason. It does not keep the echoed input. Keys are still stripped.
+- Consequences: A contract test checks the method, the URL, and the top-level fields, and it checks that the header names are present. It does not check header values. Polling is checked against the URLs the submit response returned, and against the two-segment fallback.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D118 — Picture duration is rounded up to a length the model accepts
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: Seedance 2.0 and Seedance 2.0 fast accept duration `auto`, or a whole number from 4 to 15. Fast accepts 480p and 720p. Seedance 2.0 also accepts 1080p and 4k. Those rules were read from the fal API pages on 2026-11-12. Kling 4.0 on fal accepts an integer from 3 to 30, at 720p or 1080p, read the same day from `kling/v4/text-to-video`. The per-shot multi-prompt minimum of 1 second is a different field. Kling still has no endpoint. Gemini Omni's 3 to 15 second quote stays an assumption. Whole seconds were not verified for Gemini, so a length inside that range is not rounded.
+- Decision: The rate rows store the minimum, the maximum, whether the length must be a whole number, and the allowed resolutions. A shot is rounded up to the next allowed length. The request sends that length. The estimate bills that length. The dry-run line shows both when they differ: `duration 2.087 seconds (sent as 4 seconds)`. The generation quote and the film budget use the same rule, so a short shot is not priced at its raw length. One call that is longer than the maximum is refused before anything is sent. The quote still shows the pieces.
+- Consequences: Harbor Night's first shot at Seedance 2.0 fast, 720p, is sent as 4 seconds and estimated at $0.9676. That is 4 times $0.2419. The $0.5048 figure in D113 was the raw 2.087 seconds. Kling's duration rule is on the row, and a live call for Kling is still refused. The 1080p Seedance price stays unknown.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D119 — A rejected call releases the booked estimate
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: The live failure left a ledger row booked with actual null. Zeroing that row would erase the booking. A timeout or a server error may still have been accepted, so those stay booked.
+- Decision: When a call fails at submit or validation and nothing was produced, the engine appends a release entry for the same amount and takes it off the running total. The original entry stays. An approved request records the release. `scripts/line-producer.py release --entry <id> --by ron --note "..."` does the same thing by hand for an estimate that is still booked and has no reported charge. A second release of the same entry is refused.
+- Consequences: A connection error, a client rejection, and a completed result that is an error body all net to $0 and keep the history. A timeout or a server error still leaves the estimate booked. The hand command is how that stuck row is released.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+

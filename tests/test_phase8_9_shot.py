@@ -219,7 +219,7 @@ def test_the_guide_dry_run_quotes_the_boarded_harbor_shot(tmp_path):
     )
     assert result["quote"] == (
         "Shot s01-sh01: model seedance-2.0-fast, tier better, provider fal.ai, "
-        "resolution 720p, duration 2.087 seconds, estimated cost $0.5048.\n"
+        "resolution 720p, duration 2.087 seconds (sent as 4 seconds), estimated cost $0.9676.\n"
         "Production line remaining: $270.00. Film remaining: $500.00."
     )
     assert result["message"].startswith("Offline is the default.")
