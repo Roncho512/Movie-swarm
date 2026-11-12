@@ -20,6 +20,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from movie_swarm.budget import trailer_enabled
 from movie_swarm.continuity import load_costume_lock, load_makeup_lock, load_prop_lock
 from movie_swarm.director import Director
 from movie_swarm.dispatch import CrewCall
@@ -116,6 +117,10 @@ def run_studio(
         stopped = _need(producer, "color-mix", auto_approve, completed)
         if stopped:
             return stopped
+        if trailer_enabled(folder):
+            for command in ("research", "guard", "sign", "plan", "cut"):
+                _dispatch(director, run_id, "trailer-editor", command)
+            completed.append("trailer")
         _dispatch(director, run_id, "post-supervisor", "deliver")
         completed.append("delivery")
         stopped = _need(producer, "delivery", auto_approve, completed)

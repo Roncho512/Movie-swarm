@@ -48,6 +48,8 @@ from movie_swarm.roles import (
     PICTURE_CREW,
     PREVIS_STAGE,
     SOUND_BILLING,
+    TRAILER_BILLING,
+    TRAILER_STAGE,
     SOUND_STAGE,
 )
 from movie_swarm.run_state import RunState, default_run_state_path
@@ -302,6 +304,7 @@ class LineProducer:
             or SOUND_BILLING.get(stage)
             or COLOR_MIX_BILLING.get(stage)
             or DELIVERY_BILLING.get(stage)
+            or TRAILER_BILLING.get(stage)
             or stage
         )
         self._require_known_stage(billing)
@@ -393,6 +396,16 @@ class LineProducer:
             from movie_swarm.graphics import record_guide_decision
 
             record_guide_decision(
+                self.production_dir,
+                decision,
+                by,
+                note,
+                item["decided_at"],
+            )
+        if stage == TRAILER_STAGE:
+            from movie_swarm.trailer import record_trailer_decision
+
+            record_trailer_decision(
                 self.production_dir,
                 decision,
                 by,
@@ -711,6 +724,16 @@ class LineProducer:
                 "Approve or reject the color-mix gate before final delivery. "
                 "Read color/grade-plan.md and color/mix-plan.md."
             )
+        trailer_plan = self.production_dir / "marketing" / "trailer-plan.md"
+        if (
+            trailer_plan.is_file()
+            and is_stage_gated(TRAILER_STAGE, self.config_path)
+            and not self.gate_is_open(TRAILER_STAGE)
+        ):
+            lines.append(
+                "Approve or reject the trailer gate when you want the trailer in the package. "
+                "The film can deliver without it. Read marketing/trailer-plan.md."
+            )
         manifest = self.production_dir / "delivery" / "delivery-manifest.json"
         pointer = self.production_dir / "delivery" / "location.json"
         if (
@@ -920,6 +943,18 @@ class LineProducer:
                 return self._pause_gate(
                     SOUND_STAGE,
                     "The sound gate is still closed. Ron has not approved the cue sheet, so color and mix were not called.",
+                )
+            return None
+        if stage in ("trailer-editor",):
+            if is_stage_gated("treatment", self.config_path) and not self.gate_is_open("treatment"):
+                return self._pause_gate(
+                    "treatment",
+                    "The treatment gate is still closed. The trailer was not cut.",
+                )
+            if is_stage_gated(EDIT_STAGE, self.config_path) and not self.gate_is_open(EDIT_STAGE):
+                return self._pause_gate(
+                    EDIT_STAGE,
+                    "The edit gate is still closed. Ron has not approved picture lock, so the trailer was not cut.",
                 )
             return None
         if stage in DELIVERY_CREW:

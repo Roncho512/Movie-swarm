@@ -145,6 +145,11 @@ DELIVERY_BILLING = {
     "post-supervisor": "editor",
 }
 
+# The Trailer Editor bills to Marketing and Distribution. The Editor does not bill for it.
+TRAILER_BILLING = {
+    "trailer-editor": "marketing-distribution",
+}
+
 # A dailies call is an estimate. It is checked against the fix-loop ceiling and not charged.
 # The dollar amount stays the split already locked. No new bucket is added.
 DAILIES_BILLING = {
@@ -163,7 +168,11 @@ COLOR_MIX_CREW = ("colorist", "mixer")
 # The call waits for the color-mix gate. It does not wait on the delivery gate.
 DELIVERY_CREW = ("post-supervisor",)
 
-CALLABLE = PICTURE_CREW + PHASE2_CREW + DAILIES_CREW + SOUND_CREW + COLOR_MIX_CREW + DELIVERY_CREW
+# The trailer can be written while its gate is closed. Delivery does not wait on it.
+TRAILER_STAGE = "trailer"
+TRAILER_CREW = ("trailer-editor",)
+
+CALLABLE = PICTURE_CREW + PHASE2_CREW + DAILIES_CREW + SOUND_CREW + COLOR_MIX_CREW + DELIVERY_CREW + TRAILER_CREW
 
 PREP_STAGES = (
     "director",

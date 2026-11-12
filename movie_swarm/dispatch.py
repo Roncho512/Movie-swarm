@@ -20,6 +20,7 @@ from movie_swarm.generation import run_picture
 from movie_swarm.line_producer import Authorization, LineProducer
 from movie_swarm.paths import repo_root
 from movie_swarm.previs import run_previs
+from movie_swarm.budget import trailer_enabled
 from movie_swarm.roles import (
     CALLABLE,
     COLOR_MIX_BILLING,
@@ -27,6 +28,7 @@ from movie_swarm.roles import (
     PHASE2_BILLING,
     PHASE2_CREW,
     SOUND_BILLING,
+    TRAILER_BILLING,
 )
 from movie_swarm.sound import run_sound
 
@@ -129,6 +131,16 @@ _COMMANDS = {
     "post-supervisor": {
         "commands": {"deliver": True},
     },
+    "trailer-editor": {
+        "commands": {
+            "research": True,
+            "guard": True,
+            "sign": True,
+            "plan": True,
+            "cut": True,
+            "recheck": True,
+        },
+    },
 }
 
 _PHASE2_OUTPUTS = {
@@ -194,6 +206,11 @@ def dispatch_call(
     handler=None,
 ) -> DispatchResult:
     """Check the gate and the budget, then run ``handler`` or the default crew command."""
+    if call.agent == "trailer-editor" and not trailer_enabled(producer.production_dir):
+        return DispatchResult(
+            status="ran",
+            message="The trailer is off for this film. Nothing was written. The film can deliver without one.",
+        )
     if call.agent not in _COMMANDS:
         known = ", ".join(CALLABLE)
         return DispatchResult(
@@ -213,6 +230,7 @@ def dispatch_call(
         or DAILIES_BILLING.get(call.agent)
         or SOUND_BILLING.get(call.agent)
         or COLOR_MIX_BILLING.get(call.agent)
+        or TRAILER_BILLING.get(call.agent)
         or call.agent
     )
     try:
@@ -244,6 +262,10 @@ def dispatch_call(
         runner = lambda current: run_color_mix(producer, current)
     elif handler is None and call.agent == "post-supervisor" and call.command == "deliver":
         runner = lambda current: run_delivery(producer, current)
+    elif handler is None and call.agent == "trailer-editor":
+        from movie_swarm.trailer import run_trailer
+
+        runner = lambda current: run_trailer(current)
     else:
         runner = handler or default_handler
     try:
@@ -261,6 +283,11 @@ def dispatch_call(
     )
     if call.agent in PHASE2_CREW:
         _register_phase2(producer, call.agent)
+    if call.agent == "trailer-editor":
+        have = {item["role"] for item in producer.record["credits"]}
+        if "Trailer Editor" not in have:
+            producer.record["credits"].append({"role": "Trailer Editor", "name": "Trailer Editor"})
+            producer._save_record()
     return DispatchResult(
         status="ran",
         message=auth.message,
@@ -334,6 +361,7 @@ def _ensure_credits(producer: LineProducer) -> None:
         ("Makeup and Hair", "Makeup and Hair"),
         ("VFX Supervisor", "VFX Supervisor"),
         ("Title and Graphic Design", "Title and Graphic Design"),
+        ("Trailer Editor", "Trailer Editor"),
     ):
         if role not in have:
             producer.record["credits"].append({"role": role, "name": name})

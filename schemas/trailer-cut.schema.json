@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trailer-cut.schema.json",
+  "title": "Trailer Cut",
+  "description": "The teaser and the trailer, cut from approved takes. A beat that cannot be made is a gap. The checker does not know which film this is.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "production_id",
+    "picture_lock_sha256",
+    "lock_status",
+    "picture",
+    "picture_note",
+    "kept",
+    "gaps",
+    "cards",
+    "files",
+    "loudness",
+    "gate",
+    "gate_by",
+    "gate_at",
+    "gate_note",
+    "draft_method",
+    "model",
+    "note",
+    "written_at"
+  ],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "picture_lock_sha256": { "type": "string" },
+    "lock_status": { "type": "string", "enum": ["current", "stale"] },
+    "picture": { "type": "string" },
+    "picture_note": { "type": "string" },
+    "kept": { "type": "array", "items": { "type": "object" } },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["shot_id", "reason"],
+        "properties": {
+          "shot_id": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "cards": { "type": "array", "items": { "type": "object" } },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["deliverable", "aspect_ratio", "filename", "width", "height", "target_seconds", "render_status", "safe_area"],
+        "properties": {
+          "deliverable": { "type": "string", "enum": ["teaser", "trailer"] },
+          "aspect_ratio": { "type": "string", "enum": ["16:9", "9:16"] },
+          "filename": { "type": "string" },
+          "width": { "type": "integer", "minimum": 1 },
+          "height": { "type": "integer", "minimum": 1 },
+          "target_seconds": { "type": ["number", "null"] },
+          "render_status": { "type": "string", "enum": ["rendered", "not-rendered"] },
+          "safe_area": { "type": "object" }
+        }
+      }
+    },
+    "loudness": { "type": "object" },
+    "gate": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+    "gate_by": { "type": ["string", "null"] },
+    "gate_at": { "type": ["string", "null"], "format": "date-time" },
+    "gate_note": { "type": "string" },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
+    "model": { "type": "string" },
+    "note": { "type": "string" },
+    "written_at": { "type": "string", "format": "date-time" }
+  }
+}

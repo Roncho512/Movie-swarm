@@ -1,5 +1,5 @@
 {
-  "version": "1.10.0",
+  "version": "1.11.0",
   "roles": {
     "line-producer": {
       "provider": "anthropic",
@@ -227,6 +227,18 @@
         "research": "claude-haiku-5-5",
         "guide": "claude-haiku-5-5",
         "build": "claude-haiku-5-5"
+      }
+    },
+    "trailer-editor": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/trailer.py",
+      "notes": "Research, the spoiler guard, the plan, and the cut are computed in code from the production's documents. A reply that adds a shot is discarded. This build does not call the model. No key is read. None of these commands pass --live. The trailer does not request a new shot.",
+      "purposes": {
+        "research": "claude-haiku-5-5",
+        "guard": "claude-haiku-5-5",
+        "plan": "claude-haiku-5-5",
+        "cut": "claude-haiku-5-5"
       }
     },
     "post-supervisor": {

@@ -20,6 +20,7 @@
     "sound": true,
     "color-mix": true,
     "delivery": true,
-    "graphics": true
+    "graphics": true,
+    "trailer": true
   }
 }

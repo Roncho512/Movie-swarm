@@ -309,8 +309,10 @@ def build_qc_report(production_id: str, plan: dict, package: str | Path, product
     checks.append(_caption_check(root, plan, runtime))
     if production_dir is not None:
         from movie_swarm.graphics import qc_checks
+        from movie_swarm.trailer import qc_checks as trailer_qc_checks
 
         checks.extend(qc_checks(production_dir))
+        checks.extend(trailer_qc_checks(production_dir))
     verdict = "fail" if any(item["status"] == "fail" for item in checks) else "pass"
     return {
         "version": "1.0.0",
@@ -1283,6 +1285,10 @@ def _manifest(
 
     for item in package_files(folder):
         files.append(_file_row(item["path"], item["listed"], "graphics", item["label"]))
+    from movie_swarm.trailer import package_rows
+
+    for item in package_rows(folder, package):
+        files.append(_file_row(item["path"], item["listed"], "marketing", item["label"]))
     files.append(_file_row(package / "qc-report.json", f"{relative}/qc-report.json", "qc", "QC report"))
     cap = float(budget_cap_usd)
     spent = float(spent_usd)

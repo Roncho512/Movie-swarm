@@ -83,6 +83,10 @@ When you're debugging why Shot 14 has the wrong lighting, you need to trace the 
 | `graphics-brand-guide.schema.json` | Fonts, palette, wordmark, layout, and the rules that trace back to that research. |
 | `graphics-package.schema.json` | Titles, title cards, end credits, subtitle style, key art, and collateral. |
 | `film-budget.schema.json` | One film's budget: total, line shares, contingency, tiers, and whether the trailer is on. |
+| `trailer-research.schema.json` | Trailer research. Each item is sourced or inferred. |
+| `spoiler-guard.schema.json` | Beats the trailer may show, and beats it must hold back. |
+| `trailer-plan.schema.json` | The beat-by-beat teaser and trailer plan. |
+| `trailer-cut.schema.json` | The cut from approved takes, plus any gaps. |
 
 ## Versioning
 
