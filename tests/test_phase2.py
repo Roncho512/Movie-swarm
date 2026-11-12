@@ -65,23 +65,42 @@ def _copy_last_marker_inputs(tmp_path: Path) -> Path:
         target = dest / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(source / relative, target)
+    treatment_path = dest / "treatment" / "treatment.json"
+    treatment = json.loads(treatment_path.read_text(encoding="utf-8"))
+    if treatment.get("status") != "approved":
+        treatment["status"] = "approved"
+        treatment["version"] = "1.0.0"
+        treatment["approval"] = {
+            "state": "approved",
+            "by": "ron",
+            "at": "2026-11-10T20:39:31Z",
+            "note": "Test copy. The live treatment is a draft.",
+        }
+        treatment_path.write_text(json.dumps(treatment), encoding="utf-8")
     return dest
 
 
 def test_ron_approved_the_storyboard_previs_gate():
     root = repo_root() / "productions" / "the-last-marker"
-    record = json.loads((root / "runs" / "phase-1" / "line-producer.json").read_text(encoding="utf-8"))
+    record = json.loads(
+        (root / "archive" / "runs" / "phase-1" / "line-producer.json").read_text(encoding="utf-8")
+    )
     decision = [item for item in record["gate_decisions"] if item["stage"] == "previs"][-1]
     assert decision["decision"] == "approved"
     assert decision["by"] == "ron"
     assert decision["note"] == "Approve the storyboard previs gate."
     assert record["schedule"]["previs"] == "approved"
-    board = json.loads((root / "storyboard" / "storyboard.json").read_text(encoding="utf-8"))
+    board = json.loads(
+        (root / "archive" / "gates" / "storyboard" / "storyboard.json").read_text(encoding="utf-8")
+    )
     assert board["status"] == "approved"
     assert board["approval"]["state"] == "approved"
     assert board["approval"]["by"] == "ron"
     assert board["approval"]["note"] == "Approve the storyboard previs gate."
     assert board["image_generation"] == "not-run"
+    live = json.loads((root / "storyboard" / "storyboard.json").read_text(encoding="utf-8"))
+    assert live.get("status") != "approved"
+    assert not (root / "runs" / "phase-1" / "line-producer.json").exists()
 
 
 def test_engine_source_does_not_name_the_sample_film():

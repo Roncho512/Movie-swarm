@@ -77,17 +77,36 @@ def _minimal_model_treatment(production_id: str, logline: str, status: str = "dr
     return json.dumps(document)
 
 
-def test_committed_last_marker_treatment_is_approved_by_ron():
-    path = repo_root() / "productions" / "the-last-marker" / "treatment" / "treatment.json"
-    document = json.loads(path.read_text(encoding="utf-8"))
-    assert document["status"] == "approved"
-    assert document["version"] == "1.0.0"
+def test_committed_last_marker_treatment_is_a_fresh_draft():
+    folder = repo_root() / "productions" / "the-last-marker"
+    document = json.loads((folder / "treatment" / "treatment.json").read_text(encoding="utf-8"))
+    assert document["status"] == "draft"
+    assert document["approval"]["state"] == "pending"
+    assert document["approval"]["by"] is None
     assert document["draft_method"] == "offline-deterministic"
-    assert document["approval"]["state"] == "approved"
-    assert document["approval"]["by"] == "ron"
-    assert document["approval"]["note"] == "Approve the treatment and lock the split."
+    assert document["theme_and_emotional_intent"]["theme"] == "Arrive first. Winning can wait."
+    assert "water" in document["characters"][0]["arc"].casefold()
     assert document["world_and_period"].startswith("Baja California, 1967")
+    withheld = [scene.get("withheld") for scene in document["scenes"] if scene.get("withheld")]
+    assert withheld
+    assert all("water" in text.casefold() for text in withheld)
+    assert document["action_and_stunt_beats"]
+    sides = {prop["sidedness"] for prop in document["hero_props"]}
+    assert "exhaust on the right" in sides
+    assert "left wrist" in sides
+    assert "budget.json" in document["constraints_and_budget"]["notes"]
+    assert document["constraints_and_budget"]["stage_split"]["production"] == 218.7
+    assert document["constraints_and_budget"]["stage_split"]["marketing-distribution"] == 45
     assert treatment_errors(document) == []
+    questions = json.loads((folder / "treatment" / "questions.json").read_text(encoding="utf-8"))
+    assert questions["status"] == "open"
+    assert all(item["answer"] is None for item in questions["questions"])
+    archived = json.loads(
+        (folder / "archive" / "gates" / "treatment" / "treatment.json").read_text(encoding="utf-8")
+    )
+    assert archived["status"] == "approved"
+    assert archived["approval"]["by"] == "ron"
+    assert archived["approval"]["note"] == "Approve the treatment and lock the split."
 
 
 def test_missing_logline_is_named():

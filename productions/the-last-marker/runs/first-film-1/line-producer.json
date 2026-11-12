@@ -1,0 +1,51 @@
+{
+  "production_id": "the-last-marker",
+  "run_id": "first-film-1",
+  "credits": [
+    {
+      "role": "Executive Producer",
+      "name": "Ron"
+    },
+    {
+      "role": "Line Producer",
+      "name": "Line Producer"
+    },
+    {
+      "role": "Director",
+      "name": "Director"
+    }
+  ],
+  "stage_allocations": {
+    "status": "unlocked",
+    "split": {},
+    "approved_at": null,
+    "approved_by": null,
+    "note": "The split locks when Ron approves the treatment."
+  },
+  "ledger": [],
+  "gate_decisions": [],
+  "requests": [],
+  "schedule": {
+    "line-producer": "pending",
+    "director": "pending",
+    "treatment": "waiting-for-review",
+    "screenwriter": "pending",
+    "art-director": "pending",
+    "cinematographer": "pending",
+    "production": "pending",
+    "sound-designer": "pending",
+    "editor": "pending",
+    "qa": "pending",
+    "fix-loop": "pending",
+    "previs": "pending",
+    "generation": "pending",
+    "dailies": "pending",
+    "edit": "pending",
+    "sound": "pending",
+    "color-mix": "pending",
+    "delivery": "pending",
+    "graphics": "pending",
+    "trailer": "pending"
+  },
+  "updated_at": "2026-11-12T16:34:54Z"
+}

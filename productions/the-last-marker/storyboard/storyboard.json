@@ -741,11 +741,11 @@
   "draft_method": "offline-deterministic",
   "model": "claude-sonnet-5-5",
   "created_at": "2026-11-10T22:45:34Z",
-  "status": "approved",
+  "status": "draft",
   "approval": {
-    "state": "approved",
-    "by": "ron",
-    "at": "2026-11-10T22:48:21Z",
-    "note": "Approve the storyboard previs gate."
+    "state": "pending",
+    "by": null,
+    "at": null,
+    "note": "The previs approval from 2026-11-10 is in archive/gates/storyboard/. This copy is not an approved gate."
   }
 }

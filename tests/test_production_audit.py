@@ -1,4 +1,4 @@
-"""The Last Marker audit: three handoffs pass, four older files are known mismatches."""
+"""The Last Marker audit: current handoffs pass, four older files are known mismatches."""
 
 from __future__ import annotations
 
@@ -14,23 +14,29 @@ def test_pilot_audit_matches_the_recorded_gaps():
     by_path = {item.path: item for item in items}
 
     passed = {
-        "productions/the-last-marker/scene-manifest/scene-manifest.json",
-        "productions/the-last-marker/shot-lists/shot-list.json",
-        "productions/the-last-marker/visual-style-bible.json",
-        "productions/the-last-marker/production-brief.json",
-        "productions/the-last-marker/treatment/treatment.json",
-        "productions/the-last-marker/treatment/questions.json",
-        "productions/the-last-marker/runs/phase-1/run-state.json",
-        "productions/the-last-marker/runs/phase-1/line-producer.json",
-        "productions/the-last-marker/props/prop-definitions.json",
-        "productions/the-last-marker/props/hero-props.json",
-        "productions/the-last-marker/look/look.json",
+        "productions/the-last-marker/archive/gates/storyboard/storyboard.json",
+        "productions/the-last-marker/archive/gates/treatment/questions.json",
+        "productions/the-last-marker/archive/gates/treatment/treatment.json",
+        "productions/the-last-marker/archive/runs/phase-1/line-producer.json",
+        "productions/the-last-marker/archive/runs/phase-1/run-state.json",
+        "productions/the-last-marker/audio/sound-prompts.json",
+        "productions/the-last-marker/budget.json",
         "productions/the-last-marker/camera/camera-package.json",
         "productions/the-last-marker/continuity/continuity-check.json",
-        "productions/the-last-marker/storyboard/storyboard.json",
+        "productions/the-last-marker/look/look.json",
+        "productions/the-last-marker/production-brief.json",
+        "productions/the-last-marker/props/hero-props.json",
+        "productions/the-last-marker/props/prop-definitions.json",
+        "productions/the-last-marker/runs/first-film-1/line-producer.json",
+        "productions/the-last-marker/runs/first-film-1/run-state.json",
+        "productions/the-last-marker/scene-manifest/scene-manifest.json",
+        "productions/the-last-marker/shot-lists/shot-list.json",
         "productions/the-last-marker/storyboard/shot-list.json",
+        "productions/the-last-marker/storyboard/storyboard.json",
         "productions/the-last-marker/stunts/action-breakdown.json",
-        "productions/the-last-marker/audio/sound-prompts.json",
+        "productions/the-last-marker/treatment/questions.json",
+        "productions/the-last-marker/treatment/treatment.json",
+        "productions/the-last-marker/visual-style-bible.json",
     }
     known = {
         "productions/the-last-marker/audio/audio-manifest.json": [
@@ -63,6 +69,7 @@ def test_pilot_audit_matches_the_recorded_gaps():
     skipped = {
         "productions/the-last-marker/edit/edit-decision-list.json",
         "productions/the-last-marker/seedance-output/cost-report.json",
+        "productions/the-last-marker/treatment/inputs.json",
     }
 
     assert set(by_path) == passed | set(known) | skipped
@@ -75,7 +82,7 @@ def test_pilot_audit_matches_the_recorded_gaps():
         assert by_path[path].status == "skip"
     assert audit_exit_code(items) == 0
     report = format_audit(items)
-    assert "17 passed" in report
+    assert "23 passed" in report
     assert "4 known mismatches" in report
     assert "0 failed" in report
 

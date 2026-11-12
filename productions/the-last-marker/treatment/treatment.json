@@ -1,11 +1,11 @@
 {
-  "version": "1.0.0",
-  "status": "approved",
+  "version": "0.1.0",
+  "status": "draft",
   "approval": {
-    "state": "approved",
-    "by": "ron",
-    "at": "2026-11-10T20:39:31Z",
-    "note": "Approve the treatment and lock the split."
+    "state": "pending",
+    "by": null,
+    "at": null,
+    "note": "The Director cannot approve. Ron approves through the Line Producer."
   },
   "production_id": "the-last-marker",
   "title": "The Last Marker",
@@ -70,7 +70,16 @@
     "resolution": "1920x1080, framed in the delivery aspect ratio",
     "length": "3 minutes"
   },
-  "open_questions": [],
+  "open_questions": [
+    "The draft theme is \"Arrive first. Winning can wait\". The feeling it aims for is \"The audience should feel how small the rider is, then the shock of the engine dying, then the quiet relief of a choice to live\". Lock that, or replace it?",
+    "The draft calls the tone \"Sparse, tense, and sun-bleached. A Sergio Leone spaghetti western played as a quiet desert survival story\" and the genre \"western\". Lock this, or tell me what to change?",
+    "The lookbook currently takes: Sergio Leone spaghetti westerns (Locked 2.39:1 widescreen. Extreme wide shots cut against extreme close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Charcoal blacks, bone whites, and a day that moves from amber to bronze to rose to blue dusk.); Ennio Morricone, spirit only (A score in that spirit. Do not copy a melody.). Is each 'what to take' right? Add or cut references in your answer.",
+    "Miguel Vega is the protagonist. The draft arc is: He wants to finish the race, but in the end water (life) is more important. (He chooses life over winning.) Lock it, or replace it?",
+    "What should the audience not know yet? Name it. The answer is saved on the scenes it matches, and on the last scene.",
+    "Action beats in the draft: Three kicks on the Triumph. The engine fails, teases, then catches rough. The kick starter is on the right in the screenplay. He taps the cracked spark-plug porcelain with a stone so the plug might fire. It is a field fix, not a repair. Are these the beats you want? Is there anything a stunt pass must lock before generation?",
+    "Hero props: 1965 Triumph TR6SC (exhaust on the right); Breitling Top Time (left wrist). Lock each one. Name the prop and the attribute you are locking.",
+    "The film cap is $500. The draft proposes: production $218.7, sound-designer $44.55, fix-loop $40.5, qa $36.45, art-director $20.25, director $16.2, editor $12.15, cinematographer $8.1, screenwriter $4.05, line-producer $4.05, marketing-distribution $45. Those numbers add up to $450. Retakes spend from the same buckets and the same cap. Approve the split, or send new numbers as stage=amount, separated by commas."
+  ],
   "world_and_period": "Baja California, 1967. Ron locked the year at 1967. The Triumph remains a 1965 model.",
   "camera_lens_film_stock": "Locked 2.39:1 widescreen. Extreme wide shots cut against extreme close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Charcoal blacks, bone whites, and a day that moves from amber to bronze to rose to blue dusk.",
   "hero_props": [
@@ -112,21 +121,21 @@
   ],
   "constraints_and_budget": {
     "budget_cap_usd": 500.0,
-    "notes": "Ron approved this split in his answer. Retakes come out of the same stage allocations and the same cap. The Line Producer locks the split when Ron approves the treatment gate.",
+    "notes": "Proposed split of the film cap. Retakes come out of the same stage allocations and the same cap. Not locked until Ron approves the treatment. The proposed split is the spendable lines from budget.json. Contingency is held back and is not a stage line. The trailer is on, so Marketing and Distribution is in the split and the other lines are scaled.",
     "stage_split": {
-      "director": 20.0,
-      "line-producer": 5.0,
-      "screenwriter": 5.0,
-      "art-director": 25.0,
-      "cinematographer": 10.0,
-      "production": 270.0,
-      "sound-designer": 55.0,
-      "editor": 15.0,
-      "qa": 45.0,
-      "fix-loop": 50.0,
-      "treatment": 0.0
+      "production": 218.7,
+      "sound-designer": 44.55,
+      "fix-loop": 40.5,
+      "qa": 36.45,
+      "art-director": 20.25,
+      "director": 16.2,
+      "editor": 12.15,
+      "cinematographer": 8.1,
+      "screenwriter": 4.05,
+      "line-producer": 4.05,
+      "marketing-distribution": 45.0
     }
   },
   "draft_method": "offline-deterministic",
-  "draft_note": "Offline draft. No model was called, because this path does not use an API key. Read the Screenwriter and Art Director skill files as context. Each scene is written so a later agent can work without the screenplay."
+  "draft_note": "Offline draft. No model was called, because this path does not use an API key. Read the Screenwriter and Art Director skill files as context. Each scene is written so a later agent can work without the screenplay. Locked creative inputs were read from treatment/inputs.json. They do not approve the gate."
 }

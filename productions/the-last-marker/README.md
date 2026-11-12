@@ -2,6 +2,30 @@
 
 Pilot production. 3-minute short film. AI Studio proof of concept.
 
+The first film starts from the top. D41 is lifted for this folder only. The live treatment is a draft. Run `first-film-1` is waiting at the treatment gate. Spent $0.00.
+
+## Start from the top
+
+Intake refuses to draft again when `treatment/treatment.json` says approved. The message is: the treatment is already approved, and the Director will not write over Ron's approval. It also refuses when the current question round already has answers. Those records are in `archive/`. See `archive/README.md`.
+
+The live files are inputs, not an approved gate:
+
+- The screenplay is `screenplay/Pilot_-_the_last_marker_screenplay.md`. The story year is 1967. The Triumph stays a 1965.
+- Prop locks are `props/prop-definitions.json` and `props/hero-props.json`. Exhaust is on the right. The watch is on the left wrist.
+- The look is `look/look.json`. The style bible is `visual-style-bible.json`.
+- Ron's locked answers are in `treatment/inputs.json`. Theme, tone, and references are locked. Miguel wants to finish the race, but water and life matter more. Withhold whether the canyon really has water. The action beats are approved.
+
+Intake reads `treatment/inputs.json`, merges those facts into the draft, and leaves the gate closed. `budget.json` is the quote. The trailer is on, contingency is 10 percent, and the picture tier is better. Those three are proposed, Ron to confirm. Best is the upgrade.
+
+From the repo root, with the machine's Python (the key-test venv is one example):
+
+```bash
+python3 scripts/studio.py --production productions/the-last-marker --run first-film-1
+python3 scripts/line-producer.py --production productions/the-last-marker --run first-film-1 budget
+```
+
+Exit status 2 means the studio is waiting. Read `treatment/treatment.md`, then approve the treatment gate when the draft is right. This folder's offline run already stopped there. Nothing was spent.
+
 ## Concept
 
 A solo motorcycle racer crosses the Baja desert in 1967. His bike is failing. He is lost. He finds a trail marker left by a rider who came before him. The marker points two directions. He has to choose.

@@ -1,11 +1,11 @@
 # The Last Marker — treatment
 
-**Status: approved.**
+**Status: draft. Not approved.**
 
 This draft was written offline, without a model, because no API key was used. The label on the draft is offline-deterministic.
 Ron approves this through the Line Producer. The Director cannot approve it.
 
-Offline draft. No model was called, because this path does not use an API key. Read the Screenwriter and Art Director skill files as context. Each scene is written so a later agent can work without the screenplay.
+Offline draft. No model was called, because this path does not use an API key. Read the Screenwriter and Art Director skill files as context. Each scene is written so a later agent can work without the screenplay. Locked creative inputs were read from treatment/inputs.json. They do not approve the gate.
 
 ## Logline
 
@@ -61,7 +61,7 @@ Approximate duration: 45 seconds
 
 ### EXT. BAJA CALIFORNIA - ROCKY WASH - MOMENTS LATER
 
-Vega walks. He has left the bike. He carries nothing. His boots crunch on the rocky ground. He is walking in the direction he was riding, following the faint tire tracks of riders who came through here before him. Looking for something. Any sign of the course. Any marker. DETAIL SHOT: The last drop falls from an empty canteen. Nothing follows it. DETAIL SHOT: His boots on the ground. Worn leather. The sole of the left boot is separating at the toe. Each step kicks up a small cloud of dust that the low sun turns pink. He crests a low rise and stops. WIDE SHOT: Buzzards circle in the distant sky. EXTREME CLOSE. A buzzard's face and beak fill the frame. A hard cut lands on a tight close-up of his eyes. VEGA'S POV: Ahead, fifty meters, a pile of stacked rocks. A cairn. The tin arrow points toward the canyon. Beside it, the word AGUA. The empty canteen is why that word matters.
+Vega walks. He has left the bike. He carries nothing. His boots crunch on the rocky ground. He is walking in the direction he was riding, following the faint tire tracks of riders who came through here before him. Looking for something. Any sign of the course. Any marker. DETAIL SHOT: The last drop falls from an empty canteen. Nothing follows it. DETAIL SHOT: His boots on the ground. Worn leather. The sole of the left boot is separating at the toe. Each step kicks up a small cloud of dust that the low sun turns pink. He crests a low rise and stops. WIDE SHOT: Buzzards circle in the distant sky. EXTREME CLOSE. A buzzard's face and beak fill the frame. A hard cut lands on a tight close-up of his eyes. VEGA'S POV: Ahead, fifty meters, a pile of stacked rocks. A cairn. Three feet tall. Built by human hands. On top of the cairn, wedged between the top stones, a piece of sheet metal cut from a tin can. The metal has been bent into an arrow shape. Crude. Handmade. It points to the right, toward a narrow canyon mouth in the rock face. Beside the arrow, scratched into the face of the tin with a nail or a knife, a single word: AGUA. The empty canteen is why that word matters.
 
 Emotional purpose: Decision is a physical thing.
 
@@ -149,22 +149,29 @@ Scene 1 is fluid. Longer shots. The camera follows and observes. The pace says: 
 
 Film cap: $500
 
-Ron approved this split in his answer. Retakes come out of the same stage allocations and the same cap. The Line Producer locks the split when Ron approves the treatment gate.
+Proposed split of the film cap. Retakes come out of the same stage allocations and the same cap. Not locked until Ron approves the treatment. The proposed split is the spendable lines from budget.json. Contingency is held back and is not a stage line. The trailer is on, so Marketing and Distribution is in the split and the other lines are scaled.
 
 Proposed stage split:
 
-- director: $20
-- line-producer: $5
-- screenwriter: $5
-- art-director: $25
-- cinematographer: $10
-- production: $270
-- sound-designer: $55
-- editor: $15
-- qa: $45
-- fix-loop: $50
-- treatment: $0
+- production: $218.7
+- sound-designer: $44.55
+- fix-loop: $40.5
+- qa: $36.45
+- art-director: $20.25
+- director: $16.2
+- editor: $12.15
+- cinematographer: $8.1
+- screenwriter: $4.05
+- line-producer: $4.05
+- marketing-distribution: $45
 
 ## Open questions
 
-None in the treatment file. See the questions file if a round is still open.
+- The draft theme is "Arrive first. Winning can wait". The feeling it aims for is "The audience should feel how small the rider is, then the shock of the engine dying, then the quiet relief of a choice to live". Lock that, or replace it?
+- The draft calls the tone "Sparse, tense, and sun-bleached. A Sergio Leone spaghetti western played as a quiet desert survival story" and the genre "western". Lock this, or tell me what to change?
+- The lookbook currently takes: Sergio Leone spaghetti westerns (Locked 2.39:1 widescreen. Extreme wide shots cut against extreme close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Charcoal blacks, bone whites, and a day that moves from amber to bronze to rose to blue dusk.); Ennio Morricone, spirit only (A score in that spirit. Do not copy a melody.). Is each 'what to take' right? Add or cut references in your answer.
+- Miguel Vega is the protagonist. The draft arc is: He wants to finish the race, but in the end water (life) is more important. (He chooses life over winning.) Lock it, or replace it?
+- What should the audience not know yet? Name it. The answer is saved on the scenes it matches, and on the last scene.
+- Action beats in the draft: Three kicks on the Triumph. The engine fails, teases, then catches rough. The kick starter is on the right in the screenplay. He taps the cracked spark-plug porcelain with a stone so the plug might fire. It is a field fix, not a repair. Are these the beats you want? Is there anything a stunt pass must lock before generation?
+- Hero props: 1965 Triumph TR6SC (exhaust on the right); Breitling Top Time (left wrist). Lock each one. Name the prop and the attribute you are locking.
+- The film cap is $500. The draft proposes: production $218.7, sound-designer $44.55, fix-loop $40.5, qa $36.45, art-director $20.25, director $16.2, editor $12.15, cinematographer $8.1, screenwriter $4.05, line-producer $4.05, marketing-distribution $45. Those numbers add up to $450. Retakes spend from the same buckets and the same cap. Approve the split, or send new numbers as stage=amount, separated by commas.
