@@ -18,7 +18,7 @@ from movie_swarm.http_retry import HttpResult
 from movie_swarm.line_producer import LineProducer
 from movie_swarm.money import as_money, money_number
 from movie_swarm.paths import repo_root
-from movie_swarm.providers import CallSettings, quote_text_call, run_provider_call
+from movie_swarm.providers import CallSettings, estimate_input_tokens, quote_text_call, run_provider_call
 from movie_swarm.rates import generator_rate, load_rate_card, token_prices
 from movie_swarm.validate import validate_file
 
@@ -140,10 +140,10 @@ def test_a_text_call_without_writing_approval_quotes_and_sends_nothing(tmp_path,
     assert result["sent"] is False
     assert result["message"] == quote["text"] + " Record a writing approval for this run before a text call is sent. Nothing was sent."
     assert "claude-sonnet-5-5" in result["message"]
-    assert "estimate, character count / 4" in result["message"]
+    assert "estimate, character count / 3, plus 25 percent, plus 200 tokens" in result["message"]
     assert "Max output tokens: 100" in result["message"]
     assert f"Worst case: ${quote['worst_case_usd']:.4f}" in result["message"]
-    assert quote["input_tokens_estimate"] == (len("Be brief.") + len("Write a line.")) // 4
+    assert quote["input_tokens_estimate"] == estimate_input_tokens(len("Be brief.") + len("Write a line."))
     assert transport.calls == []
     opened = LineProducer.open(production, "run-1")
     assert opened.run.data["cost_usd"] == 0
@@ -322,7 +322,7 @@ def test_intake_prints_the_quote_and_does_not_replace_the_treatment(tmp_path, mo
     printed = capsys.readouterr().out
     assert code == 2
     assert "Worst case:" in printed
-    assert "estimate, character count / 4" in printed
+    assert "estimate, character count / 3, plus 25 percent, plus 200 tokens" in printed
     assert "Nothing was sent." in printed
     assert "claude-sonnet-5-5" in printed
     assert not (production / "treatment" / "treatment.json").exists()

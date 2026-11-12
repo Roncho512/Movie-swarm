@@ -1237,3 +1237,57 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: The paid reply can be conformed again after this fix without a second charge. A new `--live intake` is a new request and is quoted again. The proof writes a fake cache and does not set a provider key.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
+## D141 — Phase 8.14 approved by Ron, 2026-11-12
+
+- Status: decided
+- Date: 2026-11-12
+- Context: On run `first-film-1`, the live answer command called Opus 5.5 for the final treatment pass with `max_tokens` 8000. The provider reported 4,978 input tokens and 8,000 output tokens. The reply was a treatment cut off inside the last notes field. The JSON parse failed, the earlier draft was kept, and the deterministic answer merge wrote Ron's words into the treatment: a confirmation replaced the drafted tone, and a withheld answer was pasted onto more than one scene. The Sonnet draft quote was $0.1456 and the call booked $0.1686. The Opus quote was $0.1722 and the call booked $0.1799. Tests on a machine where the film-root variables are set also failed.
+- Decision: Fix that path. Give the final pass more room, say so when a reply hits the output limit, repair a saved truncated reply without a new charge, keep a confirmation from replacing drafted text, record a withheld fact once, and quote writing calls high enough that the worst case is not below what was booked. The choices for how that works are D142 through D146. Those are proposals. The engine stays generic. Film facts stay in the film folder.
+- Consequences: The offline draft is unchanged. An approved treatment is still not overwritten. No live call was made in this phase. Spent on this step: $0.00.
+- Who decided: Ron, 2026-11-12
+
+## D142 — The final pass may use 16,000 tokens, and a full output limit is reported
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: `_final_pass` sent `max_tokens` 8000. The paid Opus reply used all 8,000 output tokens and stopped inside the treatment. The failure note did not say the output limit was the reason. The raw reply was not saved the way a rejected draft is.
+- Decision: `FINAL_PASS_MAX_TOKENS` is 16,000. The final pass may return the full treatment or only the fields it changed. Those fields are merged onto the current draft. When the provider `stop_reason` is `max_tokens` or `length`, or the reported output tokens are at least the max, the draft note and the command output say the final pass hit the output limit, and they name the stop reason and the token counts. A final pass that still cannot be read is saved at `runs/<run>/rejected-final-<hash>.txt`. The earlier draft is kept. The call that was already booked stays booked. Nothing new is booked for the failure.
+- Consequences: A short final pass is unchanged. A reply that fills the new cap is visible in the note and on the command line. The proof uses a fake model.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D143 — reconform can repair a truncated final-pass reply
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: `reconform --request <hash>` conformed a cached draft. It did not know how to close a JSON object that was cut off, and it refused to run after answers were stored. The paid Opus reply is already in `runs/<run>/provider-cache.json`. Parsing it failed, so the treatment on disk is the pre-pass draft with the answers pasted in.
+- Decision: The same command reads a final-pass reply as well as a draft. If the text is cut off, it closes open strings, arrays, and objects, and it drops the unfinished key or value at the cut. It then conforms and validates. Missing required fields are filled from the current draft. The treatment is written as if the final pass had succeeded. The note says it was repaired from a truncated paid reply, names what was dropped, and says nothing new was booked. The command does not call a model and does not book money. An approved treatment is not overwritten. A question round that already has answers is not wiped. A draft-shaped cache entry is still refused when answers are already stored, so a draft reconform cannot replace an answered treatment.
+- Consequences: The saved Opus reply can be rebuilt with one local command. The hash is the cache key for that call. A prefix of at least 8 characters is enough when it matches one call. The proof uses a fake cache and does not set a provider key.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D144 — A confirmation keeps the drafted words, and a withheld fact is stored once
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: The answer merge treated any non-empty string as replacement text. `Lock.` became the tone. `That's all: withhold only whether the canyon really has water.` was copied onto every scene that shared a long word with the answer, and onto the last scene.
+- Decision: An answer that is only a confirmation keeps the drafted field and the note says that field was locked. The confirmations are `Lock`, `Lock.`, `Lock it`, `Yes`, `Approved`, and `Keep`, in any case, with trailing punctuation. A leading `That's all:` is not part of the decision. A withheld answer is written once, on the last scene, and it is not copied into what happens in the scene. The question file still stores the words Ron typed.
+- Consequences: A real sentence still replaces the field it answers. A yes no longer erases the draft. The proof uses stand-in sentences, not one film's facts, except where an existing fixture already named them.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D145 — A writing quote rounds the input estimate up
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: The quote used character count divided by 4 and dropped the remainder. On the Sonnet draft that estimate was $0.1456 and the booking was $0.1686. On the Opus final pass the quote implied 3,050 input tokens and the provider reported 4,978. Both worst cases were below the booking. The ceiling check used the low figure.
+- Decision: The input estimate is the character count of the system text plus the user text, divided by 3, plus 25 percent, plus 200 tokens, rounded up. The worst case still prices that estimate plus every output token the call is allowed to write. The ceiling check uses this figure. For the recorded prompts, 131,200 characters for the Sonnet draft and 12,200 characters for the Opus final pass, this quote is at least the booked amount. Those lengths are the ones implied by the old quotes at the published prices and a max output of 8,000.
+- Consequences: Quotes are higher than character count divided by 4. A call that would have fitted a ceiling under the old math can now stop at the quote. The line says the number is an estimate. The proof does not call a provider.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D146 — Tests do not inherit the film-root settings
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: With `MOVIE_SWARM_ASSET_ROOT` set, delivery files were written under that root, so tests looking in the temporary production folder did not find them. One post-supervisor failure was `maximum recursion depth exceeded`. The graphics test replaced `shutil.which` with a wrapper that called `shutil.which` again. That wrapper is the shared function. A master file left under the asset root by an earlier test was probed, the wrapper called itself, and the call failed. A repo `.env` can set the same variables when a command loads it.
+- Decision: The test suite clears `MOVIE_SWARM_ASSET_ROOT` and `MOVIE_SWARM_FILMS_ROOT` for each test, and it sets `MOVIE_SWARM_SKIP_ENV_FILE` so `load_env()` with no path does not read the repo `.env`. A test that passes a path to `load_env` still reads that file. A test can still set either root for itself. The ffmpeg wrapper calls the original lookup, so a probe does not recurse. `@pytest.mark.use_envfile` opts a test back into auto-load.
+- Consequences: The suite passes when those variables are set in the environment to a real directory or to a path that is not there. A command run outside the suite still loads `.env`.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+

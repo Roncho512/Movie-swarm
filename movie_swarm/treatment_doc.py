@@ -138,19 +138,54 @@ def _plain_words(text: str) -> str:
 
 
 def confirms_draft(text: str) -> bool:
-    """Ron is keeping the draft, not replacing it. 'Lock it.' is a yes."""
-    return _plain_words(text) in {
+    """Ron is keeping the draft, not replacing it. 'Lock.' and 'Lock it.' are a yes.
+
+    The whole answer has to be the confirmation. A sentence that merely
+    contains one of these words is a new instruction.
+    """
+    return _plain_words(strip_answer_lead_in(text)) in {
+        "lock",
         "lock it",
         "lock them",
+        "lock this",
         "locked",
         "yes",
         "y",
         "ok",
         "okay",
+        "approved",
+        "approve",
+        "keep",
+        "keep it",
         "looks right",
         "use the proposal",
         "yes those beats",
     }
+
+
+def strip_answer_lead_in(text: str) -> str:
+    """Drop a conversational prefix such as ``That's all:``.
+
+    The words after the colon are the decision. The prefix is not part of
+    the treatment.
+    """
+    cleaned = str(text or "").strip()
+    match = re.match(
+        r"(?i)^(?:that(?:'s|’s|s| is) all|that is all|note|answer)\s*:\s*",
+        cleaned,
+    )
+    if not match:
+        return cleaned
+    return cleaned[match.end():].strip()
+
+
+def note_locked(treatment: dict, label: str) -> None:
+    """Say that Ron kept a drafted field. The field text stays as it was."""
+    sentence = f"Locked the drafted {label}."
+    note = treatment.get("draft_note") or ""
+    if sentence in note:
+        return
+    treatment["draft_note"] = (note + " " + sentence).strip()
 
 
 def approves_proposal(text: str) -> bool:
@@ -160,16 +195,7 @@ def approves_proposal(text: str) -> bool:
     cleaned = re.sub(r"[.!?]", "", text.strip().lower())
     if cleaned.startswith("approve") or "approve" in cleaned:
         return True
-    return _plain_words(text) in {
-        "yes",
-        "y",
-        "lock it",
-        "lock them",
-        "locked",
-        "looks right",
-        "use the proposal",
-        "ok",
-        "okay",
+    return confirms_draft(text) or _plain_words(text) in {
         "looks good",
     }
 
@@ -450,7 +476,7 @@ def build_questions(treatment: dict, script_text: str = "") -> dict:
             "why": "What we hide is a directing choice, not a guess from the screenplay.",
             "question": (
                 "What should the audience not know yet? "
-                "Name it. The answer is saved on the scenes it matches, and on the last scene."
+                "Name it. The answer is saved once, on the last scene."
             ),
             "answer": None,
         },
@@ -675,15 +701,7 @@ def render_markdown(treatment: dict) -> str:
 
 def extract_json_object(text: str) -> dict:
     """Pull one JSON object out of a model reply. Fences are allowed."""
-    cleaned = text.strip()
-    fence = re.search(r"```(?:json)?\s*(\{.*\})\s*```", cleaned, re.DOTALL)
-    if fence:
-        cleaned = fence.group(1)
-    else:
-        start = cleaned.find("{")
-        end = cleaned.rfind("}")
-        if start >= 0 and end > start:
-            cleaned = cleaned[start : end + 1]
+    cleaned = _json_slice(text, through_end=False)
     try:
         data = json.loads(cleaned)
     except json.JSONDecodeError as exc:
@@ -693,23 +711,263 @@ def extract_json_object(text: str) -> dict:
     return data
 
 
+def repair_truncated_json(text: str) -> tuple[dict, list[str]]:
+    """Read a JSON object that was cut off at the end.
+
+    A complete object is returned with nothing dropped. A reply that stops
+    inside a string, a key, or a value closes the open arrays and objects
+    and drops that unfinished key or value. Nothing is sent to a model.
+    """
+    body = _json_slice(text, through_end=True)
+    if body.rstrip().endswith("}"):
+        try:
+            return extract_json_object(text), []
+        except ValueError:
+            pass
+    if not body.startswith("{"):
+        raise ValueError("The model did not return JSON. No object was found.")
+    value, _index, dropped = _parse_value(body, 0)
+    if value is _DROP or not isinstance(value, dict):
+        raise ValueError("The model did not return a JSON object.")
+    return value, dropped
+
+
+def reply_was_repaired(text: str, dropped: list[str]) -> bool:
+    """True when the reply was not already one complete JSON object.
+
+    A nested ``}`` is not enough. The whole text has to parse. A reply that
+    only needed its containers closed still counts, even when no field was dropped.
+    """
+    if dropped:
+        return True
+    try:
+        extract_json_object(text)
+    except ValueError:
+        return True
+    return False
+
+
+def merge_treatment_patch(base: dict, patch: dict) -> dict:
+    """Keep the current draft and overlay the fields a reply actually sent.
+
+    A final pass may return the whole treatment or only the fields it changed.
+    A blank value does not wipe a drafted one. Nested objects merge key by key
+    so a cut-off budget note does not erase the rest of that object.
+    """
+    if not isinstance(base, dict):
+        return copy.deepcopy(patch) if isinstance(patch, dict) else {}
+    merged = copy.deepcopy(base)
+    if isinstance(patch, dict):
+        _deep_merge(merged, patch)
+    return merged
+
+
+def _json_slice(text: str, *, through_end: bool) -> str:
+    """The object text. A complete reply stops at the last brace.
+
+    A truncated reply has to keep everything after that brace, because the
+    last brace may close a nested object while the root is still open.
+    """
+    cleaned = text.strip()
+    fenced = re.search(r"```(?:json)?\s*(\{.*)", cleaned, re.DOTALL)
+    if fenced:
+        body = fenced.group(1)
+        if body.rstrip().endswith("```"):
+            body = body.rstrip()[:-3]
+    else:
+        start = cleaned.find("{")
+        body = cleaned[start:] if start >= 0 else cleaned
+    body = body.strip()
+    if through_end:
+        return body
+    end = body.rfind("}")
+    if end > 0:
+        return body[: end + 1]
+    return body
+
+
+class _DropType:
+    pass
+
+
+_DROP = _DropType()
+
+
+def _parse_value(text: str, index: int) -> tuple[object, int, list[str]]:
+    index = _skip_ws(text, index)
+    if index >= len(text):
+        return _DROP, index, []
+    char = text[index]
+    if char == "{":
+        return _parse_object(text, index)
+    if char == "[":
+        return _parse_array(text, index)
+    if char == '"':
+        value, index, closed = _parse_string(text, index)
+        if not closed:
+            return _DROP, index, []
+        return value, index, []
+    if char in "-0123456789":
+        return _parse_number(text, index)
+    for word in ("true", "false", "null"):
+        if text.startswith(word, index):
+            return {"true": True, "false": False, "null": None}[word], index + len(word), []
+        if word.startswith(text[index:]) and index + len(word) > len(text):
+            return _DROP, len(text), []
+    return _DROP, index, []
+
+
+def _parse_object(text: str, index: int) -> tuple[object, int, list[str]]:
+    index += 1
+    found: dict = {}
+    dropped: list[str] = []
+    while True:
+        index = _skip_ws(text, index)
+        if index >= len(text):
+            return found, index, dropped
+        if text[index] == "}":
+            return found, index + 1, dropped
+        if text[index] == ",":
+            index += 1
+            continue
+        if text[index] != '"':
+            return found, index, dropped
+        key, index, closed = _parse_string(text, index)
+        if not closed:
+            dropped.append(key or "(incomplete key)")
+            return found, index, dropped
+        index = _skip_ws(text, index)
+        if index >= len(text) or text[index] != ":":
+            dropped.append(key)
+            return found, index, dropped
+        index += 1
+        value, index, nested = _parse_value(text, index)
+        if value is _DROP:
+            dropped.append(key)
+            return found, index, dropped
+        found[key] = value
+        for item in nested:
+            dropped.append(f"{key}.{item}")
+        index = _skip_ws(text, index)
+        if index >= len(text):
+            return found, index, dropped
+        if text[index] not in {",", "}"}:
+            return found, index, dropped
+
+
+def _parse_array(text: str, index: int) -> tuple[object, int, list[str]]:
+    index += 1
+    items: list = []
+    dropped: list[str] = []
+    while True:
+        index = _skip_ws(text, index)
+        if index >= len(text):
+            return items, index, dropped
+        if text[index] == "]":
+            return items, index + 1, dropped
+        if text[index] == ",":
+            index += 1
+            continue
+        value, index, nested = _parse_value(text, index)
+        if value is _DROP:
+            dropped.append(str(len(items)))
+            return items, index, dropped
+        items.append(value)
+        for item in nested:
+            dropped.append(f"{len(items) - 1}.{item}")
+        index = _skip_ws(text, index)
+        if index >= len(text):
+            return items, index, dropped
+        if text[index] not in {",", "]"}:
+            return items, index, dropped
+
+
+def _parse_string(text: str, index: int) -> tuple[str, int, bool]:
+    index += 1
+    chars: list[str] = []
+    while index < len(text):
+        char = text[index]
+        if char == "\\":
+            if index + 1 >= len(text):
+                return "".join(chars), len(text), False
+            nxt = text[index + 1]
+            chars.append({"n": "\n", "r": "\r", "t": "\t", '"': '"', "\\": "\\"}.get(nxt, nxt))
+            index += 2
+            continue
+        if char == '"':
+            return "".join(chars), index + 1, True
+        chars.append(char)
+        index += 1
+    return "".join(chars), index, False
+
+
+def _parse_number(text: str, index: int) -> tuple[object, int, list[str]]:
+    end = index + 1
+    while end < len(text) and text[end] in "0123456789.eE+-":
+        end += 1
+    token = text[index:end]
+    try:
+        if any(mark in token for mark in (".", "e", "E")):
+            return float(token), end, []
+        return int(token), end, []
+    except ValueError:
+        return _DROP, end, []
+
+
+def _skip_ws(text: str, index: int) -> int:
+    while index < len(text) and text[index] in " \t\r\n":
+        index += 1
+    return index
+
+
+def _deep_merge(dest: dict, patch: dict) -> None:
+    for key, value in patch.items():
+        if isinstance(value, dict) and isinstance(dest.get(key), dict):
+            _deep_merge(dest[key], value)
+            continue
+        if _empty_patch(value) and key in dest:
+            continue
+        dest[key] = copy.deepcopy(value)
+
+
+def _empty_patch(value) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, str) and not value.strip():
+        return True
+    if isinstance(value, (list, dict)) and not value:
+        return True
+    return False
+
+
 def treatment_errors(treatment: dict) -> list[str]:
     return validate_data(conform_treatment(treatment), load_schema("treatment"))
 
 
 def _apply_withheld(treatment: dict, answer: str) -> None:
-    """Save the withhold on scenes that share a word with the answer, and on the last scene."""
-    scenes = treatment.get("scenes") or []
-    words = {word for word in re.findall(r"[A-Za-z]{5,}", answer)}
-    targets = []
-    for scene in scenes:
-        blob = f"{scene.get('heading', '')} {scene.get('what_happens', '')}"
-        if any(word.casefold() in blob.casefold() for word in words):
-            targets.append(scene)
-    if scenes and scenes[-1] not in targets:
-        targets.append(scenes[-1])
-    for scene in targets:
-        scene["withheld"] = answer
+    """Record one withheld fact, on the last scene.
+
+    A confirmation keeps the drafted text. The answer is not copied onto
+    every scene that shares a word with it, and it is not pasted into
+    what happens in the scene.
+    """
+    text = strip_answer_lead_in(answer)
+    if not text:
+        return
+    if confirms_draft(text):
+        note_locked(treatment, "withheld fact")
+        return
+    scenes = [scene for scene in treatment.get("scenes") or [] if isinstance(scene, dict)]
+    if not scenes:
+        note = treatment.get("draft_note") or ""
+        sentence = f"Withheld: {text}"
+        if sentence not in note:
+            treatment["draft_note"] = (note + " " + sentence).strip()
+        return
+    for scene in scenes[:-1]:
+        if scene.get("withheld") in {text, answer, answer.strip()}:
+            scene.pop("withheld", None)
+    scenes[-1]["withheld"] = text
 
 
 def _apply_hero_props(treatment: dict, answer: str) -> None:
@@ -718,6 +976,7 @@ def _apply_hero_props(treatment: dict, answer: str) -> None:
     if not props:
         return
     if confirms_draft(answer):
+        note_locked(treatment, "hero props")
         return
     sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", answer.strip()) if part.strip()]
     if not sentences:
@@ -744,23 +1003,35 @@ def _apply_hero_props(treatment: dict, answer: str) -> None:
 
 
 def _apply_one(treatment: dict, topic: str, answer: str) -> None:
+    answer = strip_answer_lead_in(answer)
     if topic == "intent":
-        if not confirms_draft(answer):
+        if confirms_draft(answer):
+            note_locked(treatment, "emotional intent")
+        else:
             treatment["theme_and_emotional_intent"]["emotional_intent"] = answer
     elif topic == "tone":
-        if not confirms_draft(answer):
+        if confirms_draft(answer):
+            note_locked(treatment, "tone")
+        else:
             treatment["tone_and_genre"]["tone"] = answer
     elif topic == "references":
-        if not confirms_draft(answer):
+        if confirms_draft(answer):
+            note_locked(treatment, "references")
+        else:
             treatment.setdefault("reference_lookbook", []).append(
                 {"reference": "From Ron", "take": answer}
             )
     elif topic == "character-arcs":
-        treatment["characters"][0]["arc"] = answer
+        if confirms_draft(answer):
+            note_locked(treatment, "character arc")
+        elif treatment.get("characters"):
+            treatment["characters"][0]["arc"] = answer
     elif topic == "withheld":
         _apply_withheld(treatment, answer)
     elif topic == "action-beats":
-        if not confirms_draft(answer):
+        if confirms_draft(answer):
+            note_locked(treatment, "action beats")
+        else:
             treatment.setdefault("action_and_stunt_beats", []).append(answer)
     elif topic == "hero-props":
         _apply_hero_props(treatment, answer)

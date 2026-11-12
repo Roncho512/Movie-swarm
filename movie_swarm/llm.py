@@ -26,6 +26,28 @@ class WritingQuote(LLMError):
     """``--live`` printed a writing quote and did not send the call."""
 
 
+class ModelReply(str):
+    """The model text, plus whether the provider stopped at the output cap.
+
+    It is a string, so existing callers can keep using it as text. ``stop_reason``
+    is the provider's value. ``output_tokens`` is the reported count.
+    """
+
+    def __new__(
+        cls,
+        text: str,
+        *,
+        stop_reason: str | None = None,
+        output_tokens: int | None = None,
+        max_tokens: int | None = None,
+    ):
+        reply = str.__new__(cls, text)
+        reply.stop_reason = stop_reason
+        reply.output_tokens = output_tokens
+        reply.max_tokens = max_tokens
+        return reply
+
+
 class LLMClient:
     """One completion. ``role`` and ``purpose`` pick the model from config."""
 
