@@ -10,6 +10,23 @@ cp -a tests/fixtures/harbor-night /tmp/harbor-night
 
 A stop from `scripts/studio.py` exits with status 2. That means the studio is waiting on a gate. It is not a crash. Read the file it names, then approve the gate, then run the studio again.
 
+## Set up the machine
+
+Do this once on the machine that will run the film.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+cp .env.example .env
+chmod 600 .env
+python3 scripts/doctor.py
+```
+
+Fill the three names in `.env`. The commands in `scripts/` load that file. A variable already set in the shell is left as it is. The values are not printed. Do not commit `.env`.
+
+Doctor prints the Python version, whether the requirements import, whether ffmpeg is on the path, whether `.env` is there, and whether each key is set. It prints yes or no. It does not print a key, and it does not use the network. `python3 scripts/doctor.py --ping` asks Anthropic and ElevenLabs with a read-only request and prints the HTTP status. fal is not checked that way. This repo has no free fal auth check. That line says it needs a paid test shot.
+
 ## 1. Open the film agent
 
 Open the Grok Bot film agent. Its name is PER.INN.FILM, and it answers to Reel. Start the discussion there. This repo does not start that chat for you.
@@ -25,7 +42,7 @@ python3 scripts/director.py --production /tmp/new-film --run guide-1 --offline i
   --screenplay /tmp/new-film/screenplay/harbor-night.md
 ```
 
-Read `/tmp/new-film/treatment/treatment.md`. Answer the questions in `treatment/questions.json`, in the `answer` field. Then:
+Intake writes `treatment/treatment.md` and `treatment/questions.json`. Read the markdown, then answer the questions in `treatment/questions.json`, in the `answer` field. The treatment gate comes later. Approving that gate does not create the markdown. Then:
 
 ```bash
 python3 scripts/director.py --production /tmp/new-film --run guide-1 --offline answer \
@@ -63,6 +80,8 @@ python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 bu
 ## 4. Walk the gates
 
 Start the run, then let the studio stop at each gate. Approve only after you have read the file.
+
+Harbor Night's copy has `treatment/treatment.json` and no markdown yet. Starting the run, or the first studio stop, writes `treatment/treatment.md` from that JSON. Read the markdown, then approve the treatment gate. The approval does not create the file.
 
 ```bash
 python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 start
@@ -127,7 +146,7 @@ The names are in `.env.example`. Copy it to `.env` on your machine and fill the 
 |---|---|
 | `ANTHROPIC_API_KEY` | Text calls. Read only when you pass `--live`. |
 | `FAL_KEY` | Picture calls on fal. Read only when you pass `--live`. |
-| `ELEVENLABS_API_KEY` | Sound calls. Read only when you pass `--live`. |
+| `ELEVENLABS_API_KEY` | Sound calls. Read only when you pass `--live`. The key needs the Voices: Read permission. The voice list uses it. |
 
 A live call that needs a missing key stops and says which name is unset. Nothing is sent.
 
@@ -135,13 +154,21 @@ A live call that needs a missing key stops and says which name is unset. Nothing
 
 Offline is the default. A real call needs all four of these: the generation gate approved, the estimate inside the line and the film budget, the key in the environment, and `--live` on the command.
 
-One picture call, for one shot, with nothing sent:
+One picture call, for one shot, with nothing sent. This is Seedance 2.0 fast at 720p, the cheapest picture model that has a fal address. The dry run prints the model, the tier, the provider, the resolution, the duration, the estimated cost, and the money still left. It says nothing was sent.
 
 ```bash
-python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 test-shot --shot s01-sh01
+python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 test-shot \
+  --shot s01-sh01 --model seedance-2.0-fast
 ```
 
-That shot exists after the studio has written the storyboard. The reply says offline is the default. Add `--live` only when the four checks above are true.
+That shot exists after the studio has written the storyboard. `--tier better` names the same model. Read the estimate. Add `--live` only after you have approved the generation gate and you mean to spend:
+
+```bash
+python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 --live test-shot \
+  --shot s01-sh01 --model seedance-2.0-fast
+```
+
+A test shot with no `--model` and no `--tier` uses the film's budget tier, then the routing default. The good tier is Gemini Omni 1.2 Flash. That model is planned and has no fal address, so a live call for it is refused and the message lists the wired models and the flag. It does not switch models on its own.
 
 Going past a line, or past the film budget, pauses the spend and writes `runs/<run-id>/requests/req-001.json`. The status names the request. This records a $20 director spend, then pauses the next dollar, then approves it. The approval does not edit `budget.json`.
 
@@ -175,7 +202,8 @@ The package holds the master, the variants the delivery spec asked for, a poster
 - A spend pauses: open the request file, or run `status`, then `decide`.
 - A trailer command says the trailer is off: set `trailer_on` to true in `budget.json` when you want one.
 - "The trailer is off" is a skip, not a failure. Delivery still runs.
-- A live call says a key is missing: set that name in the environment. Do not put the value in the repo.
+- A live call says a key is missing: set that name in `.env` or in the shell. Do not put the value in the repo. Doctor says whether each name is set.
+- A live picture call says no endpoint is configured: that model is unwired. Pass `--model seedance-2.0-fast` or `--tier better` for the cheapest wired picture model. The message lists the choices.
 - A live call says the rate is unknown: the rate card has no verified price. Pass `--price-override` only for that one call, and approve the request it writes.
 - Intake says the treatment is already approved: do not draft again. Read `treatment/treatment.md`.
 

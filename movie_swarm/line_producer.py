@@ -53,7 +53,12 @@ from movie_swarm.roles import (
     SOUND_STAGE,
 )
 from movie_swarm.run_state import RunState, default_run_state_path
-from movie_swarm.treatment_doc import load_treatment, treatment_json_path, write_treatment_files
+from movie_swarm.treatment_doc import (
+    ensure_treatment_markdown,
+    load_treatment,
+    treatment_json_path,
+    write_treatment_files,
+)
 
 
 class LineProducerError(Exception):
@@ -506,6 +511,8 @@ class LineProducer:
         """Plain-language status. Numbers come from the ledger, not from a model."""
         from movie_swarm.budget import report_from_record
 
+        if self.gate_decision("treatment") != "approved":
+            ensure_treatment_markdown(self.production_dir)
         data = self.run.data
         spent = float(data["cost_usd"])
         cap = money_number(self._film_cap())

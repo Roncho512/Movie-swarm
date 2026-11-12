@@ -12,7 +12,7 @@ import json
 import re
 from pathlib import Path
 
-from movie_swarm.handoff import read_handoff, write_handoff
+from movie_swarm.handoff import HandoffError, read_handoff, write_handoff
 from movie_swarm.money import as_money, money_number
 from movie_swarm.paths import repo_root
 from movie_swarm.script_intake import ParsedSource
@@ -190,6 +190,26 @@ def force_draft(treatment: dict) -> dict:
     if treatment.get("version") in (None, "", "1.0.0"):
         treatment["version"] = "0.1.0"
     return treatment
+
+
+def ensure_treatment_markdown(production_dir: str | Path) -> Path | None:
+    """Write treatment.md from treatment.json when the markdown is missing.
+
+    This does not approve the gate and does not change the JSON. Intake already
+    writes both files. A film that only has the JSON gets the readable copy
+    before Ron is asked to approve.
+    """
+    json_path = treatment_json_path(production_dir)
+    md_path = treatment_markdown_path(production_dir)
+    if not json_path.is_file() or md_path.is_file():
+        return md_path if md_path.is_file() else None
+    try:
+        document = load_treatment(production_dir)
+        md_path.parent.mkdir(parents=True, exist_ok=True)
+        md_path.write_text(render_markdown(document), encoding="utf-8")
+    except (OSError, KeyError, TypeError, HandoffError):
+        return None
+    return md_path
 
 
 def write_treatment_files(production_dir: str | Path, treatment: dict) -> tuple[Path, Path]:

@@ -66,6 +66,9 @@ def run_studio(
             raise StudioError(
                 "No treatment file. Run the Director intake, answer the questions, and then run the studio."
             )
+        from movie_swarm.treatment_doc import ensure_treatment_markdown
+
+        ensure_treatment_markdown(folder)
         stopped = _need(producer, "treatment", auto_approve, completed)
         if stopped:
             return stopped
@@ -166,14 +169,21 @@ def _need(producer: LineProducer, gate: str, auto_approve: bool, completed: list
     if auto_approve:
         producer.approve_gate(gate, "approved", TEST_AUTO_APPROVE_ACTOR, note=TEST_AUTO_APPROVE_NOTE)
         return None
+    if gate == "treatment":
+        message = (
+            "Stopped at the treatment gate. Read treatment/treatment.md, then approve the gate, "
+            "then run the studio again. This command does not approve gates."
+        )
+    else:
+        message = (
+            f"Stopped at the {gate} gate. Approve it, then run the studio again. "
+            "This command does not approve gates."
+        )
     return _result(
         producer,
         status="stopped",
         stopped_at=gate,
-        message=(
-            f"Stopped at the {gate} gate. Approve it, then run the studio again. "
-            "This command does not approve gates."
-        ),
+        message=message,
         completed=completed,
         auto_approve=auto_approve,
     )
