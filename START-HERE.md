@@ -10,20 +10,42 @@ cp -a tests/fixtures/harbor-night /tmp/harbor-night
 
 A stop from `scripts/studio.py` exits with status 2. That means the studio is waiting on a gate. It is not a crash. Read the file it names, then approve the gate, then run the studio again.
 
-## Making The Last Marker
+## Where films live
 
-The first film is `productions/the-last-marker`. Story facts stay in that folder. This page does not repeat them.
+The studio repo holds the engine. A film's working files live in their own folder outside the repo, under the films root. Set `MOVIE_SWARM_FILMS_ROOT` in `.env`, or in the shell. When that name is empty, the commands use `MOVIE_SWARM_ASSET_ROOT` (the shell, `.env`, or `config/assets.json`). A non-interactive shell does not read `~/.zshrc`. Doctor names which setting it used and whether the folder exists. It does not print the path. Do not commit a real path.
 
-Prior approvals are in `productions/the-last-marker/archive/`. The live treatment is a draft, so intake can write it again. Intake reads `treatment/inputs.json` and does not approve the gate. If a treatment is already approved, intake stops. Do not draft again. Read `treatment/treatment.md`.
+A production name is that folder plus the name. `--production the-last-marker` is the working folder for that film. An absolute path is used as given, including a folder outside this repo. A relative path is used as given. It is not moved into this repo.
 
-From the repo root:
+`productions/the-last-marker` in this repo is an archived copy. The working film is the one in the films folder. Copy it out with:
 
 ```bash
-python3 scripts/studio.py --production productions/the-last-marker --run first-film-1
-python3 scripts/line-producer.py --production productions/the-last-marker --run first-film-1 budget
+python3 scripts/export-film.py --from productions/the-last-marker --to /path/to/films/the-last-marker
 ```
 
-On the key-test machine the same commands can use `/tmp/movie-swarm-venv/bin/python` in place of `python3`. Exit status 2 means the run is waiting at the treatment gate. Read `productions/the-last-marker/treatment/treatment.md`. The quote comes from `budget.json`. The steps that belong only to this film are in `productions/the-last-marker/README.md`.
+That copies the folder, writes a checksum list, checks it, and does not delete the source. A later phase can remove the archived copy after that export is confirmed. Start a new film with:
+
+```bash
+python3 scripts/new-film.py my-film
+python3 scripts/new-film.py my-film --total 500
+python3 scripts/new-film.py my-film --git
+```
+
+The new folder is created in the films root. `--total` sets the budget. Omit it and `budget.json` keeps the calculator default and says the total was not asked. `--git` runs `git init` in that folder. It does not add a remote and it does not push. Harbor Night stays in `tests/fixtures/` as the example.
+
+## Making The Last Marker
+
+The working film is the folder named `the-last-marker` in the films root. Story facts stay in that folder. This page does not repeat them.
+
+Prior approvals from the archived copy are in that film's `archive/`. The live treatment is a draft, so intake can write it again. Intake reads `treatment/inputs.json` and does not approve the gate. If a treatment is already approved, intake stops. Do not draft again. Read `treatment/treatment.md`.
+
+From the repo root, with the films root set:
+
+```bash
+python3 scripts/studio.py --production the-last-marker --run first-film-1
+python3 scripts/line-producer.py --production the-last-marker --run first-film-1 budget
+```
+
+The same commands can take the absolute path of the film folder instead of the name. On the key-test machine the same commands can use `/tmp/movie-swarm-venv/bin/python` in place of `python3`. Exit status 2 means the run is waiting at the treatment gate. Read `treatment/treatment.md` in the film folder. The quote comes from `budget.json`. The steps that belong only to this film are in that folder's `README.md`. The archived copy in this repo is not the working film.
 
 ## Set up the machine
 
@@ -40,9 +62,9 @@ python3 scripts/doctor.py
 
 Fill the three names in `.env`. The commands in `scripts/` load that file. A variable already set in the shell is left as it is. The values are not printed. Do not commit `.env`.
 
-`MOVIE_SWARM_ASSET_ROOT` is optional. Set it in `.env` when finished media should leave the production folder. A non-interactive shell does not read `~/.zshrc`, so a path that lives only there is invisible to these commands. Leave the name empty to keep files in the production folder. Doctor does not print the path.
+`MOVIE_SWARM_ASSET_ROOT` is optional. Set it in `.env` when finished media should leave the production folder. `MOVIE_SWARM_FILMS_ROOT` is the folder that holds each film. When the films root is empty, a production name uses the asset root. A non-interactive shell does not read `~/.zshrc`, so a path that lives only there is invisible to these commands. Leave the asset root empty to keep finished files in the production folder. Doctor does not print the path.
 
-Doctor prints the Python version, whether the requirements import, whether ffmpeg is on the path, whether `.env` is there, and whether each key is set. It prints yes or no. It does not print a key, and it does not use the network. It also says where the asset root came from, the shell, `.env`, or `config/assets.json`, and whether that folder exists. `python3 scripts/doctor.py --ping` asks Anthropic and ElevenLabs with a read-only request and prints the HTTP status. fal is not checked that way. This repo has no free fal auth check. That line says it needs a paid test shot.
+Doctor prints the Python version, whether the requirements import, whether ffmpeg is on the path, whether `.env` is there, and whether each key is set. It prints yes or no. It does not print a key, and it does not use the network. It also says where the asset root came from, and where the films root came from: the shell, `.env`, or `config/assets.json`, and whether that folder exists. `python3 scripts/doctor.py --ping` asks Anthropic and ElevenLabs with a read-only request and prints the HTTP status. fal is not checked that way. This repo has no free fal auth check. That line says it needs a paid test shot. `python3 scripts/doctor.py --production the-last-marker` checks that the film folder is there and does not print the path.
 
 ## 1. Open the film agent
 

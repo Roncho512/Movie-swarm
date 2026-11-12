@@ -20,12 +20,20 @@ env/
 node_modules/
 
 # Generated media (track in LFS or exclude)
-# Uncomment these if not using Git LFS for media files:
+# Working film media lives in the films root, outside this repo.
+# Uncomment these if not using Git LFS for media files that stay in this repo:
 # productions/*/clips/raw/*.mp4
 # productions/*/clips/raw/*.webm
 # productions/*/audio/mix/*.wav
 # productions/*/audio/mix/*.mp3
 # productions/*/edit/export/*.mp4
+
+# Working films live outside this repo, in the films root
+# (MOVIE_SWARM_FILMS_ROOT, or MOVIE_SWARM_ASSET_ROOT when that is unset).
+# Harbor Night stays in tests/fixtures. Only the archived copy stays here.
+productions/*
+!productions/the-last-marker/
+!productions/the-last-marker/**
 
 # API keys and secrets
 .env
