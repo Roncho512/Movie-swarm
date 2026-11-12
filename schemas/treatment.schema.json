@@ -171,6 +171,15 @@
             "type": "string",
             "description": "Which side or which wrist, once Ron locks it."
           },
+          "aliases": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "parts": {
+            "type": "array",
+            "description": "Pieces of the prop a shot may name.",
+            "items": { "type": "string", "minLength": 1 }
+          },
           "reference_images": {
             "type": "array",
             "description": "Slot for multi-angle reference images.",

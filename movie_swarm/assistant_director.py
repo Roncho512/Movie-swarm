@@ -11,7 +11,9 @@ import json
 from pathlib import Path
 
 from movie_swarm.gaffer import plan_path
+from movie_swarm.mentions import mentioned, prop_labels
 from movie_swarm.prep_inputs import load_scenes, load_shots, scene_for_shot
+from movie_swarm.prop_master import locked_path as props_locked_path
 from movie_swarm.previs_common import (
     PrevisError,
     approved_treatment,
@@ -37,6 +39,7 @@ def build_schedule(production_dir: Path, llm=None) -> dict:
     scenes, scene_source = load_scenes(production_dir, treatment)
     stunts = _stunts(production_dir)
     gaffer = load_optional(plan_path(production_dir), "lighting-plan")
+    props = _hero_props(production_dir)
     offline = _offline(
         production_dir,
         treatment,
@@ -46,6 +49,7 @@ def build_schedule(production_dir: Path, llm=None) -> dict:
         scene_source,
         stunts,
         gaffer,
+        props,
     )
     drafted = _from_model(llm, offline)
     document = drafted or offline
@@ -64,7 +68,20 @@ def _stunts(production_dir: Path) -> dict | None:
     return data if isinstance(data, dict) else None
 
 
-def _offline(production_dir, treatment, shots, shot_source, scenes, scene_source, stunts, gaffer) -> dict:
+def _hero_props(production_dir: Path) -> list[dict]:
+    path = props_locked_path(production_dir)
+    if not path.is_file():
+        return []
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return []
+    if not isinstance(data, dict):
+        return []
+    return [prop for prop in data.get("props") or [] if isinstance(prop, dict)]
+
+
+def _offline(production_dir, treatment, shots, shot_source, scenes, scene_source, stunts, gaffer, props) -> dict:
     ordered = sorted(shots, key=lambda shot: (shot["order"], shot["shot_id"]))
     lighting = {}
     if gaffer:
@@ -83,7 +100,7 @@ def _offline(production_dir, treatment, shots, shot_source, scenes, scene_source
                 "shot": shot,
                 "scene": scene,
                 "cast": cast,
-                "props": list(shot.get("props") or []),
+                "props": _prop_names(shot, props),
                 "safety": flags[0] if flags else None,
                 "lighting_id": _lighting_id(lighting.get(shot.get("scene_id"))),
             }
@@ -125,6 +142,31 @@ def _lighting_id(scene: dict | None) -> str:
     if str(scene.get("key") or "") not in {"", "not named"}:
         return "key"
     return "not-named"
+
+
+def _prop_names(shot: dict, props: list[dict]) -> list[str]:
+    """Hero prop names for this shot, then any other prop the shot list already named."""
+    raw = [str(item).strip() for item in shot.get("props") or [] if str(item).strip()]
+    blob = " ".join(part for part in (shot.get("text") or "", *raw) if part)
+    named = []
+    used = set()
+    for prop in props:
+        labels = prop_labels(prop)
+        if not labels or not mentioned(blob, labels):
+            continue
+        name = str(prop.get("name") or prop.get("prop_id") or "").strip()
+        if name and name not in named:
+            named.append(name)
+        used.add(str(prop.get("prop_id") or "").casefold())
+        used.add(name.casefold())
+    for item in raw:
+        if item.casefold() in used:
+            continue
+        if any(item.casefold().startswith(token) for token in used if token):
+            continue
+        if item not in named:
+            named.append(item)
+    return named
 
 
 def _cast(shot: dict, treatment: dict) -> list[str]:
@@ -298,10 +340,25 @@ def _markdown(document: dict) -> str:
                 mark = " Safety." if shot.get("safety") else ""
                 lines.append(f"- {shot['order']}. {shot['shot_id']}{mark}")
             lines.append("")
+    safety_by_shot = {}
+    for item in document.get("safety") or []:
+        safety_by_shot.setdefault(item["shot_id"], str(item.get("note") or "").strip())
     if document.get("safety"):
         lines.append("## Safety")
         lines.append("")
         for item in document["safety"]:
             lines.append(f"- {item['shot_id']} ({item['beat_id']}): {item['note']}")
         lines.append("")
-    return "\n".join(lines).rstrip() + "\n"
+    # Rewrite shot lines that only said "Safety." as the stunt rule in a full sentence.
+    rewritten = []
+    for line in lines:
+        if line.startswith("- ") and line.endswith(" Safety."):
+            body = line[: -len(" Safety.")]
+            shot_id = body.split(". ", 1)[-1].strip()
+            sentence = safety_by_shot.get(shot_id) or "Follow the stunt safety rules for this beat."
+            if sentence and sentence[-1] not in ".!?":
+                sentence += "."
+            rewritten.append(f"{body}. {sentence}")
+        else:
+            rewritten.append(line)
+    return "\n".join(rewritten).rstrip() + "\n"

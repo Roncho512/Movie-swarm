@@ -347,9 +347,32 @@ def _research_document(production_dir: Path) -> dict:
         None,
     )
 
+    named_year = False
+    for field in ("logline", "world_and_period"):
+        year = _year_in(str(treatment.get(field) or ""))
+        if not year:
+            continue
+        named_year = True
+        add(
+            f"period-year-{field.replace('_', '-')}",
+            "period",
+            f"Year: {year}.",
+            "sourced",
+            "treatment/treatment.json",
+            field,
+        )
     font_hit = _font_hit(treatment, brief, look, bible, notes)
     if font_hit:
         add("period-type", "period", f"Typeface: {font_hit[0]}.", "sourced", font_hit[1], font_hit[2])
+    elif named_year:
+        add(
+            "period-type",
+            "period",
+            "The documents do not name a typeface or a print method. Do not add one.",
+            "inferred",
+            None,
+            None,
+        )
     else:
         add(
             "period-type",
@@ -1133,6 +1156,14 @@ def _note_files(production_dir: Path) -> list[tuple[str, str, str]]:
                 if isinstance(value, str) and value.strip():
                     found.append(("director/notes.json", str(key), " ".join(value.split())))
     return found
+
+
+def _year_in(text: str) -> str:
+    """A four-digit year the text already states. Empty when it names none."""
+    match = re.search(r"\b(1[5-9]\d{2}|20\d{2})\b", text)
+    if not match:
+        return ""
+    return match.group(1)
 
 
 def _font_hit(treatment, brief, look, bible, notes) -> tuple[str, str, str] | None:

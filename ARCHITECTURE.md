@@ -158,9 +158,9 @@ Hands off to: the Script Supervisor and the Cinematographer, through that locked
 
 ## Script Supervisor
 
-Inputs: the locked hero props, `wardrobe/costume-lock.json` when it exists, `makeup/makeup-lock.json` when it exists, the treatment scenes, `storyboard/shot-list.json` when it exists, and `shot-lists/shot-list.json` when it exists.
+Inputs: the locked hero props, `wardrobe/costume-lock.json` when it exists, `makeup/makeup-lock.json` when it exists, the treatment scenes, `storyboard/shot-list.json` when it exists, and `shot-lists/shot-list.json` when that older list has not been superseded.
 
-Outputs: `continuity/continuity-check.json`. A finding is a contradiction (a forbidden phrase) or a missing lock (a shot shows the prop or the person and never states a required phrase). The phrases come from those locked files.
+Outputs: `continuity/continuity-check.json`. A finding is a contradiction (a forbidden phrase) or a missing lock (a shot shows the prop or the person and never states a required phrase). The phrases come from those locked files. A character matches the full name, the first name, the surname, the screenplay cue, and any alias on the lock. A prop matches its name, its aliases, and any `parts` on the lock, so a detail that names a part still counts as the prop. A long wardrobe paragraph is stated when its short garment facts are in the shot, or when the shot says `wardrobe lock: <id>`. A forbidden phrase still fails. When `storyboard/shot-list.json` is newer, or the storyboard names it as the list generation uses, the older `shot-lists/shot-list.json` is marked `superseded` and left in place. The check skips it, says so, and generation does not read it.
 
 Hands off to: Ron, at the previs gate. This is not the QA report. QA reads a cut, later.
 
@@ -168,7 +168,7 @@ Hands off to: Ron, at the previs gate. This is not the QA report. QA reads a cut
 
 Inputs: `look/look.json` when the production has one, otherwise the treatment's camera and color notes and the brief.
 
-Outputs: `camera/camera-package.json` (lenses, framing, lighting), `storyboard/storyboard.json` (one beat per shot, plus an animatic), and `storyboard/shot-list.json`. The look is written once. A shot lists only its own frame, move, and light. A locked prop is named only when that beat puts it in frame. If the brief has a featured product, the storyboard lists those shots. Each reason is one sentence from the brief, not a clipped copy of the beat. Extra beats, such as a new danger shot, are written into the screenplay and the treatment. The generator does not invent them. Image generation runs only when a caller passes an image client. The default path stores the prompt and does not make a picture.
+Outputs: `camera/camera-package.json` (lenses, framing, lighting), `storyboard/storyboard.json` (one beat per shot, plus an animatic), and `storyboard/shot-list.json`. The look is written once. A shot lists only its own frame, move, and light. The shot's character and prop tags come from that beat and the scene heading, using the same aliases and parts as the continuity check. A locked prop is named only when that beat puts it in frame. The continuity note lists those locks. It does not say the frame is empty when a lock is tagged. The prompt copies the prop's `locked_spec` and does not add a fact the spec did not state. `reference_images` on the shot are the paths from the lock, and generation passes them through when a provider accepts an image reference. The reading copy calls the brief's placement moments "Hero prop moments". The engine does not title that section as a product, an advert, or a sponsor. Shot lengths stay between 1 and 12 seconds unless the screenplay names a hold. `storyboard/pacing-limits.json` can set `min_shot_seconds` and `max_shot_seconds`. The boards report what moved and whether the scene still hits its target. Each reason for a hero prop moment is one sentence from the brief, not a clipped copy of the beat. Extra beats, such as a new danger shot, are written into the screenplay and the treatment. The generator does not invent them. Image generation runs only when a caller passes an image client. The default path stores the prompt and does not make a picture.
 
 Hands off to: production, through the shot list, after Ron approves the previs gate.
 
@@ -176,7 +176,7 @@ Hands off to: production, through the shot list, after Ron approves the previs g
 
 Inputs: `action_and_stunt_beats` on the approved treatment.
 
-Outputs: `stunts/action-breakdown.json`. Each beat becomes shots. A beat that is not physically possible is marked. The safety line is the same for every film: one movement per shot, no real impact, no real fall, no real fire.
+Outputs: `stunts/action-breakdown.json`. Each action sentence becomes a shot. A confirmation or a decision, such as a yes that the beats are right, is not a beat and is not a shot. A note, such as a sentence about the screenplay or a classification, is stored on the beat and is not a shot. A beat that is not physically possible is marked. The safety line is the same for every film: one movement per shot, no real impact, no real fall, no real fire.
 
 Hands off to: the Cinematographer and production, through that breakdown. Does not add a beat the treatment does not name. The Assistant Director reads the same file and flags the shots that match a beat.
 
@@ -200,7 +200,7 @@ Hands off to: the Script Supervisor and the Dailies Reviewer, through that locke
 
 Inputs: the camera package, `look/look.json` when the production has one, the shot list, and the scenes.
 
-Outputs: `lighting/lighting-plan.json`, checked against `lighting-plan.schema.json`. Each scene has a key, a fill, practicals, a time of day, a color temperature, a contrast ratio, and a prompt note. A value the production did not state is `not named`. Shots in one scene that name a different time of day, or that do not share one lighting note, are flagged.
+Outputs: `lighting/lighting-plan.json`, checked against `lighting-plan.schema.json`. Each scene has a key, a fill, practicals, a time of day, a color temperature, a contrast ratio, and a prompt note. The time of day is the last segment of the scene heading. `MOMENTS LATER` and `CONTINUOUS` keep the previous concrete time. A line that is only about the sun stays the key. It is not repeated as the practicals. A value the production did not state is `not named`. Shots in one scene that name a different time of day, or that do not share one lighting note, are flagged.
 
 Hands off to: the Key Grip and production, through that plan.
 
@@ -216,7 +216,7 @@ Hands off to: production, through that plan.
 
 Inputs: the shot list, the scene manifest when the production has one (otherwise the treatment scenes), the stunt breakdown, and the lighting plan.
 
-Outputs: `schedule/shooting-schedule.json`, checked against `shooting-schedule.schema.json`. It is the call sheet. Shots stay in storyboard order. Days group by location. Setups group by scene, time of day, and the gaffer's source. Each shot lists cast and props. A shot that matches a stunt beat carries that beat's safety line.
+Outputs: `schedule/shooting-schedule.json`, checked against `shooting-schedule.schema.json`. It is the call sheet. Shots stay in storyboard order. Days group by location. Setups group by scene, time of day, and the gaffer's source. Each setup lists cast and the hero props that shot shows, by the prop's name. A shot that matches a stunt beat carries that beat's safety line. The reading copy writes that line as a full sentence from the stunt rules.
 
 Hands off to: production, through that schedule. Does not add a gate.
 
@@ -232,7 +232,7 @@ Hands off to: the editor and the colorist, through the turnover notes. Hands off
 
 Inputs: the approved treatment, the screenplay when the production has one, the production brief, `visual-style-bible.json` when the production has one, director notes when they exist, and `look/look.json`. The Art Director still owns the in-film look. This role reads that work. It does not replace it.
 
-Outputs: `graphics/research.json`, checked against `graphics-research.schema.json`, and a short Markdown note. Each item is sourced, with the file and the field, or marked inferred. Then `graphics/brand-guide.json`, checked against `graphics-brand-guide.schema.json`. Fonts, palette values, the wordmark, layout and safe area, image treatment, and the do's and don'ts are built only from that research. Every rule traces to a research item. The guide has a version and a change log. If the style bible or the look changes, the research is written again and the guide is rebuilt and logged. Then `graphics/graphics.json`, checked against `graphics-package.schema.json`: the main title, TITLE CARD lines from the screenplay, end credits from the Line Producer credit record, subtitle styling with no cue times, a designed key-art spec, and collateral specs for a 16:9 thumbnail, a 9:16 thumbnail, and a social card. When ffmpeg is installed and the production named a size, a flat placeholder can be rendered. When it is not, the specs are still written.
+Outputs: `graphics/research.json`, checked against `graphics-research.schema.json`, and a short Markdown note. Each item is sourced, with the file and the field, or marked inferred. A year in the treatment logline or in `world_and_period` is sourced. The research does not say that no year was named when one of those fields states one. Then `graphics/brand-guide.json`, checked against `graphics-brand-guide.schema.json`. Fonts, palette values, the wordmark, layout and safe area, image treatment, and the do's and don'ts are built only from that research. Every rule traces to a research item. The guide has a version and a change log. If the style bible or the look changes, the research is written again and the guide is rebuilt and logged. Then `graphics/graphics.json`, checked against `graphics-package.schema.json`: the main title, TITLE CARD lines from the screenplay, end credits from the Line Producer credit record, subtitle styling with no cue times, a designed key-art spec, and collateral specs for a 16:9 thumbnail, a 9:16 thumbnail, and a social card. When ffmpeg is installed and the production named a size, a flat placeholder can be rendered. When it is not, the specs are still written.
 
 The storyboard still skips TITLE CARD lines. Those lines are picked up here.
 
@@ -378,6 +378,8 @@ Hands off to: Ron, at the delivery gate. That approval is the film delivered.
 The previs step also writes wardrobe, makeup, the lighting plan, the grip plan, the shooting schedule, the VFX breakdown, the title research, and the draft brand guide. After the graphics gate, the same walk writes the graphic specs. After dailies, it writes the VFX review. Before the master, it refreshes the graphics from the credit record. When the production has no takes manifest, the walk writes synthetic placeholder clips, or stills when ffmpeg is missing, and a note in `takes/placeholder.txt`. A sidecar text file is the picture description, so dailies can circle a take without a vision model. A production that already has a takes manifest keeps those files.
 
 `run_studio(..., auto_approve=True)` is a test harness. It records each approval as `test-auto-approve`. It is not the default. The command line does not set it. It does not approve the generation gate.
+
+`--redo previs` regenerates the previs package and stops. The treatment gate must already be approved. The command is offline. `--live` is refused. It does not approve a gate and it does not spend. If the previs gate is already approved, it refuses and does not rewrite the package.
 
 Hands off to: Ron, at whichever gate is still closed. After the delivery gate, the manifest says the film is delivered.
 

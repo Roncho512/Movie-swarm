@@ -12,6 +12,8 @@ import json
 from pathlib import Path
 
 from movie_swarm.handoff import HandoffError, read_handoff
+from movie_swarm.mentions import character_aliases, phrases_stated, prop_labels, mentioned
+from movie_swarm.prep_inputs import mark_superseded_shot_list
 from movie_swarm.previs_common import (
     PrevisError,
     approved_treatment,
@@ -42,7 +44,7 @@ def check_continuity(production_dir: Path, llm=None) -> dict:
         raise PrevisError(str(exc)) from exc
     if locked.get("status") != "locked":
         raise PrevisError("The hero prop file is not locked yet.")
-    documents, sources = _documents(production_dir)
+    documents, sources, skipped = _documents(production_dir)
     costume = _optional_lock(costume_locked_path(production_dir), "costume-lock", "costume")
     makeup = _optional_lock(makeup_locked_path(production_dir), "makeup-lock", "makeup")
     if costume is not None:
@@ -50,8 +52,8 @@ def check_continuity(production_dir: Path, llm=None) -> dict:
     if makeup is not None:
         sources.append("makeup/makeup-lock.json")
     findings = _findings(locked, documents)
-    findings.extend(_character_findings(costume, documents, "costume_id"))
-    findings.extend(_character_findings(makeup, documents, "makeup_id"))
+    findings.extend(_character_findings(costume, documents, "costume_id", wardrobe=True))
+    findings.extend(_character_findings(makeup, documents, "makeup_id", wardrobe=False))
     for index, finding in enumerate(findings, start=1):
         finding["finding_id"] = f"c-{index:03d}"
     contradictions = sum(1 for item in findings if item["kind"] == "contradiction")
@@ -63,15 +65,19 @@ def check_continuity(production_dir: Path, llm=None) -> dict:
         watched = "props and wardrobe"
     elif makeup is not None:
         watched = "props and makeup"
+    skipped_note = ""
+    if skipped:
+        skipped_note = " " + " ".join(item["reason"] for item in skipped)
     if findings:
         summary = (
             f"{len(findings)} drift finding(s): {contradictions} contradiction(s) "
             f"and {missing} missing lock(s). "
             "Scenes are checked for forbidden phrases. "
             "A shot that shows one of those locks is also flagged when a required phrase is missing."
+            + skipped_note
         )
     else:
-        summary = f"No drift. The checked scenes and shots match the locked {watched}."
+        summary = f"No drift. The checked scenes and shots match the locked {watched}.{skipped_note}"
     document = {
         "version": "1.0.0",
         "production_id": production_dir.name,
@@ -83,6 +89,8 @@ def check_continuity(production_dir: Path, llm=None) -> dict:
         "draft_method": "offline-deterministic",
         "model": model_name("script-supervisor", "check"),
     }
+    if skipped:
+        document["skipped_sources"] = skipped
     if llm is not None:
         document["summary"] = _model_summary(llm, document) or document["summary"]
     save_pair(check_path(production_dir), document, "continuity-check", _markdown(document))
@@ -111,10 +119,14 @@ def _model_summary(llm, document: dict) -> str | None:
     return None
 
 
-def _documents(production_dir: Path) -> tuple[list[dict], list[str]]:
+def _documents(production_dir: Path) -> tuple[list[dict], list[str], list[dict]]:
     treatment = approved_treatment(production_dir)
     documents = []
     sources = ["treatment/treatment.json"]
+    skipped = []
+    superseded = mark_superseded_shot_list(production_dir)
+    if superseded:
+        skipped.append({"path": superseded["path"], "reason": superseded["reason"]})
     for index, scene in enumerate(treatment.get("scenes") or [], start=1):
         scene_id = str(scene.get("scene_id") or f"s{index:02d}")
         text = " ".join(
@@ -134,9 +146,19 @@ def _documents(production_dir: Path) -> tuple[list[dict], list[str]]:
         path = production_dir / relative
         if not path.is_file():
             continue
+        if any(item["path"] == relative for item in skipped):
+            continue
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            payload = {}
+        if isinstance(payload, dict) and payload.get("superseded") is True:
+            reason = str(payload.get("superseded_reason") or "Superseded. Not checked for drift.")
+            skipped.append({"path": relative, "reason": reason})
+            continue
         sources.append(relative)
         documents.extend(_shots(path, relative))
-    return documents, sources
+    return documents, sources, skipped
 
 
 def _shots(path: Path, label: str) -> list[dict]:
@@ -203,7 +225,13 @@ def _findings(locked: dict, documents: list[dict]) -> list[dict]:
     return findings
 
 
-def _character_findings(locked: dict | None, documents: list[dict], id_field: str) -> list[dict]:
+def _character_findings(
+    locked: dict | None,
+    documents: list[dict],
+    id_field: str,
+    *,
+    wardrobe: bool,
+) -> list[dict]:
     if not locked:
         return []
     findings = []
@@ -211,12 +239,13 @@ def _character_findings(locked: dict | None, documents: list[dict], id_field: st
         if not isinstance(character, dict):
             continue
         prop = {
-            "prop_id": character.get("character_id"),
+            "character_id": character.get("character_id"),
             "name": character.get("name"),
-            "aliases": list(character.get("aliases") or []),
+            "aliases": character_aliases(character),
         }
+        reference = str(character.get("character_id") or "") if wardrobe else ""
         for attribute in character.get("attributes") or []:
-            for finding in _attribute_findings(prop, attribute, documents):
+            for finding in _attribute_findings(prop, attribute, documents, lock_reference=reference):
                 finding.pop("prop_id", None)
                 if character.get("character_id"):
                     finding["character_id"] = character["character_id"]
@@ -225,13 +254,14 @@ def _character_findings(locked: dict | None, documents: list[dict], id_field: st
     return findings
 
 
-def _attribute_findings(prop: dict, attribute: dict, documents: list[dict]) -> list[dict]:
+def _attribute_findings(prop: dict, attribute: dict, documents: list[dict], lock_reference: str = "") -> list[dict]:
     found = []
     label = attribute.get("label") or attribute.get("attribute_id")
     value = attribute.get("value") or ""
     required = [phrase for phrase in attribute.get("required_phrases") or [] if phrase.strip()]
     forbidden = [phrase for phrase in attribute.get("forbidden_phrases") or [] if phrase.strip()]
     must_state = bool(attribute.get("must_be_stated_when_visible")) and bool(required)
+    identity = prop.get("prop_id") or prop.get("character_id")
     for document in documents:
         if not _scene_applies(attribute, document):
             continue
@@ -243,7 +273,7 @@ def _attribute_findings(prop: dict, attribute: dict, documents: list[dict]) -> l
                     _finding(
                         kind="contradiction",
                         severity="critical",
-                        prop_id=prop["prop_id"],
+                        prop_id=identity,
                         attribute_id=attribute["attribute_id"],
                         document=document,
                         expected=value,
@@ -255,12 +285,12 @@ def _attribute_findings(prop: dict, attribute: dict, documents: list[dict]) -> l
                     )
                 )
         if document["kind"] == "shot" and visible and must_state:
-            if not any(_contains(text, phrase) for phrase in required):
+            if not phrases_stated(text, required, lock_reference=lock_reference):
                 found.append(
                     _finding(
                         kind="unstated",
                         severity="major",
-                        prop_id=prop["prop_id"],
+                        prop_id=identity,
                         attribute_id=attribute["attribute_id"],
                         document=document,
                         expected=value,
@@ -324,11 +354,20 @@ def _scene_applies(attribute: dict, document: dict) -> bool:
 
 
 def _visible(prop: dict, text: str, structured_ids: set[str]) -> bool:
-    if prop.get("prop_id") in structured_ids:
+    for key in ("prop_id", "character_id"):
+        identity = prop.get(key)
+        if identity and identity in structured_ids:
+            return True
+    if prop.get("prop_id"):
+        labels = prop_labels(prop)
+    else:
+        labels = character_aliases(prop)
+    if mentioned(text, labels):
         return True
-    haystack = text.casefold()
-    names = [prop.get("name") or "", *(prop.get("aliases") or [])]
-    return any(len(name) >= 3 and name.casefold() in haystack for name in names)
+    for item in structured_ids:
+        if mentioned(str(item), labels):
+            return True
+    return False
 
 
 def _contains(text: str, phrase: str) -> bool:
@@ -373,6 +412,12 @@ def _markdown(document: dict) -> str:
         document.get("summary") or "",
         "",
     ]
+    if document.get("skipped_sources"):
+        lines.append("Not checked:")
+        lines.append("")
+        for item in document["skipped_sources"]:
+            lines.append(f"- {item['path']}: {item['reason']}")
+        lines.append("")
     if not document["findings"]:
         lines.append("Nothing drifted.")
         lines.append("")

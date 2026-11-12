@@ -195,6 +195,14 @@ python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 ap
 
 After each approval, run `scripts/studio.py` again with the same `--production` and `--run`.
 
+To regenerate previs on a run that is already past the treatment gate and still waiting on previs, use `--redo previs`. For the first film, from the repo root, with the films root set:
+
+```bash
+python3 scripts/studio.py --production the-last-marker --run first-film-1 --redo previs
+```
+
+That command is offline. It rewrites the prop lock, wardrobe, makeup, continuity check, camera package, storyboard, lighting plan, grip plan, schedule, action breakdown, VFX breakdown, and the title research and draft brand guide. It does not approve the previs gate and it does not spend. If that gate is already approved, the command refuses and leaves the files and the gate alone. `--live` is refused. A hero prop can list `parts` in `props/prop-definitions.json` so a shot that names a part is tagged. Shot lengths default to 1–12 seconds unless the screenplay names a hold. `storyboard/pacing-limits.json` can set `min_shot_seconds` and `max_shot_seconds`.
+
 When the trailer is on, turn it on in `budget.json` before picture lock. After the color-mix gate, the studio writes the research, the spoiler guard, the Director's sign-off, the plan, and the cut. You can also call the steps yourself:
 
 ```bash

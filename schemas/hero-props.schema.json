@@ -68,6 +68,11 @@
           "type": "array",
           "items": { "type": "string", "minLength": 1 }
         },
+        "parts": {
+          "type": "array",
+          "description": "Names of pieces of this prop. A shot that says one of these shows the prop.",
+          "items": { "type": "string", "minLength": 1 }
+        },
         "locked_spec": { "type": "string", "minLength": 1 },
         "reference_images": {
           "type": "array",

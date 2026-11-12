@@ -35,10 +35,18 @@ def main(argv: list[str] | None = None) -> int:
         help="Production name under the films root, or a path to the production folder",
     )
     parser.add_argument("--run", default="studio-1")
+    parser.add_argument(
+        "--redo",
+        choices=["previs"],
+        help=(
+            "Regenerate previs and stop. Offline only. "
+            "Refuses when the previs gate is already approved. Does not approve any gate."
+        ),
+    )
     args = parser.parse_args(argv)
     try:
         production = resolve_production(args.production)
-        result = run_studio(production, run_id=args.run, auto_approve=False)
+        result = run_studio(production, run_id=args.run, auto_approve=False, redo=args.redo)
     except FilmsError as exc:
         print(exc)
         return 1

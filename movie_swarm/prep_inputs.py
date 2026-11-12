@@ -14,9 +14,45 @@ from movie_swarm.previs_common import PrevisError
 
 
 _HEADING = re.compile(
-    r"^(?P<int_ext>INT\.?/EXT\.?|EXT\.?/INT\.?|I/E\.?|INT\.?|EXT\.?)\s+"
-    r"(?P<location>.+?)(?:\s+-\s+(?P<time>.+))?$",
+    r"^(?P<int_ext>INT\.?/EXT\.?|EXT\.?/INT\.?|I/E\.?|INT\.?|EXT\.?)\s+(?P<rest>.+)$",
     re.I,
+)
+
+# A heading that means "same time as the previous scene", not a new time of day.
+_CARRY_TIMES = (
+    "moments later",
+    "a moment later",
+    "continuous action",
+    "continuous",
+    "same time",
+    "same",
+    "later",
+)
+
+# Longer phrases first so "late afternoon" is not read as "day".
+_CONCRETE_TIMES = (
+    "late afternoon",
+    "early afternoon",
+    "late morning",
+    "early morning",
+    "late night",
+    "golden hour",
+    "blue hour",
+    "magic hour",
+    "pre-dusk",
+    "pre dusk",
+    "afternoon",
+    "morning",
+    "evening",
+    "sunrise",
+    "sunset",
+    "twilight",
+    "midnight",
+    "night",
+    "dawn",
+    "dusk",
+    "noon",
+    "day",
 )
 
 
@@ -24,6 +60,7 @@ def load_shots(production_dir: Path) -> tuple[list[dict], str]:
     """Normalized shots, and the file they came from.
 
     The storyboard shot list wins. A production shot list is the fallback.
+    A list marked superseded is not a source for later stages.
     """
     folder = Path(production_dir)
     for relative in ("storyboard/shot-list.json", "shot-lists/shot-list.json"):
@@ -31,6 +68,8 @@ def load_shots(production_dir: Path) -> tuple[list[dict], str]:
         if not path.is_file():
             continue
         data = _read_json(path, relative)
+        if data.get("superseded") is True:
+            continue
         shots = [_shot(item, index) for index, item in enumerate(data.get("shots") or [], start=1) if isinstance(item, dict)]
         shots = [shot for shot in shots if shot["shot_id"]]
         if shots:
@@ -51,11 +90,13 @@ def load_scenes(production_dir: Path, treatment: dict) -> tuple[list[dict], str]
             raise PrevisError(str(exc)) from exc
         scenes = [_manifest_scene(item, index) for index, item in enumerate(data.get("scenes") or [], start=1)]
         if scenes:
+            carry_scene_times(scenes)
             return scenes, "scene-manifest/scene-manifest.json"
     scenes = []
     for index, scene in enumerate(treatment.get("scenes") or [], start=1):
         if isinstance(scene, dict):
             scenes.append(_treatment_scene(scene, index))
+    carry_scene_times(scenes)
     return scenes, "treatment/treatment.json"
 
 
@@ -74,18 +115,133 @@ def scene_for_shot(shot: dict, scenes: list[dict]) -> dict | None:
 
 
 def parse_heading(heading: str) -> dict:
-    """Split a slugline into interior/exterior, place, and time. Unknown parts stay unnamed."""
+    """Split a slugline into interior/exterior, place, and time.
+
+    The time of day is the last segment. Earlier segments stay with the place.
+    ``LATE AFTERNOON`` is a time. ``MOMENTS LATER`` and ``CONTINUOUS`` are not a
+    new time; ``carry_scene_times`` keeps the previous one.
+    """
     text = " ".join(str(heading or "").split())
     match = _HEADING.match(text)
     if not match:
         place = text or "not named"
         return {"int_ext": "not named", "location": place, "time_of_day": "not named"}
     int_ext = match.group("int_ext").upper().rstrip(".")
-    if int_ext in {"I/E", "INT/EXT", "EXT/INT"}:
-        int_ext = int_ext
-    location = " ".join(match.group("location").split()) or "not named"
-    time_of_day = " ".join((match.group("time") or "").split()) or "not named"
+    pieces = [part.strip() for part in re.split(r"\s+-\s+", match.group("rest")) if part.strip()]
+    if len(pieces) >= 2:
+        location = " - ".join(pieces[:-1]) or "not named"
+        time_of_day = pieces[-1]
+    elif pieces:
+        location = pieces[0]
+        time_of_day = "not named"
+    else:
+        location = "not named"
+        time_of_day = "not named"
     return {"int_ext": int_ext, "location": location, "time_of_day": time_of_day}
+
+
+def is_carry_time(text: str) -> bool:
+    """True for MOMENTS LATER, CONTINUOUS, and the other 'same time' headings."""
+    folded = " ".join(str(text or "").casefold().split())
+    if not folded or folded == "not named":
+        return False
+    last = folded.split(" - ")[-1].strip()
+    for phrase in _CARRY_TIMES:
+        if last == phrase or last.endswith(" " + phrase):
+            return True
+    return False
+
+
+def concrete_time(text: str) -> str:
+    """The time-of-day words in text, in the text's own spelling. Empty when there are none."""
+    raw = " ".join(str(text or "").split())
+    folded = raw.casefold()
+    if not folded or folded == "not named" or is_carry_time(raw):
+        return ""
+    for phrase in _CONCRETE_TIMES:
+        match = re.search(rf"\b{re.escape(phrase)}\b", raw, re.I)
+        if match:
+            return match.group(0)
+    return ""
+
+
+def carry_scene_times(scenes: list[dict]) -> None:
+    """Fill MOMENTS LATER and CONTINUOUS from the previous concrete time.
+
+    A scene that already names a concrete time keeps that wording. A heading
+    that only says the time continues is not left as ``not named``.
+    """
+    previous = ""
+    for scene in scenes:
+        heading_time = parse_heading(scene.get("heading") or "")["time_of_day"]
+        stated = str(scene.get("time_of_day") or "not named")
+        stated_concrete = concrete_time(stated)
+        heading_concrete = concrete_time(heading_time)
+        if stated_concrete and not is_carry_time(stated):
+            chosen = stated
+        elif is_carry_time(heading_time) or is_carry_time(stated):
+            chosen = previous or heading_concrete or stated_concrete or "not named"
+        elif heading_concrete:
+            chosen = heading_time if heading_time.casefold() == heading_concrete.casefold() else heading_concrete
+        elif heading_time not in {"", "not named"}:
+            chosen = heading_time
+        else:
+            chosen = previous or "not named"
+        scene["time_of_day"] = chosen
+        if concrete_time(chosen) and not is_carry_time(chosen):
+            previous = chosen
+
+
+def mark_superseded_shot_list(production_dir: Path) -> dict | None:
+    """Mark ``shot-lists/shot-list.json`` when the storyboard list is the one to use.
+
+    The older file is kept. A field is written on it, or a sidecar note when it
+    is not JSON. Nothing is deleted. Returns the skip record, or None.
+    """
+    folder = Path(production_dir)
+    current = folder / "storyboard" / "shot-list.json"
+    older = folder / "shot-lists" / "shot-list.json"
+    if not current.is_file() or not older.is_file():
+        return None
+    marked = _storyboard_marks_shot_list(folder)
+    newer = current.stat().st_mtime >= older.stat().st_mtime
+    if not marked and not newer:
+        return None
+    reason = (
+        "Superseded by storyboard/shot-list.json. "
+        "This older list is not checked for drift and is not sent to generation."
+    )
+    record = {"path": "shot-lists/shot-list.json", "reason": reason}
+    try:
+        payload = json.loads(older.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        sidecar = older.with_name("shot-list.superseded.txt")
+        sidecar.write_text(reason + "\n", encoding="utf-8")
+        record["note"] = "shot-lists/shot-list.superseded.txt"
+        return record
+    if not isinstance(payload, dict):
+        return None
+    if payload.get("superseded") is True and payload.get("superseded_reason") == reason:
+        return record
+    payload["superseded"] = True
+    payload["superseded_by"] = "storyboard/shot-list.json"
+    payload["superseded_reason"] = reason
+    older.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return record
+
+
+def _storyboard_marks_shot_list(production_dir: Path) -> bool:
+    path = production_dir / "storyboard" / "storyboard.json"
+    if not path.is_file():
+        return False
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return False
+    if not isinstance(data, dict):
+        return False
+    listed = str(data.get("shot_list_path") or "").replace("\\", "/")
+    return listed.endswith("storyboard/shot-list.json")
 
 
 def _shot(shot: dict, index: int) -> dict:

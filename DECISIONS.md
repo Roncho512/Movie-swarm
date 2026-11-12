@@ -1291,3 +1291,75 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: The suite passes when those variables are set in the environment to a real directory or to a path that is not there. A command run outside the suite still loads `.env`.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
+## D147 — Phase 8.15 approved by Ron, 2026-11-12
+
+- Status: decided
+- Date: 2026-11-12
+- Context: The offline studio wrote a previs package whose continuity check, storyboard tags, prompts, stunt breakdown, lighting plan, shot lists, shot lengths, graphics research, schedule, and treatment note did not match the locks. D142 through D146 were already the Phase 8.14 proposals, so this approval is D147.
+- Decision: Fix that path. Keep the engine generic. Film facts stay in the film folder. Product placement stays a continuity fact and is not framed as advertising. The choices for how the fixes work are D148 through D154. Those are proposals. No paid call is part of this phase.
+- Consequences: An approved previs gate is not rewritten. An approved treatment is still not overwritten. No live call was made. Spent on this step: $0.00.
+- Who decided: Ron, 2026-11-12
+
+## D148 — Character aliases, prop parts, and wardrobe facts
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: A character lock matched only the full name. A prop lock matched the name and the aliases, not a named part. A wardrobe lock required the whole paragraph, word for word.
+- Decision: Derive the surname, the first name, and the screenplay cue from the name, and keep any alias the lock already lists. A hero prop may list `parts`. A shot that says a part shows the prop, and a sidedness phrase is still required. A long wardrobe paragraph is stated when every short garment fact is present, or when the shot says `wardrobe lock: <id>`. A forbidden phrase still fails.
+- Consequences: The storyboard tags `characters_in_shot` and `props_in_shot` from the beat and the scene heading. The continuity note lists the locks that tag put in the frame.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D149 — Prompts carry the locked spec and the reference images
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: A generation prompt for a hero prop said only the side. The reference images on the lock were not on the shot.
+- Decision: A shot that shows a hero prop includes that prop's `locked_spec` and does not add a fact the spec did not state. `reference_images` on the shot are the paths from the lock. Generation copies them onto the provider request when the call is allowed. The storyboard section is "Hero prop moments". The engine does not write "featured product", "product shot", "advert", or "sponsor" for that section.
+- Consequences: A provider that accepts image references can be given the paths. This phase does not call one.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D150 — A confirmation is not a stunt beat, and a note is not a shot
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: An answer that only confirmed the beats was stored as another beat. A sentence about the screenplay, and a sentence that classified a fix, became shots.
+- Decision: Beats and shots come from the action sentences. A confirmation or a decision is dropped. A note is kept on the beat and is not a shot. The same filter applies when an answer is merged into the treatment.
+- Consequences: The safety line is unchanged. A beat with no action sentence is not written.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D151 — Time of day comes from the heading, and the sun is not a practical
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: The lighting plan said the time of day was not named when the slugline named it. A line about the sun was copied into the practicals.
+- Decision: The time of day is the last segment of the heading. `MOMENTS LATER` and `CONTINUOUS` keep the previous concrete time. A scene that already names a concrete time keeps that wording. A line that is only sunlight stays the key. It is not the practicals.
+- Consequences: A night heading stays night. A fluorescent practical that also mentions the sun still counts as a practical.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D152 — The older shot list is superseded, and shot lengths stay in range
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: Generation already preferred the storyboard shot list. The continuity check still read an older `shot-lists/shot-list.json` that had open choices. Storyboard durations ran from under a second to longer than twelve, except where the screenplay named a hold.
+- Decision: When the storyboard list is newer, or the storyboard names it as the list generation uses, the older file is marked `superseded` and kept. It is not checked for drift and it is not sent to generation. The continuity report says so. Unlocked shots stay between 1 and 12 seconds. A hold the screenplay names may sit outside that range. Time is moved so the scene still hits its target when the limits allow it. `storyboard/pacing-limits.json` can set the two limits. The boards report the changes.
+- Consequences: The older file is not deleted. A scene that cannot hit its target inside the limits says so.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D153 — The graphics year, the hero props on the schedule, and the safety sentence
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: Graphics research said the documents named no year when the logline or the world named one. The schedule's prop line omitted the hero props. A shot that needed a stunt was marked "Safety."
+- Decision: Research reads a four-digit year from the logline and from `world_and_period` and sources each one. The schedule lists a hero prop by name when the shot shows it. The reading copy writes the stunt rule as a full sentence.
+- Consequences: A film that names no year still says so. A setup with no hero prop does not invent one.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D154 — reconform drops a stale failure, and redo previs does not touch an approved gate
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: After `reconform` succeeded, the draft note still said the final model pass had failed and the earlier draft was kept. An operator with the treatment approved and the previs gate still closed needs to regenerate the previs outputs without approving anything.
+- Decision: A successful `reconform` removes that failure sentence and writes the repair history. `scripts/studio.py --redo previs`, and the same flag on the Director `studio` command, regenerates the previs package and stops. The command is offline. `--live` is refused. The treatment gate must already be approved. If the previs gate is already approved, the command refuses and does not rewrite the files or the gate.
+- Consequences: The command for run `first-film-1` is `python3 scripts/studio.py --production the-last-marker --run first-film-1 --redo previs`, from the repo root, with the films root set. Nothing is spent.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+

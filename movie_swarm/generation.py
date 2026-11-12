@@ -47,7 +47,10 @@ def load_shots(production_dir: str | Path) -> tuple[list[dict], str]:
         path = folder / relative
         if not path.is_file():
             continue
-        shots = _read_json(path).get("shots") or []
+        data = _read_json(path)
+        if data.get("superseded") is True:
+            continue
+        shots = data.get("shots") or []
         if shots:
             return [_from_shot(shot) for shot in shots if isinstance(shot, dict)], relative
     return [], ""
@@ -196,6 +199,9 @@ def generate_shots(
             "model": preview_model,
             "props_in_frame": shot["props"],
         }
+        images = [str(path) for path in shot.get("reference_images") or [] if str(path).strip()]
+        if images:
+            request["reference_images"] = images
         if enforced.blocked:
             results.append(
                 {
@@ -481,13 +487,17 @@ def _public_rate(row: dict) -> dict:
 
 
 def _from_frame(frame: dict) -> dict:
-    return {
+    shot = {
         "shot_id": str(frame.get("shot_id") or ""),
         "scene_id": str(frame.get("scene_id") or ""),
         "duration_seconds": _duration(frame.get("duration_seconds")),
         "prompt": str(frame.get("board_prompt") or frame.get("what_we_see") or ""),
         "props": frame.get("props_in_frame") or [],
     }
+    images = [str(path) for path in frame.get("reference_images") or [] if str(path).strip()]
+    if images:
+        shot["reference_images"] = images
+    return shot
 
 
 def _from_shot(shot: dict) -> dict:
@@ -495,13 +505,17 @@ def _from_shot(shot: dict) -> dict:
     if not scene and shot.get("scene_number") is not None:
         scene = f"s{int(shot['scene_number']):02d}"
     duration = shot.get("target_duration_seconds", shot.get("duration_seconds"))
-    return {
+    loaded = {
         "shot_id": str(shot.get("shot_id") or ""),
         "scene_id": str(scene or ""),
         "duration_seconds": _duration(duration),
         "prompt": str(shot.get("generation_prompt") or shot.get("description") or ""),
         "props": shot.get("props_in_frame") or shot.get("props_in_shot") or [],
     }
+    images = [str(path) for path in shot.get("reference_images") or [] if str(path).strip()]
+    if images:
+        loaded["reference_images"] = images
+    return loaded
 
 
 def _duration(value):

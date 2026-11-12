@@ -160,6 +160,11 @@
             "description": "How we leave this shot.",
             "examples": ["cut", "fade-to-black", "dissolve"]
           },
+          "reference_images": {
+            "type": "array",
+            "description": "Paths from the locked prop. Generation passes these to a provider that accepts an image reference.",
+            "items": { "type": "string", "minLength": 1 }
+          },
           "continuity_notes": {
             "type": "string",
             "description": "What must match the previous and next shots for continuity."
@@ -193,6 +198,12 @@
         }
       }
     },
+    "superseded": {
+      "type": "boolean",
+      "description": "True when a newer storyboard shot list is the one generation uses. The file is kept."
+    },
+    "superseded_by": { "type": "string" },
+    "superseded_reason": { "type": "string" },
     "created_at": {
       "type": "string",
       "format": "date-time"

@@ -1029,10 +1029,13 @@ def _apply_one(treatment: dict, topic: str, answer: str) -> None:
     elif topic == "withheld":
         _apply_withheld(treatment, answer)
     elif topic == "action-beats":
-        if confirms_draft(answer):
+        from movie_swarm.stunts import action_content
+
+        kept = action_content(answer)
+        if not kept:
             note_locked(treatment, "action beats")
         else:
-            treatment.setdefault("action_and_stunt_beats", []).append(answer)
+            treatment.setdefault("action_and_stunt_beats", []).append(kept)
     elif topic == "hero-props":
         _apply_hero_props(treatment, answer)
     elif topic == "budget-split":
