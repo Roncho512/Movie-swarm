@@ -8,6 +8,7 @@ records Ron's approval.
 
 from __future__ import annotations
 
+import copy
 import json
 import re
 from pathlib import Path
@@ -173,9 +174,72 @@ def approves_proposal(text: str) -> bool:
     }
 
 
-def conform_treatment(data: dict) -> dict:
-    """Drop keys the treatment schema does not know, including inside nested objects."""
-    return _conform(data, load_schema("treatment"))
+def treatment_schema_instructions() -> str:
+    """Required treatment keys and formats, read from the schema, for a model prompt."""
+    schema = load_schema("treatment")
+    properties = schema.get("properties") or {}
+    required = [str(key) for key in schema.get("required") or []]
+    lines = [
+        "Required top-level keys: " + ", ".join(required) + ".",
+        "Use these names. Do not rename them.",
+    ]
+    for key in required:
+        lines.append(_schema_field_line(key, properties.get(key) or {}))
+    lines.append(
+        "theme and emotional_intent belong inside theme_and_emotional_intent. "
+        "tone and genre belong inside tone_and_genre. "
+        "Do not put those four names at the top level."
+    )
+    lines.append(
+        "deliverables.aspect_ratio, deliverables.resolution, and deliverables.length "
+        "are strings. Never null."
+    )
+    pattern = (properties.get("version") or {}).get("pattern")
+    if pattern:
+        lines.append(f"version matches {pattern}. A draft uses 0.1.0.")
+    lines.append(
+        "Do not raise open questions about items already locked in the creative inputs "
+        "or the prop facts. Follow those locks. Do not re-ask them."
+    )
+    return "\n".join(lines)
+
+
+def conform_treatment(data: dict, *, fallback: dict | None = None) -> dict:
+    """Map common model names onto the schema, then drop keys the schema does not know.
+
+    ``fallback`` is an offline draft or a brief-shaped treatment. Blank
+    deliverable strings are filled from it. A version that is not semver
+    becomes ``0.1.0``.
+    """
+    mapped = _map_treatment_aliases(dict(data))
+    cleaned = _conform(mapped, load_schema("treatment"))
+    _normalise_version(cleaned)
+    _fill_blank_deliverables(cleaned, fallback)
+    return cleaned
+
+
+def merge_missing_required(drafted: dict, offline: dict) -> dict:
+    """Fill required keys the model left blank. Keep every value the model did supply."""
+    if not isinstance(drafted, dict):
+        return drafted
+    merged = copy.deepcopy(drafted)
+    source = offline if isinstance(offline, dict) else {}
+    schema = load_schema("treatment")
+    properties = schema.get("properties") or {}
+    for key in schema.get("required") or []:
+        prop = properties.get(key) or {}
+        backup = source.get(key)
+        if prop.get("type") == "object":
+            if not isinstance(merged.get(key), dict):
+                if isinstance(backup, dict):
+                    merged[key] = copy.deepcopy(backup)
+                continue
+            if isinstance(backup, dict):
+                _fill_required_object(merged[key], backup, prop)
+            continue
+        if _blank_leaf(merged.get(key), prop) and not _blank_leaf(backup, prop):
+            merged[key] = copy.deepcopy(backup)
+    return merged
 
 
 def force_draft(treatment: dict) -> dict:
@@ -1106,6 +1170,162 @@ def _md_section(lines: list[str], title: str, body: str | None) -> None:
     if not body:
         return
     lines.extend([f"## {title}", "", body, ""])
+
+
+def _schema_field_line(key: str, prop: dict) -> str:
+    kind = prop.get("type") or "value"
+    if isinstance(kind, list):
+        kind = " or ".join(str(item) for item in kind)
+    parts = [f"{key} is a {kind}"]
+    if prop.get("pattern"):
+        parts.append(f"matching {prop['pattern']}")
+    if prop.get("enum"):
+        parts.append("one of " + ", ".join(str(item) for item in prop["enum"]))
+    if prop.get("minLength"):
+        parts.append(f"at least {prop['minLength']} characters")
+    if kind == "object":
+        required = prop.get("required") or []
+        if required:
+            details = []
+            for sub in required:
+                subprop = (prop.get("properties") or {}).get(sub) or {}
+                details.append(f"{sub} ({subprop.get('type') or 'value'})")
+            parts.append("with " + ", ".join(details))
+    if kind == "array":
+        item = prop.get("items") or {}
+        if item.get("type") == "object" and item.get("required"):
+            parts.append("each item requires " + ", ".join(item["required"]))
+        elif item.get("type"):
+            parts.append(f"items are {item['type']}")
+        if prop.get("minItems"):
+            parts.append(f"at least {prop['minItems']} item(s)")
+    return "- " + "; ".join(parts) + "."
+
+
+def _map_treatment_aliases(data: dict) -> dict:
+    """Fold theme/tone name variants into the schema's object keys."""
+    if not isinstance(data, dict):
+        return data
+    mapped = dict(data)
+    _fold_pair(mapped, "theme_and_emotional_intent", "theme", "emotional_intent")
+    _fold_pair(mapped, "tone_and_genre", "tone", "genre")
+    return mapped
+
+
+def _fold_pair(mapped: dict, target: str, left: str, right: str) -> None:
+    built = {}
+    current = mapped.get(target)
+    if isinstance(current, dict):
+        if _plain_text(current.get(left)):
+            built[left] = current[left]
+        if _plain_text(current.get(right)):
+            built[right] = current[right]
+    for key in (left, right):
+        raw = mapped.get(key)
+        if isinstance(raw, dict):
+            if _plain_text(raw.get(left)) and left not in built:
+                built[left] = raw[left]
+            if _plain_text(raw.get(right)) and right not in built:
+                built[right] = raw[right]
+        elif key == left and _plain_text(raw) and left not in built:
+            built[left] = raw
+        elif key == right and _plain_text(raw) and right not in built:
+            built[right] = raw
+    if built:
+        mapped[target] = built
+
+
+def _plain_text(value) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+_SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
+
+
+def _normalise_version(treatment: dict) -> None:
+    treatment["version"] = _semver(treatment.get("version"))
+
+
+def _semver(value) -> str:
+    if not isinstance(value, str):
+        return "0.1.0"
+    text = value.strip()
+    if _SEMVER.fullmatch(text):
+        return text
+    pair = re.fullmatch(r"(\d+)\.(\d+)", text)
+    if pair:
+        return f"{pair.group(1)}.{pair.group(2)}.0"
+    single = re.fullmatch(r"(\d+)", text)
+    if single:
+        return f"{single.group(1)}.0.0"
+    return "0.1.0"
+
+
+_DELIVERABLE_FIELDS = ("aspect_ratio", "resolution", "length")
+
+
+def _fill_blank_deliverables(treatment: dict, fallback: dict | None) -> None:
+    source = {}
+    if isinstance(fallback, dict) and isinstance(fallback.get("deliverables"), dict):
+        source = fallback["deliverables"]
+    current = treatment.get("deliverables")
+    if not isinstance(current, dict):
+        filled = {
+            key: source[key] for key in _DELIVERABLE_FIELDS if _plain_text(source.get(key))
+        }
+        if filled:
+            treatment["deliverables"] = filled
+        return
+    for key in _DELIVERABLE_FIELDS:
+        if not _plain_text(current.get(key)) and _plain_text(source.get(key)):
+            current[key] = source[key]
+
+
+def _fill_required_object(current: dict, backup: dict, schema: dict) -> None:
+    for key in schema.get("required") or []:
+        sub = (schema.get("properties") or {}).get(key) or {}
+        if _blank_leaf(current.get(key), sub) and not _blank_leaf(backup.get(key), sub):
+            current[key] = copy.deepcopy(backup[key])
+
+
+def _blank_leaf(value, schema: dict) -> bool:
+    """True when a required value is missing, the wrong type, or outside the schema."""
+    expected = schema.get("type")
+    if isinstance(expected, list):
+        expected = next((item for item in expected if item != "null"), None)
+    if value is None:
+        return True
+    if expected == "string":
+        if not isinstance(value, str) or not value.strip():
+            return True
+        minimum = schema.get("minLength") or 0
+        if len(value.strip()) < minimum:
+            return True
+        pattern = schema.get("pattern")
+        if pattern and re.fullmatch(pattern, value) is None:
+            return True
+        allowed = schema.get("enum")
+        if allowed is not None and value not in allowed:
+            return True
+        return False
+    if expected == "number":
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return True
+        exclusive = schema.get("exclusiveMinimum")
+        if exclusive is not None and not (value > exclusive):
+            return True
+        minimum = schema.get("minimum")
+        if minimum is not None and value < minimum:
+            return True
+        return False
+    if expected == "array":
+        if not isinstance(value, list):
+            return True
+        minimum = schema.get("minItems") or 0
+        return len(value) < minimum
+    if expected == "object":
+        return not isinstance(value, dict)
+    return False
 
 
 def _conform(data, schema: dict):

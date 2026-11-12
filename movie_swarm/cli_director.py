@@ -99,6 +99,20 @@ def main(argv: list[str] | None = None) -> int:
         help="Run the offline studio from the treatment through delivery. Stops at each gate. Does not approve and does not spend.",
     )
 
+    reconform = sub.add_parser(
+        "reconform",
+        help=(
+            "Conform a cached model draft again. No API call and no new charge. "
+            "An identical request already replays for free. This prompt is not identical to the one that was paid."
+        ),
+    )
+    reconform.add_argument(
+        "--request",
+        required=True,
+        help="Request hash from runs/<run>/provider-cache.json, or a unique prefix of at least 8 characters",
+    )
+    reconform.add_argument("--screenplay", help="Markdown, Fountain, PDF, or Word. Used only to fill a gap the cache left blank.")
+
     args = parser.parse_args(argv)
     try:
         production = resolve_production(args.production)
@@ -119,9 +133,19 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _run(args) -> int:
-    if args.offline and args.live:
+    if args.offline and args.live and args.command != "reconform":
         print("Pass either --offline or --live, not both. Nothing was sent.")
         return 1
+    if args.command == "reconform":
+        director = Director(args.production, llm=None)
+        result = director.reconform(args.request, run_id=args.run, screenplay=args.screenplay)
+        print(result.get("draft_note") or "Reconformed the cached draft. No new model call was made.")
+        print(f"Draft treatment: {result['treatment']}")
+        print(f"Readable draft: {result['treatment_markdown']}")
+        print(f"Questions: {result['questions']} ({result['question_count']} questions)")
+        print(f"Run: {result['run_id']}")
+        print("Status: draft. Ron has not approved it. No new model call was made.")
+        return 0
     llm = None
     if args.command in {"intake", "answer"}:
         llm = llm_for_command(
@@ -137,7 +161,7 @@ def _run(args) -> int:
             print("No model call. Drafting offline.")
         result = director.intake(screenplay=args.screenplay, partial=args.partial, run_id=args.run)
         if llm is not None and result.get("drafted_by") != "model":
-            print("The live draft was not used. The offline draft was kept.")
+            print(result.get("draft_note") or "The live draft was not used. The offline draft was kept.")
         print(f"Draft treatment: {result['treatment']}")
         print(f"Readable draft: {result['treatment_markdown']}")
         print(f"Questions: {result['questions']} ({result['question_count']} questions)")
