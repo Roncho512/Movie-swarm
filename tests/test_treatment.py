@@ -216,6 +216,34 @@ def test_intake_reads_locked_inputs_and_does_not_approve(tmp_path):
     assert all(item["answer"] is None for item in questions["questions"])
 
 
+def test_intake_quotes_the_split_from_budget_json(tmp_path):
+    """Harbor Night: the treatment question uses budget.json, and stays a draft."""
+    from movie_swarm.budget import proposed_document, write_film_budget
+
+    production = tmp_path / "harbor-night"
+    shutil.copytree(repo_root() / "tests" / "fixtures" / "harbor-night", production)
+    (production / "treatment" / "treatment.json").unlink()
+    write_film_budget(
+        production,
+        proposed_document(100, trailer_on=True, contingency_percent=0, marketing_percent=10),
+    )
+    result = Director(production).intake(
+        screenplay=production / "screenplay" / "harbor-night.md",
+        run_id="run-1",
+    )
+    treatment = json.loads(Path(result["treatment"]).read_text(encoding="utf-8"))
+    split = treatment["constraints_and_budget"]["stage_split"]
+    assert treatment["status"] == "draft"
+    assert treatment["constraints_and_budget"]["budget_cap_usd"] == 100
+    assert split["production"] == 48.6
+    assert split["marketing-distribution"] == 10
+    assert "budget.json" in treatment["constraints_and_budget"]["notes"]
+    questions = json.loads((production / "treatment" / "questions.json").read_text(encoding="utf-8"))
+    budget_question = next(item for item in questions["questions"] if item["topic"] == "budget-split")
+    assert "$48.6" in budget_question["question"] or "$48.60" in budget_question["question"]
+    assert budget_question["answer"] is None
+
+
 def test_question_round_trip_stays_a_draft(tmp_path):
     production = tmp_path / "demo"
     production.mkdir()

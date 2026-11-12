@@ -91,6 +91,7 @@ class Director:
             errors = treatment_errors(treatment)
         if errors:
             raise DirectorError("The draft is not a valid treatment.\n" + "\n".join(errors))
+        treatment = _apply_film_budget(self.production_dir, treatment)
 
         script_text = "\n".join(
             part.text for part in (script, partial_source) if part is not None and part.text
@@ -311,6 +312,37 @@ class Director:
                 "This round already has answers. The Director will not wipe them. "
                 "Use the answer command to continue."
             )
+
+
+def _apply_film_budget(production_dir: Path, treatment: dict) -> dict:
+    """Use budget.json for the proposed split when the film has one.
+
+    The question Ron reads and the split the Line Producer locks are the
+    spendable lines. Contingency stays in the reserve. A film with no budget
+    file keeps the proposed split of the cap.
+    """
+    from movie_swarm.budget import compute, load_film_budget
+    from movie_swarm.money import money_number
+
+    film = load_film_budget(production_dir)
+    if film is None:
+        return treatment
+    math = compute(film)
+    split = {name: money_number(amount) for name, amount in math.spendable().items()}
+    budget = treatment.setdefault("constraints_and_budget", {})
+    budget["budget_cap_usd"] = money_number(film["total_usd"])
+    budget["stage_split"] = split
+    if math.trailer_on:
+        trailer = "The trailer is on, so Marketing and Distribution is in the split and the other lines are scaled."
+    else:
+        trailer = "The trailer is off, so Marketing and Distribution is not in the split."
+    note = (
+        "The proposed split is the spendable lines from budget.json. "
+        "Contingency is held back and is not a stage line. "
+        + trailer
+    )
+    budget["notes"] = ((budget.get("notes") or "") + " " + note).strip()
+    return treatment
 
 
 def _load_inputs(production_dir: Path) -> dict | None:
