@@ -68,9 +68,9 @@ class Director:
             partial_source = script
             script = None
         cap = _cap(brief)
+        locked = _load_inputs(self.production_dir)
         treatment, method = self._draft(script, partial_source, brief, cap)
-        if partial_source and partial_source.partial and script is not None:
-            treatment = merge_sources(treatment, partial_source.partial)
+        treatment = _apply_inputs(treatment, locked, partial_source, script is not None)
         treatment = force_draft(conform_treatment(treatment))
         errors = treatment_errors(treatment)
         if errors:
@@ -80,8 +80,7 @@ class Director:
                 brief=brief,
                 cap_usd=cap,
             )
-            if partial_source and partial_source.partial:
-                fallback = merge_sources(fallback, partial_source.partial)
+            fallback = _apply_inputs(fallback, locked, partial_source, True)
             fallback = force_draft(conform_treatment(fallback))
             fallback["draft_note"] = (
                 (fallback.get("draft_note") or "")
@@ -312,6 +311,34 @@ class Director:
                 "This round already has answers. The Director will not wipe them. "
                 "Use the answer command to continue."
             )
+
+
+def _load_inputs(production_dir: Path) -> dict | None:
+    """Creative facts the Director reads. They are not a gate approval.
+
+    ``treatment/inputs.json`` is a partial treatment. A status or an approval
+    in that file is ignored. ``force_draft`` still runs after the merge.
+    """
+    path = production_dir / "treatment" / "inputs.json"
+    if not path.is_file():
+        return None
+    try:
+        loaded = load_source(path)
+    except ValueError as exc:
+        raise DirectorError(str(exc)) from exc
+    return loaded.partial
+
+
+def _apply_inputs(treatment: dict, locked: dict | None, partial: ParsedSource | None, merge_partial: bool) -> dict:
+    if locked:
+        treatment = merge_sources(treatment, locked)
+        treatment["draft_note"] = (
+            (treatment.get("draft_note") or "")
+            + " Locked creative inputs were read from treatment/inputs.json. They do not approve the gate."
+        ).strip()
+    if merge_partial and partial is not None and partial.partial:
+        treatment = merge_sources(treatment, partial.partial)
+    return treatment
 
 
 def _load_brief(production_dir: Path) -> dict | None:

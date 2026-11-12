@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 from movie_swarm.paths import repo_root
@@ -168,6 +169,51 @@ def test_partial_treatment_and_screenplay_together(tmp_path):
     assert treatment["scenes"][0]["what_happens"]
     assert treatment["status"] == "draft"
     assert treatment_errors(treatment) == []
+
+
+def test_intake_reads_locked_inputs_and_does_not_approve(tmp_path):
+    """treatment/inputs.json is creative source. It cannot approve the gate."""
+    production = tmp_path / "harbor-night"
+    shutil.copytree(repo_root() / "tests" / "fixtures" / "harbor-night", production)
+    (production / "treatment" / "treatment.json").unlink()
+    inputs = {
+        "status": "approved",
+        "approval": {
+            "state": "approved",
+            "by": "ron",
+            "at": "2026-11-12T00:00:00Z",
+            "note": "This file must not approve the gate.",
+        },
+        "theme_and_emotional_intent": {
+            "theme": "The lamp stays on.",
+            "emotional_intent": "She chooses the dock.",
+        },
+        "characters": [
+            {
+                "name": "Ada",
+                "role": "protagonist",
+                "look": "Forty. Short hair. Dark coat.",
+                "arc": "She wants to leave. She stays.",
+            }
+        ],
+    }
+    (production / "treatment" / "inputs.json").write_text(json.dumps(inputs), encoding="utf-8")
+    result = Director(production).intake(
+        screenplay=production / "screenplay" / "harbor-night.md",
+        run_id="run-1",
+    )
+    treatment = json.loads(Path(result["treatment"]).read_text(encoding="utf-8"))
+    assert result["status"] == "draft"
+    assert treatment["status"] == "draft"
+    assert treatment["approval"]["state"] == "pending"
+    assert treatment["approval"]["by"] is None
+    assert treatment["theme_and_emotional_intent"]["theme"] == "The lamp stays on."
+    assert treatment["characters"][0]["arc"] == "She wants to leave. She stays."
+    assert "treatment/inputs.json" in treatment["draft_note"]
+    assert treatment_errors(treatment) == []
+    questions = json.loads((production / "treatment" / "questions.json").read_text(encoding="utf-8"))
+    assert questions["status"] == "open"
+    assert all(item["answer"] is None for item in questions["questions"])
 
 
 def test_question_round_trip_stays_a_draft(tmp_path):
