@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "qc-report.schema.json",
   "title": "QC Report",
-  "description": "Pass or fail for each delivery check: duration, resolution, frame rate, loudness, black frames, frozen frames, and caption timing. A skipped check means the file or the tool was missing. This file does not name a film.",
+  "description": "Pass or fail for each delivery check: duration, resolution, frame rate, loudness, black frames, frozen frames, caption timing, and graphics when a graphics package is present. A skipped check means the file or the tool was missing. This file does not name a film.",
   "type": "object",
   "additionalProperties": false,
   "required": ["version", "production_id", "kind", "created_at", "verdict", "spent_usd", "cut_runtime_seconds", "checks", "draft_method"],
@@ -25,7 +25,7 @@
           "target": { "type": "string" },
           "kind": {
             "type": "string",
-            "enum": ["file", "duration", "resolution", "frame-rate", "loudness", "black", "frozen", "captions"]
+            "enum": ["file", "duration", "resolution", "frame-rate", "loudness", "black", "frozen", "captions", "graphics", "trailer"]
           },
           "status": { "type": "string", "enum": ["pass", "fail", "skipped"] },
           "detail": { "type": "string" }

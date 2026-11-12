@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trailer-plan.schema.json",
+  "title": "Trailer Plan",
+  "description": "Beat by beat plan for the teaser and the trailer. Source shots and timecodes come from the locked cut. The checker does not know which film this is.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "production_id",
+    "lengths",
+    "length_source",
+    "length_note",
+    "picture_lock_sha256",
+    "beats",
+    "gaps",
+    "cards",
+    "music",
+    "loudness",
+    "safe_area",
+    "versions",
+    "handoff",
+    "draft_method",
+    "model",
+    "note",
+    "written_at"
+  ],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "lengths": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["teaser_seconds", "trailer_seconds"],
+      "properties": {
+        "teaser_seconds": { "type": "number", "exclusiveMinimum": 0 },
+        "trailer_seconds": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "length_source": { "type": "string", "enum": ["default", "production"] },
+    "length_note": { "type": "string" },
+    "picture_lock_sha256": { "type": "string" },
+    "beats": { "type": "array", "items": { "$ref": "#/$defs/beat" } },
+    "gaps": { "type": "array", "items": { "$ref": "#/$defs/gap" } },
+    "cards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text", "for"],
+        "properties": {
+          "id": { "type": "string" },
+          "text": { "type": "string" },
+          "for": { "type": "string" }
+        }
+      }
+    },
+    "music": { "type": "object" },
+    "loudness": { "type": "object" },
+    "safe_area": { "type": "object" },
+    "versions": { "type": "array", "items": { "type": "string" } },
+    "handoff": { "type": "object" },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
+    "model": { "type": "string" },
+    "note": { "type": "string" },
+    "written_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "beat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deliverable", "shot_id", "source_file", "record_in", "record_out", "duration_seconds", "card_text", "music"],
+      "properties": {
+        "deliverable": { "type": "string", "enum": ["teaser", "trailer"] },
+        "shot_id": { "type": "string", "minLength": 1 },
+        "source_file": { "type": "string" },
+        "record_in": { "type": ["number", "null"] },
+        "record_out": { "type": ["number", "null"] },
+        "duration_seconds": { "type": "number", "minimum": 0 },
+        "card_text": { "type": "string" },
+        "music": { "type": "string" }
+      }
+    },
+    "gap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shot_id", "reason"],
+      "properties": {
+        "shot_id": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

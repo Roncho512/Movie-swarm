@@ -10,8 +10,18 @@ import json
 import sys
 from pathlib import Path
 
+from movie_swarm.budget import (
+    BudgetError,
+    estimate_film,
+    format_estimate,
+    load_film_budget,
+    proposed_document,
+    read_estimate_inputs,
+    write_film_budget,
+)
 from movie_swarm.line_producer import LineProducer, LineProducerError
-from movie_swarm.llm import LLMError, client_from_environment
+from movie_swarm.llm import LLMError
+from movie_swarm.providers import llm_for_command, run_test_shot
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -20,6 +30,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--production", required=True, help="Production folder")
     parser.add_argument("--run", help="Run id. Required except for start, which can choose one.")
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Allow one real provider call. Offline is the default. A live call still needs the generation gate, the key, and a known price.",
+    )
+    parser.add_argument(
+        "--price-override",
+        type=float,
+        help="Dollars for one call when the rate card has no price. Approve that request before the call is sent.",
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     start = sub.add_parser("start", help="Open a run for this production")
@@ -29,7 +49,7 @@ def main(argv: list[str] | None = None) -> int:
     status.add_argument(
         "--narrate",
         action="store_true",
-        help="Add one sentence from the cheap model when ANTHROPIC_API_KEY is set",
+        help="Add one sentence from the cheap model. Needs --live, the generation gate, the key, and a known price.",
     )
 
     spend = sub.add_parser("spend", help="Record a spend, or pause and write an approval request")
@@ -57,10 +77,29 @@ def main(argv: list[str] | None = None) -> int:
     credit.add_argument("--name", required=True)
     credit.add_argument("--note", default="")
 
+    budget = sub.add_parser(
+        "budget",
+        help="Estimate the film from its brief, write budget.json, and print budget, estimate, spend, and over or under.",
+    )
+    budget.add_argument("--write", action="store_true", help="Write or update budget.json")
+    budget.add_argument("--total", type=float, help="Film budget in dollars. Defaults to the brief or $500.")
+    budget.add_argument("--trailer", choices=["on", "off"], help="Turn the trailer line on or off")
+    budget.add_argument("--contingency", type=float, help="Percent held back. 10 means 10 percent.")
+    budget.add_argument("--marketing", type=float, help="Marketing percent, used when the trailer is on.")
+    budget.add_argument("--tier", action="append", default=[], help="stage=good, stage=better, or stage=best")
+    budget.add_argument("--resolution", choices=["720p", "1080p"])
+    budget.add_argument("--upgrade", help="stage=tier. Changes that tier when the line plus contingency can hold it.")
+
+    shot = sub.add_parser(
+        "test-shot",
+        help="Prepare exactly one picture call for one shot. Sends it only with --live, and only when the gate, the key, and the price all allow it.",
+    )
+    shot.add_argument("--shot", required=True, help="Shot id, for example s01-sh01")
+
     args = parser.parse_args(argv)
     try:
         return _run(args)
-    except (LineProducerError, OSError, json.JSONDecodeError) as exc:
+    except (LineProducerError, BudgetError, OSError, json.JSONDecodeError) as exc:
         print(exc)
         return 1
 
@@ -71,6 +110,8 @@ def _run(args) -> int:
         producer = LineProducer.start(production, run_id=args.run, stage=args.stage)
         print(producer.status_text())
         return 0
+    if args.command == "budget":
+        return _budget_command(production, args)
     if not args.run:
         print("Pass --run with the run id.")
         return 1
@@ -78,10 +119,16 @@ def _run(args) -> int:
     if args.command == "status":
         narration = ""
         if args.narrate:
-            client = client_from_environment()
-            if client is None:
-                print("ANTHROPIC_API_KEY is not set, so the status has no model sentence.")
+            if not args.live:
+                print("Offline is the default. Pass --live to add a model sentence. Nothing was sent.")
             else:
+                client = llm_for_command(
+                    production,
+                    args.run,
+                    live=True,
+                    offline=False,
+                    price_override=args.price_override,
+                )
                 try:
                     narration = client.complete(
                         role="line-producer",
@@ -92,6 +139,8 @@ def _run(args) -> int:
                     )
                 except LLMError as exc:
                     print(exc)
+                    print(producer.status_text())
+                    return 2
         print(producer.status_text(narration))
         return 0
     if args.command == "spend":
@@ -125,8 +174,108 @@ def _run(args) -> int:
         producer.add_credit(args.role, args.name, args.note)
         print(f"Added credit: {args.role} — {args.name}")
         return 0
+    if args.command == "test-shot":
+        from movie_swarm.providers import CallSettings
+
+        result = run_test_shot(
+            producer,
+            args.shot,
+            live=args.live,
+            settings=CallSettings(price_override=args.price_override),
+        )
+        print(result["message"])
+        if result.get("output"):
+            print(f"File: {result['output']}")
+            print(f"Location setting: {result.get('location')}")
+        if result["status"] in {"generated", "replayed", "offline"}:
+            return 0
+        return 2
     print("Unknown command.")
     return 1
+
+
+def _budget_command(production: Path, args) -> int:
+    """Write the film budget when asked, then print the one-screen report."""
+    inputs = read_estimate_inputs(production)
+    existing = load_film_budget(production)
+    tiers = {}
+    for item in args.tier or []:
+        if "=" not in item:
+            raise BudgetError(f"A tier looks like production=better. Got {item}.")
+        name, _, value = item.partition("=")
+        tiers[name.strip()] = value.strip()
+    if args.upgrade:
+        if not args.run:
+            print("Pass --run with the run id.")
+            return 1
+        if "=" not in args.upgrade:
+            raise BudgetError("An upgrade looks like production=best.")
+        stage, _, tier = args.upgrade.partition("=")
+        producer = LineProducer.open(production, args.run)
+        print(producer.upgrade_tier(stage.strip(), tier.strip()))
+        producer = LineProducer.open(production, args.run)
+        document = load_film_budget(production)
+        if document is None:
+            return 2
+        print(format_estimate(production, estimate_film(production, document, inputs), producer.record, float(producer.run.data["cost_usd"])))
+        return 0
+    if args.write or existing is None and args.write:
+        trailer = inputs["trailer_on"]
+        if args.trailer == "on":
+            trailer = True
+        elif args.trailer == "off":
+            trailer = False
+        elif existing is not None:
+            trailer = bool(existing.get("trailer_on"))
+        total = args.total
+        if total is None and existing is not None:
+            total = float(existing["total_usd"])
+        if total is None:
+            total = 500
+        contingency = args.contingency
+        if contingency is None and existing is not None:
+            contingency = float(existing["contingency_share"])
+        if contingency is None:
+            contingency = 10
+        marketing = args.marketing
+        if marketing is None and existing is not None:
+            marketing = float(existing["marketing_share"])
+        if marketing is None:
+            marketing = 10
+        merged = dict((existing or {}).get("tiers") or {})
+        merged.update(tiers)
+        resolution = args.resolution or (existing or {}).get("production_resolution") or "720p"
+        document = proposed_document(
+            total,
+            trailer_on=trailer,
+            contingency_percent=contingency,
+            marketing_percent=marketing,
+            tiers=merged,
+            production_resolution=resolution,
+        )
+        if existing and isinstance(existing.get("line_shares"), dict):
+            document["line_shares"] = existing["line_shares"]
+        write_film_budget(production, document)
+        print(f"Wrote {production / 'budget.json'}.")
+    else:
+        document = existing
+    if document is None:
+        print("This film has no budget.json. Pass --write to create one. The report below uses the $500 fallback.")
+        from movie_swarm.budget import fallback_document
+
+        document = fallback_document()
+    spent = 0.0
+    record = {"ledger": []}
+    if args.run:
+        try:
+            producer = LineProducer.open(production, args.run)
+        except LineProducerError as exc:
+            print(exc)
+            return 1
+        spent = float(producer.run.data["cost_usd"])
+        record = producer.record
+    print(format_estimate(production, estimate_film(production, document, inputs), record, spent))
+    return 0
 
 
 def _file(path: str | None) -> dict:

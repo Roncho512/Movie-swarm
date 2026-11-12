@@ -19,6 +19,8 @@
     "edit": true,
     "sound": true,
     "color-mix": true,
-    "delivery": true
+    "delivery": true,
+    "graphics": true,
+    "trailer": true
   }
 }

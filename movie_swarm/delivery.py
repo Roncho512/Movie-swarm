@@ -116,7 +116,7 @@ def deliver_production(
     plan["render"] = render
     if render.get("burned"):
         plan["captions"]["burned_file"] = render["burned"]
-    qc = build_qc_report(folder.name, plan, package)
+    qc = build_qc_report(folder.name, plan, package, production_dir=folder)
     plan["ready_for_delivery_approval"] = qc["verdict"] == "pass"
     plan_path, plan_md = _write_plan(package, plan)
     qc_path, qc_md = _write_qc(package, qc)
@@ -152,12 +152,25 @@ def run_delivery(producer, call) -> str:
     if not producer.gate_is_open("color-mix"):
         raise DeliveryError("Final delivery did not run. Ron has not approved the color-mix gate.")
     production = Path(call.production_dir or producer.production_dir)
-    split = dict((producer.record.get("stage_allocations") or {}).get("split") or {})
+    from movie_swarm.graphics import build_graphics, guide_is_approved
+
+    if guide_is_approved(production):
+        build_graphics(production)
+    from movie_swarm.budget import file_total, lines_for_check
+
+    filmed = lines_for_check(production)
+    if filmed is not None:
+        split = filmed
+    else:
+        split = dict((producer.record.get("stage_allocations") or {}).get("split") or {})
+    cap = file_total(production)
+    if cap is None:
+        cap = float(producer.run.data["budget_cap_usd"])
     result = deliver_production(
         production,
         color_mix_approved=True,
         spent_usd=float(producer.run.data["cost_usd"]),
-        budget_cap_usd=float(producer.run.data["budget_cap_usd"]),
+        budget_cap_usd=float(cap),
         stage_split=split,
         stage_spent={stage: producer.stage_spent(stage) for stage in split},
         gate_records=list(producer.record.get("gate_decisions") or []),
@@ -256,7 +269,7 @@ def find_manifest(production_dir: str | Path) -> Path | None:
     return None
 
 
-def build_qc_report(production_id: str, plan: dict, package: str | Path) -> dict:
+def build_qc_report(production_id: str, plan: dict, package: str | Path, production_dir: str | Path | None = None) -> dict:
     """Pass or fail each technical check. A missing tool or a missing file is skipped, not a pass."""
     root = Path(package)
     runtime = float(plan.get("cut_runtime_seconds") or 0)
@@ -294,6 +307,12 @@ def build_qc_report(production_id: str, plan: dict, package: str | Path) -> dict
     if poster.get("filename"):
         checks.extend(_poster_checks(root / poster["filename"], _rel_name(plan, poster["filename"]), poster))
     checks.append(_caption_check(root, plan, runtime))
+    if production_dir is not None:
+        from movie_swarm.graphics import qc_checks
+        from movie_swarm.trailer import qc_checks as trailer_qc_checks
+
+        checks.extend(qc_checks(production_dir))
+        checks.extend(trailer_qc_checks(production_dir))
     verdict = "fail" if any(item["status"] == "fail" for item in checks) else "pass"
     return {
         "version": "1.0.0",
@@ -1262,6 +1281,14 @@ def _manifest(
     files.append(
         _file_row(package / poster_name, f"{relative}/{poster_name}", "poster", f"Poster from {plan['poster']['shot_id']}")
     )
+    from movie_swarm.graphics import package_files
+
+    for item in package_files(folder):
+        files.append(_file_row(item["path"], item["listed"], "graphics", item["label"]))
+    from movie_swarm.trailer import package_rows
+
+    for item in package_rows(folder, package):
+        files.append(_file_row(item["path"], item["listed"], "marketing", item["label"]))
     files.append(_file_row(package / "qc-report.json", f"{relative}/qc-report.json", "qc", "QC report"))
     cap = float(budget_cap_usd)
     spent = float(spent_usd)

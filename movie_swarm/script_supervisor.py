@@ -1,8 +1,9 @@
-"""Script Supervisor: flag drift against the locked hero props.
+"""Script Supervisor: flag drift against locked props, wardrobe, and makeup.
 
 A shot or a scene drifts when it uses a phrase the production forbade, or
-when a shot shows a prop and never states a phrase the production required.
-The phrases come from the locked file. This module has no list of its own.
+when a shot shows a prop or a person and never states a phrase the production
+required. The phrases come from the locked files. This module has no list of
+its own.
 """
 
 from __future__ import annotations
@@ -18,6 +19,8 @@ from movie_swarm.previs_common import (
     now,
     save_pair,
 )
+from movie_swarm.costume import locked_path as costume_locked_path
+from movie_swarm.makeup import locked_path as makeup_locked_path
 from movie_swarm.prop_master import locked_path
 
 
@@ -40,18 +43,35 @@ def check_continuity(production_dir: Path, llm=None) -> dict:
     if locked.get("status") != "locked":
         raise PrevisError("The hero prop file is not locked yet.")
     documents, sources = _documents(production_dir)
+    costume = _optional_lock(costume_locked_path(production_dir), "costume-lock", "costume")
+    makeup = _optional_lock(makeup_locked_path(production_dir), "makeup-lock", "makeup")
+    if costume is not None:
+        sources.append("wardrobe/costume-lock.json")
+    if makeup is not None:
+        sources.append("makeup/makeup-lock.json")
     findings = _findings(locked, documents)
+    findings.extend(_character_findings(costume, documents, "costume_id"))
+    findings.extend(_character_findings(makeup, documents, "makeup_id"))
+    for index, finding in enumerate(findings, start=1):
+        finding["finding_id"] = f"c-{index:03d}"
     contradictions = sum(1 for item in findings if item["kind"] == "contradiction")
     missing = sum(1 for item in findings if item["kind"] == "unstated")
+    watched = "props"
+    if costume is not None and makeup is not None:
+        watched = "props, wardrobe, and makeup"
+    elif costume is not None:
+        watched = "props and wardrobe"
+    elif makeup is not None:
+        watched = "props and makeup"
     if findings:
         summary = (
             f"{len(findings)} drift finding(s): {contradictions} contradiction(s) "
             f"and {missing} missing lock(s). "
             "Scenes are checked for forbidden phrases. "
-            "A shot that shows a prop is also flagged when a required phrase is missing."
+            "A shot that shows one of those locks is also flagged when a required phrase is missing."
         )
     else:
-        summary = "No drift. The checked scenes and shots match the locked props."
+        summary = f"No drift. The checked scenes and shots match the locked {watched}."
     document = {
         "version": "1.0.0",
         "production_id": production_dir.name,
@@ -129,6 +149,9 @@ def _shots(path: Path, label: str) -> list[dict]:
         if not isinstance(shot, dict):
             continue
         structured = set()
+        for name in shot.get("characters_in_shot") or []:
+            if isinstance(name, str) and name.strip():
+                structured.add(name.strip())
         for item in shot.get("props_in_shot") or []:
             if isinstance(item, dict) and item.get("prop_id"):
                 structured.add(str(item["prop_id"]))
@@ -142,10 +165,13 @@ def _shots(path: Path, label: str) -> list[dict]:
             for key in ("description", "generation_prompt", "continuity_notes", "framing_notes")
         )
         shot_id = str(shot.get("shot_id") or "")
+        scene_id = shot.get("scene_id")
+        if not scene_id and "-sh" in shot_id:
+            scene_id = shot_id.split("-sh")[0]
         shots.append(
             {
                 "kind": "shot",
-                "scene_id": None,
+                "scene_id": scene_id,
                 "shot_id": shot_id,
                 "source": f"{label} {shot_id}".strip(),
                 "text": text,
@@ -155,6 +181,18 @@ def _shots(path: Path, label: str) -> list[dict]:
     return shots
 
 
+def _optional_lock(path: Path, schema: str, label: str) -> dict | None:
+    if not path.is_file():
+        return None
+    try:
+        locked = read_handoff(path, schema=schema)
+    except HandoffError as exc:
+        raise PrevisError(str(exc)) from exc
+    if locked.get("status") != "locked":
+        raise PrevisError(f"The {label} file is not locked yet.")
+    return locked
+
+
 def _findings(locked: dict, documents: list[dict]) -> list[dict]:
     findings = []
     for prop in locked.get("props") or []:
@@ -162,8 +200,28 @@ def _findings(locked: dict, documents: list[dict]) -> list[dict]:
             findings.extend(_attribute_findings(prop, attribute, documents))
     for fact in locked.get("facts") or []:
         findings.extend(_fact_findings(fact, documents))
-    for index, finding in enumerate(findings, start=1):
-        finding["finding_id"] = f"c-{index:03d}"
+    return findings
+
+
+def _character_findings(locked: dict | None, documents: list[dict], id_field: str) -> list[dict]:
+    if not locked:
+        return []
+    findings = []
+    for character in locked.get("characters") or []:
+        if not isinstance(character, dict):
+            continue
+        prop = {
+            "prop_id": character.get("character_id"),
+            "name": character.get("name"),
+            "aliases": list(character.get("aliases") or []),
+        }
+        for attribute in character.get("attributes") or []:
+            for finding in _attribute_findings(prop, attribute, documents):
+                finding.pop("prop_id", None)
+                if character.get("character_id"):
+                    finding["character_id"] = character["character_id"]
+                    finding[id_field] = character["character_id"]
+                findings.append(finding)
     return findings
 
 
@@ -175,6 +233,8 @@ def _attribute_findings(prop: dict, attribute: dict, documents: list[dict]) -> l
     forbidden = [phrase for phrase in attribute.get("forbidden_phrases") or [] if phrase.strip()]
     must_state = bool(attribute.get("must_be_stated_when_visible")) and bool(required)
     for document in documents:
+        if not _scene_applies(attribute, document):
+            continue
         text = document["text"]
         visible = _visible(prop, text, document["structured_ids"])
         for phrase in forbidden:
@@ -254,6 +314,13 @@ def _fact_findings(fact: dict, documents: list[dict]) -> list[dict]:
             )
         )
     return found
+
+
+def _scene_applies(attribute: dict, document: dict) -> bool:
+    wanted = str(attribute.get("scene_id") or "").strip()
+    if not wanted:
+        return True
+    return str(document.get("scene_id") or "") == wanted
 
 
 def _visible(prop: dict, text: str, structured_ids: set[str]) -> bool:

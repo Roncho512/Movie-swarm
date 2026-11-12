@@ -61,7 +61,29 @@
           "kind": { "type": "string", "enum": ["generation", "retake", "dry-run"] },
           "description": { "type": "string" },
           "recorded_at": { "type": "string", "format": "date-time" },
-          "request_id": { "type": ["string", "null"] }
+          "request_id": { "type": ["string", "null"] },
+          "overage_usd": {
+            "type": "number",
+            "minimum": 0,
+            "description": "The part of this entry that Ron approved past the line or the film budget. The budget file is not changed."
+          },
+          "contingency_usd": {
+            "type": "number",
+            "minimum": 0,
+            "description": "The part of this entry drawn from the contingency reserve after the stage line was spent."
+          },
+          "estimate_usd": { "type": ["number", "null"], "minimum": 0 },
+          "actual_usd": { "type": ["number", "null"], "minimum": 0 },
+          "request_hash": { "type": ["string", "null"] },
+          "call_phase": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["reserved", "settled", "released", "replayed", "unknown"]
+              },
+              { "type": "null" }
+            ]
+          }
         }
       }
     },
@@ -108,7 +130,8 @@
           "created_at": { "type": "string", "format": "date-time" },
           "decided_at": { "type": ["string", "null"], "format": "date-time" },
           "decided_by": { "type": ["string", "null"] },
-          "note": { "type": "string" }
+          "note": { "type": "string" },
+          "tier": { "type": ["string", "null"], "enum": ["good", "better", "best", null] }
         }
       }
     },

@@ -160,18 +160,31 @@ def request_paid_sound(cues: list[dict], *, client, gate_open: bool) -> dict:
             else None,
             "model": cue.get("model") or "",
         }
+        if cue.get("voice_id"):
+            request["voice_id"] = cue.get("voice_id")
         results.append(client.generate(request))
+    live_statuses = {"refused", "failed", "generated", "replayed", "offline"}
     if results and all((item or {}).get("status") == "not-sent" for item in results):
         message = "No live provider is connected. The call was not sent. No audio was made."
+    elif results and any((item or {}).get("status") in live_statuses for item in results):
+        message = " ".join(
+            str((item or {}).get("detail") or (item or {}).get("status"))
+            for item in results
+            if (item or {}).get("status") in live_statuses
+        )
     elif results:
         message = "The client was asked. No money was booked. This build does not send a paid sound or music call."
     else:
         message = "No generated cue needed a provider. Nothing was charged."
+    spent = as_money(0)
+    for item in results:
+        if (item or {}).get("status") in {"generated", "failed"}:
+            spent += as_money((item or {}).get("cost_usd") or 0)
     return {
         "status": "prepared",
         "called": bool(results),
         "cue_count": len(results),
-        "spent_usd": 0,
+        "spent_usd": money_number(spent),
         "message": message,
         "results": results,
     }
@@ -249,9 +262,14 @@ def run_sound(producer, call) -> str:
         raise SoundError(
             "The edit gate is still closed. Ron has not approved picture lock, so sound was not spotted."
         )
+    from movie_swarm.budget import lines_for_check
+
+    filmed = lines_for_check(producer.production_dir)
     allocations = {}
     record = producer.record["stage_allocations"]
-    if record.get("status") == "approved":
+    if filmed is not None:
+        allocations = filmed
+    elif record.get("status") == "approved":
         allocations = dict(record.get("split") or {})
     sheet = spot_production(
         production,
@@ -273,7 +291,16 @@ def run_sound(producer, call) -> str:
     if call.command == "generate":
         if not producer.gate_is_open("generation"):
             raise SoundError("The generation gate is closed. No provider was called.")
-        paid = request_paid_sound(sheet["cues"], client=call.client, gate_open=True)
+        client = call.client
+        if client is None and getattr(call, "live", False):
+            from movie_swarm.providers import CallSettings, LiveSoundClient
+
+            client = LiveSoundClient(
+                producer,
+                live=True,
+                settings=CallSettings(price_override=getattr(call, "price_override", None)),
+            )
+        paid = request_paid_sound(sheet["cues"], client=client, gate_open=True)
         paid_note = "\n" + paid["message"]
     if producer.gate_decision("sound") == "approved":
         producer.run.data["notes"] = (
@@ -357,6 +384,7 @@ def _spot_asset(folder, asset, by_shot, silence_shots, cues, unplaced, missing) 
                 prop_id=prop_id,
                 role=role,
                 model=model,
+                voice_id=asset.get("voice_id"),
             )
         )
 
@@ -493,8 +521,22 @@ def _window(event: dict, asset: dict, shifted: bool) -> tuple[float, float]:
     return round(start, 3), round(end, 3)
 
 
-def _cue(*, cue_id, cue_type, start, end, shot_ids, prompt, description, source, prop_id, role, model) -> dict:
-    return {
+def _cue(
+    *,
+    cue_id,
+    cue_type,
+    start,
+    end,
+    shot_ids,
+    prompt,
+    description,
+    source,
+    prop_id,
+    role,
+    model,
+    voice_id=None,
+) -> dict:
+    cue = {
         "cue_id": cue_id,
         "type": cue_type,
         "start_seconds": round(float(start), 3),
@@ -507,6 +549,9 @@ def _cue(*, cue_id, cue_type, start, end, shot_ids, prompt, description, source,
         "role": role,
         "model": model,
     }
+    if voice_id:
+        cue["voice_id"] = str(voice_id)
+    return cue
 
 
 def _sync_findings(cues, missing, by_shot, events, runtime, tolerance) -> list[dict]:

@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lighting-plan.schema.json",
+  "title": "Lighting Plan",
+  "description": "The Gaffer's plan. Key, fill, practicals, time of day, color temperature, and contrast ratio are copied from the production. Not named means the production did not state that value.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id", "scenes", "continuity", "source"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["camera", "look", "shots", "scenes"],
+      "properties": {
+        "camera": { "type": ["string", "null"] },
+        "look": { "type": ["string", "null"] },
+        "shots": { "type": "string", "minLength": 1 },
+        "scenes": { "type": "string", "minLength": 1 }
+      }
+    },
+    "continuity": { "type": "string", "enum": ["clear", "drift"] },
+    "scenes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/scene" }
+    },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
+    "model": { "type": ["string", "null"] },
+    "note": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shot_id", "detail"],
+      "properties": {
+        "shot_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "detail": { "type": "string", "minLength": 1 }
+      }
+    },
+    "scene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scene_id",
+        "time_of_day",
+        "key",
+        "fill",
+        "practicals",
+        "color_temperature",
+        "contrast_ratio",
+        "prompt_note",
+        "shot_ids",
+        "continuity"
+      ],
+      "properties": {
+        "scene_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "location": { "type": "string" },
+        "time_of_day": { "type": "string", "minLength": 1 },
+        "key": { "type": "string", "minLength": 1 },
+        "fill": { "type": "string", "minLength": 1 },
+        "practicals": { "type": "string", "minLength": 1 },
+        "color_temperature": { "type": "string", "minLength": 1 },
+        "contrast_ratio": { "type": "string", "minLength": 1 },
+        "prompt_note": { "type": "string", "minLength": 1 },
+        "shot_ids": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+        },
+        "continuity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["verdict", "findings"],
+          "properties": {
+            "verdict": { "type": "string", "enum": ["clear", "drift"] },
+            "findings": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/finding" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

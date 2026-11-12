@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vfx-breakdown.schema.json",
+  "title": "VFX Breakdown",
+  "description": "The VFX Supervisor's shot list: task, method, and risk, plus turnover notes for the Editor and the Colorist.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id", "shots", "turnover", "source"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shots", "needs"],
+      "properties": {
+        "shots": { "type": "string", "minLength": 1 },
+        "needs": { "type": ["string", "null"] }
+      }
+    },
+    "shots": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/shot" }
+    },
+    "turnover": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/turnover" }
+    },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
+    "model": { "type": ["string", "null"] },
+    "note": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "shot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shot_id", "scene_id", "task", "method", "risk", "match", "source"],
+      "properties": {
+        "shot_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "scene_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "task": { "type": "string", "minLength": 1 },
+        "method": { "type": "string", "minLength": 1 },
+        "risk": { "type": "string", "minLength": 1 },
+        "match": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 }
+      }
+    },
+    "turnover": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shot_id", "for", "editor", "colorist"],
+      "properties": {
+        "shot_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "for": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["editor", "colorist"] }
+        },
+        "editor": { "type": "string", "minLength": 1 },
+        "colorist": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

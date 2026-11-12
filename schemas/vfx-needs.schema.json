@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vfx-needs.schema.json",
+  "title": "VFX Needs",
+  "description": "One production's list of effects. Each item names the words or the shots that need work, plus the task, the method, and the risk. The supervisor does not invent a row the file and the shot text do not support.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id", "items"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["task", "method", "risk"],
+        "properties": {
+          "match": { "type": "string", "minLength": 1 },
+          "shot_ids": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+          },
+          "task": { "type": "string", "minLength": 1 },
+          "method": { "type": "string", "minLength": 1 },
+          "risk": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

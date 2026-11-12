@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "grip-plan.schema.json",
+  "title": "Grip Plan",
+  "description": "The Key Grip's support and rigging for each shot. Support follows the shot list. Rigging follows the gaffer.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id", "shots", "source"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shots", "camera", "lighting"],
+      "properties": {
+        "shots": { "type": "string", "minLength": 1 },
+        "camera": { "type": ["string", "null"] },
+        "lighting": { "type": ["string", "null"] }
+      }
+    },
+    "package_support": { "type": "string" },
+    "shots": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/shot" }
+    },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
+    "model": { "type": ["string", "null"] },
+    "note": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "shot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "shot_id",
+        "scene_id",
+        "camera_movement",
+        "support",
+        "rigging",
+        "consistent_with_camera",
+        "consistent_with_gaffer",
+        "note"
+      ],
+      "properties": {
+        "shot_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "scene_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "camera_movement": { "type": "string", "minLength": 1 },
+        "support": {
+          "type": "string",
+          "enum": ["sticks", "dolly", "crane", "handheld", "steadicam", "head", "as-written"]
+        },
+        "rigging": { "type": "string", "minLength": 1 },
+        "consistent_with_camera": { "type": "boolean" },
+        "consistent_with_gaffer": { "type": "boolean" },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

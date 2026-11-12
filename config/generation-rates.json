@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "checked_on": "2026-11-10",
   "assumptions": [
     "Preview and final both use the published 720p Gemini Omni 1.2 Flash rate. Google says a draft can be 360p, and it does not publish a separate 360p price.",
@@ -11,7 +11,9 @@
     "Dailies review does not call a paid model in this build, so the review itself is $0. A retake is estimated as one preview and checked against the fix-loop line. It is not spent here.",
     "The fix-loop reserve is the locked fix-loop allocation when the split has one. It is not a new price. If the split has no fix-loop line, the reserve is $0.",
     "Color and mix are not priced. This card has no grade or mix rate, so a paid color or mix call is unknown. This build does not make one.",
-    "Delivery is not priced. This card has no packaging rate, so a paid delivery call is unknown. This build does not make one."
+    "Delivery is not priced. This card has no packaging rate, so a paid delivery call is unknown. This build does not make one.",
+    "A generator row may name a provider and an endpoint. Those are call addresses already stored in config/model-routing.json. They are not prices. A row without an endpoint cannot be called live.",
+    "Audio, color, and delivery still have no published dollar amount in this repo. A live call for one of those is refused until a per-call price override is approved."
   ],
   "generators": [
     {
@@ -30,6 +32,9 @@
       "label": "Seedance 2.0",
       "usd_per_second": "0.3034",
       "resolution": "720p",
+      "provider": "fal.ai",
+      "endpoint": "bytedance/seedance-2.0/text-to-video",
+      "with_audio": true,
       "source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
       "source_date": "2026-11-10",
       "quote": "720p with audio is $0.3034 per second."
@@ -39,6 +44,9 @@
       "label": "Seedance 2.0 fast",
       "usd_per_second": "0.2419",
       "resolution": "720p",
+      "provider": "fal.ai",
+      "endpoint": "bytedance/seedance-2.0/fast/text-to-video",
+      "with_audio": true,
       "source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
       "source_date": "2026-11-10",
       "quote": "720p fast with audio is $0.2419 per second."

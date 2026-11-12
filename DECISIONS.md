@@ -688,3 +688,264 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: The locked split is unchanged. Nothing is charged.
 - Who decided: Cursor cloud agent. Pending Ron's approval at merge.
 
+## D80 — Offline stays the default
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: The provider clients could call out as soon as a key was present. A key on the machine should not spend money by itself.
+- Decision: A real provider call is sent only when the command passes `--live`. Without that flag, the Director, the Line Producer, picture, and sound stay offline even if `ANTHROPIC_API_KEY`, `FAL_KEY`, or `ELEVENLABS_API_KEY` is set. The studio command never passes `--live`.
+- Consequences: Tests do not need a key. A person can set a key and still get the offline draft. The test shot command with no `--live` records nothing sent.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D81 — Four checks before any live call
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D44 already stops a paid call while the generation gate is closed. A live client needs the rest of the lock as well.
+- Decision: A live call also needs the generation gate approved through the Line Producer, a locked stage split, and an estimate that fits the money left on that stage line and under the $500 cap. The lines stay the locked split: Production $270, Sound $55, Fix loop $50, QA $45, Art $25, Director $20, Editor $15, Cinematographer $10, Screenwriter $5, Line Producer $5. The key is read from the environment at call time. Picture uses `FAL_KEY`. Sound uses `ELEVENLABS_API_KEY`. Text uses `ANTHROPIC_API_KEY`.
+- Consequences: A missing key, a closed gate, or an estimate over the line refuses the call before any HTTP request. The refusal names the missing piece and does not include the key.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D82 — An unknown price is refused
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D43 and D62 refuse to invent a price. Audio, color, delivery, and the Claude text models are not on the rate card as dollar amounts. No source in this repo names one.
+- Decision: If the rate card has no price for the model, the call is not sent. `--price-override` writes an approval request for that one dollar amount. The call waits until Ron approves that request. The approval is recorded. It is not copied onto the rate card as a published price. The card is not given a made-up audio, color, or delivery price.
+- Consequences: Harbor Night can prove the refusal and the one-call override with a fake transport. Spent on that proof stays $0.00.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D83 — The ledger reserves the estimate, then records the actual
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: A call can fail after the provider has accepted it. The budget has to show the hold before the bytes come back.
+- Decision: The Line Producer writes the estimate on the ledger before the HTTP call. When the provider reports a dollar amount, that same row keeps the estimate and the actual, and the booked amount becomes the actual. When the provider does not report one, the booked amount stays the estimate and the note says so. The request is hashed without the key. A second run of the same hash uses the saved file, writes a dry-run line, and does not charge again.
+- Consequences: A crash after the reservation does not send a second paid request. The running total matches the booked amount.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D84 — A failed call stays at the stage gate
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: A timeout or a provider error should not skip the stage or look like a finished film.
+- Decision: Connection errors are retried with a short backoff. A timeout, or a 5xx after those retries, keeps the estimate booked when the provider may already have accepted the request, and the same request is not sent again. A connection error that never reached the provider releases the reservation. The run status goes back to waiting. The stage does not move forward.
+- Consequences: The generation gate stays as Ron left it. The pipeline does not advance to the next stage because a call failed.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D85 — Keys stay in the environment, and files follow the asset root
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D9 says finished files belong on a drive whose path is a setting. A key must not land in the repo, the ledger, or an error message.
+- Decision: Keys are read from the environment only. They are stripped from errors, the ledger, the provider cache, and the test-shot record. `.env.example` lists the three names with empty values. `.env` stays gitignored. Downloaded media goes through `resolve_asset`. That uses `MOVIE_SWARM_ASSET_ROOT` when it is set, otherwise `asset_root` in `config/assets.json`, otherwise the production folder. `asset_root` stays null. No drive path is written in code.
+- Consequences: A test can set a fake key and check that it never appears in the production folder. The proof media stays in the temp folder.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D86 — Only a cited endpoint can be called
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: The picture routing names Gemini Omni 1.2 Flash. The older production program names Seedance on fal. Sending Gemini to a guessed fal address would invent an integration.
+- Decision: A live picture call uses the fal queue only when that model's row in `config/generation-rates.json` names an endpoint. Seedance 2.0 and Seedance 2.0 fast use the addresses already in `config/model-routing.json`. Gemini Omni and Kling have prices and no endpoint, so a live call for them is refused. ElevenLabs dialogue, effects, and music use the HTTP paths for those three jobs. A dialogue call with no voice id is refused. The engine does not pick a voice.
+- Consequences: The default test shot on Harbor Night refuses until a routing override names Seedance, or until an endpoint for Gemini is added from a cited source. Nothing is spent either way.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D87 — Six prep roles, and no new gate
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: The previs package had a Prop Master, a Script Supervisor, a Cinematographer, and a Stunt Coordinator. A shooting schedule, a lighting plan, camera support, wardrobe, makeup, and a VFX breakdown were not roles yet. D3 already puts a gate on every stage that spends or that hands work to the next paid stage.
+- Decision: Add the Assistant Director, the Gaffer, the Key Grip, the Costume Designer, Makeup and Hair, and the VFX Supervisor. They write their files while the previs gate is closed, the same way the phase 2 package does. The VFX review is written with the dailies report. No new gate is added. The Director calls them through the Line Producer. The calls do not spend.
+- Consequences: `scripts/studio.py` writes the six files before it stops at the previs gate, and it writes the VFX review before it stops at the dailies gate. The generation gate stays closed. Harbor Night is the proof. The Last Marker folder is not changed.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D88 — The new roles bill against the locked split
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D28 locked the $500 split. The new roles were not given their own dollars. A dry run is checked and not charged, the same way D32 checks the phase 2 estimates.
+- Decision: The Assistant Director is checked against the line producer allocation ($5). Scheduling is admin. The Gaffer and the Key Grip are checked against the cinematographer allocation ($10). The Costume Designer and Makeup and Hair are checked against the art director allocation ($25). The VFX Supervisor, including the dailies review, is checked against the editor allocation ($15). The breakdown and the turnover are notes for the editor and the colorist, so the review stays on that same line instead of the fix-loop retake reserve. No new line is added. The locked amounts stay Production $270, Sound $55, Fix loop $50, QA $45, Art $25, Director $20, Editor $15, Cinematographer $10, Screenwriter $5, Line Producer $5.
+- Consequences: A $0 document pass fits. A larger estimate pauses on that ceiling. The split is unchanged. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D89 — Wardrobe and makeup use the prop lock
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D11 and D33 lock a prop with required phrases and forbidden phrases. A coat or a haircut can drift the same way, and the checker must not know which film it is reading.
+- Decision: Costume definitions live in `wardrobe/costume-definitions.json`. Makeup definitions live in `makeup/makeup-definitions.json`. The lock copies garment, color, condition, makeup, hair, effects, and the change by scene. Phrases are checked the way props are: a forbidden phrase is a contradiction, and a shot that shows the person and never states a required phrase is a missing lock. The Script Supervisor reads the locked files. Dailies and the edit use the same check when the shot lists the person. A production with no file gets no invented garment and no invented effect.
+- Consequences: Harbor Night locks a coat and short hair from its own files. A shot that says the coat is light, or the hair is long, is drift. The engine does not name a garment of its own.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D90 — Light and grip copy the camera plan
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D34 copies lenses and lighting from the production's look. A gaffer plan that invented a color temperature, or a grip plan that invented a rig, would put one film's light into the next.
+- Decision: The Gaffer copies key, fill, practicals, time of day, color temperature, and contrast ratio from the camera package, the look, and the scene heading. A number or a ratio the production did not write is `not named`. The prompt note is those same words. Shots in one scene that disagree about the time of day are flagged. The Key Grip reads the shot's movement for the support. Rigging quotes the gaffer's practicals and fill, and does not add a source. If the camera package names one support and the shot list names another, the shot list wins and the row says they disagree.
+- Consequences: Harbor Night's plan says night and the fluorescent practical from its look file. It does not store a Kelvin number. A static shot is sticks even when the package says handheld, and the note says so. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D91 — The call sheet groups the shot list and flags stunts
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: Production needs an order: which shots share a place, a setup, a cast, and a prop, and which of them are safety beats. That order should not be a new approval.
+- Decision: The Assistant Director reads the shot list, the scene manifest when the production has one, otherwise the treatment scenes, the lighting plan, and the stunt breakdown. The schedule keeps storyboard order. Days group by location. Setups group by scene, time of day, and the gaffer's source. A shot whose text matches a stunt beat carries that beat's safety line. The file is `schedule/shooting-schedule.json`. It is handed to production. It does not open the production gate by itself.
+- Consequences: Harbor Night is one night exterior, one setup, and the step onto the dock is flagged from the stunt breakdown. No beat was added. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D92 — VFX is a breakdown, then a dailies read
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: Some shots need compositing. The editor and the colorist need to know which ones before the cut and the grade. D3 does not require a separate gate for a note Ron already reads at previs and at dailies.
+- Decision: `vfx/vfx-needs.json` lists the production's tasks. The breakdown includes a shot when that file names it, or when the shot text itself names an effect. Each row has the task, the method, and the risk. Turnover notes are addressed to the editor and the colorist, and their reading copies quote the notes when the breakdown exists. After dailies, the review checks that a circled VFX shot still shows the note. A miss is drift. The review does not spend and does not add a gate.
+- Consequences: Harbor Night's needs file marks the practical lamp as a composite. A circled take that drops that note is drift. A shot that does not ask for an effect is not given one. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D93 — The new roles use the cheap admin model
+
+- Status: pending Ron's approval at merge
+- Date: 2026-11-11
+- Context: D6 says cheap models for admin. These six roles compute a checklist from files the production already wrote. They are not a writing pass and they are not a picture call.
+- Decision: The Assistant Director, the Gaffer, the Key Grip, the Costume Designer, Makeup and Hair, and the VFX Supervisor use Claude Haiku 5.5. The names are in `config/model-routing.json`. A model reply that changes a locked garment, a locked effect, the schedule, the lighting plan, the grip plan, or the breakdown is discarded. The offline path does not call the model and does not read a key. None of these commands pass `--live`. They cannot bypass the generation gate, the budget, or the key.
+- Consequences: With no key, the files are labeled `offline-deterministic` and still name the model they would have used. Harbor Night's proof spends $0.00. The provider rules from D80 through D86 are unchanged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D94 — Title and Graphic Design, and a graphics gate
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: No role owns a film's graphic identity. The Art Director owns the in-film look. The Post Supervisor grabs one frame for the poster. The storyboard skips TITLE CARD lines. Titles, credits, subtitle styling, a designed poster, and collateral have nowhere to live.
+- Decision: Add Title and Graphic Design. The role writes research, then a brand guide, then the graphic specs. Research and the draft guide are written with the previs package, while a new graphics gate stays closed. Building a graphic waits until that gate approves the guide. The Director calls the role through the Line Producer. The calls do not spend.
+- Consequences: `scripts/studio.py` writes the research and the draft guide before it stops at the previs gate, and it writes the graphic specs after the graphics gate. The generation gate stays closed. Harbor Night is the proof. The Last Marker folder is not changed.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D95 — The role bills to the Art line
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: D28 locked the $500 split. Costume and makeup already bill to the art director allocation. A new line would change that lock.
+- Decision: Title and Graphic Design is checked against the art director allocation ($25). No new line is added. The locked amounts stay Production $270, Sound $55, Fix loop $50, QA $45, Art $25, Director $20, Editor $15, Cinematographer $10, Screenwriter $5, Line Producer $5.
+- Consequences: A $0 document pass fits. A larger estimate pauses on the Art ceiling. The split is unchanged. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D96 — Research, then the guide, then the graphics
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: A title treatment that is not grounded in the film's own documents would put one film's lettering into the next. The guide has to stay tied to the look as the look changes.
+- Decision: `graphics/research.json` is written first from the treatment, the screenplay, the brief, the style bible, and the director's notes. Each item is sourced, with the file and the field, or marked inferred. `graphics/brand-guide.json` is built only from that research. Every rule traces to a research item. Fonts, palette values, the wordmark, layout and safe area, image treatment, and the do's and don'ts live there. The guide carries a version and a change log. If the style bible or the look changes, the research is written again and the guide is rebuilt, logged, and returned to draft. A graphic is a hard error when the research is missing, or when the guide is missing or unapproved. Title cards are read from TITLE CARD lines in the screenplay. The storyboard still skips those lines. End credits are copied from the Line Producer credit record. No name is added. Subtitle styling is specified here. Cue times stay with the Post Supervisor.
+- Consequences: Harbor Night's guide uses the colors in its style bible and does not name a typeface the documents do not name. A changed look produces a new draft and a log line. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D97 — The designed poster is key-art-poster.png
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: The delivery package already writes `poster.png` as one frame from the locked cut. A designed marketing poster needs its own file, or the two jobs get mixed.
+- Decision: The frame grab stays `poster.png`. The designed poster, with the title, an optional tagline, and a billing block, is `graphics/key-art-poster.png`. Thumbnails are `graphics/thumbnail-16x9.png` and `graphics/thumbnail-9x16.png`. The social card is `graphics/social-card.png`. Sizes come from the production's delivery spec or treatment. A size the documents do not name is left unnamed. When ffmpeg is installed and a size is named, a flat placeholder can be rendered. When it is not, the spec is still written. The delivery manifest lists these files when the graphics package is present. QA checks spelling, credits, safe areas, and resolution against the guide. Title and credit overlays are handed to the editor and the colorist before the master.
+- Consequences: A delivery with no graphics package still writes `poster.png` the same way. A delivery with a package lists both files and does not treat them as the same poster. Nothing is charged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D98 — Title and Graphic Design uses the cheap admin model
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: D6 says cheap models for admin. This role computes a checklist from files the production already wrote. It is not a writing pass and it is not a picture call. D80 through D86 still govern any live call.
+- Decision: Title and Graphic Design uses Claude Haiku 5.5. The name is in `config/model-routing.json`. A model reply that adds a fact is discarded. The offline path does not call the model and does not read a key. None of these commands pass `--live`. They cannot bypass the generation gate, the budget, or the key.
+- Consequences: With no key, the files are labeled `offline-deterministic` and still name the model they would have used. Harbor Night's proof spends $0.00. The provider rules from D80 through D86 are unchanged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D99 — One budget and one calculator
+
+- Status: decided
+- Date: 2026-11-11
+- Context: The film had a hard $500 cap and a locked split, and a trailer would have needed a second set of numbers.
+- Decision: There is one budget and one calculator. The trailer is a line on that budget, on the same screen as the rest of the film.
+- Consequences: `tools/budget-calculator/index.html` is the only calculator. It reads and writes `budget.json`. The engine reads that same file.
+- Who decided: Ron, 2026-11-11 call
+
+## D100 — The budget is not a hard cap
+
+- Status: decided
+- Date: 2026-11-11
+- Context: A film should be able to come in under the number, or a little over it, the way a production budget works.
+- Decision: Going past a line or the film total still pauses the spend and writes an approval request. Ron can approve that overage without editing the budget. The ledger records it. Reports say under or over, and by how much. Nothing is spent past the budget without that record.
+- Consequences: A film with no `budget.json` still pauses the same way. With a budget file, the approval does not change the file, and the status shows the gap.
+- Who decided: Ron, 2026-11-11 call
+
+## D101 — The budget number is per film
+
+- Status: decided
+- Date: 2026-11-11
+- Context: One film might be $50. Another might be $2,000. The old cap was one number for every film.
+- Decision: Each film sets its own total in `budget.json`. Any amount is allowed.
+- Consequences: $50 and $2,000 use the same line shares and scale the dollars. A film with no file keeps the $500 cap and the locked split.
+- Who decided: Ron, 2026-11-11 call
+
+## D102 — The trailer is optional and uses approved takes
+
+- Status: decided
+- Date: 2026-11-11
+- Context: Some films need a teaser and a trailer. Some do not. The trailer should not invent shots, and it should not come out of the Editor's line.
+- Decision: The trailer is optional. It runs only when the film turns it on. It uses approved takes only. It has its own Marketing and Distribution line. The Editor is a collaborator and does not bill for it.
+- Consequences: A film with the trailer off delivers as before. A beat that cannot be made from an approved take is dropped and logged. The spend is checked against Marketing and Distribution.
+- Who decided: Ron, 2026-11-11 call
+
+## D103 — Marketing takes 10 percent, and the other lines scale
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: The trailer needs a line, and the film total should still match the budget.
+- Decision: The suggested Marketing and Distribution share is 10 percent of the film budget. When the trailer is on, the other lines are multiplied by the rest, so the lines plus marketing equal the budget. The share can be changed per film.
+- Consequences: At $500 with the trailer on and no contingency, marketing is $50 and Production is $243. With the trailer off, the lines stay on the locked split.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D104 — Contingency is 10 percent, held inside the budget
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: Reshoots, extra research, and a model upgrade need a reserve that is still part of the budget.
+- Decision: The suggested contingency is 10 percent, held back from every line, including marketing. It can be 0. Retakes and tier upgrades draw on it after the stage line is spent. A new budget written without a contingency flag uses 10. A film with no budget file uses 0, so today's ceilings stay exact.
+- Consequences: At $500 with 10 percent contingency and the trailer off, the lines keep 90 percent of today's dollars and the reserve is $50.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D105 — Tiers are good, better, and best
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: A stage should be able to move up a model when the line can hold it.
+- Decision: Each stage names good, better, or best. Picture good is Gemini Omni 1.2 Flash. Better is Seedance 2.0 fast at 720p. Best is Seedance 2.0 at 720p. Seedance 2.0 at 1080p is a top option, not a fourth tier. Prices live in `config/rate-card.json`. A price this repo cannot verify is marked unknown. A tier change that fits the line plus contingency is applied. One that does not fit uses the same approval request as an overage.
+- Consequences: The calculator and the budget command both read the rate card. A live call still uses `config/generation-rates.json` and still refuses an unknown endpoint.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D106 — The budget files
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: The engine, the calculator, and the Line Producer need one file shape.
+- Decision: The film budget is `budget.json` in the production folder, checked against `film-budget.schema.json`. The rate card is `config/rate-card.json`. Trailer research, the spoiler guard, the plan, and the cut live under `marketing/`. When the production does not name trailer lengths, the teaser is 15 seconds and the trailer is 45 seconds, and the plan says so.
+- Consequences: The calculator exports that same `budget.json`. A missing length is labeled as a default.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D107 — A trailer gate that does not block delivery
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: Ron should be able to accept the trailer, and a film without one should still ship.
+- Decision: `config/gates.json` has a `trailer` switch. It starts on, so the gate starts closed. The studio can write the trailer while the gate is closed. Delivery does not wait for it. Approving the gate stamps the cut. The film can be delivered either way.
+- Consequences: Harbor Night with the trailer off does not write `marketing/`. With the trailer on, the files are written and the gate stays closed until Ron approves it.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D108 — The Trailer Editor uses the cheap admin model
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: D6 says cheap models for admin. This role follows a procedure. The research, the guard, and the plan are production data.
+- Decision: The Trailer Editor uses Claude Haiku 5.5. The name is in `config/model-routing.json`. The skill file holds the procedure. The production folder holds the research, the guard, and the plan. The offline path does not call the model and does not read a key. None of these commands pass `--live`.
+- Consequences: With no key, the files are labeled `offline-deterministic` and still name the model they would have used. Harbor Night's proof spends $0.00. The provider rules from D80 through D86 are unchanged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+

@@ -1,5 +1,5 @@
 {
-  "version": "1.8.0",
+  "version": "1.11.0",
   "roles": {
     "line-producer": {
       "provider": "anthropic",
@@ -75,7 +75,7 @@
       "provider": "fal.ai",
       "model": "seedance-2.0",
       "source": "agents/05-production/src/config.py",
-      "notes": "The older production program still calls Seedance 2.0 on fal.ai. The generation pipeline uses the purposes below. Preview and final use Gemini Omni 1.2 Flash, the cheap picture model. Seedance and Kling stay alternates on the rate card. A routing override can name one for a shot. A dry run reads no key.",
+      "notes": "The older production program still calls Seedance 2.0 on fal.ai. The generation pipeline uses the purposes below. Preview and final use Gemini Omni 1.2 Flash, the cheap picture model. Seedance and Kling stay alternates on the rate card. A routing override can name one for a shot. A live call uses the fal queue only when that model's rate row names an endpoint, and only when --live is passed. The default is offline. A dry run reads no key.",
       "purposes": {
         "preview": "gemini-omni-1.2-flash",
         "final": "gemini-omni-1.2-flash"
@@ -161,6 +161,84 @@
       "purposes": {
         "mix": "ffmpeg",
         "notes": "claude-haiku-5-5"
+      }
+    },
+    "assistant-director": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/assistant_director.py",
+      "notes": "The shooting schedule is computed in code from the shot list, the scenes, and the stunt breakdown. A cheap model may reword the note. This build does not call it. No key is read.",
+      "purposes": {
+        "schedule": "claude-haiku-5-5"
+      }
+    },
+    "gaffer": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/gaffer.py",
+      "notes": "The lighting plan is copied from the camera package and the look. A cheap model may reword the note. This build does not call it. No key is read. No color temperature is invented.",
+      "purposes": {
+        "plan": "claude-haiku-5-5"
+      }
+    },
+    "key-grip": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/grip.py",
+      "notes": "Support follows the shot list. Rigging follows the gaffer. A cheap model may reword the note. This build does not call it. No key is read.",
+      "purposes": {
+        "plan": "claude-haiku-5-5"
+      }
+    },
+    "costume-designer": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/costume.py",
+      "notes": "Locks the wardrobe the production already defined. A model reply that changes a garment is discarded. Cheap model. No key is read on the offline path.",
+      "purposes": {
+        "lock": "claude-haiku-5-5"
+      }
+    },
+    "makeup-hair": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/makeup.py",
+      "notes": "Locks makeup, hair, and effects the production already defined. A model reply that changes them is discarded. Cheap model. No key is read on the offline path.",
+      "purposes": {
+        "lock": "claude-haiku-5-5"
+      }
+    },
+    "vfx-supervisor": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/vfx.py",
+      "notes": "The breakdown and the dailies review are computed in code from the production's VFX notes and the dailies report. A cheap model may reword the note. This build does not call it. No key is read.",
+      "purposes": {
+        "breakdown": "claude-haiku-5-5",
+        "review": "claude-haiku-5-5"
+      }
+    },
+    "title-graphic-design": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/graphics.py",
+      "notes": "Research, the brand guide, and the graphic specs are computed in code from the production's documents. A reply that adds a fact is discarded. This build does not call the model. No key is read. None of these commands pass --live.",
+      "purposes": {
+        "research": "claude-haiku-5-5",
+        "guide": "claude-haiku-5-5",
+        "build": "claude-haiku-5-5"
+      }
+    },
+    "trailer-editor": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "source": "movie_swarm/trailer.py",
+      "notes": "Research, the spoiler guard, the plan, and the cut are computed in code from the production's documents. A reply that adds a shot is discarded. This build does not call the model. No key is read. None of these commands pass --live. The trailer does not request a new shot.",
+      "purposes": {
+        "research": "claude-haiku-5-5",
+        "guard": "claude-haiku-5-5",
+        "plan": "claude-haiku-5-5",
+        "cut": "claude-haiku-5-5"
       }
     },
     "post-supervisor": {

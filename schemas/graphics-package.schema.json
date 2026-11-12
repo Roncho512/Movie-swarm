@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "graphics-package.schema.json",
+  "title": "Graphics Package",
+  "description": "Titles, title cards, end credits, subtitle styling, designed key art, and collateral for one production. Timing of captions is not stored here. The checker does not know which film this is.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "production_id",
+    "guide",
+    "guide_version",
+    "main_title",
+    "title_cards",
+    "end_credits",
+    "subtitles",
+    "key_art",
+    "collateral",
+    "handoff",
+    "package_fingerprint",
+    "draft_method",
+    "model",
+    "note",
+    "written_at"
+  ],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "guide": { "type": "string", "minLength": 1 },
+    "guide_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "main_title": { "$ref": "#/$defs/main_title" },
+    "title_cards": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/title_card" }
+    },
+    "end_credits": { "$ref": "#/$defs/end_credits" },
+    "subtitles": { "$ref": "#/$defs/subtitles" },
+    "key_art": { "$ref": "#/$defs/key_art" },
+    "collateral": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/collateral" }
+    },
+    "handoff": { "$ref": "#/$defs/handoff" },
+    "package_fingerprint": { "type": "string", "minLength": 1 },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
+    "model": { "type": "string", "minLength": 1 },
+    "note": { "type": "string" },
+    "written_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "main_title": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "font", "safe_area", "trace"],
+      "properties": {
+        "text": { "type": "string", "minLength": 1 },
+        "font": { "type": "string", "minLength": 1 },
+        "safe_area": { "type": "string", "minLength": 1 },
+        "trace": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+      }
+    },
+    "title_card": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["card_id", "text", "source_file", "source_line", "safe_area"],
+      "properties": {
+        "card_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "text": { "type": "string", "minLength": 1 },
+        "source_file": { "type": "string", "minLength": 1 },
+        "source_line": { "type": "integer", "minimum": 1 },
+        "safe_area": { "type": "string", "minLength": 1 }
+      }
+    },
+    "credit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "name"],
+      "properties": {
+        "role": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 }
+      }
+    },
+    "end_credits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "lines"],
+      "properties": {
+        "source": { "type": ["string", "null"] },
+        "lines": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/credit" }
+        }
+      }
+    },
+    "subtitles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timing_owner", "note", "family", "color", "safe_area"],
+      "properties": {
+        "timing_owner": { "type": "string", "const": "post-supervisor" },
+        "note": { "type": "string", "minLength": 1 },
+        "family": { "type": "string", "minLength": 1 },
+        "color": { "type": "string", "minLength": 1 },
+        "safe_area": { "type": "string", "minLength": 1 }
+      }
+    },
+    "key_art": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "filename",
+        "kind",
+        "distinct_from",
+        "title",
+        "tagline",
+        "billing_block",
+        "width",
+        "height",
+        "size_source",
+        "safe_area",
+        "render_status"
+      ],
+      "properties": {
+        "filename": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "const": "designed" },
+        "distinct_from": { "type": "string", "const": "poster.png" },
+        "title": { "type": "string", "minLength": 1 },
+        "tagline": { "type": ["string", "null"] },
+        "billing_block": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "width": { "type": ["integer", "null"], "minimum": 2 },
+        "height": { "type": ["integer", "null"], "minimum": 2 },
+        "size_source": { "type": ["string", "null"] },
+        "safe_area": { "type": "string", "minLength": 1 },
+        "render_status": { "type": "string", "enum": ["present", "not-rendered"] }
+      }
+    },
+    "collateral": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "aspect_ratio", "filename", "width", "height", "size_source", "safe_area", "render_status"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "aspect_ratio": { "type": "string", "minLength": 1 },
+        "filename": { "type": "string", "minLength": 1 },
+        "width": { "type": ["integer", "null"], "minimum": 2 },
+        "height": { "type": ["integer", "null"], "minimum": 2 },
+        "size_source": { "type": ["string", "null"] },
+        "safe_area": { "type": "string", "minLength": 1 },
+        "render_status": { "type": "string", "enum": ["present", "not-rendered"] }
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["for", "overlays_before_master", "note"],
+      "properties": {
+        "for": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "overlays_before_master": { "type": "boolean" },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "production_id": "harbor-night",
+  "version": "1.0.0",
+  "style_summary": {
+    "description": "Cool night color. Available fluorescent light. No ornament on the titles.",
+    "film_stock": "digital",
+    "aspect_ratio": "16:9"
+  },
+  "character_references": [],
+  "color_system": {
+    "palette": [
+      {
+        "name": "cool gray",
+        "hex": "#5C6B73",
+        "usage": "Night air and titles."
+      },
+      {
+        "name": "fluorescent green",
+        "hex": "#B6FF4A",
+        "usage": "The practical lamp."
+      }
+    ],
+    "scene_progression": []
+  },
+  "created_at": "2026-01-01T00:00:00Z"
+}

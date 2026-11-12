@@ -312,7 +312,15 @@ def write_grade(plan: dict, production_dir: str | Path) -> tuple[Path, Path]:
     data_path = folder / "grade-plan.json"
     text_path = folder / "grade-plan.md"
     write_handoff(data_path, plan, schema="grade-plan")
-    text_path.write_text(render_grade_report(plan), encoding="utf-8")
+    from movie_swarm.graphics import overlay_markdown
+    from movie_swarm.vfx import turnover_markdown
+
+    text_path.write_text(
+        render_grade_report(plan)
+        + turnover_markdown(production_dir, "colorist")
+        + overlay_markdown(production_dir, "colorist"),
+        encoding="utf-8",
+    )
     return data_path, text_path
 
 

@@ -15,7 +15,13 @@ import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
-from movie_swarm.continuity import load_prop_lock, locked_picture_drift
+from movie_swarm.continuity import (
+    load_costume_lock,
+    load_makeup_lock,
+    load_prop_lock,
+    locked_character_drift,
+    locked_picture_drift,
+)
 from movie_swarm.handoff import HandoffError, read_handoff, write_handoff
 from movie_swarm.models import ModelRoutingError, resolve_model
 
@@ -56,6 +62,8 @@ def assemble_production(
     shots, order_source = _load_order(folder)
     style, style_source = _load_style(folder)
     lock = load_prop_lock(folder)
+    costume = load_costume_lock(folder)
+    makeup = load_makeup_lock(folder)
     labels = _scene_labels(folder)
     target, runtime_source = _target_runtime(folder)
     tolerance = _tolerance(style, target)
@@ -99,14 +107,16 @@ def assemble_production(
         texts.append(
             {
                 "shot_id": shot_id,
+                "scene_id": shot.get("scene_id") or "",
                 "props": shot["props"],
+                "characters": shot.get("characters") or [],
                 "text": _shot_text(shot, row.get("shot") if row else None, take),
             }
         )
 
     _fit_runtime(events, target, tolerance)
     runtime = _place(events)
-    continuity = _cross_cut(texts, lock)
+    continuity = _cross_cut(texts, lock, costume=costume, makeup=makeup)
     markers = _markers(events, labels)
     delta, within, note = _runtime_judgement(runtime, target, tolerance)
     continuity_clear = all(item["status"] == "pass" for item in continuity)
@@ -233,7 +243,15 @@ def write_edit(edl: dict, production_dir: str | Path) -> tuple[Path, Path, Path]
     cmx_path = folder / "assembly.edl"
     lock_path = folder / "picture-lock.json"
     write_handoff(data_path, edl, schema="edit-decision-list")
-    text_path.write_text(render_report(edl), encoding="utf-8")
+    from movie_swarm.graphics import overlay_markdown
+    from movie_swarm.vfx import turnover_markdown
+
+    text_path.write_text(
+        render_report(edl)
+        + turnover_markdown(production_dir, "editor")
+        + overlay_markdown(production_dir, "editor"),
+        encoding="utf-8",
+    )
     cmx_path.write_text(render_cmx(edl), encoding="utf-8")
     if edl["ready_for_picture_lock"]:
         locked = json.loads(json.dumps(edl))
@@ -355,51 +373,80 @@ def _shot_text(shot: dict, dailies_shot: dict | None, take: dict | None) -> str:
     return " ".join(part.strip() for part in parts if str(part).strip())
 
 
-def _cross_cut(texts: list[dict], lock: dict | None) -> list[dict]:
+def _cross_cut(texts: list[dict], lock: dict | None, costume=None, makeup=None) -> list[dict]:
     """The same locked-phrase check the Prop Master and the Script Supervisor use.
 
     It runs on each adjacent pair in the cut, not on the shoot order.
+    Wardrobe and makeup use that same comparison when both shots list the person.
     """
     rows = []
     if len(texts) < 2:
         return rows
     for left, right in zip(texts, texts[1:]):
         shared = _shared_props(left["props"], right["props"], lock)
-        if not shared or not lock:
-            rows.append(
-                {
-                    "from_shot_id": left["shot_id"],
-                    "to_shot_id": right["shot_id"],
-                    "status": "pass",
-                    "detail": "No locked prop is in both shots.",
-                }
-            )
-            continue
         reasons = []
-        for prop in shared:
-            labels = [prop.get("prop_id") or "", prop.get("name") or ""]
-            drift_left = locked_picture_drift(left["text"], labels, lock)
-            drift_right = locked_picture_drift(right["text"], labels, lock)
-            name = str(prop.get("name") or prop.get("prop_id") or "prop")
-            disagreed = set(drift_left["required_missing"]) != set(drift_right["required_missing"])
-            forbidden = bool(drift_left["forbidden_hit"] or drift_right["forbidden_hit"])
-            if not disagreed and not forbidden:
-                continue
-            pieces = [f"{name} is not consistent from {left['shot_id']} to {right['shot_id']}."]
-            if drift_left["reasons"]:
-                pieces.append(f"{left['shot_id']}: {' '.join(drift_left['reasons'])}")
-            if drift_right["reasons"]:
-                pieces.append(f"{right['shot_id']}: {' '.join(drift_right['reasons'])}")
-            reasons.append(" ".join(pieces))
+        if shared and lock:
+            for prop in shared:
+                labels = [prop.get("prop_id") or "", prop.get("name") or ""]
+                reasons.extend(_pair_reasons(left, right, labels, lock, locked_picture_drift))
+        character_reasons = []
+        for character_lock in (costume, makeup):
+            shared_people = _shared_people(left.get("characters"), right.get("characters"), character_lock)
+            for person in shared_people:
+                labels = [person.get("character_id") or "", person.get("name") or ""]
+                scene_id = left.get("scene_id") if left.get("scene_id") == right.get("scene_id") else None
+                character_reasons.extend(
+                    _pair_reasons(
+                        left,
+                        right,
+                        labels,
+                        character_lock,
+                        locked_character_drift,
+                        scene_id=scene_id,
+                    )
+                )
+        reasons.extend(character_reasons)
+        if not shared and not character_reasons:
+            detail = "No locked prop is in both shots."
+            status = "pass"
+        elif reasons:
+            detail = " ".join(reasons)
+            status = "fail"
+        elif shared:
+            detail = "The locked props match across this cut."
+            status = "pass"
+        else:
+            detail = "The locked wardrobe and makeup match across this cut."
+            status = "pass"
         rows.append(
             {
                 "from_shot_id": left["shot_id"],
                 "to_shot_id": right["shot_id"],
-                "status": "fail" if reasons else "pass",
-                "detail": " ".join(reasons) if reasons else "The locked props match across this cut.",
+                "status": status,
+                "detail": detail,
             }
         )
     return rows
+
+
+def _pair_reasons(left, right, labels, lock, checker, scene_id=None) -> list[str]:
+    if checker is locked_character_drift:
+        drift_left = checker(left["text"], labels, lock, scene_id=scene_id)
+        drift_right = checker(right["text"], labels, lock, scene_id=scene_id)
+    else:
+        drift_left = checker(left["text"], labels, lock)
+        drift_right = checker(right["text"], labels, lock)
+    name = labels[1] or labels[0] or "item"
+    disagreed = set(drift_left["required_missing"]) != set(drift_right["required_missing"])
+    forbidden = bool(drift_left["forbidden_hit"] or drift_right["forbidden_hit"])
+    if not disagreed and not forbidden:
+        return []
+    pieces = [f"{name} is not consistent from {left['shot_id']} to {right['shot_id']}."]
+    if drift_left["reasons"]:
+        pieces.append(f"{left['shot_id']}: {' '.join(drift_left['reasons'])}")
+    if drift_right["reasons"]:
+        pieces.append(f"{right['shot_id']}: {' '.join(drift_right['reasons'])}")
+    return [" ".join(pieces)]
 
 
 def _shared_props(left_labels, right_labels, lock: dict | None) -> list[dict]:
@@ -414,8 +461,25 @@ def _shared_props(left_labels, right_labels, lock: dict | None) -> list[dict]:
     return shared
 
 
+def _shared_people(left_labels, right_labels, lock: dict | None) -> list[dict]:
+    if not lock:
+        return []
+    shared = []
+    for person in lock.get("characters") or []:
+        if not isinstance(person, dict):
+            continue
+        if _prop_listed(person, left_labels) and _prop_listed(person, right_labels):
+            shared.append(person)
+    return shared
+
+
 def _prop_listed(prop: dict, labels) -> bool:
-    names = [prop.get("prop_id") or "", prop.get("name") or "", *(prop.get("aliases") or [])]
+    names = [
+        prop.get("prop_id") or "",
+        prop.get("character_id") or "",
+        prop.get("name") or "",
+        *(prop.get("aliases") or []),
+    ]
     folded = {str(name).casefold() for name in names if str(name).strip()}
     for label in labels or []:
         if str(label).strip().casefold() in folded:
@@ -697,6 +761,7 @@ def _normalize_shot(shot: dict) -> dict:
         "framing_notes": str(shot.get("framing_notes") or ""),
         "prompt": str(shot.get("generation_prompt") or shot.get("description") or ""),
         "props": _prop_labels(props),
+        "characters": _prop_labels(shot.get("characters_in_shot") or shot.get("characters")),
         "duration_seconds": _duration(shot.get("target_duration_seconds", shot.get("duration_seconds"))),
         "transition": str(shot.get("transition") or ""),
         "transition_duration_seconds": _duration(shot.get("transition_duration_seconds")),
@@ -724,6 +789,7 @@ def _merge(shot: dict, frame: dict, shot_id: str) -> dict:
         "framing_notes": str(shot.get("framing_notes") or ""),
         "prompt": str(frame.get("board_prompt") or shot.get("prompt") or description),
         "props": _prop_labels(props),
+        "characters": _prop_labels(frame.get("characters_in_shot") or shot.get("characters") or []),
         "duration_seconds": duration,
         "transition": transition,
         "transition_duration_seconds": _duration(transition_duration),

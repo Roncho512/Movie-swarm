@@ -368,6 +368,7 @@ def test_studio_stops_at_each_gate_and_the_test_harness_finishes(tmp_path):
 
     producer = LineProducer.open(production, "studio-1")
     producer.approve_gate("previs", "approved", "ron", note="The package can go forward.")
+    producer.approve_gate("graphics", "approved", "ron", note="The brand guide can be used.")
     producer.approve_gate("production", "approved", "ron", note="A quote can be written.")
     third = run_studio(production, run_id="studio-1")
     assert third["status"] == "stopped", third["message"]

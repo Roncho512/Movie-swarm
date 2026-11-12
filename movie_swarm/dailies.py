@@ -16,7 +16,14 @@ import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
-from movie_swarm.continuity import expected_phrases, load_prop_lock, locked_picture_drift
+from movie_swarm.continuity import (
+    expected_phrases,
+    load_costume_lock,
+    load_makeup_lock,
+    load_prop_lock,
+    locked_character_drift,
+    locked_picture_drift,
+)
 from movie_swarm.handoff import HandoffError, read_handoff, write_handoff
 from movie_swarm.models import ModelRoutingError, resolve_model
 from movie_swarm.money import as_money, money_number
@@ -91,6 +98,8 @@ def review_production(
     manifest = _load_manifest(folder, manifest_path)
     shots = _load_shot_index(folder)
     lock = load_prop_lock(folder)
+    costume = load_costume_lock(folder)
+    makeup = load_makeup_lock(folder)
     look = _load_look(folder)
     client = vision if vision is not None else OfflineVision()
     watched = False
@@ -108,6 +117,8 @@ def review_production(
             lock,
             look,
             client,
+            costume=costume,
+            makeup=makeup,
         )
         watched = watched or did_watch
         grouped[shot_id].append(reviewed)
@@ -249,7 +260,7 @@ def run_dailies(producer, call) -> str:
     return render_report(report) + f"\nWrote {text_path}."
 
 
-def _review_take(folder: Path, take: dict, shot: dict | None, lock, look, client) -> tuple[dict, bool]:
+def _review_take(folder: Path, take: dict, shot: dict | None, lock, look, client, costume=None, makeup=None) -> tuple[dict, bool]:
     take_id = str(take["take_id"])
     relative = str(take["file"])
     path = Path(relative) if Path(relative).is_absolute() else folder / relative
@@ -277,7 +288,7 @@ def _review_take(folder: Path, take: dict, shot: dict | None, lock, look, client
         )
 
     description, source = _describe(client, path, str(take["shot_id"]))
-    continuity = _continuity(description, shot, lock)
+    continuity = _continuity(description, shot, lock, costume=costume, makeup=makeup)
     shot_match = _shot_match(description, shot, technical, kind)
     look_match = _look_match(description, look)
     failed = [item for item in (technical, continuity, shot_match, look_match) if item["status"] == "fail"]
@@ -372,9 +383,11 @@ def _technical(path: Path, kind: str, shot: dict | None) -> dict:
     }
 
 
-def _continuity(description: str, shot: dict | None, lock) -> dict:
+def _continuity(description: str, shot: dict | None, lock, costume=None, makeup=None) -> dict:
     props = (shot or {}).get("props") or []
-    if lock is None:
+    characters = (shot or {}).get("characters") or []
+    scene_id = (shot or {}).get("scene_id")
+    if lock is None and not costume and not makeup:
         return {
             "status": "skipped",
             "detail": "No prop file was found, so locked phrases were not checked.",
@@ -382,7 +395,16 @@ def _continuity(description: str, shot: dict | None, lock) -> dict:
             "drift": {"required_missing": [], "forbidden_hit": []},
         }
     drift = locked_picture_drift(description, props, lock)
-    if not props and not drift["reasons"]:
+    reasons = list(drift["reasons"])
+    for character_lock in (costume, makeup):
+        if not character_lock:
+            continue
+        extra = locked_character_drift(description, characters, character_lock, scene_id=scene_id)
+        reasons.extend(extra["reasons"])
+        drift["required_missing"] = list(drift["required_missing"]) + list(extra["required_missing"])
+        drift["forbidden_hit"] = list(drift["forbidden_hit"]) + list(extra["forbidden_hit"])
+        drift["checked"] = bool(drift["checked"] or extra["checked"])
+    if not props and not characters and not reasons:
         return {
             "status": "skipped" if not drift["checked"] else "pass",
             "detail": (
@@ -393,11 +415,11 @@ def _continuity(description: str, shot: dict | None, lock) -> dict:
             "reasons": [],
             "drift": drift,
         }
-    if drift["reasons"]:
+    if reasons:
         return {
             "status": "fail",
-            "detail": " ".join(drift["reasons"]),
-            "reasons": drift["reasons"],
+            "detail": " ".join(reasons),
+            "reasons": reasons,
             "drift": drift,
         }
     return {
@@ -587,6 +609,11 @@ def _fix_loop_fit(estimate: float, allocations: dict | None, spent: float, has_r
 
 
 def _budget_from_producer(producer) -> tuple[dict | None, float]:
+    from movie_swarm.budget import lines_for_check
+
+    filmed = lines_for_check(producer.production_dir)
+    if filmed is not None:
+        return filmed, float(producer.stage_spent("fix-loop"))
     record = producer.record.get("stage_allocations") or {}
     if record.get("status") != "approved":
         return None, 0.0
@@ -649,6 +676,7 @@ def _normalize_shot(shot: dict) -> dict:
         "camera_movement": str(shot.get("camera_movement") or ""),
         "prompt": str(shot.get("generation_prompt") or shot.get("description") or ""),
         "props": shot.get("props_in_shot") or shot.get("props_in_frame") or shot.get("props") or [],
+        "characters": _character_labels(shot.get("characters_in_shot") or shot.get("characters")),
         "duration_seconds": _duration(duration),
     }
 
@@ -663,8 +691,19 @@ def _normalize_frame(frame: dict) -> dict:
         "camera_movement": "",
         "prompt": str(frame.get("board_prompt") or frame.get("what_we_see") or ""),
         "props": frame.get("props_in_frame") or [],
+        "characters": _character_labels(frame.get("characters_in_shot") or frame.get("characters")),
         "duration_seconds": _duration(frame.get("duration_seconds")),
     }
+
+
+def _character_labels(values) -> list[str]:
+    labels = []
+    for item in values or []:
+        if isinstance(item, str) and item.strip():
+            labels.append(item.strip())
+        elif isinstance(item, dict) and item.get("name"):
+            labels.append(str(item["name"]))
+    return labels
 
 
 def _load_look(folder: Path) -> dict | None:

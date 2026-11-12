@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "spoiler-guard.schema.json",
+  "title": "Spoiler Guard",
+  "description": "Beats the trailer may show and beats it must hold back. The Director signs it. The checker does not know which film this is.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "production_id",
+    "may_show",
+    "hold_back",
+    "teaser_rule",
+    "trailer_rule",
+    "tone",
+    "director_signed",
+    "signed_by",
+    "signed_at",
+    "sign_note",
+    "draft_method",
+    "model",
+    "note",
+    "written_at"
+  ],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "may_show": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text", "source_field"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "text": { "type": "string", "minLength": 1 },
+          "source_field": { "type": "string" }
+        }
+      }
+    },
+    "hold_back": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text", "source_field", "reason"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "text": { "type": "string", "minLength": 1 },
+          "source_field": { "type": "string" },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "teaser_rule": { "type": "string" },
+    "trailer_rule": { "type": "string" },
+    "tone": { "type": "string" },
+    "director_signed": { "type": "boolean" },
+    "signed_by": { "type": ["string", "null"] },
+    "signed_at": { "type": ["string", "null"], "format": "date-time" },
+    "sign_note": { "type": "string" },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
+    "model": { "type": "string", "minLength": 1 },
+    "note": { "type": "string" },
+    "written_at": { "type": "string", "format": "date-time" }
+  }
+}

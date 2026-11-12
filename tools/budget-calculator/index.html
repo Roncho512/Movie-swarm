@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Film budget</title>
+  <style>
+    :root { color-scheme: light; --ink: #1c1915; --paper: #f6f1e8; --line: #d9d0c1; --good: #1f6b45; --over: #8d2f2f; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 16px/1.45 Georgia, "Iowan Old Style", serif; color: var(--ink); background: var(--paper); }
+    main { max-width: 1100px; margin: 0 auto; padding: 28px 20px 48px; }
+    h1 { font-size: 32px; font-weight: normal; margin: 0 0 8px; }
+    p { margin: 0 0 12px; }
+    .tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+    button, label.file { font: 15px/1.2 Georgia, serif; background: #fff; border: 1px solid var(--ink); padding: 8px 12px; cursor: pointer; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 12px 0 20px; }
+    label { display: block; font-size: 14px; }
+    input, select { width: 100%; font: 16px/1.3 Georgia, serif; padding: 6px 8px; border: 1px solid var(--line); background: #fff; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    th { font-weight: normal; font-size: 14px; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .under { color: var(--good); }
+    .over { color: var(--over); }
+    .total { font-size: 20px; margin-top: 16px; }
+    .rates { margin-top: 28px; }
+    textarea { width: 100%; min-height: 140px; font: 13px/1.4 ui-monospace, monospace; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Film budget</h1>
+  <p>One budget. One screen. The trailer is a line on this film, not a second calculator. Come in under the number, or a little over it with Ron's approval.</p>
+  <p>Shares are percentages of the film budget and add up to 100. When the trailer is on, Marketing and Distribution takes its share and the other lines scale down so the total still matches. Contingency is held back inside the budget. Ten percent is the proposed default for each. A film with no file keeps the $500 split.</p>
+  <div class="tools">
+    <label class="file">Import budget.json <input id="import-file" type="file" accept="application/json,.json" hidden></label>
+    <button id="export-button" type="button">Export budget.json</button>
+  </div>
+  <div class="grid">
+    <label>Film budget, dollars <input id="total" type="number" min="1" step="0.01" value="500"></label>
+    <label>Runtime, seconds <input id="runtime" type="number" min="1" step="1" value="60"></label>
+    <label>Shots <input id="shots" type="number" min="1" step="1" value="8"></label>
+    <label>Takes per shot <input id="takes" type="number" min="1" step="1" value="2"></label>
+    <label>Fix rate <input id="fix" type="number" min="0" step="0.1" value="1"></label>
+    <label>Contingency, percent <input id="contingency" type="number" min="0" max="100" step="1" value="10"></label>
+    <label>Marketing, percent <input id="marketing" type="number" min="0" max="99" step="1" value="10"></label>
+    <label>Picture size
+      <select id="resolution">
+        <option value="720p" selected>720p</option>
+        <option value="1080p">1080p top option</option>
+      </select>
+    </label>
+    <label>Trailer <input id="trailer" type="checkbox"></label>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Line</th>
+        <th>Tier</th>
+        <th class="num">Share</th>
+        <th class="num">Ceiling</th>
+        <th class="num">Estimate</th>
+        <th>Under / over</th>
+      </tr>
+    </thead>
+    <tbody id="lines"></tbody>
+  </table>
+  <p id="summary" class="total"></p>
+  <section class="rates">
+    <h2>Rates</h2>
+    <p>Prefilled from the rate card. Edit them here. A price this repo cannot verify stays marked unknown.</p>
+    <div class="grid">
+      <label>Good picture, $ / second <input id="rate-good" type="number" step="0.0001" value="0.07"></label>
+      <label>Better picture, $ / second <input id="rate-better" type="number" step="0.0001" value="0.2419"></label>
+      <label>Best picture, $ / second <input id="rate-best" type="number" step="0.0001" value="0.3034"></label>
+      <label>1080p top option, $ / second <input id="rate-top" type="number" step="0.0001" value="0.682"></label>
+      <label>Speech, $ / 1,000 characters <input id="rate-speech" type="number" step="0.01" value="0.08"></label>
+      <label>Sound effects, $ / minute <input id="rate-sfx" type="number" step="0.01" value="0.12"></label>
+      <label>Music, $ / minute <input id="rate-music" type="number" step="0.01" value="0.15"></label>
+    </div>
+  </section>
+  <section>
+    <h2>budget.json</h2>
+    <textarea id="json-out" readonly></textarea>
+  </section>
+</main>
+<script>
+const LINES = [
+  ["production", "Production", 54],
+  ["sound-designer", "Sound", 11],
+  ["fix-loop", "Fix loop", 10],
+  ["qa", "QA", 9],
+  ["art-director", "Art", 5],
+  ["director", "Director", 4],
+  ["editor", "Editor", 3],
+  ["cinematographer", "Cinematographer", 2],
+  ["screenwriter", "Screenwriter", 1],
+  ["line-producer", "Line Producer", 1]
+];
+const TIERS = ["good", "better", "best"];
+const tierChoice = {};
+LINES.forEach(function (line) { tierChoice[line[0]] = "good"; });
+
+function units(value) {
+  return Math.round(Number(value) * 10000);
+}
+function dollars(value) {
+  return (value / 10000).toFixed(2);
+}
+function readNumber(id, fallback) {
+  const value = Number(document.getElementById(id).value);
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function pictureRate() {
+  if (document.getElementById("resolution").value === "1080p") {
+    return { price: readNumber("rate-top", 0.682), status: "unknown" };
+  }
+  const tier = tierChoice.production || "good";
+  const id = tier === "best" ? "rate-best" : tier === "better" ? "rate-better" : "rate-good";
+  const status = tier === "good" || tier === "better" || tier === "best" ? "known" : "unknown";
+  return { price: readNumber(id, 0), status: status };
+}
+
+function buildBudget() {
+  const total = units(readNumber("total", 500));
+  const trailer = document.getElementById("trailer").checked;
+  const marketingPercent = trailer ? readNumber("marketing", 10) : 0;
+  const contingencyPercent = readNumber("contingency", 0);
+  const marketingGross = trailer ? Math.round(total * units(marketingPercent) / 1000000) : 0;
+  const working = total - marketingGross;
+  const scale = trailer ? (10000 - units(marketingPercent) / 100) / 10000 : 1;
+  const gross = {};
+  let running = 0;
+  LINES.forEach(function (line, index) {
+    if (index === LINES.length - 1) {
+      gross[line[0]] = working - running;
+      return;
+    }
+    const amount = Math.round(total * units(line[2]) / 1000000 * scale);
+    gross[line[0]] = amount;
+    running += amount;
+  });
+  const keep = (10000 - units(contingencyPercent) / 100) / 10000;
+  const lines = {};
+  LINES.forEach(function (line) {
+    lines[line[0]] = Math.round(gross[line[0]] * keep);
+  });
+  let marketing = Math.round(marketingGross * keep);
+  let contingency = Math.round(total * units(contingencyPercent) / 1000000);
+  let drift = total - Object.values(lines).reduce(function (sum, value) { return sum + value; }, 0) - marketing - contingency;
+  if (contingencyPercent > 0) contingency += drift;
+  else if (trailer) marketing += drift;
+  else lines["line-producer"] += drift;
+  return { total: total, lines: lines, marketing: marketing, contingency: contingency, trailer: trailer };
+}
+
+function estimateFor(stage, math) {
+  const runtime = readNumber("runtime", 60);
+  const takes = readNumber("takes", 2);
+  const fix = readNumber("fix", 1);
+  const picture = pictureRate();
+  if (stage === "production") {
+    return { amount: picture.price * runtime * takes, status: picture.status };
+  }
+  if (stage === "fix-loop") {
+    return { amount: picture.price * runtime * fix, status: picture.status };
+  }
+  if (stage === "sound-designer") {
+    const minutes = runtime / 60;
+    const amount = minutes * readNumber("rate-music", 0.15) + minutes * readNumber("rate-sfx", 0.12);
+    return { amount: amount, status: "unknown" };
+  }
+  if (stage === "marketing-distribution") {
+    return { amount: 0, status: "known" };
+  }
+  return { amount: null, status: "unknown" };
+}
+
+function position(spent, ceiling) {
+  const gap = spent - ceiling;
+  if (gap > 0.00005) return { word: "over", gap: gap };
+  if (gap < -0.00005) return { word: "under", gap: -gap };
+  return { word: "on", gap: 0 };
+}
+
+function shares() {
+  const map = {};
+  LINES.forEach(function (line) { map[line[0]] = line[2]; });
+  return map;
+}
+
+function tiers() {
+  const map = {};
+  LINES.forEach(function (line) { map[line[0]] = tierChoice[line[0]] || "good"; });
+  return map;
+}
+
+function exportDocument() {
+  return {
+    version: "1.0.0",
+    total_usd: Number(dollars(units(readNumber("total", 500)))),
+    currency: "USD",
+    line_shares: shares(),
+    contingency_share: readNumber("contingency", 10),
+    trailer_on: document.getElementById("trailer").checked,
+    marketing_share: readNumber("marketing", 10),
+    tiers: tiers(),
+    production_resolution: document.getElementById("resolution").value,
+    note: "Written by the film budget calculator. Marketing scales the other lines when the trailer is on. Contingency is held back inside the budget."
+  };
+}
+
+function render() {
+  const math = buildBudget();
+  const body = document.getElementById("lines");
+  body.innerHTML = "";
+  const rows = LINES.map(function (line) {
+    return [line[0], line[1], line[2], math.lines[line[0]]];
+  });
+  if (math.trailer) {
+    rows.push(["marketing-distribution", "Marketing and Distribution", readNumber("marketing", 10), math.marketing]);
+  } else {
+    rows.push(["marketing-distribution", "Marketing and Distribution", 0, 0]);
+  }
+  rows.forEach(function (row) {
+    const estimate = estimateFor(row[0], math);
+    const ceiling = row[3] / 10000;
+    const tr = document.createElement("tr");
+    const place = estimate.amount === null ? null : position(estimate.amount, ceiling);
+    const gap = place === null ? "unknown" : place.word === "on" ? "on the line" : place.word + " by $" + place.gap.toFixed(2);
+    const tierCell = row[0] === "marketing-distribution"
+      ? "<td>trailer</td>"
+      : '<td><select data-tier="' + row[0] + '">' + TIERS.map(function (tier) {
+          const selected = tier === (tierChoice[row[0]] || "good") ? " selected" : "";
+          return '<option value="' + tier + '"' + selected + ">" + tier + "</option>";
+        }).join("") + "</select></td>";
+    tr.innerHTML =
+      "<td>" + row[1] + "</td>" +
+      tierCell +
+      '<td class="num">' + row[2] + "%</td>" +
+      '<td class="num">$' + ceiling.toFixed(2) + "</td>" +
+      '<td class="num">' + (estimate.amount === null ? "unknown" : "$" + estimate.amount.toFixed(2)) + "</td>" +
+      '<td class="' + (place && place.word === "over" ? "over" : "under") + '">' + gap + "</td>";
+    body.appendChild(tr);
+  });
+  const contingency = document.createElement("tr");
+  contingency.innerHTML =
+    "<td>Contingency</td><td>reserve</td><td class=\"num\">" + readNumber("contingency", 0) +
+    "%</td><td class=\"num\">$" + (math.contingency / 10000).toFixed(2) +
+    "</td><td class=\"num\">held back</td><td>retakes and upgrades draw here</td>";
+  body.appendChild(contingency);
+  const spendable = Object.values(math.lines).reduce(function (sum, value) { return sum + value; }, 0) + (math.trailer ? math.marketing : 0) + math.contingency;
+  const word = position(spendable / 10000, math.total / 10000);
+  document.getElementById("summary").textContent =
+    "Lines plus contingency: $" + (spendable / 10000).toFixed(2) +
+    " of $" + (math.total / 10000).toFixed(2) +
+    ". " + (word.word === "on" ? "On the budget." : word.word + " by $" + word.gap.toFixed(2) + ".");
+  document.getElementById("json-out").value = JSON.stringify(exportDocument(), null, 2);
+  document.querySelectorAll("[data-tier]").forEach(function (picker) {
+    picker.addEventListener("change", function () {
+      tierChoice[picker.getAttribute("data-tier")] = picker.value;
+      render();
+    });
+  });
+}
+
+function applyDocument(data) {
+  if (!data || typeof data !== "object") return;
+  if (data.total_usd != null) document.getElementById("total").value = data.total_usd;
+  if (data.contingency_share != null) document.getElementById("contingency").value = data.contingency_share;
+  if (data.marketing_share != null) document.getElementById("marketing").value = data.marketing_share;
+  document.getElementById("trailer").checked = Boolean(data.trailer_on);
+  if (data.production_resolution) document.getElementById("resolution").value = data.production_resolution;
+  if (data.tiers) {
+    Object.keys(data.tiers).forEach(function (name) {
+      if (TIERS.indexOf(data.tiers[name]) >= 0) tierChoice[name] = data.tiers[name];
+    });
+  }
+  render();
+}
+
+document.getElementById("export-button").addEventListener("click", function () {
+  const blob = new Blob([JSON.stringify(exportDocument(), null, 2) + "\n"], { type: "application/json" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "budget.json";
+  link.click();
+  URL.revokeObjectURL(link.href);
+});
+document.getElementById("import-file").addEventListener("change", function (event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function () {
+    applyDocument(JSON.parse(String(reader.result)));
+  };
+  reader.readAsText(file);
+});
+document.querySelectorAll("input, select").forEach(function (node) {
+  node.addEventListener("input", render);
+  node.addEventListener("change", render);
+});
+render();
+</script>
+</body>
+</html>

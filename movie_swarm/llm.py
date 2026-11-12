@@ -15,6 +15,7 @@ import urllib.error
 import urllib.request
 
 from movie_swarm.models import resolve_model
+from movie_swarm.redact import redact
 
 
 class LLMError(Exception):
@@ -80,10 +81,10 @@ class AnthropicTransport:
             with urllib.request.urlopen(request, timeout=120) as response:
                 body = json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace")[:500]
+            detail = redact(exc.read().decode("utf-8", errors="replace")[:500])
             raise LLMError(f"The model call failed ({exc.code}). {detail}") from exc
         except urllib.error.URLError as exc:
-            raise LLMError(f"The model call could not connect. {exc.reason}") from exc
+            raise LLMError(f"The model call could not connect. {redact(str(exc.reason))}") from exc
 
         parts = []
         for block in body.get("content") or []:

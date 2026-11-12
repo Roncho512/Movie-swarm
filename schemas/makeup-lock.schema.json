@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "makeup-lock.schema.json",
+  "title": "Makeup Lock",
+  "description": "Locked makeup, hair, and effects for one production. Dirt, sweat, wounds, aging, and any other effect are whatever that production defined.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id", "status", "characters"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "status": { "type": "string", "enum": ["draft", "locked"] },
+    "source": { "type": "string" },
+    "scene_source": { "type": "string" },
+    "characters": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/character" }
+    },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
+    "model": { "type": ["string", "null"] },
+    "note": { "type": "string" },
+    "locked_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "phrases": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "attribute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attribute_id", "label", "value"],
+      "properties": {
+        "attribute_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "label": { "type": "string", "minLength": 1 },
+        "value": { "type": "string", "minLength": 1 },
+        "must_be_stated_when_visible": { "type": "boolean" },
+        "required_phrases": { "$ref": "#/$defs/phrases" },
+        "forbidden_phrases": { "$ref": "#/$defs/phrases" },
+        "scene_id": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+      }
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scene_id", "makeup", "hair", "effects"],
+      "properties": {
+        "scene_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "makeup": { "type": "string", "minLength": 1 },
+        "hair": { "type": "string", "minLength": 1 },
+        "effects": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "note": { "type": "string" }
+      }
+    },
+    "character": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["character_id", "name", "locked_spec", "makeup", "hair", "effects", "changes", "attributes"],
+      "properties": {
+        "character_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "name": { "type": "string", "minLength": 1 },
+        "aliases": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "locked_spec": { "type": "string", "minLength": 1 },
+        "makeup": { "type": "string", "minLength": 1 },
+        "hair": { "type": "string", "minLength": 1 },
+        "effects": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "changes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/change" }
+        },
+        "attributes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/attribute" }
+        }
+      }
+    }
+  }
+}

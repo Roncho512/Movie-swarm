@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "production_id": "harbor-night",
+  "items": [
+    {
+      "match": "fluorescent lamp",
+      "task": "Composite the practical lamp so the bulb stays the same shape.",
+      "method": "composite",
+      "risk": "The lamp can drift if the plate and the element are graded apart."
+    }
+  ]
+}

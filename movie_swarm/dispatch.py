@@ -20,6 +20,7 @@ from movie_swarm.generation import run_picture
 from movie_swarm.line_producer import Authorization, LineProducer
 from movie_swarm.paths import repo_root
 from movie_swarm.previs import run_previs
+from movie_swarm.budget import trailer_enabled
 from movie_swarm.roles import (
     CALLABLE,
     COLOR_MIX_BILLING,
@@ -27,6 +28,7 @@ from movie_swarm.roles import (
     PHASE2_BILLING,
     PHASE2_CREW,
     SOUND_BILLING,
+    TRAILER_BILLING,
 )
 from movie_swarm.sound import run_sound
 
@@ -50,6 +52,8 @@ class CrewCall:
     image_client: object | None = None
     client: object | None = None
     takes: str | None = None
+    live: bool = False
+    price_override: float | None = None
 
 
 @dataclass
@@ -94,6 +98,27 @@ _COMMANDS = {
     "stunt-coordinator": {
         "commands": {"breakdown": True},
     },
+    "assistant-director": {
+        "commands": {"schedule": True},
+    },
+    "gaffer": {
+        "commands": {"plan": True},
+    },
+    "key-grip": {
+        "commands": {"plan": True},
+    },
+    "costume-designer": {
+        "commands": {"lock": True},
+    },
+    "makeup-hair": {
+        "commands": {"lock": True},
+    },
+    "vfx-supervisor": {
+        "commands": {"breakdown": True, "review": True},
+    },
+    "title-graphic-design": {
+        "commands": {"research": True, "guide": True, "build": True},
+    },
     "dailies": {
         "commands": {"review": True},
     },
@@ -105,6 +130,16 @@ _COMMANDS = {
     },
     "post-supervisor": {
         "commands": {"deliver": True},
+    },
+    "trailer-editor": {
+        "commands": {
+            "research": True,
+            "guard": True,
+            "sign": True,
+            "plan": True,
+            "cut": True,
+            "recheck": True,
+        },
     },
 }
 
@@ -128,6 +163,40 @@ _PHASE2_OUTPUTS = {
         ("action-breakdown", "stunts/action-breakdown.json", "action-breakdown.schema.json"),
         ("action-notes", "stunts/action-breakdown.md", None),
     ),
+    "assistant-director": (
+        ("shooting-schedule", "schedule/shooting-schedule.json", "shooting-schedule.schema.json"),
+        ("shooting-schedule-notes", "schedule/shooting-schedule.md", None),
+    ),
+    "gaffer": (
+        ("lighting-plan", "lighting/lighting-plan.json", "lighting-plan.schema.json"),
+        ("lighting-notes", "lighting/lighting-plan.md", None),
+    ),
+    "key-grip": (
+        ("grip-plan", "grip/grip-plan.json", "grip-plan.schema.json"),
+        ("grip-notes", "grip/grip-plan.md", None),
+    ),
+    "costume-designer": (
+        ("costume-lock", "wardrobe/costume-lock.json", "costume-lock.schema.json"),
+        ("costume-notes", "wardrobe/costume-lock.md", None),
+    ),
+    "makeup-hair": (
+        ("makeup-lock", "makeup/makeup-lock.json", "makeup-lock.schema.json"),
+        ("makeup-notes", "makeup/makeup-lock.md", None),
+    ),
+    "vfx-supervisor": (
+        ("vfx-breakdown", "vfx/vfx-breakdown.json", "vfx-breakdown.schema.json"),
+        ("vfx-notes", "vfx/vfx-breakdown.md", None),
+        ("vfx-review", "vfx/vfx-review.json", "vfx-review.schema.json"),
+        ("vfx-review-notes", "vfx/vfx-review.md", None),
+    ),
+    "title-graphic-design": (
+        ("graphics-research", "graphics/research.json", "graphics-research.schema.json"),
+        ("graphics-research-notes", "graphics/research.md", None),
+        ("brand-guide", "graphics/brand-guide.json", "graphics-brand-guide.schema.json"),
+        ("brand-guide-notes", "graphics/brand-guide.md", None),
+        ("graphics-package", "graphics/graphics.json", "graphics-package.schema.json"),
+        ("graphics-notes", "graphics/graphics.md", None),
+    ),
 }
 
 
@@ -137,6 +206,11 @@ def dispatch_call(
     handler=None,
 ) -> DispatchResult:
     """Check the gate and the budget, then run ``handler`` or the default crew command."""
+    if call.agent == "trailer-editor" and not trailer_enabled(producer.production_dir):
+        return DispatchResult(
+            status="ran",
+            message="The trailer is off for this film. Nothing was written. The film can deliver without one.",
+        )
     if call.agent not in _COMMANDS:
         known = ", ".join(CALLABLE)
         return DispatchResult(
@@ -156,6 +230,7 @@ def dispatch_call(
         or DAILIES_BILLING.get(call.agent)
         or SOUND_BILLING.get(call.agent)
         or COLOR_MIX_BILLING.get(call.agent)
+        or TRAILER_BILLING.get(call.agent)
         or call.agent
     )
     try:
@@ -187,6 +262,10 @@ def dispatch_call(
         runner = lambda current: run_color_mix(producer, current)
     elif handler is None and call.agent == "post-supervisor" and call.command == "deliver":
         runner = lambda current: run_delivery(producer, current)
+    elif handler is None and call.agent == "trailer-editor":
+        from movie_swarm.trailer import run_trailer
+
+        runner = lambda current: run_trailer(current)
     else:
         runner = handler or default_handler
     try:
@@ -204,6 +283,11 @@ def dispatch_call(
     )
     if call.agent in PHASE2_CREW:
         _register_phase2(producer, call.agent)
+    if call.agent == "trailer-editor":
+        have = {item["role"] for item in producer.record["credits"]}
+        if "Trailer Editor" not in have:
+            producer.record["credits"].append({"role": "Trailer Editor", "name": "Trailer Editor"})
+            producer._save_record()
     return DispatchResult(
         status="ran",
         message=auth.message,
@@ -253,8 +337,10 @@ def _register_phase2(producer: LineProducer, agent: str) -> None:
     producer.set_stage("previs", "waiting-for-review")
     producer.run.data["notes"] = (
         "The phase 2 package is waiting on Ron. "
-        "Previs means the prop lock, the continuity check, the camera package, "
-        "the storyboard, and the action breakdown. The Director did not approve them."
+        "Previs means the prop lock, wardrobe, makeup, the continuity check, the camera package, "
+        "the storyboard, the lighting plan, the grip plan, the shooting schedule, "
+        "the action breakdown, the VFX breakdown, and the title research and brand guide. "
+        "The Director did not approve them."
     )
     producer.run.save()
     _ensure_credits(producer)
@@ -268,6 +354,14 @@ def _ensure_credits(producer: LineProducer) -> None:
         ("Prop Master", "Prop Master"),
         ("Cinematographer", "Cinematographer"),
         ("Stunt and Action Coordinator", "Stunt and Action Coordinator"),
+        ("Assistant Director", "Assistant Director"),
+        ("Gaffer", "Gaffer"),
+        ("Key Grip", "Key Grip"),
+        ("Costume Designer", "Costume Designer"),
+        ("Makeup and Hair", "Makeup and Hair"),
+        ("VFX Supervisor", "VFX Supervisor"),
+        ("Title and Graphic Design", "Title and Graphic Design"),
+        ("Trailer Editor", "Trailer Editor"),
     ):
         if role not in have:
             producer.record["credits"].append({"role": role, "name": name})

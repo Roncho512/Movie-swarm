@@ -29,6 +29,13 @@ PHASE2_CREW = (
     "prop-master",
     "cinematographer",
     "stunt-coordinator",
+    "assistant-director",
+    "gaffer",
+    "key-grip",
+    "costume-designer",
+    "makeup-hair",
+    "vfx-supervisor",
+    "title-graphic-design",
 )
 
 # Which locked ceiling a phase 2 estimate is checked against.
@@ -38,7 +45,63 @@ PHASE2_BILLING = {
     "prop-master": "art-director",
     "cinematographer": "cinematographer",
     "stunt-coordinator": "production",
+    "assistant-director": "line-producer",
+    "gaffer": "cinematographer",
+    "key-grip": "cinematographer",
+    "costume-designer": "art-director",
+    "makeup-hair": "art-director",
+    "vfx-supervisor": "editor",
+    "title-graphic-design": "art-director",
 }
+
+# Who each prep role reads, and who receives the file. The dollars stay in PHASE2_BILLING.
+CREW_MAP = {
+    "assistant-director": {
+        "name": "Assistant Director",
+        "receives_from": [
+            "cinematographer",
+            "stunt-coordinator",
+            "prop-master",
+            "costume-designer",
+            "makeup-hair",
+            "gaffer",
+        ],
+        "hands_to": ["production"],
+    },
+    "gaffer": {
+        "name": "Gaffer",
+        "receives_from": ["cinematographer"],
+        "hands_to": ["key-grip", "production"],
+    },
+    "key-grip": {
+        "name": "Key Grip",
+        "receives_from": ["cinematographer", "gaffer"],
+        "hands_to": ["production"],
+    },
+    "costume-designer": {
+        "name": "Costume Designer",
+        "receives_from": ["director"],
+        "hands_to": ["script-supervisor", "assistant-director"],
+    },
+    "makeup-hair": {
+        "name": "Makeup and Hair",
+        "receives_from": ["director"],
+        "hands_to": ["script-supervisor", "dailies"],
+    },
+    "vfx-supervisor": {
+        "name": "VFX Supervisor",
+        "receives_from": ["cinematographer", "dailies"],
+        "hands_to": ["editor", "colorist", "production"],
+    },
+    "title-graphic-design": {
+        "name": "Title and Graphic Design",
+        "receives_from": ["director", "art-director", "line-producer"],
+        "hands_to": ["editor", "colorist", "post-supervisor"],
+    },
+}
+
+# The brand guide is the review. Graphics are built only after this gate is open.
+GRAPHICS_STAGE = "graphics"
 
 PREVIS_STAGE = "previs"
 
@@ -82,6 +145,11 @@ DELIVERY_BILLING = {
     "post-supervisor": "editor",
 }
 
+# The Trailer Editor bills to Marketing and Distribution. The Editor does not bill for it.
+TRAILER_BILLING = {
+    "trailer-editor": "marketing-distribution",
+}
+
 # A dailies call is an estimate. It is checked against the fix-loop ceiling and not charged.
 # The dollar amount stays the split already locked. No new bucket is added.
 DAILIES_BILLING = {
@@ -100,7 +168,11 @@ COLOR_MIX_CREW = ("colorist", "mixer")
 # The call waits for the color-mix gate. It does not wait on the delivery gate.
 DELIVERY_CREW = ("post-supervisor",)
 
-CALLABLE = PICTURE_CREW + PHASE2_CREW + DAILIES_CREW + SOUND_CREW + COLOR_MIX_CREW + DELIVERY_CREW
+# The trailer can be written while its gate is closed. Delivery does not wait on it.
+TRAILER_STAGE = "trailer"
+TRAILER_CREW = ("trailer-editor",)
+
+CALLABLE = PICTURE_CREW + PHASE2_CREW + DAILIES_CREW + SOUND_CREW + COLOR_MIX_CREW + DELIVERY_CREW + TRAILER_CREW
 
 PREP_STAGES = (
     "director",
