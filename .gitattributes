@@ -1,3 +1,5 @@
+# These rules apply to media committed in this studio repo.
+# A film folder outside the repo ignores its own media. It does not use these paths.
 # Video files
 *.mp4 filter=lfs diff=lfs merge=lfs -text
 *.webm filter=lfs diff=lfs merge=lfs -text

@@ -9,8 +9,8 @@ The Director does not approve the plan. Ron does, through the Line Producer.
 From the repo root:
 
 ```bash
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline intake
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline answer \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline intake
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline answer \
   --answers productions/the-last-marker/treatment/questions.json
 ```
 

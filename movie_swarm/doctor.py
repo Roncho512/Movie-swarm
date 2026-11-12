@@ -18,6 +18,7 @@ from pathlib import Path
 
 from movie_swarm.assets import ASSET_ROOT_ENV, load_asset_config
 from movie_swarm.envfile import load_env
+from movie_swarm.films import films_root_line, production_line
 from movie_swarm.paths import repo_root
 from movie_swarm.redact import KEY_NAMES
 
@@ -40,6 +41,10 @@ def main(argv: list[str] | None = None, *, env_path: str | Path | None = None, t
         action="store_true",
         help="Free read-only checks for Anthropic and ElevenLabs. Prints the HTTP status only.",
     )
+    parser.add_argument(
+        "--production",
+        help="Production name or folder to check. A name uses the films root. The path is not printed.",
+    )
     args = parser.parse_args(argv)
     env_file = Path(env_path) if env_path is not None else repo_root() / ".env"
     loaded = load_env(env_file)
@@ -48,6 +53,7 @@ def main(argv: list[str] | None = None, *, env_path: str | Path | None = None, t
         ping=args.ping,
         transport=transport,
         loaded_names=loaded,
+        production=args.production,
     )
     print("\n".join(lines))
     return 1 if failed else 0
@@ -59,6 +65,7 @@ def report(
     ping: bool = False,
     transport=None,
     loaded_names: list[str] | None = None,
+    production: str | None = None,
 ) -> tuple[list[str], bool]:
     """The check lines, and whether a required import is missing."""
     lines = [f"Python: {sys.version.split()[0]}"]
@@ -74,9 +81,15 @@ def report(
         present = "yes" if os_value(name) else "no"
         lines.append(f"{name}: {present}")
     lines.append(asset_root_line(loaded_names=loaded_names))
+    lines.append(films_root_line(loaded_names=loaded_names))
+    production_failed = False
+    if production:
+        line = production_line(production)
+        lines.append(line)
+        production_failed = line != "production: folder exists"
     if ping:
         lines.extend(ping_lines(transport or urllib_status))
-    return lines, bool(missing)
+    return lines, bool(missing) or production_failed
 
 
 def missing_requirements(requirements: Path | None = None) -> list[str]:

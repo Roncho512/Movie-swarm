@@ -1,7 +1,7 @@
 # Storyboard
 
-Status: approved by ron.
-Approve the storyboard previs gate.
+Status: draft. Not approved.
+The previs approval from 2026-11-10 is in archive/gates/storyboard/. This copy is not an approved gate.
 
 The look is stated once. Each shot below is one beat. It lists only its own frame.
 

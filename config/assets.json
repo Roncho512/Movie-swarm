@@ -1,4 +1,5 @@
 {
   "asset_root": null,
+  "films_root": null,
   "env_var": "MOVIE_SWARM_ASSET_ROOT"
 }

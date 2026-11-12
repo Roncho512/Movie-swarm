@@ -7,7 +7,7 @@ A continuity check is the file it writes before anyone generates a picture. It i
 Run it through the Director, after the Prop Master has locked the props:
 
 ```bash
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent script-supervisor --crew-command check --estimate 0
 ```
 

@@ -3,7 +3,7 @@
 The Prop Master locks the hero props a production already defined. Definitions live in `props/prop-definitions.json` when the production has them. Otherwise the lock uses the approved treatment and the brief, and it does not invent a side.
 
 ```bash
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent prop-master --crew-command lock --estimate 0
 ```
 

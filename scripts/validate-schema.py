@@ -30,6 +30,7 @@ from movie_swarm.envfile import load_env
 
 load_env()
 
+from movie_swarm.films import FilmsError, resolve_production
 from movie_swarm.validate import audit_exit_code, audit_production, format_audit, validate_file
 
 
@@ -44,12 +45,17 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--production",
-        help="Audit every JSON file in a production folder",
+        help="Audit every JSON file in a production. A name uses the films root. A path may be outside this repo.",
     )
     args = parser.parse_args(argv)
 
     if args.production:
-        items = audit_production(args.production)
+        try:
+            production = resolve_production(args.production)
+        except FilmsError as exc:
+            print(exc)
+            return 1
+        items = audit_production(production)
         print(format_audit(items))
         return audit_exit_code(items)
 

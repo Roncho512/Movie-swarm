@@ -3,9 +3,9 @@
 Flag shots that need VFX. Write the task, the method, and the risk, and the turnover for the editor and the colorist. Review those shots again in dailies.
 
 ```bash
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent vfx-supervisor --crew-command breakdown --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent vfx-supervisor --crew-command review --estimate 0
 ```
 
