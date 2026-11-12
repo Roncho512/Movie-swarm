@@ -28,8 +28,10 @@ Generation runs on provider servers, not on the laptop that holds the repo. Vide
 | `agents/10-script-supervisor/`, `11-prop-master/`, `12-stunt-coordinator/` | Phase 2 roles. The programs are in `movie_swarm/`. |
 | `agents/13-assistant-director/` through `18-vfx-supervisor/` | Phase 8.6 roles: schedule, lighting, grip, wardrobe, makeup, and VFX. The programs are in `movie_swarm/`. |
 | `agents/19-title-graphic-design/` | Title and Graphic Design. Research, the brand guide, and the graphic specs. The program is in `movie_swarm/`. |
-| `movie_swarm/` | Shared code: checklists, the run record, gates, money, the Director, the Line Producer, the phase 2 package, the generation quote, the dailies review, the edit, sound and score, color and mix, delivery, title and graphic design, the offline studio run, and the live provider gate. |
-| `config/` | Gates, the $500 cap, model names, and the asset root. |
+| `agents/20-trailer-editor/` | Trailer Editor. Research, the spoiler guard, the plan, and the cut. The program is in `movie_swarm/`. |
+| `movie_swarm/` | Shared code: checklists, the run record, gates, money, the per-film budget, the Director, the Line Producer, the phase 2 package, the generation quote, the dailies review, the edit, sound and score, color and mix, delivery, title and graphic design, the trailer, the offline studio run, and the live provider gate. |
+| `tools/budget-calculator/` | One static page for the whole film budget. No build step. |
+| `config/` | Gates, the fallback $500 cap, the rate card, model names, and the asset root. |
 | `schemas/` | The checklists. |
 | `productions/the-last-marker/` | The test film. |
 | `scripts/` | Commands you run from the repo root. |
@@ -48,7 +50,13 @@ Generation runs on provider servers, not on the laptop that holds the repo. Vide
 
 **Gates.** `config/gates.json` has one switch per stage. `true` means Ron reviews it. A stage with no switch is an error, so a typo cannot skip a review.
 
-**Budget cap.** The film cap is $500 in `config/gates.json`. Landing on $500 is allowed. Going over pauses the spend and writes an approval request. Retakes use the same cap. After Ron approves the treatment, each stage also has its own ceiling. A retake spends from that stage's ceiling and from the film cap.
+**Budget.** A film can keep `productions/<film>/budget.json`. The total can be any amount. Line shares are percentages of that total. The default shares are the locked split: Production 54%, Sound 11%, Fix loop 10%, QA 9%, Art 5%, Director 4%, Editor 3%, Cinematographer 2%, Screenwriter 1%, Line Producer 1%. At $500, with the trailer off and no contingency, those percentages are the current dollar ceilings.
+
+When the trailer is on, Marketing and Distribution takes its share. The suggested share is 10%. The other lines scale down so the dollars still equal the budget. Contingency is a percent held back inside the budget. The suggested share is 10%, and it can be 0. Retakes and tier upgrades draw on it after a line is spent. A film with no budget file does not use this math. It keeps the $500 cap in `config/gates.json` and the locked split.
+
+The budget is soft. Landing on the number is allowed. Going past a line, once contingency is used up, or past the film total, pauses the spend and writes an approval request. Ron can approve that request. The spend is recorded, including the overage, and `budget.json` is not edited. Nothing is spent past the budget without that record. Reports say whether the film is under or over, and by how much.
+
+Each stage can name a tier: good, better, or best. The prices live in `config/rate-card.json`. For picture, good is Gemini Omni 1.2 Flash, better is Seedance 2.0 fast at 720p, and best is Seedance 2.0 at 720p. Seedance 2.0 at 1080p is a top option. A price this repo cannot verify is marked unknown. The calculator at `tools/budget-calculator/index.html` is the one screen for the whole film. It imports and exports the same `budget.json` the engine reads.
 
 **Model routing.** `config/model-routing.json` names the model for each role. The Line Producer and the question list use Claude Haiku 5.5. The Director's draft uses Claude Sonnet 5.5. The final treatment pass uses Claude Opus 5.5. The older video program still calls Seedance 2.0. The generation pipeline reads the production role's preview and final purposes, which name Gemini Omni 1.2 Flash. The dailies role names that same picture model, because a later build may watch the clip with it. This build does not call it. The editor assembles with ffmpeg. A notes purpose names Claude Haiku 5.5 and is not called unless `--live` is passed, and even then the rate card has no text price, so the call is refused until Ron approves a one-call price. Sound spotting and the Composer use Claude Haiku 5.5 for notes. Dialogue, effects, and score name ElevenLabs. Seedance and Kling stay alternates. A routing override can name one for a shot. The quote prices only models listed in `config/generation-rates.json`. A live picture call also needs an endpoint on that row. Seedance 2.0 and Seedance 2.0 fast have fal addresses copied from this routing file. Gemini Omni and Kling do not, so a live call for them is refused. The Colorist uses Claude Haiku 5.5 for the grade note. ffmpeg applies the grade. The Mixer renders with ffmpeg. The Post Supervisor uses Claude Haiku 5.5 for a packaging note. ffmpeg renders the delivery files. QC is local. It does not call the QA program's model. Audio, color, and delivery still have no published price in the rate card.
 
@@ -97,7 +105,7 @@ Two commands. Both take a production folder and a run id. Neither waits for you 
 
 | Command | What Ron uses it for |
 |---|---|
-| `scripts/line-producer.py` | Start a run, read status, record a spend, approve or reject a gate, decide a spend request, add a credit, or prepare one test shot. |
+| `scripts/line-producer.py` | Start a run, read status, write or report the film budget, record a spend, approve or reject a gate, decide a spend request, add a credit, or prepare one test shot. |
 | `scripts/director.py` | Draft a treatment, apply an answers file, call a crew agent. |
 
 Question file: `productions/<id>/treatment/questions.json`. Each question has an `id`, a `topic`, the question, and `answer`. Ron fills `answer`, or sends a separate file shaped as `{ "answers": [ { "id", "answer" } ] }`.
@@ -108,9 +116,9 @@ Gate file, if you prefer a file to flags:
 { "stage": "treatment", "decision": "approved", "by": "ron", "note": "Lock it." }
 ```
 
-A spend that would break a ceiling writes `runs/<run-id>/requests/req-001.json`. Approve or reject it with `decide`. Approving a real spend books the money, even if it is past the cap. That overage stays visible in the status. Approving a dry-run hold does not book money. It allows that one checked call.
+A spend that would break a ceiling writes `runs/<run-id>/requests/req-001.json`. Approve or reject it with `decide`. Approving a real spend books the money, even if it is past the budget. When the film has `budget.json`, that approval is recorded on the ledger and the file is not edited. The status says under or over, and by how much. Approving a dry-run hold does not book money. It allows that one checked call.
 
-Crew the Director can call: `prop-master`, `script-supervisor`, `cinematographer`, `stunt-coordinator`, `costume-designer`, `makeup-hair`, `gaffer`, `key-grip`, `assistant-director`, `vfx-supervisor`, `production`, `sound-designer`, `composer`, `editor`, `qa`, `fix-loop`, `dailies`, `colorist`, `mixer`, `post-supervisor`. The Director command `studio`, and `scripts/studio.py`, walk those calls from the treatment through delivery and stop at each closed gate. They do not approve a gate. A test may pass `auto_approve=True` to `run_studio`. That records the approver as `test-auto-approve`. The command line does not pass it. The generation gate stays closed either way.
+Crew the Director can call: `prop-master`, `script-supervisor`, `cinematographer`, `stunt-coordinator`, `costume-designer`, `makeup-hair`, `gaffer`, `key-grip`, `assistant-director`, `vfx-supervisor`, `title-graphic-design`, `trailer-editor`, `production`, `sound-designer`, `composer`, `editor`, `qa`, `fix-loop`, `dailies`, `colorist`, `mixer`, `post-supervisor`. The trailer commands are `research`, `guard`, `sign`, `plan`, `cut`, and `recheck`. They run only when the film's budget turns the trailer on. The Director command `studio`, and `scripts/studio.py`, walk those calls from the treatment through delivery and stop at each closed gate. They do not approve a gate. A test may pass `auto_approve=True` to `run_studio`. That records the approver as `test-auto-approve`. The command line does not pass it. The generation gate stays closed either way.
 
 Phase 2 commands are `lock`, `check`, `package`, `boards`, `breakdown`, `plan`, `schedule`, and `review` for the VFX pass that reads dailies. They read the approved treatment. They write files. They do not require the previs gate to be open already, because those files are what Ron reviews. Ron approved that gate for The Last Marker on 2026-11-10. The estimate is checked against an existing ceiling in the locked split and is not charged.
 
@@ -228,6 +236,18 @@ Hands off to: the editor and the colorist, through a note on their reading copie
 
 The role bills to the Art line, the same $25 the Costume Designer and Makeup and Hair use. No new budget line is added. The admin model is Claude Haiku 5.5. This build does not call it. Nothing is spent.
 
+## Trailer Editor
+
+Inputs: the treatment, director notes when they exist, the brand guide when it exists, the Editor's approved takes, the locked cut, and the graded picture when it is on disk. Tone and the spoiler-guard sign-off come from the Director. Cards come from Title and Graphic Design. Music comes from the cue sheet. The mix uses the film's loudness target.
+
+Outputs: `marketing/trailer-research.json` and a short Markdown note. Each item is sourced or inferred. Then `marketing/spoiler-guard.json`. Then `marketing/trailer-plan.json`, with beats, source shots, timecodes, card text, music, and sound. Then `marketing/trailer-cut.json`: a teaser and a trailer, each in 16:9 and 9:16. Lengths come from the production. When they are missing, the teaser is 15 seconds and the trailer is 45 seconds, and the plan says so.
+
+The role runs only when `budget.json` turns the trailer on. A film without that switch delivers as before. Research is required before the guard or the plan. A signed guard is required before the plan. A plan is required before the cut. The cut uses approved takes only. A beat that cannot be made is dropped and logged. The role does not request a new shot. If the locked cut changes, the trailer is marked stale until the plan is written again.
+
+A trailer gate starts closed. It sits beside delivery. The film can be delivered while it is still closed. The Post Supervisor adds `delivery/marketing/` to the package when the cut exists, lists the files with checksums, and writes a short usage sheet. Posting stays with Ron.
+
+The role bills to Marketing and Distribution. The Editor is a collaborator and does not bill for it. The admin model is Claude Haiku 5.5. This build does not call it. Nothing is spent.
+
 ## Production
 
 Inputs: a shot list JSON.
@@ -335,7 +355,7 @@ Outputs: `delivery/delivery-plan.json`, checked against `delivery-plan.schema.js
 
 QC writes `delivery/qc-report.json`, checked against `qc-report.schema.json`, and `delivery/qc-report.md`. Each row is pass, fail, or skipped. The checks are duration, resolution, frame rate, loudness, black stretches, frozen stretches, and caption timing. The tools are the same local ffprobe, blackdetect, and freezedetect checks the dailies reviewer uses. The QA program's Claude model is not called. A skipped row means the file or the tool was missing. A fail makes the verdict fail. The package is still saved.
 
-The manifest is `delivery/delivery-manifest.json`, checked against `delivery-manifest.schema.json`, plus `delivery/delivery-manifest.md`. It lists each file, a SHA-256 checksum when the file is on disk, the film spend against the cap, the locked stage split and what each line has spent, and every gate record: who, when, and the note. A gate with no record is listed as pending. No delivery rate is on the rate card, so that price is unknown and is not stored as zero. Nothing is charged. The Post Supervisor is checked against the editor allocation. No new budget line is added. The admin model is Claude Haiku 5.5. This build does not call it.
+The manifest is `delivery/delivery-manifest.json`, checked against `delivery-manifest.schema.json`, plus `delivery/delivery-manifest.md`. It lists each file, a SHA-256 checksum when the file is on disk, the film spend against the budget, the stage lines and what each line has spent, and every gate record: who, when, and the note. When a trailer cut is present, the package also contains `delivery/marketing/` and a short usage sheet, and those files are listed with checksums. A gate with no record is listed as pending. No delivery rate is on the rate card, so that price is unknown and is not stored as zero. Nothing is charged. The Post Supervisor is checked against the editor allocation. No new budget line is added. The admin model is Claude Haiku 5.5. This build does not call it.
 
 The package folder is `delivery/` inside the production unless `MOVIE_SWARM_ASSET_ROOT` or `asset_root` in `config/assets.json` is set. The resolved path is recorded on the manifest. The code does not name a drive. `delivery/location.json` in the production folder points at the package.
 
@@ -409,20 +429,25 @@ The stage flow, from the treatment to a delivered file. Each arrow waits for Ron
 flowchart TD
   treatment[Treatment]
   previs[Previs package]
+  graphics[Titles and brand guide]
   quote[Generation quote]
   dailies[Dailies review]
   edit[Edit and picture lock]
   sound[Sound and score]
   color[Color and mix]
+  trailer[Trailer, when it is on]
   package[Delivery package]
   delivered[Film delivered]
   treatment -->|treatment gate| previs
-  previs -->|previs gate| quote
+  previs -->|previs gate| graphics
+  graphics -->|graphics gate| quote
   quote -->|production gate| dailies
   dailies -->|dailies gate, then editor gate| edit
   edit -->|edit gate, then sound-designer gate| sound
   sound -->|sound gate| color
   color -->|color-mix gate| package
+  color -->|trailer on| trailer
+  trailer -->|trailer gate, optional| package
   package -->|delivery gate| delivered
 ```
 

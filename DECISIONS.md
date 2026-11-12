@@ -859,3 +859,93 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: With no key, the files are labeled `offline-deterministic` and still name the model they would have used. Harbor Night's proof spends $0.00. The provider rules from D80 through D86 are unchanged.
 - Who decided: Cursor cloud agent. Pending Ron's approval at merge.
 
+## D99 — One budget and one calculator
+
+- Status: decided
+- Date: 2026-11-11
+- Context: The film had a hard $500 cap and a locked split, and a trailer would have needed a second set of numbers.
+- Decision: There is one budget and one calculator. The trailer is a line on that budget, on the same screen as the rest of the film.
+- Consequences: `tools/budget-calculator/index.html` is the only calculator. It reads and writes `budget.json`. The engine reads that same file.
+- Who decided: Ron, 2026-11-11 call
+
+## D100 — The budget is not a hard cap
+
+- Status: decided
+- Date: 2026-11-11
+- Context: A film should be able to come in under the number, or a little over it, the way a production budget works.
+- Decision: Going past a line or the film total still pauses the spend and writes an approval request. Ron can approve that overage without editing the budget. The ledger records it. Reports say under or over, and by how much. Nothing is spent past the budget without that record.
+- Consequences: A film with no `budget.json` still pauses the same way. With a budget file, the approval does not change the file, and the status shows the gap.
+- Who decided: Ron, 2026-11-11 call
+
+## D101 — The budget number is per film
+
+- Status: decided
+- Date: 2026-11-11
+- Context: One film might be $50. Another might be $2,000. The old cap was one number for every film.
+- Decision: Each film sets its own total in `budget.json`. Any amount is allowed.
+- Consequences: $50 and $2,000 use the same line shares and scale the dollars. A film with no file keeps the $500 cap and the locked split.
+- Who decided: Ron, 2026-11-11 call
+
+## D102 — The trailer is optional and uses approved takes
+
+- Status: decided
+- Date: 2026-11-11
+- Context: Some films need a teaser and a trailer. Some do not. The trailer should not invent shots, and it should not come out of the Editor's line.
+- Decision: The trailer is optional. It runs only when the film turns it on. It uses approved takes only. It has its own Marketing and Distribution line. The Editor is a collaborator and does not bill for it.
+- Consequences: A film with the trailer off delivers as before. A beat that cannot be made from an approved take is dropped and logged. The spend is checked against Marketing and Distribution.
+- Who decided: Ron, 2026-11-11 call
+
+## D103 — Marketing takes 10 percent, and the other lines scale
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: The trailer needs a line, and the film total should still match the budget.
+- Decision: The suggested Marketing and Distribution share is 10 percent of the film budget. When the trailer is on, the other lines are multiplied by the rest, so the lines plus marketing equal the budget. The share can be changed per film.
+- Consequences: At $500 with the trailer on and no contingency, marketing is $50 and Production is $243. With the trailer off, the lines stay on the locked split.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D104 — Contingency is 10 percent, held inside the budget
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: Reshoots, extra research, and a model upgrade need a reserve that is still part of the budget.
+- Decision: The suggested contingency is 10 percent, held back from every line, including marketing. It can be 0. Retakes and tier upgrades draw on it after the stage line is spent. A new budget written without a contingency flag uses 10. A film with no budget file uses 0, so today's ceilings stay exact.
+- Consequences: At $500 with 10 percent contingency and the trailer off, the lines keep 90 percent of today's dollars and the reserve is $50.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D105 — Tiers are good, better, and best
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: A stage should be able to move up a model when the line can hold it.
+- Decision: Each stage names good, better, or best. Picture good is Gemini Omni 1.2 Flash. Better is Seedance 2.0 fast at 720p. Best is Seedance 2.0 at 720p. Seedance 2.0 at 1080p is a top option, not a fourth tier. Prices live in `config/rate-card.json`. A price this repo cannot verify is marked unknown. A tier change that fits the line plus contingency is applied. One that does not fit uses the same approval request as an overage.
+- Consequences: The calculator and the budget command both read the rate card. A live call still uses `config/generation-rates.json` and still refuses an unknown endpoint.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D106 — The budget files
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: The engine, the calculator, and the Line Producer need one file shape.
+- Decision: The film budget is `budget.json` in the production folder, checked against `film-budget.schema.json`. The rate card is `config/rate-card.json`. Trailer research, the spoiler guard, the plan, and the cut live under `marketing/`. When the production does not name trailer lengths, the teaser is 15 seconds and the trailer is 45 seconds, and the plan says so.
+- Consequences: The calculator exports that same `budget.json`. A missing length is labeled as a default.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D107 — A trailer gate that does not block delivery
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: Ron should be able to accept the trailer, and a film without one should still ship.
+- Decision: `config/gates.json` has a `trailer` switch. It starts on, so the gate starts closed. The studio can write the trailer while the gate is closed. Delivery does not wait for it. Approving the gate stamps the cut. The film can be delivered either way.
+- Consequences: Harbor Night with the trailer off does not write `marketing/`. With the trailer on, the files are written and the gate stays closed until Ron approves it.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+
+## D108 — The Trailer Editor uses the cheap admin model
+
+- Status: proposal, pending Ron's approval at merge
+- Date: 2026-11-12
+- Context: D6 says cheap models for admin. This role follows a procedure. The research, the guard, and the plan are production data.
+- Decision: The Trailer Editor uses Claude Haiku 5.5. The name is in `config/model-routing.json`. The skill file holds the procedure. The production folder holds the research, the guard, and the plan. The offline path does not call the model and does not read a key. None of these commands pass `--live`.
+- Consequences: With no key, the files are labeled `offline-deterministic` and still name the model they would have used. Harbor Night's proof spends $0.00. The provider rules from D80 through D86 are unchanged.
+- Who decided: Cursor cloud agent. Pending Ron's approval at merge.
+

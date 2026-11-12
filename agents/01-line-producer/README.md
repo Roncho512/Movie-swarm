@@ -12,7 +12,7 @@ From the repo root:
 python3 scripts/line-producer.py --production productions/the-last-marker --run phase-1 status
 ```
 
-Other commands: `start`, `spend`, `approve-gate`, `decide`, `credit`, and `test-shot`. `test-shot` prepares one picture call for one shot. It sends that call only with `--live`, and only when the generation gate, the key, and a known price all allow it. Pass `--file` when the decision is a JSON file. Nothing in this command waits for a typed answer.
+Other commands: `start`, `budget`, `spend`, `approve-gate`, `decide`, `credit`, and `test-shot`. `budget` estimates the film and can write `budget.json`. The report shows the budget, the estimate, the spend, the contingency left, and under or over by line. `test-shot` prepares one picture call for one shot. It sends that call only with `--live`, and only when the generation gate, the key, and a known price all allow it. Pass `--file` when the decision is a JSON file. Nothing in this command waits for a typed answer.
 
 ## What it will not do
 

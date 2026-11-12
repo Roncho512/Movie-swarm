@@ -2,6 +2,8 @@
 
 Movie Swarm turns a screenplay into a finished short film. Specialized helpers, called agents, do the steps. Ron is the executive producer. He reviews the work and decides what is allowed to spend money.
 
+New to a film, or coming back after a long gap? Read [START-HERE.md](START-HERE.md).
+
 ## Current status
 
 Phase 0 is on main. It merged on 2026-11-10 in [pull request 1](https://github.com/Roncho512/Movie-swarm/pull/1), merge `c369689`. Phase 0 is the shared checklist, the run record, the review gates, and the $500 cap.
@@ -27,6 +29,8 @@ Phase 8.5 wires the provider clients. A provider is the company that makes the p
 Phase 8.6 adds six prep roles, on top of the Phase 8.5 branch. The Assistant Director writes a shooting schedule and a call sheet from the shot list and the scenes, and flags stunt beats. The Gaffer writes a lighting plan from the camera package. The Key Grip writes camera support and rigging from that plan and the shot list. The Costume Designer and Makeup and Hair lock per-character specs the way the Prop Master locks props. The Script Supervisor, the dailies review, and the edit check those locks for drift. The VFX Supervisor writes a breakdown and turnover notes for the editor and the colorist, then reviews the VFX shots after dailies. No new gate was added. The new roles bill against lines that are already in the locked split. The proof is Harbor Night. Nothing was spent. The Last Marker folder was not changed.
 
 Phase 8.7 adds Title and Graphic Design, on top of the Phase 8.6 branch. The role reads the treatment, the screenplay, the brief, the style bible, and the director's notes, and writes that research down before it designs anything. The brand guide is built only from the research. Titles, title cards, end credits, subtitle styling, a designed poster, and the collateral are built only after the guide is approved. The Art Director still owns the in-film look. Subtitle timing stays with the Post Supervisor. A graphics gate starts closed. The role bills to the Art line. The locked $500 split did not change. The proof is Harbor Night. Nothing was spent. The Last Marker folder was not changed.
+
+Phase 8.8 adds one budget per film and the Trailer Editor, on top of the Phase 8.7 branch. The budget lives in `budget.json` in the production folder. One calculator, `tools/budget-calculator/index.html`, shows the whole film, including the trailer when it is on. A film with no budget file keeps the $500 cap and the locked split. Going past the budget still pauses and writes an approval request. Ron can approve that overage without editing the budget. The Trailer Editor is role 20. It runs only when the budget turns the trailer on, it cuts from approved takes, and it bills to Marketing and Distribution. A trailer gate starts closed. The film can deliver without it. The proof is Harbor Night. Nothing was spent. The Last Marker folder was not changed.
 
 Film facts stay in the production folder. The engine does not know that this film's exhaust is on the right, that the watch is on the left wrist, that the bike is a 1965, that the story is 1967, or that the look is Sergio Leone. Those sentences live in `productions/the-last-marker/`. A different film uses its own files. The pilot sound prompts moved out of the sound program and into `productions/the-last-marker/audio/sound-prompts.json`.
 
