@@ -2,14 +2,18 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "asset-config.schema.json",
   "title": "Asset Root Config",
-  "description": "Where finished media lives. Null keeps files inside the production folder in this repo. Setting a path does not move existing files.",
+  "description": "Where finished media lives, and where film folders live when no films root is set. Null keeps media in the production folder, wherever that folder is. Setting a path does not move existing files.",
   "type": "object",
   "additionalProperties": false,
   "required": ["asset_root"],
   "properties": {
     "asset_root": {
       "type": ["string", "null"],
-      "description": "Folder on disk for finished media. Null means the production folder inside the repo."
+      "description": "Folder on disk for finished media. Null means the production folder, wherever that folder lives."
+    },
+    "films_root": {
+      "type": ["string", "null"],
+      "description": "Folder that holds each film's working folder. Null means MOVIE_SWARM_FILMS_ROOT, then the asset root. A name passed as a production is this folder plus the name."
     },
     "env_var": {
       "type": "string",

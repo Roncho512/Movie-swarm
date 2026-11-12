@@ -23,16 +23,25 @@ from movie_swarm.envfile import load_env
 
 load_env()
 
+from movie_swarm.films import FilmsError, resolve_production
 from movie_swarm.studio import StudioError, run_studio
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run the studio offline. Stops at each gate. Spends nothing.")
-    parser.add_argument("--production", required=True, help="Production folder")
+    parser.add_argument(
+        "--production",
+        required=True,
+        help="Production name under the films root, or a path to the production folder",
+    )
     parser.add_argument("--run", default="studio-1")
     args = parser.parse_args(argv)
     try:
-        result = run_studio(args.production, run_id=args.run, auto_approve=False)
+        production = resolve_production(args.production)
+        result = run_studio(production, run_id=args.run, auto_approve=False)
+    except FilmsError as exc:
+        print(exc)
+        return 1
     except StudioError as exc:
         print(exc)
         return 1

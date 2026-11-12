@@ -1,10 +1,10 @@
 """Where finished media lives.
 
-The default is the production folder inside this repo, which is where the
-files are today. Set ``MOVIE_SWARM_ASSET_ROOT`` or ``asset_root`` in
-``config/assets.json`` to a folder on an external drive. This does not move
-or delete anything. Callers that use ``resolve_asset`` look at the new root
-only after one of those is set. The environment variable wins over the file.
+With no asset root, media stays in the production folder. That folder may
+live outside this repo. Set ``MOVIE_SWARM_ASSET_ROOT`` or ``asset_root`` in
+``config/assets.json`` to put finished media under that root, in a directory
+named for the production folder. This does not move or delete anything.
+The environment variable wins over the file.
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ def load_asset_config(config_path: str | Path | None = None) -> dict:
 
 
 def configured_asset_root(config_path: str | Path | None = None) -> Path | None:
-    """The external asset root, or None when media stays in the repo."""
+    """The external asset root, or None when media stays in the production folder."""
     env = os.environ.get(ASSET_ROOT_ENV, "").strip()
     if env:
         return Path(env).expanduser()

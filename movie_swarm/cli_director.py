@@ -11,6 +11,7 @@ from pathlib import Path
 
 from movie_swarm.director import Director, DirectorError
 from movie_swarm.dispatch import CrewCall
+from movie_swarm.films import FilmsError, resolve_alongside, resolve_production
 from movie_swarm.providers import llm_for_command
 from movie_swarm.studio import StudioError, run_studio
 
@@ -19,7 +20,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Director: draft a treatment, take Ron's answers, and call crew through the Line Producer."
     )
-    parser.add_argument("--production", required=True, help="Production folder")
+    parser.add_argument(
+        "--production",
+        required=True,
+        help="Production name under the films root, or a path to the production folder",
+    )
     parser.add_argument("--run", default="phase-1")
     parser.add_argument(
         "--offline",
@@ -92,7 +97,15 @@ def main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
     try:
+        production = resolve_production(args.production)
+        args.production = str(production)
+        for field in ("screenplay", "partial", "answers", "shot_list", "output_dir", "takes"):
+            if getattr(args, field, None):
+                setattr(args, field, resolve_alongside(production, getattr(args, field)))
         return _run(args)
+    except FilmsError as exc:
+        print(exc)
+        return 1
     except (DirectorError, StudioError) as exc:
         print(exc)
         return 1

@@ -19,6 +19,7 @@ from movie_swarm.budget import (
     read_estimate_inputs,
     write_film_budget,
 )
+from movie_swarm.films import FilmsError, resolve_alongside, resolve_production
 from movie_swarm.line_producer import LineProducer, LineProducerError
 from movie_swarm.money import money_number
 from movie_swarm.llm import LLMError
@@ -31,7 +32,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Line Producer: budget, gates, credits, and status for one film run."
     )
-    parser.add_argument("--production", required=True, help="Production folder")
+    parser.add_argument(
+        "--production",
+        required=True,
+        help="Production name under the films root, or a path to the production folder",
+    )
     parser.add_argument("--run", help="Run id. Required except for start, which can choose one.")
     parser.add_argument(
         "--live",
@@ -116,14 +121,19 @@ def main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
     try:
-        return _run(args)
+        production = resolve_production(args.production)
+        if getattr(args, "file", None):
+            args.file = resolve_alongside(production, args.file)
+        return _run(args, production)
+    except FilmsError as exc:
+        print(exc)
+        return 1
     except (LineProducerError, BudgetError, ShotModelError, ModelRoutingError, OSError, json.JSONDecodeError) as exc:
         print(exc)
         return 1
 
 
-def _run(args) -> int:
-    production = Path(args.production)
+def _run(args, production: Path) -> int:
     if args.command == "start":
         producer = LineProducer.start(production, run_id=args.run, stage=args.stage)
         print(producer.status_text())

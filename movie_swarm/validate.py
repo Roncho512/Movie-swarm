@@ -238,6 +238,29 @@ def validate_file(path: str | Path, schema: str | Path | None = None) -> Validat
     )
 
 
+def _audit_label(folder: Path, path: Path) -> str:
+    """A stable label that does not require the production to live in this repo.
+
+    Inside the repo, the label is the repo-relative path. Outside it, the
+    label is the production folder name plus the path inside that folder.
+    The films root is not included.
+    """
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(repo_root().resolve()).as_posix()
+    except ValueError:
+        inside = resolved.relative_to(folder.resolve()).as_posix()
+        return f"{folder.name}/{inside}"
+
+
+def _known_reason(known: dict[str, str], folder: Path, path: Path, label: str) -> str:
+    """Match a historical mismatch by repo path or by the same path under the folder name."""
+    if label in known:
+        return known[label]
+    inside = path.resolve().relative_to(folder.resolve()).as_posix()
+    return known.get(f"productions/{folder.name}/{inside}", "")
+
+
 def load_known_mismatches() -> dict[str, str]:
     """Historical files that are allowed to fail the production audit."""
     path = config_dir() / "known-schema-mismatches.json"
@@ -268,14 +291,9 @@ def audit_production(production_dir: str | Path) -> list[AuditItem]:
         raise FileNotFoundError(f"Production folder not found: {folder}")
 
     known = load_known_mismatches()
-    root = repo_root()
     items: list[AuditItem] = []
     for path in sorted(folder.rglob("*.json")):
-        resolved = path.resolve()
-        try:
-            rel = resolved.relative_to(root.resolve()).as_posix()
-        except ValueError:
-            rel = resolved.as_posix()
+        rel = _audit_label(folder, path)
         schema_name = matching_schema_name(path)
         if schema_name is None:
             items.append(AuditItem(path=rel, schema_name=None, status="skip"))
@@ -284,14 +302,15 @@ def audit_production(production_dir: str | Path) -> list[AuditItem]:
         if result.ok:
             items.append(AuditItem(path=rel, schema_name=schema_name, status="pass"))
             continue
-        if rel in known:
+        reason = _known_reason(known, folder, path, rel)
+        if reason:
             items.append(
                 AuditItem(
                     path=rel,
                     schema_name=schema_name,
                     status="known",
                     errors=result.errors,
-                    reason=known[rel],
+                    reason=reason,
                 )
             )
             continue
