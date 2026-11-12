@@ -3,7 +3,7 @@
 Write the camera support and the rigging for each shot. Support follows the shot list. Rigging follows the gaffer.
 
 ```bash
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent key-grip --crew-command plan --estimate 0
 ```
 

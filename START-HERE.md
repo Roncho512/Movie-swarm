@@ -10,6 +10,21 @@ cp -a tests/fixtures/harbor-night /tmp/harbor-night
 
 A stop from `scripts/studio.py` exits with status 2. That means the studio is waiting on a gate. It is not a crash. Read the file it names, then approve the gate, then run the studio again.
 
+## Making The Last Marker
+
+The first film is `productions/the-last-marker`. Story facts stay in that folder. This page does not repeat them.
+
+Prior approvals are in `productions/the-last-marker/archive/`. The live treatment is a draft, so intake can write it again. Intake reads `treatment/inputs.json` and does not approve the gate. If a treatment is already approved, intake stops. Do not draft again. Read `treatment/treatment.md`.
+
+From the repo root:
+
+```bash
+python3 scripts/studio.py --production productions/the-last-marker --run first-film-1
+python3 scripts/line-producer.py --production productions/the-last-marker --run first-film-1 budget
+```
+
+On the key-test machine the same commands can use `/tmp/movie-swarm-venv/bin/python` in place of `python3`. Exit status 2 means the run is waiting at the treatment gate. Read `productions/the-last-marker/treatment/treatment.md`. The quote comes from `budget.json`. The steps that belong only to this film are in `productions/the-last-marker/README.md`.
+
 ## Set up the machine
 
 Do this once on the machine that will run the film.

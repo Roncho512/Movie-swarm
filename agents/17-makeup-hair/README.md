@@ -3,7 +3,7 @@
 Lock makeup, hair, and effects the production already defined. Dirt, sweat, wounds, and aging stay the production's words.
 
 ```bash
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent makeup-hair --crew-command lock --estimate 0
 ```
 

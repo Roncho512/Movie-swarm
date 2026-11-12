@@ -1093,3 +1093,39 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: A report can tell a quote from a measured charge. The running total does not change. The original ledger row stays.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
+## D125 — The first film starts from the top
+
+- Status: decided
+- Date: 2026-11-12
+- Context: D41 said build the studio first and leave `productions/the-last-marker` alone, apart from moving the pilot sound prompts. The studio through Phase 8.11 is on main. Ron said in chat on 2026-11-12, "lets do The Last Marker from the top."
+- Decision: D41 is lifted for `productions/the-last-marker` only. This is the first-film phase. The engine stays generic. Prior run state and approved gate records for this film move to `archive/` inside that folder. A new run starts at the treatment gate. The screenplay, the prop locks, the look, the style bible, and Ron's locked treatment answers stay as inputs. They are not an approved gate.
+- Consequences: The live treatment is a draft. Intake can draft again. Run `first-film-1` stops at the treatment gate. Spent on this step stays $0.00. No live call was made. Other productions are unchanged.
+- Who decided: Ron, 2026-11-12
+
+## D126 — Trailer, contingency, and the picture tier for The Last Marker
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: Ron approved the $500 stage split on 2026-11-10: Production $270, Sound $55, Fix loop $50, QA $45, Art $25, Director $20, Editor $15, Cinematographer $10, Screenwriter $5, Line Producer $5. He wants finished films to include marketing materials. The budget file can turn the trailer on, hold contingency, and name a picture tier. Those three were not part of the 2026-11-10 approval.
+- Decision: `productions/the-last-marker/budget.json` keeps that split as the line shares. The trailer is on, using the default 10 percent marketing share, and the other lines scale. Contingency is the default 10 percent. The picture tier for preview and production is better, Seedance 2.0 fast, the wired picture model proven live. Best, Seedance 2.0, is the upgrade. Trailer-on, contingency, and the tier are proposed, Ron to confirm.
+- Consequences: The Line Producer quotes the film from this file. Approving the treatment later locks the spendable lines, including marketing, and does not edit the file. Nothing in this step spends money.
+- Who decided: Cursor cloud agent. Proposed. Ron to confirm.
+
+## D127 — Intake reads creative inputs and does not approve them
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: A fresh run has to start at intake. An approved treatment makes intake stop, and a question round that already has answers makes intake stop. The locked creative answers still have to be something the Director reads.
+- Decision: `treatment/inputs.json` is a partial treatment. Intake merges it into the draft after the screenplay and the brief. `force_draft` still runs, so a status or an approval in that file does not open the gate. An explicit `--partial` still wins over the file. A film with no inputs file is unchanged.
+- Consequences: Harbor Night proves the merge and proves an approved status in the inputs file comes out as a draft. The Last Marker keeps Ron's locked answers in that file.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D128 — The treatment split follows budget.json
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: A film with `budget.json` locks the spendable lines when the treatment is approved. Intake was still proposing the unscaled cap split, so the question and the file could disagree once the trailer and contingency scale the lines.
+- Decision: When `budget.json` exists, the draft's budget cap and proposed stage split are the spendable lines from that file. Marketing is included when the trailer is on. Contingency is held back and is not a stage line. A film with no budget file keeps the proposed split of the cap.
+- Consequences: Harbor Night proves a $100 budget with the trailer on proposes production at $48.60 and marketing at $10.00, and the treatment stays a draft. The Last Marker question proposes the scaled $500 lines.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+

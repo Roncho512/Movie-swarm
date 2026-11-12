@@ -8,7 +8,7 @@ New to a film, or coming back after a long gap? Read [START-HERE.md](START-HERE.
 
 Phase 0 is on main. It merged on 2026-11-10 in [pull request 1](https://github.com/Roncho512/Movie-swarm/pull/1), merge `c369689`. Phase 0 is the shared checklist, the run record, the review gates, and the $500 cap.
 
-Phase 1 is on main. It merged on 2026-11-10 in [pull request 3](https://github.com/Roncho512/Movie-swarm/pull/3), merge `da9d54a`. The Line Producer watches the budget, the schedule, the credits, and the gates. The Director reads a screenplay and writes a treatment, which is the plan for the film before anyone generates a shot. Ron approved the Last Marker treatment gate. The $500 stage split is locked on run phase-1. Spent so far: $0.00 of $500.00.
+Phase 1 is on main. It merged on 2026-11-10 in [pull request 3](https://github.com/Roncho512/Movie-swarm/pull/3), merge `da9d54a`. The Line Producer watches the budget, the schedule, the credits, and the gates. The Director reads a screenplay and writes a treatment, which is the plan for the film before anyone generates a shot. Ron approved the Last Marker treatment gate on run phase-1. That record is in `productions/the-last-marker/archive/`. The live run is `first-film-1`, and the treatment is a draft. Spent so far: $0.00 of $500.00.
 
 Phase 2 is on main. It merged on 2026-11-10 in [pull request 4](https://github.com/Roncho512/Movie-swarm/pull/4) and [pull request 5](https://github.com/Roncho512/Movie-swarm/pull/5), merge `f6f52d4`. The storyboard is one beat per shot: 41 shots, plus the three scene 3 shots Ron added, 44 in all. Ron approved the previs gate. The note is "Approve the storyboard previs gate." No images were generated.
 
@@ -38,7 +38,9 @@ Phase 8.9 is on main. It merged on 2026-11-12 in [pull request 13](https://githu
 
 Phase 8.10 is on main. It merged on 2026-11-12 in [pull request 14](https://github.com/Roncho512/Movie-swarm/pull/14), merge `8578f4d`. The queue body is the input fields themselves. Status and result reads use the URLs the submit response returns. A shot is rounded up to a length the model accepts, and the estimate uses that length. The cheapest Seedance 2.0 fast shot is 4 seconds at 720p, $0.9676. A call that fails validation, and produces nothing, releases the booked estimate and leaves the original ledger row in place. `release --entry` does the same thing by hand. No paid call was made in that phase. The proof is Harbor Night. The Last Marker folder was not changed.
 
-Phase 8.11 is the cleanup after the first successful live picture shot. It is on its own branch and is not merged. A Seedance job can take a few minutes, so a fal picture call now waits 10 minutes by default. The pauses start at 5 seconds and grow to 15. A short progress line prints about every 30 seconds. `--wait` sets a different wait for one test shot. A timeout still leaves the estimate booked, and a re-run checks the same request. The older fal queue helpers post the input fields at the top and use the URLs fal returns. Doctor says whether the asset root came from the shell, from `.env`, or from `config/assets.json`, and whether that folder exists. It does not print the path. When fal does not report a dollar amount, the ledger marks `actual_source` as `estimate`, and status says that part of the spend is still the estimate. No paid call was made. The proof is Harbor Night. The Last Marker folder was not changed.
+Phase 8.11 is on main. It merged on 2026-11-12 in [pull request 15](https://github.com/Roncho512/Movie-swarm/pull/15), merge `c98ef2f`. A Seedance job can take a few minutes, so a fal picture call now waits 10 minutes by default. The pauses start at 5 seconds and grow to 15. A short progress line prints about every 30 seconds. `--wait` sets a different wait for one test shot. A timeout still leaves the estimate booked, and a re-run checks the same request. The older fal queue helpers post the input fields at the top and use the URLs fal returns. Doctor says whether the asset root came from the shell, from `.env`, or from `config/assets.json`, and whether that folder exists. It does not print the path. When fal does not report a dollar amount, the ledger marks `actual_source` as `estimate`, and status says that part of the spend is still the estimate. No paid call was made in that phase. The proof is Harbor Night. The Last Marker folder was not changed.
+
+The first film is underway. Ron said on 2026-11-12 to do The Last Marker from the top. D41 is lifted for `productions/the-last-marker` only. The earlier treatment and previs approvals are in that folder's `archive/`. The live treatment is a draft. Run `first-film-1` stops at the treatment gate. `budget.json` is the quote. Spent on this step: $0.00. No live call was made.
 
 Film facts stay in the production folder. The engine does not know that this film's exhaust is on the right, that the watch is on the left wrist, that the bike is a 1965, that the story is 1967, or that the look is Sergio Leone. Those sentences live in `productions/the-last-marker/`. A different film uses its own files. The pilot sound prompts moved out of the sound program and into `productions/the-last-marker/audio/sound-prompts.json`.
 
@@ -61,19 +63,20 @@ python3 scripts/validate-schema.py --production productions/the-last-marker
 See where The Last Marker stands:
 
 ```bash
-python3 scripts/line-producer.py --production productions/the-last-marker --run phase-1 status
+python3 scripts/line-producer.py --production productions/the-last-marker --run first-film-1 status
+python3 scripts/line-producer.py --production productions/the-last-marker --run first-film-1 budget
 ```
 
-Draft again from the screenplay. This does not approve anything. The draft stays offline unless you pass `--live`. `--offline` is the same default, written out.
+Draft again from the screenplay. This does not approve anything. The live treatment is already a draft, so intake is allowed. It reads `treatment/inputs.json` and `budget.json`, and it replaces the draft. If the treatment were still approved, intake would stop and tell you not to draft again. The draft stays offline unless you pass `--live`. `--offline` is the same default, written out.
 
 ```bash
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline intake
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline intake
 ```
 
 Answer the Director. Open `productions/the-last-marker/treatment/questions.json`. Type each answer in the `answer` field. Leave a field as `null` if you are not ready. Then:
 
 ```bash
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline answer \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline answer \
   --answers productions/the-last-marker/treatment/questions.json
 ```
 
@@ -91,7 +94,7 @@ You can also send a separate answers file:
 Approve the treatment after you have read `treatment/treatment.md`. This is the only way the treatment becomes approved. It also locks the stage split, which is how the $500 is divided across jobs.
 
 ```bash
-python3 scripts/line-producer.py --production productions/the-last-marker --run phase-1 approve-gate \
+python3 scripts/line-producer.py --production productions/the-last-marker --run first-film-1 approve-gate \
   --stage treatment --decision approved --by ron --note "Lock the treatment and the split."
 ```
 
@@ -100,27 +103,27 @@ Reject it the same way, with `--decision rejected`. You can put the same fields 
 Write the phase 2 package. These calls do not spend money. They pause until the treatment gate is approved. They do not approve the previs gate.
 
 ```bash
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent prop-master --crew-command lock --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent costume-designer --crew-command lock --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent makeup-hair --crew-command lock --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent cinematographer --crew-command package --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent cinematographer --crew-command boards --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent gaffer --crew-command plan --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent key-grip --crew-command plan --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent stunt-coordinator --crew-command breakdown --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent assistant-director --crew-command schedule --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent vfx-supervisor --crew-command breakdown --estimate 0
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 --offline dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 --offline dispatch \
   --agent script-supervisor --crew-command check --estimate 0
 ```
 
@@ -129,14 +132,14 @@ Wardrobe definitions, when the production has them, live in `wardrobe/costume-de
 Approve the package after you have read the files under `props/`, `wardrobe/`, `makeup/`, `continuity/`, `camera/`, `storyboard/`, `lighting/`, `grip/`, `schedule/`, `stunts/`, and `vfx/`.
 
 ```bash
-python3 scripts/line-producer.py --production productions/the-last-marker --run phase-1 approve-gate \
+python3 scripts/line-producer.py --production productions/the-last-marker --run first-film-1 approve-gate \
   --stage previs --decision approved --by ron --note "The phase 2 package can go forward."
 ```
 
 A picture call does not run until you have approved the treatment, the previs package, and that stage. This example only prices shots with the older production estimator. It does not generate video.
 
 ```bash
-python3 scripts/director.py --production productions/the-last-marker --run phase-1 dispatch \
+python3 scripts/director.py --production productions/the-last-marker --run first-film-1 dispatch \
   --agent production --crew-command estimate --estimate 0 \
   --shot-list productions/the-last-marker/shot-lists/shot-list.json
 ```
@@ -361,20 +364,23 @@ The sample film is The Last Marker, in `productions/the-last-marker/`.
 |---|---|
 | `screenplay/Pilot_-_the_last_marker_screenplay.md` | The shooting script. |
 | `production-brief.json` | Ron's locked choices: $500, Baja California, 1967, the Leone look, the two hero props. Exhaust on the right. Watch on the left wrist. |
-| `treatment/treatment.md` | The approved treatment. |
-| `treatment/treatment.json` | The same treatment in the form the checks can read. Status: approved. |
-| `treatment/questions.json` | Round 1, closed. Ron's answers are in the file. |
-| `runs/phase-1/` | The run record. Treatment gate approved. Previs gate approved. Generation gate not approved. Stage split locked. Spent $0.00 of $500.00. |
+| `budget.json` | The film budget. Total $500. Trailer on, 10 percent contingency, picture tier better. Trailer, contingency, and the tier are proposed. |
+| `treatment/treatment.md` | The live treatment. Status: draft. Not an approved gate. |
+| `treatment/treatment.json` | The same treatment in the form the checks can read. Status: draft. |
+| `treatment/inputs.json` | Ron's locked creative answers. Intake reads this. It does not approve the gate. |
+| `treatment/questions.json` | Round 1, open. Answers are empty so intake can draft again. |
+| `runs/first-film-1/` | The live run. Waiting at the treatment gate. No gate on this run is approved. Spent $0.00. |
+| `archive/` | The earlier run `phase-1`, the approved treatment, the closed question round, and the approved storyboard. |
 | `props/prop-definitions.json` | The locked attributes for this film, written as production data. |
 | `props/hero-props.json` | The same lock, after the Prop Master copies it. |
 | `look/look.json` | This film's lenses, framing, and lighting. |
 | `camera/camera-package.json` | The Cinematographer's package, copied from that look. |
-| `storyboard/` | One beat per shot, the look stated once, and an animatic. No images were generated. Shots that show the featured watch are listed, each with one sentence on why. Scene 3 also has the empty canteen, the circling buzzards, and the hard cut from a buzzard's face to his eyes. |
+| `storyboard/` | One beat per shot, the look stated once, and an animatic. No images were generated. The live file is a draft. The approved copy is in `archive/`. Scene 3 also has the empty canteen, the circling buzzards, and the hard cut from a buzzard's face to his eyes. |
 | `continuity/continuity-check.json` | Drift findings. The old pilot shot list is missing the locked exhaust phrase. |
 | `stunts/action-breakdown.json` | The treatment's two action beats, broken into shots. |
 | `audio/sound-prompts.json` | The pilot sound prompts. The sound program reads this file. It does not keep a copy. |
 
-Hero props for this film are the 1965 Triumph TR6SC and the Breitling Top Time. Ron locked the exhaust on the right and the watch on the left wrist. Those sentences are in the production files above. They are not in the studio code.
+Hero props for this film are the 1965 Triumph and the watch. Ron locked the exhaust on the right and the watch on the left wrist. Those sentences are in the production files above. They are not in the studio code.
 
 ## Where to read more
 

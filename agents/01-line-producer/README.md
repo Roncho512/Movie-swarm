@@ -9,7 +9,7 @@ The program watches the budget, the schedule, the credits, and the gates for one
 From the repo root:
 
 ```bash
-python3 scripts/line-producer.py --production productions/the-last-marker --run phase-1 status
+python3 scripts/line-producer.py --production productions/the-last-marker --run first-film-1 status
 ```
 
 Other commands: `start`, `budget`, `spend`, `approve-gate`, `decide`, `credit`, and `test-shot`. `budget` estimates the film and can write `budget.json`. The report shows the budget, the estimate, the spend, the contingency left, and under or over by line. `test-shot` prepares one picture call for one shot. It sends that call only with `--live`, and only when the generation gate, the key, and a known price all allow it. Pass `--file` when the decision is a JSON file. Nothing in this command waits for a typed answer.
