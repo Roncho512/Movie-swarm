@@ -41,7 +41,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--live",
         action="store_true",
-        help="Allow one real provider call. Offline is the default. A live call still needs the generation gate, the key, and a known price.",
+        help=(
+            "Allow one real provider call. Offline is the default. "
+            "A text call needs a writing approval. Picture and audio still need the generation gate."
+        ),
     )
     parser.add_argument(
         "--price-override",
@@ -57,7 +60,10 @@ def main(argv: list[str] | None = None) -> int:
     status.add_argument(
         "--narrate",
         action="store_true",
-        help="Add one sentence from the cheap model. Needs --live, the generation gate, the key, and a known price.",
+        help=(
+            "Add one sentence from the cheap model. Needs --live, a writing approval, the key, and a known text price. "
+            "It does not open the generation gate."
+        ),
     )
 
     spend = sub.add_parser("spend", help="Record a spend, or pause and write an approval request")
@@ -110,6 +116,14 @@ def main(argv: list[str] | None = None) -> int:
         type=float,
         help="Seconds to wait for fal to finish this shot. The default is 600, from config/providers.json.",
     )
+
+    writing = sub.add_parser(
+        "approve-writing",
+        help="Approve text calls on this run up to a dollar ceiling. Does not open the generation gate and does not send a call.",
+    )
+    writing.add_argument("--by", default="Ron")
+    writing.add_argument("--max-usd", required=True, type=float, help="The most this run may spend on text calls.")
+    writing.add_argument("--note", default="")
 
     release = sub.add_parser(
         "release",
@@ -201,6 +215,9 @@ def _run(args, production: Path) -> int:
     if args.command == "credit":
         producer.add_credit(args.role, args.name, args.note)
         print(f"Added credit: {args.role} — {args.name}")
+        return 0
+    if args.command == "approve-writing":
+        print(producer.approve_writing(args.max_usd, args.by, note=args.note))
         return 0
     if args.command == "release":
         released = producer.release_booked_estimate(args.entry, by=args.by, note=args.note)

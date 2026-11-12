@@ -12,6 +12,7 @@ from pathlib import Path
 from movie_swarm.director import Director, DirectorError
 from movie_swarm.dispatch import CrewCall
 from movie_swarm.films import FilmsError, resolve_alongside, resolve_production
+from movie_swarm.llm import WritingQuote
 from movie_swarm.providers import llm_for_command
 from movie_swarm.studio import StudioError, run_studio
 
@@ -34,7 +35,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--live",
         action="store_true",
-        help="Allow a real provider call. Still needs the generation gate, the key, and a known price.",
+        help=(
+            "Allow a real provider call. A text call prints a quote until this run has a writing approval. "
+            "Picture and audio still need the generation gate."
+        ),
     )
     parser.add_argument(
         "--price-override",
@@ -106,6 +110,9 @@ def main(argv: list[str] | None = None) -> int:
     except FilmsError as exc:
         print(exc)
         return 1
+    except WritingQuote as exc:
+        print(exc)
+        return 2
     except (DirectorError, StudioError) as exc:
         print(exc)
         return 1

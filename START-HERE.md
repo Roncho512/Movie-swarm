@@ -47,6 +47,29 @@ python3 scripts/line-producer.py --production the-last-marker --run first-film-1
 
 The same commands can take the absolute path of the film folder instead of the name. On the key-test machine the same commands can use `/tmp/movie-swarm-venv/bin/python` in place of `python3`. Exit status 2 means the run is waiting at the treatment gate. Read `treatment/treatment.md` in the film folder. The quote comes from `budget.json`. The steps that belong only to this film are in that folder's `README.md`. The archived copy in this repo is not the working film.
 
+## Draft the treatment with Claude
+
+Offline is still the default. A live Director draft is three commands from the repo root, with the films root set and `ANTHROPIC_API_KEY` in `.env` or the shell. The first command prints a quote and sends nothing. It does not replace `treatment/treatment.md`. Read the model, the input-token estimate, the max output tokens, and the worst-case dollars.
+
+```bash
+python3 scripts/director.py --production the-last-marker --run first-film-1 --live intake
+```
+
+Intake makes two text calls once it is allowed to send: the Director's draft on Claude Sonnet 5.5, then the Line Producer's question wording on Claude Haiku 5.5. The quote you just read is the draft. The question call is smaller. Approve one ceiling that covers both. `$1.00` is inside the director line on this film's `budget.json` and covers a treatment draft plus that question pass. The generation gate stays closed.
+
+```bash
+python3 scripts/line-producer.py --production the-last-marker --run first-film-1 approve-writing \
+  --by Ron --max-usd 1.00 --note "Treatment draft for first-film-1."
+```
+
+Run the same intake again. This one sends the calls.
+
+```bash
+python3 scripts/director.py --production the-last-marker --run first-film-1 --live intake
+```
+
+Read `treatment/treatment.md`. The treatment stays a draft. If the model draft does not match the checklist, the offline draft is kept and the note says so. Picture and audio calls still wait until you approve the generation gate.
+
 ## Set up the machine
 
 Do this once on the machine that will run the film.
@@ -191,7 +214,7 @@ A live call that needs a missing key stops and says which name is unset. Nothing
 
 ## 6. Live calls and overages
 
-Offline is the default. A real call needs all four of these: the generation gate approved, the estimate inside the line and the film budget, the key in the environment, and `--live` on the command.
+Offline is the default. A picture or audio call needs all four of these: the generation gate approved, the estimate inside the line and the film budget, the key in the environment, and `--live` on the command. A text call uses the writing approval instead of the generation gate. The commands for a live treatment draft are in the section Draft the treatment with Claude.
 
 One picture call, for one shot, with nothing sent. The cheapest real Seedance 2.0 fast shot is 4 seconds at 720p. A shorter board is rounded up to 4 seconds, and the estimate uses that length. Harbor Night's first shot is 2.087 seconds, so the dry run says it is sent as 4 seconds and estimates $0.9676. The dry run prints the model, the tier, the provider, the resolution, the duration, the estimated cost, and the money still left. It says nothing was sent.
 
@@ -259,7 +282,8 @@ The package holds the master, the variants the delivery spec asked for, a poster
 - "The trailer is off" is a skip, not a failure. Delivery still runs.
 - A live call says a key is missing: set that name in `.env` or in the shell. Do not put the value in the repo. Doctor says whether each name is set.
 - A live picture call says no endpoint is configured: that model is unwired. Pass `--model seedance-2.0-fast` or `--tier better` for the cheapest wired picture model. The message lists the choices.
-- A live call says the rate is unknown: the rate card has no verified price. Pass `--price-override` only for that one call, and approve the request it writes.
+- A live picture or sound call says the rate is unknown: the rate card has no verified price for that model. Pass `--price-override` only for that one call, and approve the request it writes. A text model with a null price is refused. Claude Haiku 5.5, Claude Sonnet 5.5, and Claude Opus 5.5 are priced.
+- A live text call prints a writing quote and stops: record `approve-writing` for that run, then run the same command again. The generation gate can stay closed.
 - A failed call left an estimate on the ledger and produced nothing: `python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 release --entry spend-014 --by ron --note "Nothing was produced."` The original entry stays. The running total goes back down.
 - A live picture call says the provider did not finish before the poll limit: fal is still working. The estimate stays booked. Run the same test shot again. It checks the same request and does not send a new one. Pass `--wait` with more seconds if you want a longer wait on that call.
 - Status says part of the spend is still the estimate: fal did not report a dollar amount. That part of the ledger is the quote, not a measured charge.
