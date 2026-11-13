@@ -16,6 +16,7 @@ from pathlib import Path
 from movie_swarm.line_producer import LineProducer
 from movie_swarm.mentions import advertising_phrases, previs_advertising_hits
 from movie_swarm.paths import repo_root
+from movie_swarm.script_supervisor import check_continuity
 from movie_swarm.studio import run_studio
 from movie_swarm.treatment_doc import load_treatment
 
@@ -104,7 +105,34 @@ def _yard(production: Path) -> None:
             "emotional_purpose": "The day is ordinary.",
             "approximate_duration_seconds": 12,
             "coverage_intent": "",
-        }
+        },
+        {
+            "scene_id": "s02",
+            "heading": "EXT. LANE - DAY",
+            "what_happens": (
+                "Mina Cole rides the bike down the lane.\n\n"
+                "The lantern fades again. Silence. Hold for three seconds.\n\n"
+                "Mina Cole rides the bike past the post.\n\n"
+                "Close on the lantern. The glass is still.\n\n"
+                "He has left the bike.\n\n"
+                "He tries again.\n\n"
+                "The bike passes camera."
+            ),
+            "emotional_purpose": "The lane is empty.",
+            "approximate_duration_seconds": 21,
+            "coverage_intent": "",
+        },
+        {
+            "scene_id": "s03",
+            "heading": "EXT. LAMP - DAY",
+            "what_happens": (
+                "A gull crosses the lamp on the first pass.\n\n"
+                "A gull crosses the lamp on the second pass."
+            ),
+            "emotional_purpose": "Time is left over.",
+            "approximate_duration_seconds": 30,
+            "coverage_intent": "",
+        },
     ]
     treatment["action_and_stunt_beats"] = [
         "He kicks the stand.",
@@ -121,7 +149,7 @@ def _yard(production: Path) -> None:
             "aliases": ["machine"],
             "parts": ["kickstand"],
             "locked_spec": "One pipe on the right. A kickstand.",
-            "reference_images": [],
+            "reference_images": ["props/dusty-bike/side.png"],
             "attributes": [
                 {
                     "attribute_id": "pipe",
@@ -241,6 +269,43 @@ def test_offline_previs_tags_pronouns_a_kind_noun_a_continuation_and_every_stunt
     generated += " ".join(shot["generation_prompt"] for shot in shots)
     assert advertising_phrases(generated) == []
     assert previs_advertising_hits(production) == []
+
+    def shot_for(snippet: str) -> dict:
+        matches = [shot for shot in shots if snippet in shot["description"].casefold()]
+        assert len(matches) == 1, snippet
+        return matches[0]
+
+    fade = shot_for("lantern fades again")
+    close = shot_for("close on the lantern")
+    absent = shot_for("has left the bike")
+    tries = shot_for("tries again")
+    passing = shot_for("passes camera")
+    for shot in (fade, close, absent, tries):
+        assert "vehicles_in_shot" not in shot
+        assert "props/dusty-bike/side.png" not in (shot.get("reference_images") or [])
+        assert "pipe on the right" not in shot["generation_prompt"].casefold()
+    assert "carried-prop" not in json.dumps(
+        [item for item in boards["tag_notes"] if item["shot_id"] in {fade["shot_id"], close["shot_id"], tries["shot_id"]}]
+    )
+    fade_notes = [item for item in boards["tag_notes"] if item["shot_id"] == fade["shot_id"]]
+    assert fade_notes and "needs review" in fade_notes[0]["detail"].casefold()
+    assert passing["vehicles_in_shot"] == ["dusty-bike"]
+    assert passing["characters_in_shot"] == ["Mina Cole"]
+    assert "pipe on the right" in passing["generation_prompt"].casefold()
+    assert "dark coat" in passing["generation_prompt"].casefold()
+    assert "props/dusty-bike/side.png" in (passing.get("reference_images") or [])
+    assert "grey cap" not in passing["generation_prompt"].casefold()
+    check = check_continuity(production)
+    assert any(
+        item["shot_id"] == fade["shot_id"] and "needs review" in item["detail"].casefold()
+        for item in check["reviews"]
+    )
+    targets = 12 + 21 + 30
+    total = sum(frame["duration_seconds"] for frame in boards["frames"])
+    assert abs(total - targets) < 0.05
+    note = boards["pacing"]["note"].casefold()
+    assert "s03" in note and "absorbed" in note
+    assert "could not place" in note
 
 
 def test_the_harbor_night_fixture_previs_still_runs(tmp_path):
