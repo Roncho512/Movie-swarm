@@ -21,8 +21,15 @@ from movie_swarm.mentions import (
     character_catalog,
     character_prompt_line,
     faithful_spec,
+    generic_nouns_for,
+    has_personal_pronoun,
+    load_absence_phrases,
     load_kind_nouns,
     mentioned,
+    named_characters,
+    no_visible_action,
+    prop_frame_state,
+    prop_labels,
     prop_mentioned,
     resolve_scene_characters,
     story_purpose_line,
@@ -122,6 +129,7 @@ def build_boards(production_dir: Path, llm=None, image_client=None) -> dict:
     model = model_name("cinematographer", "boards")
     minimum, maximum = _shot_limits(production_dir)
     kind_nouns = load_kind_nouns(production_dir)
+    absence = load_absence_phrases(production_dir)
     shots, frames, placements, pacing, tag_notes = _frames(
         treatment,
         package,
@@ -133,6 +141,7 @@ def build_boards(production_dir: Path, llm=None, image_client=None) -> dict:
         minimum,
         maximum,
         kind_nouns,
+        absence,
     )
     created = now()
     shot_list = {
@@ -221,18 +230,18 @@ def _frames(
     minimum,
     maximum,
     kind_nouns,
+    absence,
 ):
     shots = []
     frames = []
     placements = []
-    pacing_notes = []
-    scene_notes = []
     tag_notes = []
     order = 1
     scenes = treatment.get("scenes") or []
     plan = str(treatment.get("color_and_light_plan") or "")
     used_script = set()
     catalog = character_catalog(treatment, character_locks)
+    prepared = []
     for index, scene in enumerate(scenes, start=1):
         scene_id = str(scene.get("scene_id") or f"s{index:02d}")
         source = _scene_text(scene, script_scenes, used_script)
@@ -240,13 +249,32 @@ def _frames(
         durations, budget, held = _durations(beats, scene.get("approximate_duration_seconds"))
         shot_ids = [f"{_scene_slug(scene_id, index)}-sh{number:02d}" for number in range(1, len(beats) + 1)]
         durations, notes = _pace(shot_ids, durations, held, budget, minimum, maximum)
-        pacing_notes.extend(notes)
-        scene_notes.append((scene_id, budget, round(sum(durations), 3)))
-        light = _scene_light(plan, index)
-        heading = str(scene.get("heading") or "")
+        prepared.append({
+            "index": index,
+            "scene_id": scene_id,
+            "beats": beats,
+            "durations": durations,
+            "held": held,
+            "budget": budget,
+            "shot_ids": shot_ids,
+            "notes": notes,
+            "light": _scene_light(plan, index),
+            "heading": str(scene.get("heading") or ""),
+        })
+    _absorb_across_scenes(prepared, minimum, maximum)
+    for item in prepared:
+        index = item["index"]
+        scene_id = item["scene_id"]
+        beats = item["beats"]
+        durations = item["durations"]
+        shot_ids = item["shot_ids"]
+        light = item["light"]
+        heading = item["heading"]
         actions = [beat["text"] for beat in beats]
+        shot_types = [beat["shot_type"] for beat in beats]
         resolved_people = resolve_scene_characters(actions, catalog, heading)
-        resolved_props = _props_for_scene(actions, props, kind_nouns)
+        resolved_props = _props_for_scene(actions, props, kind_nouns, shot_types, absence)
+        _tag_vehicle_riders(actions, resolved_people, resolved_props, props, kind_nouns, catalog)
         for shot_number, beat in enumerate(beats, start=1):
             shot_id = shot_ids[shot_number - 1]
             shot_type = beat["shot_type"]
@@ -256,7 +284,18 @@ def _frames(
             prop_row = resolved_props[shot_number - 1]
             people = people_row["names"]
             in_frame = prop_row["props"]
-            if people_row["inherited"] and people:
+            if people_row.get("via") == "rider" and people:
+                tag_notes.append(
+                    {
+                        "shot_id": shot_id,
+                        "kind": "inherited-character",
+                        "detail": (
+                            f"{people[0]} rides the vehicle in this scene, "
+                            "and the vehicle is in motion, so this shot includes them."
+                        ),
+                    }
+                )
+            elif people_row["inherited"] and people:
                 tag_notes.append(
                     {
                         "shot_id": shot_id,
@@ -374,7 +413,7 @@ def _frames(
             order += 1
     if not frames:
         raise ValueError("The approved treatment has no scenes to board.")
-    pacing = _pacing_report(minimum, maximum, pacing_notes, scene_notes, treatment)
+    pacing = _pacing_report(minimum, maximum, prepared, treatment)
     return shots, frames, placements, pacing, tag_notes
 
 
@@ -653,22 +692,184 @@ def _redistribute(current, held, budget, minimum, maximum):
     return [round(value / 1000, 3) for value in current]
 
 
-def _pacing_report(minimum, maximum, notes, scene_notes, treatment) -> dict:
+def _absorb_across_scenes(prepared, minimum, maximum) -> None:
+    """Place a scene's leftover time on shots in other scenes that still have room.
+
+    Each scene stays as close to its own target as the limits allow. A shot
+    whose length the screenplay named does not grow.
+    """
+    del minimum
+    maximum_ms = _millis(maximum)
+    for item in prepared:
+        item["duration_ms"] = [_millis(value) for value in item["durations"]]
+        item["target_ms"] = _millis(item["budget"])
+        item["absorbed_ms"] = 0
+        item["absorbed_from"] = []
+        item["absorbed_by"] = []
+        item["shortfall_ms"] = 0
+        item["placed_elsewhere_ms"] = 0
+        item["before_absorb"] = list(item["durations"])
+
+    def total(item) -> int:
+        return sum(item["duration_ms"])
+
+    def capacity(item) -> int:
+        room = 0
+        for duration, locked in zip(item["duration_ms"], item["held"]):
+            if not locked and duration < maximum_ms:
+                room += maximum_ms - duration
+        return room
+
+    short = []
+    for item in prepared:
+        gap = item["target_ms"] - total(item)
+        if gap >= 50:
+            item["shortfall_ms"] = gap
+            short.append(item)
+    remaining = {id(item): item["shortfall_ms"] for item in short}
+    need = sum(remaining.values())
+    for _ in range(100000):
+        if need < 1:
+            break
+        candidates = [item for item in prepared if capacity(item) > 0]
+        if not candidates:
+            break
+        candidates.sort(key=lambda item: (total(item) - item["target_ms"], item["index"]))
+        best = candidates[0]
+        if len(candidates) == 1:
+            give = min(need, capacity(best))
+        else:
+            nxt = candidates[1]
+            until_tie = (total(nxt) - nxt["target_ms"]) - (total(best) - best["target_ms"])
+            if until_tie <= 0:
+                share = max(1, need // len(candidates))
+                give = min(need, capacity(best), share)
+            else:
+                give = min(need, capacity(best), until_tie)
+        poured = _pour(best, give, maximum_ms)
+        if poured <= 0:
+            break
+        left = poured
+        for item in short:
+            if left <= 0:
+                break
+            slot = remaining[id(item)]
+            if slot <= 0:
+                continue
+            take = min(slot, left)
+            remaining[id(item)] -= take
+            left -= take
+            if item["scene_id"] not in best["absorbed_from"]:
+                best["absorbed_from"].append(item["scene_id"])
+            if best["scene_id"] not in item["absorbed_by"]:
+                item["absorbed_by"].append(best["scene_id"])
+        best["absorbed_ms"] += poured
+        need -= poured
+    for item in short:
+        item["placed_elsewhere_ms"] = item["shortfall_ms"] - remaining[id(item)]
+    for item in prepared:
+        item["durations"] = [round(value / 1000, 3) for value in item["duration_ms"]]
+        if not item["absorbed_ms"]:
+            continue
+        sources = _scene_phrase(item["absorbed_from"], lower=True)
+        for shot_id, before, after in zip(item["shot_ids"], item["before_absorb"], item["durations"]):
+            if abs(after - before) >= 0.05:
+                item["notes"].append(
+                    f"{shot_id} was {before:g}s and is {after:g}s "
+                    f"so a remainder from {sources} could be placed."
+                )
+
+
+def _pour(item, give: int, maximum_ms: int) -> int:
+    room = [
+        index
+        for index, (duration, locked) in enumerate(zip(item["duration_ms"], item["held"]))
+        if not locked and duration < maximum_ms
+    ]
+    if not room or give <= 0:
+        return 0
+    capacity = sum(maximum_ms - item["duration_ms"][index] for index in room)
+    step = min(int(give), capacity)
+    assigned = 0
+    for position, index in enumerate(room):
+        space = maximum_ms - item["duration_ms"][index]
+        if position == len(room) - 1:
+            portion = step - assigned
+        else:
+            portion = int(step * (space / capacity)) if capacity else 0
+        portion = max(0, min(portion, space, step - assigned))
+        item["duration_ms"][index] += portion
+        assigned += portion
+    left = step - assigned
+    for index in room:
+        if left <= 0:
+            break
+        space = maximum_ms - item["duration_ms"][index]
+        portion = min(space, left)
+        item["duration_ms"][index] += portion
+        left -= portion
+    return step - left
+
+
+def _scene_phrase(scene_ids: list[str], *, lower: bool = False) -> str:
+    single = "scene" if lower else "Scene"
+    plural = "scenes" if lower else "Scenes"
+    if len(scene_ids) == 1:
+        return f"{single} {scene_ids[0]}"
+    if len(scene_ids) == 2:
+        return f"{plural} {scene_ids[0]} and {scene_ids[1]}"
+    if not scene_ids:
+        return "another scene"
+    head = ", ".join(scene_ids[:-1])
+    return f"{plural} {head}, and {scene_ids[-1]}"
+
+
+def _scene_pacing_sentences(item: dict) -> list[str]:
+    scene_id = item["scene_id"]
+    target = item["budget"]
+    total = round(sum(item["durations"]), 3)
+    placed = round(item.get("placed_elsewhere_ms", 0) / 1000, 3)
+    absorbed = round(item.get("absorbed_ms", 0) / 1000, 3)
+    if placed >= 0.05:
+        who = _scene_phrase(item.get("absorbed_by") or [])
+        still = round(item.get("shortfall_ms", 0) / 1000 - placed, 3)
+        if still < 0.05:
+            return [
+                f"Scene {scene_id} targets {target:g}s and the boards total {total:g}s. "
+                f"{who} absorbed the {placed:g}s this scene could not place."
+            ]
+        return [
+            f"Scene {scene_id} targets {target:g}s and the boards total {total:g}s. "
+            f"{who} absorbed {placed:g}s. "
+            "The shot limits left no room to place the rest."
+        ]
+    if absorbed >= 0.05:
+        sources = _scene_phrase(item.get("absorbed_from") or [], lower=True)
+        return [
+            f"Scene {scene_id} targets {target:g}s and the boards total {total:g}s. "
+            f"It absorbed {absorbed:g}s from {sources} so the film total could hit its target."
+        ]
+    if abs(total - target) >= 0.05:
+        return [
+            f"Scene {scene_id} targets {target:g}s and the boards total {total:g}s. "
+            "The shot limits left no room to place the remainder."
+        ]
+    return [f"Scene {scene_id} targets {target:g}s and the boards total {total:g}s."]
+
+
+def _pacing_report(minimum, maximum, prepared, treatment) -> dict:
+    notes = []
+    for item in prepared:
+        notes.extend(item.get("notes") or [])
     sentences = [
         f"Shot lengths stay between {minimum:g}s and {maximum:g}s unless the screenplay names a hold."
     ]
-    for scene_id, target, total in scene_notes:
-        if abs(total - target) >= 0.05:
-            sentences.append(
-                f"Scene {scene_id} targets {target:g}s and the boards total {total:g}s. "
-                "The shot limits left no room to place the remainder."
-            )
-        else:
-            sentences.append(f"Scene {scene_id} targets {target:g}s and the boards total {total:g}s.")
+    for item in prepared:
+        sentences.extend(_scene_pacing_sentences(item))
     runtime = _runtime_seconds(treatment)
-    boarded = round(sum(total for _, _, total in scene_notes), 3)
-    targets = round(sum(target for _, target, _ in scene_notes), 3)
-    if abs(boarded - targets) >= 0.05:
+    boarded = round(sum(sum(item["durations"]) for item in prepared), 3)
+    targets = round(sum(item["budget"] for item in prepared), 3)
+    if abs(boarded - targets) >= 0.05 or any(item.get("absorbed_ms") for item in prepared):
         sentences.append(
             f"The scene targets add up to {targets:g}s and the boards total {boarded:g}s."
         )
@@ -772,45 +973,395 @@ def _camera_line(shot_type: str, lens: dict | None, light: str) -> str:
     return " ".join(parts)
 
 
-def _props_for_scene(actions: list[str], props: list[dict], kind_nouns: dict) -> list[dict]:
-    """Tag props in each shot, then carry one prop when the action continues."""
+def _props_for_scene(
+    actions: list[str],
+    props: list[dict],
+    kind_nouns: dict,
+    shot_types: list[str] | None = None,
+    absence: dict | None = None,
+) -> list[dict]:
+    """Tag props that are in frame, then carry one prop when the action continues.
+
+    An absence phrase does not put the prop in frame, so the next shot has
+    nothing to carry from it. A close view of some other object, a different
+    subject, or a line with no picture does not inherit the previous prop.
+    """
     rows = []
     previous = []
     previous_text = ""
-    for text in actions:
-        direct = _props_for_beat(props, text, kind_nouns)
+    types = shot_types or ["medium"] * len(actions)
+    for text, shot_type in zip(actions, types):
+        direct, beat_review, blocked = _props_for_beat(props, text, kind_nouns, absence)
+        available = [item for item in previous if _prop_key(item["prop"]) not in blocked]
         carried = []
-        review = ""
-        if not direct and previous and action_continues(previous_text, text):
-            if len(previous) == 1:
-                item = previous[0]
-                carried = [
-                    {
-                        "prop": item["prop"],
-                        "name": item["name"],
-                        "line": _missing_phrase(item["prop"], text),
-                    }
-                ]
-            else:
-                review = (
-                    "The action may continue a prop from the previous shot, "
-                    "but that shot has more than one. Needs review."
-                )
+        carry_review = ""
+        if not direct and available and action_continues(previous_text, text):
+            carried, carry_review = _carry_forward(text, shot_type, available, props, kind_nouns)
         chosen = direct or carried
+        review = " ".join(part for part in (beat_review, carry_review) if part)
         rows.append({"props": chosen, "carried": bool(carried), "review": review})
         previous = chosen
         previous_text = text
     return rows
 
 
-def _props_for_beat(props: list[dict], text: str, kind_nouns: dict | None = None) -> list[dict]:
+def _props_for_beat(
+    props: list[dict],
+    text: str,
+    kind_nouns: dict | None = None,
+    absence: dict | None = None,
+) -> tuple[list[dict], str, set[str]]:
     found = []
+    reviews = []
+    blocked = set()
     for prop in props:
-        if not prop_mentioned(prop, text, props, kind_nouns):
+        state = prop_frame_state(prop, text, props, kind_nouns, absence)
+        if state == "unnamed":
+            continue
+        key = _prop_key(prop)
+        if state == "absent":
+            blocked.add(key)
+            continue
+        if state == "ambiguous":
+            blocked.add(key)
+            name = prop.get("name") or "A prop"
+            reviews.append(
+                f"{name} is named, and the phrase does not say whether that prop is in frame. Needs review."
+            )
             continue
         missing = _missing_phrase(prop, text)
         found.append({"prop": prop, "name": prop.get("name") or "Prop", "line": missing})
+    return found, " ".join(reviews), blocked
+
+
+def _prop_key(prop: dict) -> str:
+    return str(prop.get("prop_id") or prop.get("name") or "").casefold()
+
+
+def _carry_forward(text, shot_type, available, props, kind_nouns) -> tuple[list[dict], str]:
+    """One continued prop, or a review, or nothing when the shot is about something else."""
+    if no_visible_action(text):
+        return [], (
+            "This shot is sound, a fade, a hold, black, or a title, and it shows no visible action. "
+            "A prop was not carried. Needs review."
+        )
+    blocks = [_carry_block(shot_type, text, item["prop"], props, kind_nouns) for item in available]
+    open_items = [item for item, block in zip(available, blocks) if block == ""]
+    unsure = [item for item, block in zip(available, blocks) if block == "review"]
+    if len(open_items) == 1 and not unsure:
+        item = open_items[0]
+        return [
+            {
+                "prop": item["prop"],
+                "name": item["name"],
+                "line": _missing_phrase(item["prop"], text),
+            }
+        ], ""
+    if len(open_items) > 1:
+        return [], (
+            "The action may continue a prop from the previous shot, "
+            "but that shot has more than one. Needs review."
+        )
+    if unsure:
+        return [], (
+            "This close view does not name the prop from the previous shot. "
+            "It was not carried. Needs review."
+        )
+    return [], ""
+
+
+def _carry_block(shot_type: str, text: str, prop: dict, props: list[dict], kind_nouns: dict) -> str:
+    """'stop' when the shot is about something else, 'review' when a tight shot is unclear, else ''."""
+    if _is_tight(shot_type, text) and not prop_mentioned(prop, text, props, kind_nouns):
+        if _other_object_words(text):
+            return "stop"
+        return "review"
+    if _different_subject(text, prop, props, kind_nouns):
+        return "stop"
+    return ""
+
+
+_LEAD_SKIP = {
+    "a",
+    "an",
+    "the",
+    "close",
+    "closer",
+    "insert",
+    "ecu",
+    "detail",
+    "extreme",
+    "wide",
+    "shot",
+    "on",
+    "of",
+    "cut",
+    "to",
+    "again",
+    "another",
+    "still",
+}
+
+_OBJECT_SKIP = _LEAD_SKIP | {
+    "and",
+    "or",
+    "but",
+    "from",
+    "with",
+    "into",
+    "onto",
+    "over",
+    "under",
+    "for",
+    "this",
+    "that",
+    "then",
+    "than",
+    "when",
+    "while",
+    "where",
+    "camera",
+    "frame",
+    "lens",
+    "hold",
+    "holds",
+    "fade",
+    "fades",
+    "fading",
+    "silence",
+    "silent",
+    "black",
+    "title",
+    "titles",
+    "credits",
+    "credit",
+    "nothing",
+}
+
+# Generic English. Not a film's vehicles or people.
+_MOTION_WORDS = (
+    "pass",
+    "passes",
+    "passing",
+    "roll",
+    "rolls",
+    "rolling",
+    "ride",
+    "rides",
+    "riding",
+    "rode",
+    "drive",
+    "drives",
+    "driving",
+    "drove",
+    "speed",
+    "speeds",
+    "speeding",
+    "move",
+    "moves",
+    "moving",
+    "approach",
+    "approaches",
+    "approaching",
+    "race",
+    "races",
+    "racing",
+    "cruise",
+    "cruises",
+    "cruising",
+    "sweep",
+    "sweeps",
+    "sweeping",
+    "roar",
+    "roars",
+    "roaring",
+    "thunder",
+    "thunders",
+    "crest",
+    "crests",
+    "crested",
+)
+
+_RIDE_WORDS = (
+    "ride",
+    "rides",
+    "riding",
+    "rode",
+    "drive",
+    "drives",
+    "driving",
+    "drove",
+    "mount",
+    "mounts",
+    "mounted",
+    "mounting",
+    "steer",
+    "steers",
+    "steering",
+    "steered",
+    "pedal",
+    "pedals",
+    "pedaling",
+    "pedalling",
+    "astride",
+)
+
+
+def _is_tight(shot_type: str, text: str) -> bool:
+    if shot_type in {"close", "extreme-close", "detail"}:
+        return True
+    return bool(re.search(r"\b(insert|close-up|close up|extreme close|ecu)\b", text[:80], re.I))
+
+
+def _content_words(text: str) -> list[str]:
+    sentence = re.split(r"[.!?]", str(text).strip(), maxsplit=1)[0]
+    words = re.findall(r"[A-Za-z']+", sentence)
+    kept = []
+    for word in words:
+        if not kept and word.casefold() in _LEAD_SKIP:
+            continue
+        kept.append(word)
+    return kept
+
+
+def _different_subject(text: str, prop: dict, props: list[dict], kind_nouns: dict) -> bool:
+    words = _content_words(text)
+    if not words or has_personal_pronoun(words[0]):
+        return False
+    if prop_mentioned(prop, " ".join(words[:4]), props, kind_nouns):
+        return False
+    head = words[0].casefold()
+    if len(head) < 3 or head in _OBJECT_SKIP:
+        return False
+    return True
+
+
+def _other_object_words(text: str) -> list[str]:
+    found = []
+    for word in re.findall(r"[A-Za-z']+", text):
+        folded = word.casefold()
+        if folded in _OBJECT_SKIP or len(folded) < 3 or has_personal_pronoun(folded):
+            continue
+        verbish = folded.endswith("ing") or folded.endswith("ed") or (
+            folded.endswith("s") and not folded.endswith("ss") and len(folded) > 3
+        )
+        if verbish:
+            continue
+        found.append(folded)
     return found
+
+
+def _tag_vehicle_riders(actions, people_rows, prop_rows, props, kind_nouns, catalog) -> None:
+    """When one person rides the vehicle that passes, tag that person.
+
+    The shot itself does not name them. More than one rider, or none, is a review.
+    """
+    vehicles = [prop for prop in props if str(prop.get("kind") or "").casefold() == "vehicle"]
+    if not vehicles:
+        return
+    for text, people, prop_row in zip(actions, people_rows, prop_rows):
+        if people.get("names") or has_personal_pronoun(text) or named_characters(text, catalog):
+            continue
+        moving = _moving_vehicles(text, prop_row, vehicles, props, kind_nouns)
+        if len(moving) == 1:
+            riders = _riders_of(actions, people_rows, moving[0], props, kind_nouns, catalog)
+            if len(riders) == 1:
+                people["names"] = [riders[0]]
+                people["inherited"] = True
+                people["via"] = "rider"
+            else:
+                people["review"] = _append_review(
+                    people.get("review") or "",
+                    "A ridden vehicle is in motion and the rider is not one clear person. Needs review.",
+                )
+        elif _in_motion(text) and _subject_could_be_vehicle(text, vehicles, props, kind_nouns):
+            people["review"] = _append_review(
+                people.get("review") or "",
+                "A ridden vehicle is in motion and the rider is not one clear person. Needs review.",
+            )
+
+
+def _append_review(existing: str, detail: str) -> str:
+    if not existing:
+        return detail
+    if detail in existing:
+        return existing
+    return f"{existing} {detail}"
+
+
+def _in_motion(text: str) -> bool:
+    return mentioned(text, list(_MOTION_WORDS))
+
+
+def _moving_vehicles(text, prop_row, vehicles, props, kind_nouns) -> list[dict]:
+    if not _in_motion(text):
+        return []
+    tagged = {
+        _prop_key(item["prop"])
+        for item in prop_row.get("props") or []
+        if str(item["prop"].get("kind") or "").casefold() == "vehicle"
+    }
+    moving = []
+    for vehicle in vehicles:
+        if tagged and _prop_key(vehicle) not in tagged:
+            continue
+        if not _subject_is_prop(text, vehicle, props, kind_nouns):
+            continue
+        moving.append(vehicle)
+    return moving
+
+
+def _subject_is_prop(text, prop, props, kind_nouns) -> bool:
+    words = _content_words(text)
+    if not words or has_personal_pronoun(words[0]):
+        return False
+    return prop_mentioned(prop, " ".join(words[:4]), props, kind_nouns)
+
+
+def _subject_could_be_vehicle(text, vehicles, props, kind_nouns) -> bool:
+    words = _content_words(text)
+    if not words or has_personal_pronoun(words[0]):
+        return False
+    phrase = " ".join(words[:4])
+    for vehicle in vehicles:
+        if prop_mentioned(vehicle, phrase, props, kind_nouns) or mentioned(phrase, prop_labels(vehicle)):
+            return True
+    kind_words = list((kind_nouns or {}).get("vehicle") or [])
+    if "vehicle" not in {word.casefold() for word in kind_words}:
+        kind_words.append("vehicle")
+    return mentioned(phrase, kind_words)
+
+
+def _riders_of(actions, people_rows, vehicle, props, kind_nouns, catalog) -> list[str]:
+    found = []
+    for text, people in zip(actions, people_rows):
+        if not _ride_relation(text, vehicle, props, kind_nouns):
+            continue
+        names = list(people.get("names") or []) or named_characters(text, catalog)
+        for name in names:
+            if name not in found:
+                found.append(name)
+    return found
+
+
+def _ride_relation(text, vehicle, props, kind_nouns) -> bool:
+    if not prop_mentioned(vehicle, text, props, kind_nouns):
+        return False
+    if mentioned(text, list(_RIDE_WORDS)):
+        return True
+    labels = prop_labels(vehicle)
+    for noun in generic_nouns_for(vehicle, props, kind_nouns):
+        if noun.casefold() not in {item.casefold() for item in labels}:
+            labels.append(noun)
+    for label in labels:
+        flexible = re.escape(" ".join(str(label).split())).replace(r"\ ", r"[\s-]+")
+        if re.search(
+            rf"\bon\s+(?:the\s+|his\s+|her\s+|their\s+|a\s+|an\s+)?{flexible}\b",
+            text,
+            re.I,
+        ):
+            return True
+    return False
 
 
 def _spec_line(in_frame: list[dict], action: str) -> str:

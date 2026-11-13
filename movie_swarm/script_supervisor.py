@@ -479,8 +479,17 @@ def _reviews(production_dir: Path, documents: list[dict], costume: dict | None, 
             detail = str(note.get("detail") or "")
             if kind == "carried-prop":
                 add(shot_id, "carried", detail)
-            elif kind == "needs-review" and "prop" in detail.casefold():
-                add(shot_id, "prop-continuation", detail)
+            elif kind == "needs-review":
+                if any(item["shot_id"] == shot_id and item["detail"] == detail for item in reviews):
+                    continue
+                folded = detail.casefold()
+                if "rider" in folded:
+                    review_kind = "rider"
+                elif "prop" in folded:
+                    review_kind = "prop-continuation"
+                else:
+                    review_kind = "needs-review"
+                add(shot_id, review_kind, detail)
     return reviews
 
 

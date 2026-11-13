@@ -62,7 +62,7 @@
         "required": ["shot_id", "detail"],
         "properties": {
           "shot_id": { "type": "string", "minLength": 1 },
-          "kind": { "type": "string", "enum": ["pronoun", "prop-continuation", "carried"] },
+          "kind": { "type": "string", "enum": ["pronoun", "prop-continuation", "carried", "rider", "needs-review"] },
           "detail": { "type": "string", "minLength": 1 }
         }
       }

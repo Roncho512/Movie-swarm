@@ -496,6 +496,28 @@ def load_kind_nouns(production_dir: str | Path | None = None) -> dict[str, list[
     return nouns
 
 
+def load_absence_phrases(production_dir: str | Path | None = None) -> dict[str, list[str]]:
+    """Phrases that name a prop without putting it in the frame.
+
+    ``{prop}`` stands for a name, alias, part, or kind noun. A film file
+    replaces any list it includes. An empty list clears that list.
+    """
+    from movie_swarm.paths import repo_root
+
+    loaded = _read_absence_file(repo_root() / "config" / "absence-phrases.json")
+    phrases = list(loaded.get("phrases") or [])
+    ambiguous = list(loaded.get("ambiguous") or [])
+    if production_dir is not None:
+        override = Path(production_dir) / "props" / "absence-phrases.json"
+        if override.is_file():
+            over = _read_absence_file(override)
+            if "phrases" in over:
+                phrases = list(over["phrases"])
+            if "ambiguous" in over:
+                ambiguous = list(over["ambiguous"])
+    return {"phrases": phrases, "ambiguous": ambiguous}
+
+
 def _read_kind_nouns(path: Path) -> dict[str, list[str]]:
     if not path.is_file():
         return {}
@@ -571,6 +593,129 @@ def prop_mentioned(
         if len(owners) == 1 and str(owners[0].get("prop_id") or "") == str(prop.get("prop_id") or "") and prop.get("prop_id"):
             return True
     return False
+
+
+def _read_absence_file(path: Path) -> dict:
+    """Return the lists a file actually includes. A missing file returns nothing."""
+    if not path.is_file():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    found = {}
+    for key in ("phrases", "ambiguous"):
+        if key not in data:
+            continue
+        words = data.get(key)
+        kept = []
+        if isinstance(words, list):
+            for word in words:
+                text = " ".join(str(word).split())
+                if "{prop}" not in text or len(text) < 3:
+                    continue
+                if text.casefold() not in {item.casefold() for item in kept}:
+                    kept.append(text)
+        found[key] = kept
+    return found
+
+
+def _match_labels(prop: dict, props: list[dict], kind_nouns: dict[str, list[str]] | None) -> list[str]:
+    labels = prop_labels(prop)
+    for noun in generic_nouns_for(prop, props, kind_nouns):
+        if noun.casefold() not in {item.casefold() for item in labels}:
+            labels.append(noun)
+    return labels
+
+
+def _label_pattern(label: str) -> str:
+    return re.escape(" ".join(label.split())).replace(r"\ ", r"[\s-]+")
+
+
+def _phrase_covers(text: str, template: str, label: str, start: int, end: int) -> bool:
+    if "{prop}" not in template:
+        return False
+    phrase = " ".join(template.replace("{prop}", label).split())
+    pattern = rf"(?<!\w){_label_pattern(phrase)}(?!\w)"
+    for match in re.finditer(pattern, text, re.I):
+        if match.start() <= start and match.end() >= end:
+            return True
+    return False
+
+
+def prop_frame_state(
+    prop: dict,
+    text: str,
+    props: list[dict],
+    kind_nouns: dict[str, list[str]] | None = None,
+    absence: dict | None = None,
+) -> str:
+    """How a named prop sits in the shot: in-frame, absent, ambiguous, or unnamed.
+
+    Every mention inside an absence phrase keeps the prop out of the frame.
+    An ambiguous phrase, or a mix of an absence phrase and a bare mention,
+    is not guessed.
+    """
+    if not prop_mentioned(prop, text, props, kind_nouns):
+        return "unnamed"
+    phrases = list((absence or {}).get("phrases") or [])
+    ambiguous = list((absence or {}).get("ambiguous") or [])
+    spans = []
+    for label in _match_labels(prop, props, kind_nouns):
+        for match in re.finditer(rf"(?<!\w){_label_pattern(label)}(?!\w)", text, re.I):
+            spans.append((match.start(), match.end(), label))
+    if not spans:
+        return "in-frame"
+    states = []
+    for start, end, label in spans:
+        if any(_phrase_covers(text, template, label, start, end) for template in ambiguous):
+            states.append("ambiguous")
+        elif any(_phrase_covers(text, template, label, start, end) for template in phrases):
+            states.append("absent")
+        else:
+            states.append("in-frame")
+    if any(state == "ambiguous" for state in states):
+        return "ambiguous"
+    if states and all(state == "absent" for state in states):
+        return "absent"
+    if any(state == "absent" for state in states) and any(state == "in-frame" for state in states):
+        return "ambiguous"
+    return "in-frame"
+
+
+_NON_VISUAL_CUE = re.compile(
+    r"\b(fades?|fading|silence|silent|holds?|holding|black|titles?|credits?)\b",
+    re.I,
+)
+# Stems _verb_stems actually produces. "fades" ends in "es", so the stem is "fad".
+# "seconds" also ends in "s". A hold names a length. That word is not an action.
+_NON_VISUAL_STEMS = {"fad", "hold", "silent", "title", "credit", "black"}
+_NOT_ACTION_STEMS = {"second", "minute", "hour", "moment"}
+
+
+def no_visible_action(text: str) -> bool:
+    """True when every sentence is sound, a fade, a hold, black, or a title.
+
+    A sentence that also has an action verb, such as riding while a fade
+    starts, is still a picture.
+    """
+    parts = [part.strip() for part in re.split(r"(?<=[.!?])\s+", str(text or "").strip()) if part.strip()]
+    if not parts:
+        return False
+    return all(_sentence_has_no_picture(part) for part in parts)
+
+
+def _sentence_has_no_picture(sentence: str) -> bool:
+    if not _NON_VISUAL_CUE.search(sentence):
+        return False
+    visual = {
+        stem
+        for stem in _verb_stems(sentence)
+        if stem not in _NON_VISUAL_STEMS and stem not in _NOT_ACTION_STEMS
+    }
+    return not visual
 
 
 _PREVIS_TEXT_FILES = (

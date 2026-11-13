@@ -1453,3 +1453,57 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: The rerun command is unchanged: `python3 scripts/studio.py --production the-last-marker --run first-film-1 --redo previs`, from the repo root, with the films root set. A failed redo does not approve the previs gate and does not write a half-finished storyboard. Run the same command again. Earlier locks from that attempt are overwritten. Nothing needs to be deleted first. No live call. Spent on this step: $0.00.
 - Who decided: Ron, 2026-11-12
 
+## D165 — Phase 8.17 approved by Ron, 12 Nov 2026
+
+- Status: decided
+- Date: 2026-11-12
+- Context: An offline previs pass still treated a departure as the prop in frame, carried that prop into a close-up of another object and into a fade or hold, left a rider untagged when their vehicle passed the camera, and could not place a scene's leftover time once every shot in that scene was at the length cap. The film total came up short of its target.
+- Decision: Fix that path. Keep the engine generic. Film facts stay in the film folder. The choices for how the fixes work are D166 through D170. Those are proposals. No paid call is part of this phase.
+- Consequences: An approved previs gate is not rewritten. No live call was made. Spent on this step: $0.00.
+- Who decided: Ron, 12 Nov 2026
+
+## D166 — An absence phrase does not put a prop in frame
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: A line such as "he has left the bike" named the vehicle, so the shot was tagged and the locked spec and reference images were added. The vehicle was not in the frame.
+- Decision: `config/absence-phrases.json` lists phrases that mention a prop without showing it. `{prop}` stands for the lock's name, an alias, a part, or a kind noun. A film replaces either list by writing that key in `props/absence-phrases.json`. An empty list clears it. When every mention of the prop sits inside an absence phrase, the prop is not tagged. When a configured phrase could still show the prop, or the shot both leaves the prop and shows it, the shot is not tagged and the storyboard and the continuity check list it for review.
+- Consequences: The default list is generic English. It includes leaving, abandoning, walking away, being without the prop, and looking back at it, including from a distance. "Left the prop in" or "left the prop running" is ambiguous, because the prop may still be sitting there.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D167 — A continued prop stops at a different subject
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: A close-up of a different object inherited the vehicle from the previous shot, including the locked spec and the reference images. The previous shot had tagged the vehicle only because an absence phrase was treated as presence, so there was nothing that should have carried.
+- Decision: Within one scene, a continued action still carries one prop when the previous shot had exactly one prop in frame and this shot does not name a prop. It does not carry into a close-up, an insert, or an extreme close-up of some other object. It does not carry when the shot's subject is a different thing. If the previous shot did not put the prop in frame, including because of an absence phrase, the next shot has nothing to carry. A tight shot that continues the action but names neither the prop nor another object is listed for review and is not guessed.
+- Consequences: "He kicks again" can still carry the one prop from the previous shot. A close view of a different object does not.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D168 — A line with no picture does not carry a prop
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: A fade, then silence, then a hold, inherited the vehicle from the previous wide. The line does not describe a picture of that vehicle.
+- Decision: If every sentence in the shot is sound, a fade, a hold, black, or a title, and the shot would otherwise have carried a prop, the prop is not carried. The storyboard and the continuity check list the shot for review. A sentence that also has a visible action, such as riding while a fade starts, can still carry.
+- Consequences: A named hold still sets the shot length. The word "hold" by itself still sets the transition. The carry rule is separate from the length rule.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D169 — One rider is tagged when their vehicle passes
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: A shot whose subject is a vehicle in motion, with no name and no pronoun, was not tagged with a character. The rider was in frame, so the wardrobe line never reached the prompt.
+- Decision: When the shot's subject is one locked vehicle in motion, the shot names no person, and exactly one character in the scene rides or drives that vehicle, that character is tagged. The wardrobe and makeup lines then follow, the same way they do for a pronoun. If no rider is clear, or more than one person rides it, or the vehicle itself is not one lock, the shot is not tagged and the storyboard and the continuity check list it for review.
+- Consequences: The ride and motion words are generic English. The names still come from the locks. A vehicle that is only waiting is not treated as a rider passing the camera.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D170 — A scene remainder can land in another scene
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: Clamping every shot in a scene to the maximum length left a remainder the scene could not place. The boards then totaled 179 seconds against a 180 second target, while other scenes still had shots under the cap.
+- Decision: After each scene places what it can inside the limits, any remainder is spread across shots in other scenes that are not pinned to a length the screenplay named and that still have room under the maximum. The time is added so each scene stays as close to its own target as the limits allow. The pacing note names the scene that absorbed it, and which scene it came from. The board total then hits the sum of the scene targets. Only when no shot anywhere has room does the note keep the line that the limits left no room to place the remainder.
+- Consequences: A named length still stays. A scene that can hit its own target still does. A scene that absorbs leftover time runs long by that amount, and the note says so.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
