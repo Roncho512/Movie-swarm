@@ -80,9 +80,10 @@ When you're debugging why Shot 14 has the wrong lighting, you need to trace the 
 | `vfx-needs.schema.json` | One production's list of effects. |
 | `vfx-breakdown.schema.json` | Task, method, risk, and turnover for the editor and the colorist. |
 | `vfx-review.schema.json` | The VFX read of the dailies. |
-| `graphics-research.schema.json` | Title and Graphic Design research. Each item is sourced or inferred. |
-| `graphics-brand-guide.schema.json` | Fonts, palette, wordmark, layout, and the rules that trace back to that research. |
-| `graphics-package.schema.json` | Titles, title cards, end credits, subtitle style, key art, and collateral. |
+| `graphics-research.schema.json` | Title and Graphic Design research. Each item is sourced, inferred, or a designer proposal with a reference. |
+| `graphics-brand-guide.schema.json` | Fonts, palette, wordmark, layout, safe area, and the rules that trace back to that research. Each one is labeled from the production documents or as a designer proposal. |
+| `graphics-package.schema.json` | Titles, title cards, end credits, subtitle style, key art, and collateral. A title card keeps its words apart from its design direction. |
+| `design-reference.schema.json` | An offline genre and period pack. The engine matches it from the production's own words. |
 | `film-budget.schema.json` | One film's budget: total, line shares, contingency, tiers, and whether the trailer is on. |
 | `trailer-research.schema.json` | Trailer research. Each item is sourced or inferred. |
 | `spoiler-guard.schema.json` | Beats the trailer may show, and beats it must hold back. |

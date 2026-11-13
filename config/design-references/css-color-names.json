@@ -1,0 +1,99 @@
+{
+  "id": "css-color-names",
+  "version": "1.0.0",
+  "note": "Fills a palette name that has no hex, and only when the name is one of these CSS color keywords. The hex is the keyword's sRGB value. It is still a designer proposal, because the production did not write the hex. Names that are not in this list are left as written.",
+  "match": { "always": true },
+  "colors": [
+    {
+      "name": "black",
+      "hex": "#000000",
+      "use": "fill-missing-hex",
+      "url": "https://www.w3.org/TR/css-color-3/#svg-color",
+      "note": "CSS Color Module Level 3, the SVG color keyword black. Proposed only when a palette names black and gives no hex."
+    },
+    {
+      "name": "white",
+      "hex": "#FFFFFF",
+      "use": "fill-missing-hex",
+      "url": "https://www.w3.org/TR/css-color-3/#svg-color",
+      "note": "CSS Color Module Level 3, the SVG color keyword white."
+    },
+    {
+      "name": "red",
+      "hex": "#FF0000",
+      "use": "fill-missing-hex",
+      "url": "https://www.w3.org/TR/css-color-3/#svg-color",
+      "note": "CSS Color Module Level 3, the SVG color keyword red."
+    },
+    {
+      "name": "blue",
+      "hex": "#0000FF",
+      "use": "fill-missing-hex",
+      "url": "https://www.w3.org/TR/css-color-3/#svg-color",
+      "note": "CSS Color Module Level 3, the SVG color keyword blue."
+    },
+    {
+      "name": "yellow",
+      "hex": "#FFFF00",
+      "use": "fill-missing-hex",
+      "url": "https://www.w3.org/TR/css-color-3/#svg-color",
+      "note": "CSS Color Module Level 3, the SVG color keyword yellow."
+    },
+    {
+      "name": "green",
+      "hex": "#008000",
+      "use": "fill-missing-hex",
+      "url": "https://www.w3.org/TR/css-color-3/#svg-color",
+      "note": "CSS Color Module Level 3, the SVG color keyword green."
+    },
+    {
+      "name": "gray",
+      "hex": "#808080",
+      "use": "fill-missing-hex",
+      "url": "https://www.w3.org/TR/css-color-3/#svg-color",
+      "note": "CSS Color Module Level 3, the SVG color keyword gray."
+    },
+    {
+      "name": "grey",
+      "hex": "#808080",
+      "use": "fill-missing-hex",
+      "url": "https://www.w3.org/TR/css-color-3/#svg-color",
+      "note": "CSS Color Module Level 3, the SVG color keyword grey, the same value as gray."
+    },
+    {
+      "name": "orange",
+      "hex": "#FFA500",
+      "use": "fill-missing-hex",
+      "url": "https://www.w3.org/TR/css-color-3/#svg-color",
+      "note": "CSS Color Module Level 3, the SVG color keyword orange."
+    },
+    {
+      "name": "brown",
+      "hex": "#A52A2A",
+      "use": "fill-missing-hex",
+      "url": "https://www.w3.org/TR/css-color-3/#svg-color",
+      "note": "CSS Color Module Level 3, the SVG color keyword brown."
+    },
+    {
+      "name": "pink",
+      "hex": "#FFC0CB",
+      "use": "fill-missing-hex",
+      "url": "https://www.w3.org/TR/css-color-3/#svg-color",
+      "note": "CSS Color Module Level 3, the SVG color keyword pink."
+    },
+    {
+      "name": "gold",
+      "hex": "#FFD700",
+      "use": "fill-missing-hex",
+      "url": "https://www.w3.org/TR/css-color-3/#svg-color",
+      "note": "CSS Color Module Level 3, the SVG color keyword gold."
+    },
+    {
+      "name": "silver",
+      "hex": "#C0C0C0",
+      "use": "fill-missing-hex",
+      "url": "https://www.w3.org/TR/css-color-3/#svg-color",
+      "note": "CSS Color Module Level 3, the SVG color keyword silver."
+    }
+  ]
+}

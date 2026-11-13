@@ -1,0 +1,212 @@
+{
+  "id": "1960s-italian-spaghetti-western",
+  "version": "1.0.0",
+  "note": "Design era of Italian western posters and title sequences from the mid-1960s, checked against the pages named on each claim. Match is the genre phrase in the production's own genre, tone, or look. The story year is not required, because the poster practice belongs to the years the films were sold, not to the year the story is set. This pack does not name a production, a vehicle, or a watch. Names are copied from the cited page. Two spellings of one poster painter are left as two citations and are not merged.",
+  "match": {
+    "terms": ["spaghetti western", "italian western", "western all'italiana"]
+  },
+  "claims": [
+    {
+      "claim_id": "symeoni-fistful-poster",
+      "topic": "references",
+      "kind": "artist",
+      "text": "TES magazine describes Sandro Symeoni's poster for Per un pugno di dollari (A Fistful of Dollars, which that article dates to 1964). He paints an action scene with vigorous brushwork. The central figure is not a close likeness of the lead, who was not yet a film star. The article says he painted two versions of that poster. It also says that in the late 1950s and the 1960s most posters were hand-painted, printed in the thousands, and meant to be displayed for a short time.",
+      "url": "https://www.tes.com/magazine/archive/quick-draw"
+    },
+    {
+      "claim_id": "casaro-on-symeoni",
+      "topic": "references",
+      "kind": "artist",
+      "text": "In a Film on Paper interview, Renato Casaro says Sandro Symeoni painted the original Italian poster for A Fistful of Dollars, and that the lead's face was not painted accurately because he was not yet a star. Casaro says Symeoni often painted the figure with a pistol pointed at the viewer.",
+      "url": "https://www.filmonpaper.com/blog/interview-renato-casaro/"
+    },
+    {
+      "claim_id": "casaro-foreign-markets",
+      "topic": "references",
+      "kind": "artist",
+      "text": "Renato Casaro's published biography says his friendship with Sergio Leone began in the same year as Casaro's first big international poster success, and that he produced the poster images mainly for foreign markets of the Clint Eastwood films. This pack does not treat that as the original Italian one-sheet.",
+      "url": "https://www.casaro-renato-art.com/wp-content/uploads/2019/12/RENATO-CASARO-BIO_ENG-1.pdf"
+    },
+    {
+      "claim_id": "casaro-german-rerelease",
+      "topic": "references",
+      "kind": "artist",
+      "text": "In the Film on Paper interview, Casaro says that when A Fistful of Dollars was re-released in Germany at the end of the 1970s he was asked to center the poster on a recognizable portrait. He contrasts that job with Symeoni's original Italian poster, which was an action scene.",
+      "url": "https://www.filmonpaper.com/blog/interview-renato-casaro/"
+    },
+    {
+      "claim_id": "gaspari-tes-spelling",
+      "topic": "references",
+      "kind": "artist",
+      "text": "TES names Rodolpho Gaspari as a painter of these western posters and says his pictures appear on posters for the two films that followed A Fistful of Dollars. This pack does not decide that this spelling is the same person as a different spelling on another site.",
+      "url": "https://www.tes.com/magazine/archive/quick-draw"
+    },
+    {
+      "claim_id": "pulp-international-names",
+      "topic": "references",
+      "kind": "artist",
+      "text": "Pulp International, writing about Italian posters for 1960s and 1970s westerns, names Renato Casaro, Rodolfo Gasparri, Averardo Ciriello, and Aller (Carlo Alessandrini) among the artists. The page does not assign one poster to each name. This pack does not merge Rodolfo Gasparri with the Rodolpho Gaspari spelling used by TES.",
+      "url": "https://pulpinternational.com/pulp/entry/assorted-italian-posters-for-italian-and-us-westerns/"
+    },
+    {
+      "claim_id": "lardani-titles",
+      "topic": "period",
+      "kind": "lettering",
+      "text": "Art of the Title credits Iginio Lardani with the title sequences for Sergio Leone's three mid-1960s westerns. It describes graphic design, experimental animation, typography, and in-camera opticals, in shades it calls good, bad, and blood red. On the third film it calls the typography anti-academic because it mixes faces that would otherwise clash. On the second film it says the title cards are hand-animated so they move across the landscape.",
+      "url": "https://www.artofthetitle.com/feature/a-fistful-of-titles-the-westerns-of-iginio/"
+    },
+    {
+      "claim_id": "lardani-hicon",
+      "topic": "references",
+      "kind": "print",
+      "text": "Bright Lights Film Journal says Eugenio, also called Iginio, designed those three title sequences and is credited on screen on the third film, not on the first two. It says the later sequences use high-contrast film stock for the optical composites.",
+      "url": "https://brightlightsfilm.com/lardanis-signature-technical-mastery-and-apparent-glitch-in-eugenio-lardanis-titles-for-sergio-leones-good-bad-ugly/"
+    },
+    {
+      "claim_id": "gbu-optical",
+      "topic": "references",
+      "kind": "print",
+      "text": "Art of the Title's page on the third film's titles says high-contrast photography, liquid, and sand were used as optical mattes and as backdrops, and that aging was simulated by re-photographing stills through panes covered in ochre jelly.",
+      "url": "https://www.artofthetitle.com/title/the-good-the-bad-and-the-ugly/"
+    },
+    {
+      "claim_id": "pixart-two-colors",
+      "topic": "references",
+      "kind": "convention",
+      "text": "Pixartprinting's article on these title sequences says the opening of the first film uses two colours, black and red, and that Iginio Lardani designed those credits. The article is a printer's essay, not a studio bible.",
+      "url": "https://www.pixartprinting.co.uk/blog/fonts-sergio-leone/"
+    },
+    {
+      "claim_id": "stylogeny-lettering",
+      "topic": "genre",
+      "kind": "lettering",
+      "text": "Stylogeny, summarizing painted Italian film posters including this western cycle, says titles are hand-lettered, huge, tightly set, and joined to the picture. It calls hand-lettering and all-caps characteristic, and condensed display occasional. It describes the colour as saturated, with warm yellows and reds set against dusk blues. The page is a style summary, not a measured swatch from one poster.",
+      "url": "https://stylogeny.com/styles/italian-painted-film-poster/"
+    },
+    {
+      "claim_id": "locandina-format",
+      "topic": "genre",
+      "kind": "credits",
+      "text": "Locandine Best describes the Italian locandina as a tall poster of about 33 by 70 cm. The painted art is recomposed for that narrow page, and the title and credits sit underneath. It says these posters were lithographs or offset prints on thin matte paper, and that a magnifier shows solid ink and a regular screen.",
+      "url": "https://locandinebest.net/"
+    }
+  ],
+  "fonts": [
+    {
+      "role": "title",
+      "family": "Rye",
+      "category": "display",
+      "license_name": "SIL Open Font License 1.1",
+      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/rye/OFL.txt",
+      "source_url": "https://fonts.google.com/specimen/Rye",
+      "note": "Designed by Nicole Fally for Sorkin Type Co. The font's own description calls it a medium-contrast wood-type face with a feeling of the American West, for headlines and large sizes. It is a free stand-in for a display title, not a face used on the Italian posters. Those titles were painted. The license text says its conditions do not apply to a document made with the font. Do not sell the font file by itself."
+    },
+    {
+      "role": "title",
+      "family": "Sancreek",
+      "category": "display",
+      "license_name": "SIL Open Font License 1.1",
+      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/sancreek/OFL.txt",
+      "source_url": "https://fonts.google.com/specimen/Sancreek",
+      "note": "The font's own description calls Sancreek a caps-oriented display face and a contemporary take on large wooden poster letters of the nineteenth century. Alternate title face, not a claim that an Italian poster used this file. Same license terms as the other faces in this pack: a document made with the font is not the font file."
+    },
+    {
+      "role": "credits",
+      "family": "Source Sans 3",
+      "category": "sans-serif",
+      "license_name": "SIL Open Font License 1.1",
+      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/sourcesans3/OFL.txt",
+      "source_url": "https://fonts.google.com/specimen/Source+Sans+3",
+      "note": "Adobe's Source Sans 3, a sans-serif, copyright 2010-2020 Adobe, reserved name Source. Proposed for credits because credits are set in a sans-serif. It is not claimed to be a metal face from a 1960s credit block. The license does not apply to a document made with the font. Do not sell the font file by itself."
+    },
+    {
+      "role": "subtitles",
+      "family": "Noto Sans",
+      "category": "sans-serif",
+      "license_name": "SIL Open Font License 1.1",
+      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/OFL.txt",
+      "source_url": "https://fonts.google.com/specimen/Noto+Sans",
+      "note": "Noto Sans, copyright 2022 The Noto Project Authors. A plain sans-serif proposed for subtitles because it stays readable at small sizes. Timing stays with the Post Supervisor. Same license terms: the subtitle file is a document, and the font file is not sold by itself."
+    },
+    {
+      "role": "marketing",
+      "family": "Alfa Slab One",
+      "category": "display",
+      "license_name": "SIL Open Font License 1.1",
+      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/alfaslabone/OFL.txt",
+      "source_url": "https://fonts.google.com/specimen/Alfa+Slab+One",
+      "note": "Alfa Slab One, copyright 2016 The Alfa Slab One Project Authors, reserved name Alfa Slab. The font's description calls it a very heavy slab. Proposed for marketing lines that need a poster weight. It is not claimed to be the lettering on a 1960s Italian poster. Same license terms as the other faces here."
+    }
+  ],
+  "colors": [
+    {
+      "name": "blood red",
+      "hex": "#8C1C13",
+      "use": "propose",
+      "url": "https://www.artofthetitle.com/feature/a-fistful-of-titles-the-westerns-of-iginio/",
+      "note": "Art of the Title names blood red as the third tone, with good and bad. The page gives no hex. This hex is a designer proposal for that name."
+    },
+    {
+      "name": "black",
+      "hex": "#14110E",
+      "use": "propose",
+      "url": "https://www.pixartprinting.co.uk/blog/fonts-sergio-leone/",
+      "note": "Pixartprinting names black as one of the two title colours, with red. The page gives no hex. This near-black is a designer proposal for print black, not the CSS keyword."
+    },
+    {
+      "name": "warm yellow",
+      "hex": "#D4A017",
+      "use": "propose",
+      "url": "https://stylogeny.com/styles/italian-painted-film-poster/",
+      "note": "Stylogeny names warm yellows in the painted-poster palette. The page gives no hex. This hex is a designer proposal."
+    },
+    {
+      "name": "dusk blue",
+      "hex": "#3E5C73",
+      "use": "propose",
+      "url": "https://stylogeny.com/styles/italian-painted-film-poster/",
+      "note": "Stylogeny names dusk blues against those warm colours. The page gives no hex. This hex is a designer proposal."
+    }
+  ],
+  "layouts": [
+    {
+      "layout_id": "title-in-picture",
+      "surface": "title",
+      "text": "Put the main title in the picture, not in a plain bar. Art of the Title describes Lardani's cards as part of the landscape, hand-animated across it on the second film, in a duotone of the good, the bad, and blood red.",
+      "url": "https://www.artofthetitle.com/feature/a-fistful-of-titles-the-westerns-of-iginio/"
+    },
+    {
+      "layout_id": "poster-under-art",
+      "surface": "poster",
+      "text": "Follow the locandina arrangement. Painted or illustrated art fills the sheet. The title and the credit block sit underneath that art. Locandine Best gives the sheet as about 33 by 70 cm, tall, with the title and credits under the picture.",
+      "url": "https://locandinebest.net/"
+    },
+    {
+      "layout_id": "key-art-not-a-grab",
+      "surface": "key-art",
+      "text": "Key art uses the poster arrangement Locandine Best describes for the locandina: illustrated art, with the title and a credit block under the art.",
+      "url": "https://locandinebest.net/"
+    },
+    {
+      "layout_id": "credits-under-art",
+      "surface": "credits",
+      "text": "On a poster, set the billing block under the art. Locandine Best describes that position on the locandina: title and credits underneath the painted picture.",
+      "url": "https://locandinebest.net/"
+    },
+    {
+      "layout_id": "credits-on-screen",
+      "surface": "credits",
+      "text": "On screen, treat the credit cards as part of the title sequence. Art of the Title describes Lardani's cards as pictures with type in them, not as a plain list on black.",
+      "url": "https://www.artofthetitle.com/feature/a-fistful-of-titles-the-westerns-of-iginio/"
+    }
+  ],
+  "custom_lettering": {
+    "name": "Painted pulp capitals",
+    "style": "All-capital letters, tightly set, drawn to join the picture. Hand-lettering and all-caps are the painted-poster habit Stylogeny describes. Lardani's titles, as Art of the Title describes them, are uneven on purpose and sit in the scene.",
+    "construction": "Draw the capitals by hand or as vectors that keep brush breaks and a condensed width. Do not start from a geometric sans. Do not trace a finished retail alphabet. This entry is a description for approval. No font file is built.",
+    "urls": [
+      "https://stylogeny.com/styles/italian-painted-film-poster/",
+      "https://www.artofthetitle.com/feature/a-fistful-of-titles-the-westerns-of-iginio/"
+    ]
+  }
+}

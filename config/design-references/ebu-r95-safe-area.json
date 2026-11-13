@@ -1,0 +1,13 @@
+{
+  "id": "ebu-r95-safe-area",
+  "version": "1.0.0",
+  "note": "Used when a production does not name its own graphics inset. A named inset in the delivery spec stays the one the package copies. This proposal is still written down so Ron can see the cited standard.",
+  "match": { "always": true },
+  "safe_area": {
+    "action_inset_percent": 3.5,
+    "graphics_inset_percent": 5,
+    "source_name": "EBU R 95",
+    "url": "https://tech.ebu.ch/docs/r/r095.pdf",
+    "note": "EBU R 95, Safe areas for 16:9 television production, version 1.1, June 2017. Note 5 says the action safe area is 3.5 percent and the graphics safe area is 5 percent, at the top, bottom, and each side. The publication page is https://tech.ebu.ch/publications/r095/."
+  }
+}

@@ -111,6 +111,9 @@ def test_engine_source_does_not_name_the_sample_film():
     covers them without a separate list.
     """
     banned = ("leone", "spaghetti", "triumph", "breitling", "baja", "morricone", "1965", "1967")
+    # Genre packs cite public design history. They still must not name this film's props or years.
+    pack_root = repo_root() / "config" / "design-references"
+    film_only = ("triumph", "breitling", "baja", "1965", "1967")
     roots = [
         repo_root() / "movie_swarm",
         repo_root() / "schemas",
@@ -131,7 +134,8 @@ def test_engine_source_does_not_name_the_sample_film():
             if path.suffix.lower() not in {".py", ".json", ".md"}:
                 continue
             text = path.read_text(encoding="utf-8", errors="ignore").casefold()
-            for word in banned:
+            words = film_only if pack_root in path.parents else banned
+            for word in words:
                 if word in text:
                     offenders.append(f"{path.relative_to(repo_root())}: {word}")
     assert offenders == []

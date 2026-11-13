@@ -63,13 +63,14 @@
     "title_card": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["card_id", "text", "source_file", "source_line", "safe_area"],
+      "required": ["card_id", "text", "source_file", "source_line", "safe_area", "design_direction"],
       "properties": {
         "card_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
         "text": { "type": "string", "minLength": 1 },
         "source_file": { "type": "string", "minLength": 1 },
         "source_line": { "type": "integer", "minimum": 1 },
-        "safe_area": { "type": "string", "minLength": 1 }
+        "safe_area": { "type": "string", "minLength": 1 },
+        "design_direction": { "type": "string" }
       }
     },
     "credit": {
@@ -135,7 +136,11 @@
         "height": { "type": ["integer", "null"], "minimum": 2 },
         "size_source": { "type": ["string", "null"] },
         "safe_area": { "type": "string", "minLength": 1 },
-        "render_status": { "type": "string", "enum": ["present", "not-rendered"] }
+        "render_status": { "type": "string", "enum": ["present", "not-rendered"] },
+        "placement_rules": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
       }
     },
     "collateral": {
@@ -150,7 +155,11 @@
         "height": { "type": ["integer", "null"], "minimum": 2 },
         "size_source": { "type": ["string", "null"] },
         "safe_area": { "type": "string", "minLength": 1 },
-        "render_status": { "type": "string", "enum": ["present", "not-rendered"] }
+        "render_status": { "type": "string", "enum": ["present", "not-rendered"] },
+        "placement_rules": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
       }
     },
     "handoff": {

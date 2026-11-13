@@ -60,6 +60,8 @@ def test_research_comes_before_the_guide_and_the_guide_before_graphics(tmp_path)
         if item["basis"] == "sourced":
             assert item["source_file"]
             assert item["source_field"]
+        elif item["basis"] == "designer-proposal":
+            assert item["reference"]
         else:
             assert item["basis"] == "inferred"
             assert item["source_file"] is None
