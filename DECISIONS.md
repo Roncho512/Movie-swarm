@@ -1687,3 +1687,21 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: Ron can renumber it or leave it. Nothing in the engine reads that number.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
+## D191 — Plan a visual brand guide PDF, and do not build it yet
+
+- Status: decided
+- Date: 2026-11-13
+- Context: The graphics gate shows Ron `graphics/brand-guide.md`, a text brand guide. Ron wants an actual visual brand guide to review at that gate. Hero props and featured-product placement rules already live in the production folder. The engine has to stay generic (D30).
+- Decision: Ron, 2026-11-13. Title and Graphic Design must produce a visual brand guide as a PDF for Ron to review at the graphics gate. The PDF includes color swatches with hex codes. It includes font specimens that render each proposed face, for the title, the credits, the subtitles, and marketing, with the type rules: sizes, casing, tracking, hierarchy, and safe area. It shows the text rules and the credit-block rules on the page. It includes hero-prop imagery for each film's locked hero props, for example a vehicle or a watch, consistent with the locked prop specs and with the featured-product placement rules. It includes at least one proposed scene or key-art frame. An image that needs paid generation uses the art director budget line and the generation approval that already exist. Laying out the PDF is offline. The engine reads the production's locks and does not hard-code a film (D30). No code until Ron gives the go to build it.
+- Consequences: The roadmap files this as phase 8.20, after the planned breakdown gate (8.19, D184). That number is a filing choice. It is not a start order. For The Last Marker, Ron's Grok Bot designer teammate, Beautiful 3, is producing the first such PDF by hand as the reference example while this capability is planned. Spent on this step: $0.00.
+- Who decided: Ron, 2026-11-13
+
+## D192 — Plan a live designer research mode, and leave it off
+
+- Status: decided
+- Date: 2026-11-13
+- Context: Title and Graphic Design reads offline reference packs in `config/design-references/`. A coding agent researched those packs and checked them in (Phase 8.18, D186). The designer does not research a film on its own.
+- Decision: Ron, 2026-11-13. Plan a live research mode for the studio's designer. The designer researches that film's period, genre, posters, fonts, and colors, and writes citations. The step is metered and paid. It bills to the art director budget line and waits for gate approval. It is never on by default. It writes a new reference pack for Ron to approve. The engine stays generic (D30). No code until Ron gives the go to build it.
+- Consequences: The roadmap files this as phase 8.21, after 8.20. That number is a filing choice. It is not a start order. The offline packs from Phase 8.18 stay the path that runs today. The planned Script Supervisor / 1st AD breakdown gate (D184) stays as already listed. Spent on this step: $0.00.
+- Who decided: Ron, 2026-11-13
+
