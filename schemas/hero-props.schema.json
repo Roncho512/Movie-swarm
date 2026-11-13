@@ -68,6 +68,11 @@
           "type": "array",
           "items": { "type": "string", "minLength": 1 }
         },
+        "generic_nouns": {
+          "type": "array",
+          "description": "Ordinary nouns for this prop, such as a category word the name does not use. A noun claimed by more than one lock does not match.",
+          "items": { "type": "string", "minLength": 1 }
+        },
         "parts": {
           "type": "array",
           "description": "Names of pieces of this prop. A shot that says one of these shows the prop.",

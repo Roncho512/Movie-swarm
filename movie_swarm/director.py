@@ -14,7 +14,7 @@ from pathlib import Path
 
 from movie_swarm.dispatch import CrewCall, DispatchResult, dispatch_call
 from movie_swarm.gates import budget_cap_usd
-from movie_swarm.handoff import HandoffError
+from movie_swarm.handoff import HandoffError, write_handoff
 from movie_swarm.line_producer import LineProducer, LineProducerError
 from movie_swarm.llm import LLMError, WritingQuote
 from movie_swarm.redact import redact
@@ -39,6 +39,7 @@ from movie_swarm.treatment_doc import (
     treatment_errors,
     treatment_schema_instructions,
     treatment_json_path,
+    treatment_markdown_path,
     unanswered_required,
     write_questions,
     write_treatment_files,
@@ -127,7 +128,7 @@ class Director:
         """
         if not self.production_dir.is_dir():
             raise DirectorError(f"Production folder not found: {self.production_dir}")
-        self._refuse_if_approved()
+        approved = self._treatment_is_approved()
         answered = self._answers_present()
         try:
             raw, matched, entry = _cached_draft_text(self.production_dir, run_id, request_hash)
@@ -159,6 +160,30 @@ class Director:
         if script is not None and script.partial:
             script = None
         repaired = reply_was_repaired(raw, dropped)
+        if approved:
+            if answered or _cache_is_final(entry):
+                self._reconform_final(
+                    parsed,
+                    dropped,
+                    matched,
+                    run_id,
+                    script,
+                    brief,
+                    repaired=repaired,
+                    persist=False,
+                )
+            else:
+                self._reconform_draft(
+                    parsed,
+                    dropped,
+                    matched,
+                    run_id,
+                    script,
+                    brief,
+                    repaired=repaired,
+                    persist=False,
+                )
+            return self._clear_stale_approved_note(matched)
         if answered or _cache_is_final(entry):
             return self._reconform_final(
                 parsed, dropped, matched, run_id, script, brief, repaired=repaired
@@ -356,7 +381,9 @@ class Director:
             treatment["draft_note"] = _final_failure_note(treatment, exc, saved, limit)
             return treatment
 
-    def _reconform_draft(self, parsed, dropped, matched, run_id, script, brief, *, repaired: bool) -> dict:
+    def _reconform_draft(
+        self, parsed, dropped, matched, run_id, script, brief, *, repaired: bool, persist: bool = True
+    ) -> dict:
         cap = _cap(brief)
         offline = draft_offline(
             production_id=self.production_dir.name,
@@ -383,13 +410,30 @@ class Director:
         drafted["draft_note"] = _reconform_note(
             drafted.get("draft_note") or "", matched, dropped, final=False, repaired=repaired
         )
+        if not persist:
+            return {
+                "status": "preview",
+                "draft_note": drafted.get("draft_note") or "",
+                "request_hash": matched,
+            }
         result = self._finish(drafted, script, None, run_id, "model", phrase=False)
         result["request_hash"] = matched
         return result
 
-    def _reconform_final(self, parsed, dropped, matched, run_id, script, brief, *, repaired: bool) -> dict:
+    def _reconform_final(
+        self,
+        parsed,
+        dropped,
+        matched,
+        run_id,
+        script,
+        brief,
+        *,
+        repaired: bool,
+        persist: bool = True,
+    ) -> dict:
         """Write a cached final pass onto the current draft. Does not book and does not wipe answers."""
-        current = _current_treatment(self.production_dir)
+        current = _current_treatment(self.production_dir, allow_approved=not persist)
         if current is None:
             current = draft_offline(
                 production_id=self.production_dir.name,
@@ -425,6 +469,12 @@ class Director:
                 "The cached final pass still does not match the treatment checklist. "
                 "No new model call was made.\n" + "\n".join(redact(item) for item in errors)
             )
+        if not persist:
+            return {
+                "status": "preview",
+                "draft_note": revised.get("draft_note") or "",
+                "request_hash": matched,
+            }
         json_path, md_path = write_treatment_files(self.production_dir, revised)
         producer = self._run(run_id)
         producer.set_stage("treatment", "waiting-for-review")
@@ -463,6 +513,63 @@ class Director:
             return LineProducer.open(self.production_dir, run_id)
         except LineProducerError:
             return LineProducer.start(self.production_dir, run_id=run_id, stage="treatment")
+
+    def _treatment_is_approved(self) -> bool:
+        path = treatment_json_path(self.production_dir)
+        if not path.is_file():
+            return False
+        try:
+            current = load_treatment(self.production_dir)
+        except HandoffError:
+            return False
+        return current.get("status") == "approved"
+
+    def _clear_stale_approved_note(self, matched: str) -> dict:
+        """Drop a stale failure sentence. Leave the approval and the scenes as they are.
+
+        The gate record lives on the Line Producer. This does not rewrite status,
+        the approval block, or the stage split, so that record stays valid.
+        """
+        from movie_swarm.treatment_doc import render_markdown
+
+        current = load_treatment(self.production_dir)
+        approval = json.loads(json.dumps(current.get("approval") or {}))
+        status = current.get("status")
+        earlier = current.get("draft_note") or ""
+        cleaned = _without_stale_failure(earlier)
+        removed = cleaned != re.sub(r"\s{2,}", " ", earlier).strip()
+        if removed:
+            fresh = (
+                "Cleared a stale final-pass failure during reconform. "
+                "No new model call was made. Nothing new was booked. "
+                "The approved text was not changed."
+            )
+            current["draft_note"] = (cleaned + " " + fresh).strip() if cleaned else fresh
+            json_path = write_handoff(
+                treatment_json_path(self.production_dir), current, schema="treatment"
+            )
+            md_path = treatment_markdown_path(self.production_dir)
+            md_path.parent.mkdir(parents=True, exist_ok=True)
+            md_path.write_text(render_markdown(current), encoding="utf-8")
+        else:
+            json_path = treatment_json_path(self.production_dir)
+            md_path = treatment_markdown_path(self.production_dir)
+        saved = load_treatment(self.production_dir)
+        if saved.get("status") != status or saved.get("approval") != approval:
+            raise DirectorError(
+                "Reconform would have changed the approval. The file was not left that way."
+            )
+        return {
+            "treatment": str(json_path),
+            "treatment_markdown": str(md_path),
+            "questions": str(questions_path(self.production_dir)),
+            "run_id": "",
+            "drafted_by": saved.get("draft_method") or "",
+            "question_count": _question_count(self.production_dir),
+            "status": "approved",
+            "draft_note": saved.get("draft_note") or "",
+            "request_hash": matched,
+        }
 
     def _refuse_if_approved(self) -> None:
         path = treatment_json_path(self.production_dir)
@@ -825,8 +932,8 @@ def _reconform_note(
 
 
 _STALE_FINAL_FAILURE = re.compile(
-    r"The final model pass failed \(.*?\)\.\s*The earlier draft was kept\.?",
-    re.S,
+    r"The final model pass failed\b.*?The earlier draft was kept\.?",
+    re.I | re.S,
 )
 
 
@@ -842,7 +949,7 @@ def _cache_is_final(entry: dict) -> bool:
     return purpose == "final" or stop in {"max_tokens", "length"} or bool(entry.get("truncated"))
 
 
-def _current_treatment(production_dir: Path) -> dict | None:
+def _current_treatment(production_dir: Path, *, allow_approved: bool = False) -> dict | None:
     path = treatment_json_path(production_dir)
     if not path.is_file():
         return None
@@ -850,7 +957,7 @@ def _current_treatment(production_dir: Path) -> dict | None:
         current = load_treatment(production_dir)
     except HandoffError:
         return None
-    if current.get("status") == "approved":
+    if current.get("status") == "approved" and not allow_approved:
         return None
     return current
 

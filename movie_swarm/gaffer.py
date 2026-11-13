@@ -38,7 +38,44 @@ _PRACTICAL = (
     "available light",
 )
 _SUN = ("sun", "sunlight", "moon", "moonlight", "daylight")
-_TIME_WORDS = ("night", "day", "dawn", "dusk", "morning", "evening")
+_TIME_FAMILIES = {
+    "dawn": "dawn",
+    "sunrise": "dawn",
+    "morning": "morning",
+    "dusk": "dusk",
+    "sunset": "dusk",
+    "evening": "dusk",
+    "night": "night",
+    "midnight": "night",
+    "nighttime": "night",
+    "day": "day",
+    "daytime": "day",
+    "noon": "day",
+    "afternoon": "day",
+}
+
+# A bare "day" inside "minutes of day left" is not a time-of-day statement.
+_EXPLICIT_TIME = (
+    re.compile(
+        r"\bat\s+(dawn|dusk|sunrise|sunset|night|midnight|noon|morning|evening)\b",
+        re.I,
+    ),
+    re.compile(
+        r"\b(dawn|dusk|sunrise|sunset|night|morning|evening)\s+(?:falls|breaks|comes|arrives|settles|fell|broke)\b",
+        re.I,
+    ),
+    re.compile(r"\b(night|dawn|dusk)\s+falls\b", re.I),
+    re.compile(
+        r"\bit(?:'s| is)\s+(dawn|dusk|night|morning|evening|noon|midnight|daytime|nighttime)\b",
+        re.I,
+    ),
+    re.compile(r"\b(?:by|before|after|until)\s+(dawn|dusk|night|morning|evening|noon)\b", re.I),
+    re.compile(r"\b(daytime|nighttime)\b", re.I),
+    re.compile(
+        r"\b(?:INT|EXT|I/E)\.?\s+[^\n.]{0,80}-\s*(DAWN|DUSK|NIGHT|DAY|MORNING|EVENING|NOON)\b",
+        re.I,
+    ),
+)
 
 
 def plan_path(production_dir: Path) -> Path:
@@ -241,20 +278,44 @@ def _continuity(scene_id: str, time_of_day: str, shots: list[dict]) -> list[dict
     return findings
 
 
+def _scene_family(time_of_day: str) -> str:
+    text = str(time_of_day or "")
+    if re.search(r"\b(pre[\s-]?dusk|dusk|sunset|evening)\b", text, re.I):
+        return "dusk"
+    if re.search(r"\b(dawn|sunrise)\b", text, re.I):
+        return "dawn"
+    if re.search(r"\bmorning\b", text, re.I):
+        return "morning"
+    if re.search(r"\b(night|midnight|nighttime)\b", text, re.I):
+        return "night"
+    if re.search(r"\b(afternoon|daytime|noon|day)\b", text, re.I):
+        return "day"
+    return ""
+
+
+def _explicit_times(text: str) -> list[str]:
+    found = []
+    for pattern in _EXPLICIT_TIME:
+        for match in pattern.finditer(text or ""):
+            word = match.group(1).casefold()
+            family = _TIME_FAMILIES.get(word, word)
+            if family not in found:
+                found.append(family)
+    return found
+
+
 def _time_conflict(time_of_day: str, text: str) -> str:
-    scene = time_of_day.casefold()
-    if scene in {"", "not named"}:
+    """A different time of day, and only when the shot states one outright.
+
+    "Fifteen minutes of day left" is remaining daylight. It is not a change
+    from a pre-dusk heading. "At dawn" and "night falls" are statements.
+    """
+    scene = _scene_family(time_of_day)
+    if not scene:
         return ""
-    for word in _TIME_WORDS:
-        if word in scene:
-            if re.search(rf"\b{word}\b", text, re.I):
-                return ""
-            for other in _TIME_WORDS:
-                if other == word:
-                    continue
-                if re.search(rf"\b{other}\b", text, re.I):
-                    return other
-            return ""
+    for family in _explicit_times(text):
+        if family != scene:
+            return family
     return ""
 
 

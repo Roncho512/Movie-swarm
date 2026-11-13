@@ -37,7 +37,7 @@
         "properties": {
           "finding_id": { "type": "string", "pattern": "^c-[0-9]+$" },
           "severity": { "type": "string", "enum": ["critical", "major", "minor"] },
-          "kind": { "type": "string", "enum": ["contradiction", "unstated"] },
+          "kind": { "type": "string", "enum": ["contradiction", "unstated", "banned-phrase"] },
           "detail": { "type": "string", "minLength": 1 },
           "prop_id": { "type": "string" },
           "fact_id": { "type": "string" },
@@ -50,6 +50,20 @@
           "source": { "type": "string" },
           "expected": { "type": "string" },
           "observed": { "type": "string" }
+        }
+      }
+    },
+    "reviews": {
+      "type": "array",
+      "description": "Shots the checker will not guess. A review does not by itself make the verdict drift.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["shot_id", "detail"],
+        "properties": {
+          "shot_id": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string", "enum": ["pronoun", "prop-continuation", "carried"] },
+          "detail": { "type": "string", "minLength": 1 }
         }
       }
     },

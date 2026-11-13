@@ -10,7 +10,7 @@ import shutil
 from pathlib import Path
 
 from movie_swarm.cli_director import main as director_main
-from movie_swarm.director import FINAL_PASS_MAX_TOKENS, Director, DirectorError
+from movie_swarm.director import FINAL_PASS_MAX_TOKENS, Director
 from movie_swarm.line_producer import LineProducer
 from movie_swarm.llm import ModelReply
 from movie_swarm.money import as_money
@@ -243,12 +243,15 @@ def test_reconform_repairs_a_truncated_final_pass_and_books_nothing(tmp_path, ca
     from movie_swarm.treatment_doc import treatment_json_path
 
     write_handoff(treatment_json_path(production), document, schema="treatment")
-    try:
-        Director(production).reconform(request_hash, run_id="run-1")
-    except DirectorError as exc:
-        assert "approved" in str(exc).casefold()
-    else:
-        raise AssertionError("An approved treatment was overwritten.")
+    approved = load_treatment(production)
+    result = Director(production).reconform(request_hash, run_id="run-1")
+    saved = load_treatment(production)
+    assert result["status"] == "approved"
+    assert saved["status"] == "approved"
+    assert saved["logline"] == approved["logline"]
+    assert saved["scenes"] == approved["scenes"]
+    assert saved["approval"] == approved["approval"]
+    assert saved["tone_and_genre"] == approved["tone_and_genre"]
 
 
 def test_reconform_repairs_a_truncated_draft_when_no_answers_are_stored(tmp_path):

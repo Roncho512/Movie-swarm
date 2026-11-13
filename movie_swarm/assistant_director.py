@@ -106,6 +106,7 @@ def _offline(production_dir, treatment, shots, shot_source, scenes, scene_source
             }
         )
     days = _days(planned)
+    _cover_every_beat(safety_rows, stunts)
     source = {
         "shots": shot_source,
         "scenes": scene_source,
@@ -256,6 +257,57 @@ def _days(planned: list[dict]) -> list[dict]:
             }
         )
     return days
+
+
+def _cover_every_beat(safety_rows: list[dict], stunts: dict | None) -> None:
+    """Every stunt beat is on the safety list, even when no shot text overlaps it."""
+    if not stunts:
+        return
+    present = {str(row.get("beat_id") or "") for row in safety_rows}
+    policy = str(stunts.get("safety_policy") or "").strip()
+    for beat in stunts.get("beats") or []:
+        if not isinstance(beat, dict):
+            continue
+        beat_id = str(beat.get("beat_id") or "").strip()
+        if not beat_id or beat_id in present:
+            continue
+        stunt_shot = ""
+        plausible = True
+        for stunt_shot_row in beat.get("shots") or []:
+            if not isinstance(stunt_shot_row, dict):
+                continue
+            stunt_shot = stunt_shot or str(stunt_shot_row.get("shot_id") or "")
+            if not stunt_shot_row.get("plausible", True):
+                plausible = False
+        safety_rows.append(
+            {
+                "shot_id": stunt_shot or beat_id,
+                "beat_id": beat_id,
+                "stunt_shot_id": stunt_shot,
+                "plausible": plausible,
+                "note": _beat_safety_line(beat, policy),
+            }
+        )
+        present.add(beat_id)
+
+
+def _beat_safety_line(beat: dict, policy: str) -> str:
+    """The full safety sentence from the beat, or the stunt rules when the beat has none."""
+    lines = []
+    for shot in beat.get("shots") or []:
+        if not isinstance(shot, dict):
+            continue
+        text = " ".join(str(shot.get("safety") or "").split()).strip()
+        if text and text not in lines:
+            lines.append(text)
+    line = lines[0] if lines else policy
+    if not line:
+        return "No special safety needs, per stunt rules."
+    if "no special safety" in line.casefold():
+        return "No special safety needs, per stunt rules."
+    if line[-1] not in ".!?":
+        line += "."
+    return line
 
 
 def _safety_flags(shot: dict, stunts: dict | None) -> list[dict]:

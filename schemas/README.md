@@ -66,7 +66,7 @@ When you're debugging why Shot 14 has the wrong lighting, you need to trace the 
 | `treatment.schema.json` | The Director's plan. Draft until the Line Producer records Ron's approval. |
 | `director-questions.schema.json` | One round of questions for Ron. Answers live in the file. |
 | `line-producer-record.schema.json` | Ledger, stage split, credits, schedule, and Ron's decisions for one run. |
-| `hero-props.schema.json` | Locked hero props. The attributes are whatever the production defined. |
+| `hero-props.schema.json` | Locked hero props. The attributes are whatever the production defined. A prop can list `generic_nouns`. |
 | `continuity-check.schema.json` | Script Supervisor findings before a shot is generated. |
 | `look.schema.json` | The look one production chose: lenses, framing, lighting, palette. |
 | `camera-package.schema.json` | The Cinematographer's package, copied from that look. |

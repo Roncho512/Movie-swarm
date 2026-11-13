@@ -35,6 +35,23 @@
         "note": { "type": "string" }
       }
     },
+    "tag_notes": {
+      "type": "array",
+      "description": "Characters or props carried onto a shot, and shots the board will not guess.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["shot_id", "kind", "detail"],
+        "properties": {
+          "shot_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "kind": {
+            "type": "string",
+            "enum": ["inherited-character", "carried-prop", "needs-review"]
+          },
+          "detail": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
     "featured_placements": {
       "type": "array",
       "description": "Shots that show a hero prop named in the brief, and why. The reading copy calls these hero prop moments.",
