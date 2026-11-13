@@ -23,10 +23,12 @@ from movie_swarm.mentions import (
     faithful_spec,
     generic_nouns_for,
     has_personal_pronoun,
+    joined_to_trace,
     load_absence_phrases,
     load_kind_nouns,
     mentioned,
     named_characters,
+    named_phrase,
     no_visible_action,
     prop_frame_state,
     prop_labels,
@@ -286,6 +288,7 @@ def _frames(
             kind_nouns,
             catalog,
             item.get("scene_text") or "",
+            absence,
         )
         for shot_number, beat in enumerate(beats, start=1):
             shot_id = shot_ids[shot_number - 1]
@@ -1008,7 +1011,9 @@ def _props_for_scene(
         carried = []
         carry_review = ""
         if not direct and available and action_continues(previous_text, text):
-            carried, carry_review = _carry_forward(text, shot_type, available, props, kind_nouns)
+            carried, carry_review = _carry_forward(
+                text, shot_type, available, props, kind_nouns, absence
+            )
         chosen = direct or carried
         review = " ".join(part for part in (beat_review, carry_review) if part)
         rows.append({"props": chosen, "carried": bool(carried), "review": review})
@@ -1053,14 +1058,16 @@ def _prop_key(prop: dict) -> str:
     return str(prop.get("prop_id") or prop.get("name") or "").casefold()
 
 
-def _carry_forward(text, shot_type, available, props, kind_nouns) -> tuple[list[dict], str]:
+def _carry_forward(text, shot_type, available, props, kind_nouns, absence=None) -> tuple[list[dict], str]:
     """One continued prop, or a review, or nothing when the shot is about something else."""
     if no_visible_action(text):
         return [], (
             "This shot is sound, a fade, a hold, black, or a title, and it shows no visible action. "
             "A prop was not carried. Needs review."
         )
-    blocks = [_carry_block(shot_type, text, item["prop"], props, kind_nouns) for item in available]
+    blocks = [
+        _carry_block(shot_type, text, item["prop"], props, kind_nouns, absence) for item in available
+    ]
     open_items = [item for item, block in zip(available, blocks) if block == ""]
     unsure = [item for item, block in zip(available, blocks) if block == "review"]
     if len(open_items) == 1 and not unsure:
@@ -1085,13 +1092,13 @@ def _carry_forward(text, shot_type, available, props, kind_nouns) -> tuple[list[
     return [], ""
 
 
-def _carry_block(shot_type: str, text: str, prop: dict, props: list[dict], kind_nouns: dict) -> str:
+def _carry_block(shot_type: str, text: str, prop: dict, props: list[dict], kind_nouns: dict, absence=None) -> str:
     """'stop' when the shot is about something else, 'review' when a tight shot is unclear, else ''."""
-    if _is_tight(shot_type, text) and not prop_mentioned(prop, text, props, kind_nouns):
+    if _is_tight(shot_type, text) and not prop_mentioned(prop, text, props, kind_nouns, absence):
         if _other_object_words(text):
             return "stop"
         return "review"
-    if _different_subject(text, prop, props, kind_nouns):
+    if _different_subject(text, prop, props, kind_nouns, absence):
         return "stop"
     return ""
 
@@ -1239,11 +1246,11 @@ def _content_words(text: str) -> list[str]:
     return kept
 
 
-def _different_subject(text: str, prop: dict, props: list[dict], kind_nouns: dict) -> bool:
+def _different_subject(text: str, prop: dict, props: list[dict], kind_nouns: dict, absence=None) -> bool:
     words = _content_words(text)
     if not words or has_personal_pronoun(words[0]):
         return False
-    if prop_mentioned(prop, " ".join(words[:4]), props, kind_nouns):
+    if prop_mentioned(prop, " ".join(words[:4]), props, kind_nouns, absence):
         return False
     head = words[0].casefold()
     if len(head) < 3 or head in _OBJECT_SKIP:
@@ -1266,7 +1273,9 @@ def _other_object_words(text: str) -> list[str]:
     return found
 
 
-def _tag_vehicle_riders(actions, people_rows, prop_rows, props, kind_nouns, catalog, scene_text="") -> None:
+def _tag_vehicle_riders(
+    actions, people_rows, prop_rows, props, kind_nouns, catalog, scene_text="", absence=None
+) -> None:
     """When one person rides the vehicle that passes, tag that person.
 
     Ride and drive language can sit in an earlier shot or in the scene
@@ -1280,9 +1289,11 @@ def _tag_vehicle_riders(actions, people_rows, prop_rows, props, kind_nouns, cata
     for text, people, prop_row in zip(actions, people_rows, prop_rows):
         if people.get("names") or has_personal_pronoun(text) or named_characters(text, catalog):
             continue
-        moving = _moving_vehicles(text, prop_row, vehicles, props, kind_nouns)
+        moving = _moving_vehicles(text, prop_row, vehicles, props, kind_nouns, absence)
         if len(moving) == 1:
-            riders = _riders_of(actions, people_rows, moving[0], props, kind_nouns, catalog, scene_text)
+            riders = _riders_of(
+                actions, people_rows, moving[0], props, kind_nouns, catalog, scene_text, absence
+            )
             if len(riders) == 1:
                 people["names"] = [riders[0]]
                 people["inherited"] = True
@@ -1292,7 +1303,7 @@ def _tag_vehicle_riders(actions, people_rows, prop_rows, props, kind_nouns, cata
                     people.get("review") or "",
                     "A ridden vehicle is in motion and the rider is not one clear person. Needs review.",
                 )
-        elif _in_motion(text) and _subject_could_be_vehicle(text, vehicles, props, kind_nouns):
+        elif _in_motion(text) and _subject_could_be_vehicle(text, vehicles, props, kind_nouns, absence):
             people["review"] = _append_review(
                 people.get("review") or "",
                 "A ridden vehicle is in motion and the rider is not one clear person. Needs review.",
@@ -1311,7 +1322,7 @@ def _in_motion(text: str) -> bool:
     return mentioned(text, list(_MOTION_WORDS))
 
 
-def _moving_vehicles(text, prop_row, vehicles, props, kind_nouns) -> list[dict]:
+def _moving_vehicles(text, prop_row, vehicles, props, kind_nouns, absence=None) -> list[dict]:
     if not _in_motion(text):
         return []
     tagged = {
@@ -1323,7 +1334,7 @@ def _moving_vehicles(text, prop_row, vehicles, props, kind_nouns) -> list[dict]:
     for vehicle in vehicles:
         if tagged and _prop_key(vehicle) not in tagged:
             continue
-        if not _subject_is_prop(text, vehicle, props, kind_nouns):
+        if not _subject_is_prop(text, vehicle, props, kind_nouns, absence):
             continue
         moving.append(vehicle)
     return moving
@@ -1357,28 +1368,28 @@ def _subject_words(text: str) -> list[str]:
     return _content_words(_picture_text(text))
 
 
-def _subject_is_prop(text, prop, props, kind_nouns) -> bool:
+def _subject_is_prop(text, prop, props, kind_nouns, absence=None) -> bool:
     words = _subject_words(text)
     if not words or has_personal_pronoun(words[0]):
         return False
-    return prop_mentioned(prop, " ".join(words[:6]), props, kind_nouns)
+    return prop_mentioned(prop, " ".join(words[:6]), props, kind_nouns, absence)
 
 
-def _subject_could_be_vehicle(text, vehicles, props, kind_nouns) -> bool:
+def _subject_could_be_vehicle(text, vehicles, props, kind_nouns, absence=None) -> bool:
     words = _subject_words(text)
     if not words or has_personal_pronoun(words[0]):
         return False
     phrase = " ".join(words[:6])
     for vehicle in vehicles:
-        if prop_mentioned(vehicle, phrase, props, kind_nouns) or mentioned(phrase, prop_labels(vehicle)):
+        if prop_mentioned(vehicle, phrase, props, kind_nouns, absence):
             return True
     kind_words = list((kind_nouns or {}).get("vehicle") or [])
     if "vehicle" not in {word.casefold() for word in kind_words}:
         kind_words.append("vehicle")
-    return mentioned(phrase, kind_words)
+    return named_phrase(phrase, kind_words, absence)
 
 
-def _riders_of(actions, people_rows, vehicle, props, kind_nouns, catalog, scene_text="") -> list[str]:
+def _riders_of(actions, people_rows, vehicle, props, kind_nouns, catalog, scene_text="", absence=None) -> list[str]:
     found = []
 
     def add(names) -> None:
@@ -1387,7 +1398,7 @@ def _riders_of(actions, people_rows, vehicle, props, kind_nouns, catalog, scene_
                 found.append(name)
 
     for text, people in zip(actions, people_rows):
-        add(_people_riding(text, vehicle, props, kind_nouns, catalog, people.get("names") or []))
+        add(_people_riding(text, vehicle, props, kind_nouns, catalog, people.get("names") or [], absence))
     if scene_text:
         named = []
         for row in people_rows:
@@ -1402,18 +1413,19 @@ def _riders_of(actions, people_rows, vehicle, props, kind_nouns, catalog, scene_
                 kind_nouns,
                 catalog,
                 named if len(named) == 1 else [],
+                absence,
             )
         )
     return found
 
 
-def _people_riding(text, vehicle, props, kind_nouns, catalog, resolved=None) -> list[str]:
+def _people_riding(text, vehicle, props, kind_nouns, catalog, resolved=None, absence=None) -> list[str]:
     """People tied to this vehicle by a ride word or by "on a vehicle".
 
     The name and the ride can sit in different sentences of the same passage.
     A pronoun uses the one person already resolved for that passage.
     """
-    if not _ride_relation(text, vehicle, props, kind_nouns):
+    if not _ride_relation(text, vehicle, props, kind_nouns, absence):
         return []
     resolved = [name for name in (resolved or []) if name]
     sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", str(text).strip()) if part.strip()]
@@ -1421,7 +1433,7 @@ def _people_riding(text, vehicle, props, kind_nouns, catalog, resolved=None) -> 
         sentences = [str(text).strip()]
     found = []
     for sentence in sentences:
-        if not _ride_relation(sentence, vehicle, props, kind_nouns):
+        if not _ride_relation(sentence, vehicle, props, kind_nouns, absence):
             continue
         names = named_characters(sentence, catalog)
         if not names and len(resolved) == 1 and has_personal_pronoun(sentence):
@@ -1437,8 +1449,8 @@ def _people_riding(text, vehicle, props, kind_nouns, catalog, resolved=None) -> 
     return []
 
 
-def _ride_relation(text, vehicle, props, kind_nouns) -> bool:
-    if not prop_mentioned(vehicle, text, props, kind_nouns):
+def _ride_relation(text, vehicle, props, kind_nouns, absence=None) -> bool:
+    if not prop_mentioned(vehicle, text, props, kind_nouns, absence):
         return False
     if mentioned(text, list(_RIDE_WORDS)):
         return True
@@ -1449,12 +1461,12 @@ def _ride_relation(text, vehicle, props, kind_nouns) -> bool:
     for label in labels:
         flexible = re.escape(" ".join(str(label).split())).replace(r"\ ", r"[\s-]+")
         # A year or a short modifier may sit between "a" and the vehicle name.
-        if re.search(
-            rf"\bon\s+(?:(?:the|his|her|their|a|an)\s+)?(?:[\w']+\s+){{0,3}}?{flexible}\b",
-            text,
-            re.I,
-        ):
-            return True
+        pattern = (
+            rf"\bon\s+(?:(?:the|his|her|their|a|an)\s+)?(?:[\w']+\s+){{0,3}}?{flexible}\b"
+        )
+        for found in re.finditer(pattern, text, re.I):
+            if not joined_to_trace(text, found.end(), absence):
+                return True
     return False
 
 
