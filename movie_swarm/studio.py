@@ -50,14 +50,20 @@ def run_studio(
     *,
     run_id: str = "studio-1",
     auto_approve: bool = False,
+    redo: str | None = None,
+    live: bool = False,
 ) -> dict:
     """Walk treatment, previs, a quote, dailies, the cut, sound, color, and delivery.
 
     ``auto_approve`` defaults to False. Only tests should pass True.
+    ``redo="previs"`` regenerates the previs package and stops. It is offline.
+    It does not approve a gate, and it refuses when the previs gate is already approved.
     """
     folder = Path(production_dir)
     if not folder.is_dir():
         raise StudioError(f"Production folder not found: {folder}")
+    if redo:
+        return _redo_previs(folder, run_id, redo, live=live)
     producer = _open_or_start(folder, run_id)
     director = Director(folder, llm=None)
     completed: list[str] = []
@@ -186,6 +192,51 @@ def _need(producer: LineProducer, gate: str, auto_approve: bool, completed: list
         message=message,
         completed=completed,
         auto_approve=auto_approve,
+    )
+
+
+def _redo_previs(folder: Path, run_id: str, target: str, *, live: bool) -> dict:
+    """Regenerate previs for a run that is waiting on that gate. Offline only."""
+    if live:
+        raise StudioError(
+            "--redo previs is offline only. Nothing was sent. No gate was changed."
+        )
+    if str(target).strip().lower() != "previs":
+        raise StudioError("Redo only supports previs. Nothing was rewritten. No gate was changed.")
+    producer = _open_or_start(folder, run_id)
+    if producer.gate_decision("treatment") != "approved":
+        raise StudioError(
+            "The treatment gate is not approved. Redo previs was not run. No gate was changed."
+        )
+    decisions = [dict(item) for item in producer.record.get("gate_decisions") or []]
+    if producer.gate_decision("previs") == "approved":
+        raise StudioError(
+            "The previs gate is already approved. Redo previs will not change an approved gate. "
+            "Nothing was rewritten."
+        )
+    director = Director(folder, llm=None)
+    _previs(director, run_id)
+    producer = LineProducer.open(folder, run_id)
+    if producer.gate_decision("previs") == "approved":
+        raise StudioError("Redo previs changed the previs gate. That is not allowed.")
+    if [dict(item) for item in producer.record.get("gate_decisions") or []] != decisions:
+        # A new approval would be a change. A schedule status is not a gate decision.
+        latest = producer.record.get("gate_decisions") or []
+        if len(latest) != len(decisions) or any(
+            left.get("decision") != right.get("decision") or left.get("stage") != right.get("stage")
+            for left, right in zip(decisions, latest)
+        ):
+            raise StudioError("Redo previs changed a gate decision. That is not allowed.")
+    return _result(
+        producer,
+        status="stopped",
+        stopped_at="previs",
+        message=(
+            "Regenerated the previs package. The previs gate was not approved. "
+            "Read the package, then approve the gate if it can go forward. Nothing was spent."
+        ),
+        completed=["previs"],
+        auto_approve=False,
     )
 
 

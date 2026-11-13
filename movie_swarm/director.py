@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 from movie_swarm.dispatch import CrewCall, DispatchResult, dispatch_call
@@ -801,6 +802,7 @@ def _output_limit_note(raw: str, max_tokens: int) -> str:
 def _reconform_note(
     earlier: str, matched: str, dropped: list[str], *, final: bool, repaired: bool
 ) -> str:
+    earlier = _without_stale_failure(earlier)
     if final and repaired:
         dropped_sentence = (" Dropped: " + ", ".join(dropped) + ".") if dropped else ""
         fresh = (
@@ -820,6 +822,18 @@ def _reconform_note(
                 fresh += " Dropped: " + ", ".join(dropped) + "."
     text = (earlier + " " + fresh).strip() if earlier else fresh
     return text
+
+
+_STALE_FINAL_FAILURE = re.compile(
+    r"The final model pass failed \(.*?\)\.\s*The earlier draft was kept\.?",
+    re.S,
+)
+
+
+def _without_stale_failure(note: str) -> str:
+    """Drop a failure sentence once a later reconform has succeeded."""
+    cleaned = _STALE_FINAL_FAILURE.sub(" ", note or "")
+    return re.sub(r"\s{2,}", " ", cleaned).strip()
 
 
 def _cache_is_final(entry: dict) -> bool:

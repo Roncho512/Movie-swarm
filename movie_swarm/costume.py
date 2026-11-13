@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from movie_swarm.mentions import character_aliases, mentioned
 from movie_swarm.prep_inputs import load_scenes
 from movie_swarm.previs_common import (
     PrevisError,
@@ -183,9 +184,7 @@ def _change_row(change: dict, character: dict) -> dict:
 
 
 def _appears(character: dict, text: str) -> bool:
-    haystack = text.casefold()
-    names = [character.get("name") or "", *(character.get("aliases") or [])]
-    return any(len(str(name)) >= 2 and str(name).casefold() in haystack for name in names)
+    return mentioned(text, character_aliases(character))
 
 
 def _from_model(llm, offline: dict, treatment: dict, defined: dict | None) -> dict | None:

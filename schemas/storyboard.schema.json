@@ -23,9 +23,21 @@
         "palette": { "type": "array", "items": { "type": "string" } }
       }
     },
+    "pacing": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Shot-length check. A hold named in the screenplay may sit outside the range.",
+      "required": ["minimum_seconds", "maximum_seconds", "note"],
+      "properties": {
+        "minimum_seconds": { "type": "number", "exclusiveMinimum": 0 },
+        "maximum_seconds": { "type": "number", "exclusiveMinimum": 0 },
+        "adjustments": { "type": "array", "items": { "type": "string" } },
+        "note": { "type": "string" }
+      }
+    },
     "featured_placements": {
       "type": "array",
-      "description": "Shots that show the brief's featured product, and why.",
+      "description": "Shots that show a hero prop named in the brief, and why. The reading copy calls these hero prop moments.",
       "items": {
         "type": "object",
         "additionalProperties": false,
@@ -55,6 +67,11 @@
           "transition": { "type": "string" },
           "props_in_frame": { "type": "array", "items": { "type": "string" } },
           "duration_seconds": { "type": "number", "minimum": 0.5 },
+          "reference_images": {
+            "type": "array",
+            "description": "Locked prop reference paths for providers that accept an image reference.",
+            "items": { "type": "string", "minLength": 1 }
+          },
           "image_status": { "type": "string", "enum": ["not-generated", "fake-client"] },
           "image_ref": { "type": ["string", "null"] }
         }

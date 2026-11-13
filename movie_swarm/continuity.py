@@ -10,6 +10,8 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from movie_swarm.mentions import character_aliases, mentioned, phrases_stated, prop_labels
+
 
 @dataclass
 class PromptEnforcement:
@@ -135,6 +137,7 @@ def _collect_phrases(
     reasons: list[str],
     required_missing: list[str],
     forbidden_hit: list[str],
+    lock_reference: str = "",
 ) -> None:
     required_phrases = [str(phrase) for phrase in required if str(phrase).strip()]
     forbidden_phrases = [str(phrase) for phrase in forbidden if str(phrase).strip()]
@@ -144,7 +147,8 @@ def _collect_phrases(
             reasons.append(
                 f"{name} drifts. The picture description contains a forbidden phrase: {phrase}."
             )
-    if must_state and required_phrases and not any(_contains(text, phrase) for phrase in required_phrases):
+    stated = phrases_stated(text, required_phrases, lock_reference=lock_reference)
+    if must_state and required_phrases and not stated:
         phrase = required_phrases[0]
         if phrase not in required_missing:
             required_missing.append(phrase)
@@ -188,25 +192,24 @@ def _labels(props_in_frame) -> list[str]:
 
 
 def _names(prop: dict) -> list[str]:
-    names = [
-        prop.get("prop_id") or "",
-        prop.get("character_id") or "",
-        prop.get("name") or "",
-        *(prop.get("aliases") or []),
-    ]
-    return [str(name) for name in names if str(name).strip()]
+    if prop.get("prop_id") and not prop.get("garment"):
+        return prop_labels(prop)
+    names = character_aliases(prop)
+    if prop.get("character_id"):
+        names.append(str(prop["character_id"]))
+    if prop.get("prop_id"):
+        names.extend(prop_labels(prop))
+    return [name for name in names if name]
 
 
 def _in_frame(prop: dict, labels: list[str], prompt: str) -> bool:
     names = _names(prop)
-    folded = {name.casefold() for name in names}
+    if mentioned(prompt, names):
+        return True
     for label in labels:
-        haystack = label.casefold()
-        if haystack in folded:
+        if mentioned(str(label), names):
             return True
-        if any(len(name) >= 3 and name.casefold() in haystack for name in names):
-            return True
-    return any(len(name) >= 3 and name.casefold() in prompt.casefold() for name in names)
+    return False
 
 
 def _contains(text: str, phrase: str) -> bool:
@@ -252,6 +255,7 @@ def locked_character_drift(
             continue
         saw = True
         name = str(character.get("name") or character.get("character_id") or "character")
+        reference = str(character.get("character_id") or "") if character.get("garment") else ""
         for attribute in character.get("attributes") or []:
             if not isinstance(attribute, dict) or not _attribute_scene(attribute, scene_id):
                 continue
@@ -264,6 +268,7 @@ def locked_character_drift(
                 reasons=reasons,
                 required_missing=required_missing,
                 forbidden_hit=forbidden_hit,
+                lock_reference=reference,
             )
     return {
         "checked": saw,

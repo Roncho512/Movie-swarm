@@ -94,9 +94,17 @@ def main(argv: list[str] | None = None) -> int:
     dispatch.add_argument("--takes", help="Takes manifest for the dailies reviewer")
     dispatch.add_argument("--note", default="")
 
-    sub.add_parser(
+    studio = sub.add_parser(
         "studio",
         help="Run the offline studio from the treatment through delivery. Stops at each gate. Does not approve and does not spend.",
+    )
+    studio.add_argument(
+        "--redo",
+        choices=["previs"],
+        help=(
+            "Regenerate previs and stop. Offline only, even if --live is set on the director command. "
+            "Refuses when the previs gate is already approved."
+        ),
     )
 
     reconform = sub.add_parser(
@@ -181,7 +189,16 @@ def _run(args) -> int:
         print("Status: draft. Ron has not approved it.")
         return 0
     if args.command == "studio":
-        result = run_studio(args.production, run_id=args.run, auto_approve=False)
+        if getattr(args, "redo", None) and args.live:
+            print("--redo previs is offline only. Nothing was sent. No gate was changed.")
+            return 1
+        result = run_studio(
+            args.production,
+            run_id=args.run,
+            auto_approve=False,
+            redo=getattr(args, "redo", None),
+            live=bool(args.live and not getattr(args, "redo", None)),
+        )
         print(result["message"])
         print(f"Status: {result['status']}")
         if result["stopped_at"]:

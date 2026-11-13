@@ -102,6 +102,10 @@ def load_shot_list(path: str | Path) -> list[ShotSpec]:
         # Combine character + vehicle + prop refs as image references
         # (Seedance treats them all as image inputs)
         image_refs = refs["character_refs"] + refs["vehicle_refs"] + refs["prop_refs"]
+        for path in s.get("reference_images") or []:
+            text = str(path).strip()
+            if text and text not in image_refs:
+                image_refs.append(text)
         env_refs = refs["environment_refs"]
 
         specs.append(ShotSpec(

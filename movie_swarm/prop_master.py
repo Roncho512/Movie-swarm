@@ -109,15 +109,23 @@ def _prop_from_treatment(prop: dict) -> dict:
                 "forbidden_phrases": [],
             }
         )
-    return {
+    explicit = [str(alias).strip() for alias in prop.get("aliases") or [] if str(alias).strip()]
+    aliases = explicit or [name]
+    if name and name not in aliases:
+        aliases = [name, *aliases]
+    locked = {
         "prop_id": slug(name, "prop"),
         "name": name,
         "kind": "prop",
-        "aliases": [name],
+        "aliases": aliases,
         "locked_spec": str(prop.get("locked_spec") or name),
         "reference_images": list(prop.get("reference_images") or []),
         "attributes": attributes,
     }
+    parts = [str(part).strip() for part in prop.get("parts") or [] if str(part).strip()]
+    if parts:
+        locked["parts"] = parts
+    return locked
 
 
 def _prop_from_brief(prop: dict) -> dict:

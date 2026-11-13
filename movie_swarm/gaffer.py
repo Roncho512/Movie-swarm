@@ -34,11 +34,10 @@ _PRACTICAL = (
     "window",
     "neon",
     "candle",
-    "sun",
-    "moon",
     "fire",
     "available light",
 )
+_SUN = ("sun", "sunlight", "moon", "moonlight", "daylight")
 _TIME_WORDS = ("night", "day", "dawn", "dusk", "morning", "evening")
 
 
@@ -61,18 +60,20 @@ def build_lighting_plan(production_dir: Path, llm=None) -> dict:
 
 
 def _offline(production_dir, treatment, package, look, shots, shot_source, scenes, scene_source) -> dict:
-    grouped: dict[str, list[dict]] = {}
+    grouped: dict[str, dict] = {}
     for shot in shots:
         scene = scene_for_shot(shot, scenes)
         scene_id = shot["scene_id"] or (scene["scene_id"] if scene else "unassigned")
-        grouped.setdefault(scene_id, []).append(shot)
+        bucket = grouped.setdefault(scene_id, {"scene": scene, "shots": []})
+        if bucket["scene"] is None and scene is not None:
+            bucket["scene"] = scene
+        bucket["shots"].append(shot)
     if not grouped and scenes:
         for scene in scenes:
-            grouped.setdefault(scene["scene_id"], [])
+            grouped.setdefault(scene["scene_id"], {"scene": scene, "shots": []})
     rows = []
-    for scene_id, scene_shots in grouped.items():
-        scene = next((item for item in scenes if item["scene_id"] == scene_id), None)
-        rows.append(_scene_plan(scene_id, scene, scene_shots, package, look, treatment))
+    for scene_id, bucket in grouped.items():
+        rows.append(_scene_plan(scene_id, bucket["scene"], bucket["shots"], package, look, treatment))
     rows.sort(key=lambda item: item["scene_id"])
     findings = [item for row in rows for item in row["continuity"]["findings"]]
     return {
@@ -164,7 +165,19 @@ def _sources(lines: list[str]) -> dict:
         key = lines[0]
     else:
         key = "not named"
+    # Daylight is the key, not a practical. Do not copy a sun line into both.
+    if _sun_line(practical) or (_sun_line(key) and practical == key):
+        practical = "not named"
     return {"key": key, "fill": fill, "practicals": practical}
+
+
+def _sun_line(text: str) -> bool:
+    folded = str(text or "").casefold()
+    if folded in {"", "not named"}:
+        return False
+    if not any(re.search(rf"\b{word}\b", folded) for word in _SUN):
+        return False
+    return not any(word in folded for word in _PRACTICAL)
 
 
 def _temperature(text: str) -> str:
