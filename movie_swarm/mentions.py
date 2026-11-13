@@ -469,6 +469,9 @@ def action_continues(previous: str, current: str) -> bool:
 
     Continuation words are generic. A shared action verb is a word in this
     shot with a verb ending whose stem is also in the previous shot.
+    The storyboard does not require this for a carry. A trace is not a
+    reason to stop, and the stop rules are absence, a different subject,
+    a tight view of another object, and a line with no picture.
     """
     if mentioned(current, list(_CONTINUATION)):
         return True
@@ -992,8 +995,10 @@ def prop_frame_state(
     or a conjunction from the shared phrase file, still counts as nothing.
     An ambiguous continuation in the same clause, or a mix of an absence phrase
     and a bare mention, is not guessed. A label immediately followed by a trace
-    noun is not a mention. Overlapping labels of one mention are one decision.
-    The storyboard review and the continuity check use this same result.
+    noun is not a mention and not an absence. It does not put the prop in
+    frame, and it does not block a carry from the previous shot. Overlapping
+    labels of one mention are one decision. The storyboard review and the
+    continuity check use this same result.
     """
     nouns = _trace_nouns(absence)
     if not prop_mentioned(prop, text, props, kind_nouns, absence):

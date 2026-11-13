@@ -1588,3 +1588,30 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: "The faint tire tracks" is unnamed. "Tire-tracks" is unnamed. "Skid marks on the road" is unnamed when the part is "skid". "Tread marks" is unnamed when the part is "tread". "Hub skid marks" is unnamed when the part is "hub", because the two words after it are one trace noun. "The front tire spins" stays in frame. A film that adds "furrows" also drops "tire furrows" and still drops "tire tracks". "The tire marks the ground" is unnamed, because "marks" follows the part. "The tire's tracks" stays a mention.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
+## D180 — A trace does not stop a prop carrying within a continuous beat
+
+- Status: decided
+- Date: 2026-11-13
+- Context: After Phase 8.17.3, a trace was correctly unnamed. A medium shot between two shots that still had the vehicle in frame lost that tag. The only earlier hook had been the part word inside the trace. The rider had not left the vehicle. Carry from the previous shot did not apply.
+- Decision: Ron, 2026-11-13: approved the 8.17.4 hotfix so a trace mention does not stop a prop carrying within a continuous beat.
+- Consequences: A label joined to a trace noun does not name the prop and does not block carry. If the previous shot in the same scene has the prop in frame, and this shot has no absence phrase, is not a close-up or insert of another object, does not open on a different subject, and is not only sound, a fade, a hold, black, or a title, the prop carries and the board says so. After a clear absence, a later trace does not bring the prop back. The frame classifier, the storyboard review, and the continuity check still share `prop_frame_state`. The classifier says the trace is unnamed. The board writes the carried tag. The check follows that tag. How a trace fails to be a subject, and that a shared verb is not required, are D181 and D182.
+- Who decided: Ron, 2026-11-13
+
+## D181 — A trace is not a subject
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: Carry stops when the shot opens on something other than the prop. After 8.17.3 the part word inside a trace is not a mention, so that word looked like a new subject and stopped the carry.
+- Decision: The first content word of a label joined to a trace noun is not a different subject. The trace is not an absence either. `prop_frame_state` reports it as unnamed. The storyboard may still carry the previous prop. The continuity check reads the resulting tag, not a second reading of the trace.
+- Consequences: "The tire tracks lead south" after a shot that has the vehicle in frame can carry that vehicle. "The lantern sits beside the tire tracks" still opens on the lantern, so it does not carry. "Close on the lantern" with a trace in the same shot does not carry.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D182 — A shared action verb is not required for a carry
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: Carry used to require "again", "another", "still", or a shared action verb. A look-toward shot after a throttle roll shares none of those, so the prop dropped out once the trace stopped counting as a name. Treating the trace as the thing that turns carry on would make the trace a signal. It is neutral.
+- Decision: Inside one scene, the previous in-frame prop carries into the next shot when that shot has no absence phrase, is not a close-up, insert, or extreme close-up of another object, does not open on a different subject, and is not only sound, a fade, a hold, black, or a title. A shared verb is not required. The same look-toward shot carries with or without the trace sentence. An absence still clears the prop, so a later trace has nothing to carry.
+- Consequences: "He rolls the throttle" then "He looks toward the open road" carries the vehicle. "He has left the bike" then "The tire tracks lead south" does not. "He starts the bike" then "The lantern sits on the step" does not. A line that is only a fade or a hold is still listed for review and does not carry.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
