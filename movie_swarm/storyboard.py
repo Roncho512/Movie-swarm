@@ -249,6 +249,9 @@ def _frames(
         durations, budget, held = _durations(beats, scene.get("approximate_duration_seconds"))
         shot_ids = [f"{_scene_slug(scene_id, index)}-sh{number:02d}" for number in range(1, len(beats) + 1)]
         durations, notes = _pace(shot_ids, durations, held, budget, minimum, maximum)
+        described = str(scene.get("what_happens") or "").strip()
+        boarded = source.strip()
+        scene_text = described if boarded == described else " ".join(part for part in (described, boarded) if part)
         prepared.append({
             "index": index,
             "scene_id": scene_id,
@@ -260,6 +263,7 @@ def _frames(
             "notes": notes,
             "light": _scene_light(plan, index),
             "heading": str(scene.get("heading") or ""),
+            "scene_text": scene_text,
         })
     _absorb_across_scenes(prepared, minimum, maximum)
     for item in prepared:
@@ -274,7 +278,15 @@ def _frames(
         shot_types = [beat["shot_type"] for beat in beats]
         resolved_people = resolve_scene_characters(actions, catalog, heading)
         resolved_props = _props_for_scene(actions, props, kind_nouns, shot_types, absence)
-        _tag_vehicle_riders(actions, resolved_people, resolved_props, props, kind_nouns, catalog)
+        _tag_vehicle_riders(
+            actions,
+            resolved_people,
+            resolved_props,
+            props,
+            kind_nouns,
+            catalog,
+            item.get("scene_text") or "",
+        )
         for shot_number, beat in enumerate(beats, start=1):
             shot_id = shot_ids[shot_number - 1]
             shot_type = beat["shot_type"]
@@ -1251,10 +1263,13 @@ def _other_object_words(text: str) -> list[str]:
     return found
 
 
-def _tag_vehicle_riders(actions, people_rows, prop_rows, props, kind_nouns, catalog) -> None:
+def _tag_vehicle_riders(actions, people_rows, prop_rows, props, kind_nouns, catalog, scene_text="") -> None:
     """When one person rides the vehicle that passes, tag that person.
 
-    The shot itself does not name them. More than one rider, or none, is a review.
+    Ride and drive language can sit in an earlier shot or in the scene
+    description. The passing shot itself may not name anyone. A shot-size
+    line such as "LOW ANGLE." is not the subject. More than one rider, or
+    none, is a review. A passing vehicle is never left untagged and unflagged.
     """
     vehicles = [prop for prop in props if str(prop.get("kind") or "").casefold() == "vehicle"]
     if not vehicles:
@@ -1264,7 +1279,7 @@ def _tag_vehicle_riders(actions, people_rows, prop_rows, props, kind_nouns, cata
             continue
         moving = _moving_vehicles(text, prop_row, vehicles, props, kind_nouns)
         if len(moving) == 1:
-            riders = _riders_of(actions, people_rows, moving[0], props, kind_nouns, catalog)
+            riders = _riders_of(actions, people_rows, moving[0], props, kind_nouns, catalog, scene_text)
             if len(riders) == 1:
                 people["names"] = [riders[0]]
                 people["inherited"] = True
@@ -1311,18 +1326,46 @@ def _moving_vehicles(text, prop_row, vehicles, props, kind_nouns) -> list[dict]:
     return moving
 
 
+# A leading sentence that only names the camera. "LOW ANGLE." is not the subject.
+_SHOT_LABEL = re.compile(
+    r"^(?:cut\s+to\s+)?(?:a\s+|an\s+)?"
+    r"(?:extreme|medium|med|low|high|wide|tight|close|detail|tracking|insert|ecu|pov|static|handheld)"
+    r"(?:\s+(?:extreme|medium|med|low|high|wide|tight|close|detail|tracking|insert|ecu|pov|static|handheld|angle|shot|close-up|closeup|view))*"
+    r"$",
+    re.I,
+)
+
+
+def _picture_text(text: str) -> str:
+    """Drop a leading shot-size sentence so the action can be the subject."""
+    parts = [part.strip() for part in re.split(r"(?<=[.!?])\s+", str(text).strip()) if part.strip()]
+    kept = []
+    skipping = True
+    for part in parts:
+        words = " ".join(re.findall(r"[A-Za-z0-9']+", part))
+        if skipping and words and _SHOT_LABEL.match(words):
+            continue
+        skipping = False
+        kept.append(part)
+    return " ".join(kept) if kept else str(text).strip()
+
+
+def _subject_words(text: str) -> list[str]:
+    return _content_words(_picture_text(text))
+
+
 def _subject_is_prop(text, prop, props, kind_nouns) -> bool:
-    words = _content_words(text)
+    words = _subject_words(text)
     if not words or has_personal_pronoun(words[0]):
         return False
-    return prop_mentioned(prop, " ".join(words[:4]), props, kind_nouns)
+    return prop_mentioned(prop, " ".join(words[:6]), props, kind_nouns)
 
 
 def _subject_could_be_vehicle(text, vehicles, props, kind_nouns) -> bool:
-    words = _content_words(text)
+    words = _subject_words(text)
     if not words or has_personal_pronoun(words[0]):
         return False
-    phrase = " ".join(words[:4])
+    phrase = " ".join(words[:6])
     for vehicle in vehicles:
         if prop_mentioned(vehicle, phrase, props, kind_nouns) or mentioned(phrase, prop_labels(vehicle)):
             return True
@@ -1332,16 +1375,63 @@ def _subject_could_be_vehicle(text, vehicles, props, kind_nouns) -> bool:
     return mentioned(phrase, kind_words)
 
 
-def _riders_of(actions, people_rows, vehicle, props, kind_nouns, catalog) -> list[str]:
+def _riders_of(actions, people_rows, vehicle, props, kind_nouns, catalog, scene_text="") -> list[str]:
     found = []
+
+    def add(names) -> None:
+        for name in names:
+            if name and name not in found:
+                found.append(name)
+
     for text, people in zip(actions, people_rows):
-        if not _ride_relation(text, vehicle, props, kind_nouns):
+        add(_people_riding(text, vehicle, props, kind_nouns, catalog, people.get("names") or []))
+    if scene_text:
+        named = []
+        for row in people_rows:
+            for name in row.get("names") or []:
+                if name not in named:
+                    named.append(name)
+        add(
+            _people_riding(
+                scene_text,
+                vehicle,
+                props,
+                kind_nouns,
+                catalog,
+                named if len(named) == 1 else [],
+            )
+        )
+    return found
+
+
+def _people_riding(text, vehicle, props, kind_nouns, catalog, resolved=None) -> list[str]:
+    """People tied to this vehicle by a ride word or by "on a vehicle".
+
+    The name and the ride can sit in different sentences of the same passage.
+    A pronoun uses the one person already resolved for that passage.
+    """
+    if not _ride_relation(text, vehicle, props, kind_nouns):
+        return []
+    resolved = [name for name in (resolved or []) if name]
+    sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", str(text).strip()) if part.strip()]
+    if not sentences:
+        sentences = [str(text).strip()]
+    found = []
+    for sentence in sentences:
+        if not _ride_relation(sentence, vehicle, props, kind_nouns):
             continue
-        names = list(people.get("names") or []) or named_characters(text, catalog)
+        names = named_characters(sentence, catalog)
+        if not names and len(resolved) == 1 and has_personal_pronoun(sentence):
+            names = resolved
         for name in names:
             if name not in found:
                 found.append(name)
-    return found
+    if found:
+        return found
+    pool = resolved or named_characters(text, catalog)
+    if len(pool) == 1:
+        return list(pool)
+    return []
 
 
 def _ride_relation(text, vehicle, props, kind_nouns) -> bool:
@@ -1355,8 +1445,9 @@ def _ride_relation(text, vehicle, props, kind_nouns) -> bool:
             labels.append(noun)
     for label in labels:
         flexible = re.escape(" ".join(str(label).split())).replace(r"\ ", r"[\s-]+")
+        # A year or a short modifier may sit between "a" and the vehicle name.
         if re.search(
-            rf"\bon\s+(?:the\s+|his\s+|her\s+|their\s+|a\s+|an\s+)?{flexible}\b",
+            rf"\bon\s+(?:(?:the|his|her|their|a|an)\s+)?(?:[\w']+\s+){{0,3}}?{flexible}\b",
             text,
             re.I,
         ):

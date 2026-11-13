@@ -1507,3 +1507,39 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: A named length still stays. A scene that can hit its own target still does. A scene that absorbs leftover time runs long by that amount, and the note says so.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
+## D171 — Phase 8.17.1 hotfix approved by Ron, 12 Nov 2026
+
+- Status: decided
+- Date: 2026-11-12
+- Context: After Phase 8.17, a real previs pass still logged a major continuity finding for a line that had left the vehicle, flagged that line for review, and left a later passing-vehicle shot with no rider and no review flag.
+- Decision: Fix that path. Keep the engine generic. Film facts stay in the film folder. The choices for how the fixes work are D172, D173, and D174. Those are proposals. No paid call is part of this hotfix.
+- Consequences: An approved previs gate is not rewritten. No live call was made. Spent on this step: $0.00.
+- Who decided: Ron, 12 Nov 2026
+
+## D172 — Continuity uses the storyboard tags or the absence phrases
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: The storyboard left `vehicles_in_shot` empty and did not attach the locked spec. The continuity check still read the vehicle name in the sentence and logged a major unstated finding, which turned the verdict to drift.
+- Decision: A prop is shown when `props_in_shot` or `vehicles_in_shot` names it, including a prop carried from the previous shot. Otherwise the check uses `prop_frame_state` on the shot description, the same absence phrases as the storyboard, including a film's `props/absence-phrases.json`. Absent, ambiguous, and unnamed are not shown. A raw name mention is not a second detector. The generated continuity note is not scanned for that decision, so the word "prop" in "No locked prop is in this frame" is not a mention.
+- Consequences: A shot that shows the prop and omits a required phrase still drifts. A shot that only names the prop inside an absence phrase does not. A person is still matched from the name and the character tag.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D173 — A perfect-tense absence is absence
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: "He has left the bike." was listed for review. The alias "bike" and a longer label "the bike" overlapped on the same word. The absence template already contains "the", so the longer label did not match it and looked like a second, in-frame mention. The sentence end is only punctuation. The auxiliary "has" is the perfect of "left".
+- Decision: has, have, and had plus the participle of leave, abandon, walk, or look count as the absence phrase they come from. The same expansion applies to the ambiguous list. Overlapping labels are one mention. If any of them is an explicit ambiguous phrase, the mention is a review. Otherwise an absence phrase keeps the prop out of frame. Only the ambiguous list, such as "left the X in", "on", "running", or "there", is a review.
+- Consequences: "She has left the bike.", "had left", and "has abandoned" do not tag the prop and do not ask for review. "Has left the bike in the lane" still does. A film that replaces the phrase list gets the same perfect-tense forms for those verbs.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D174 — Ride language anywhere in the scene can name the rider
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: An earlier shot said the person was on the vehicle, then "rides", then "has been riding". A later shot, "LOW ANGLE. The vehicle passes camera," named nobody. The first sentence was the shot size, so the vehicle was not read as the subject. The shot got neither a character tag nor a review flag, and the wardrobe line never reached the prompt.
+- Decision: D169 still stands. The ride can be anywhere in the scene: an earlier shot, the scene description, "on a vehicle" with a short modifier such as a year, "rides", or "riding". A leading shot-size sentence is not the subject. Exactly one rider is tagged, and the wardrobe line follows. No rider, or more than one, is a review. A passing vehicle is not left untagged and unflagged.
+- Consequences: The ride and motion words stay generic English. The names still come from the locks. A vehicle that is only waiting is not a rider passing the camera.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+

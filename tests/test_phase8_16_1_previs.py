@@ -110,13 +110,14 @@ def _yard(production: Path) -> None:
             "scene_id": "s02",
             "heading": "EXT. LANE - DAY",
             "what_happens": (
-                "Mina Cole rides the bike down the lane.\n\n"
+                "Mina Cole on a 1965 dusty machine. Cole rides in a low crouch. "
+                "She has been riding for hours.\n\n"
                 "The lantern fades again. Silence. Hold for three seconds.\n\n"
                 "Mina Cole rides the bike past the post.\n\n"
                 "Close on the lantern. The glass is still.\n\n"
-                "He has left the bike.\n\n"
+                "She has left the bike.\n\n"
                 "He tries again.\n\n"
-                "The bike passes camera."
+                "LOW ANGLE. The machine passes camera."
             ),
             "emotional_purpose": "The lane is empty.",
             "approximate_duration_seconds": 21,
@@ -146,7 +147,7 @@ def _yard(production: Path) -> None:
             "prop_id": "dusty-bike",
             "name": "Dusty machine",
             "kind": "vehicle",
-            "aliases": ["machine"],
+            "aliases": ["machine", "bike", "the bike"],
             "parts": ["kickstand"],
             "locked_spec": "One pipe on the right. A kickstand.",
             "reference_images": ["props/dusty-bike/side.png"],
@@ -289,6 +290,9 @@ def test_offline_previs_tags_pronouns_a_kind_noun_a_continuation_and_every_stunt
     )
     fade_notes = [item for item in boards["tag_notes"] if item["shot_id"] == fade["shot_id"]]
     assert fade_notes and "needs review" in fade_notes[0]["detail"].casefold()
+    absent_notes = [item for item in boards["tag_notes"] if item["shot_id"] == absent["shot_id"]]
+    assert not any(item["kind"] == "needs-review" for item in absent_notes)
+    assert "props_in_shot" not in absent
     assert passing["vehicles_in_shot"] == ["dusty-bike"]
     assert passing["characters_in_shot"] == ["Mina Cole"]
     assert "pipe on the right" in passing["generation_prompt"].casefold()
@@ -298,6 +302,11 @@ def test_offline_previs_tags_pronouns_a_kind_noun_a_continuation_and_every_stunt
     check = check_continuity(production)
     assert any(
         item["shot_id"] == fade["shot_id"] and "needs review" in item["detail"].casefold()
+        for item in check["reviews"]
+    )
+    assert not any(item.get("shot_id") == absent["shot_id"] for item in check["findings"])
+    assert not any(
+        item["shot_id"] == absent["shot_id"] and "prop" in item["detail"].casefold()
         for item in check["reviews"]
     )
     targets = 12 + 21 + 30

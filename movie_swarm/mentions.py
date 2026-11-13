@@ -501,6 +501,9 @@ def load_absence_phrases(production_dir: str | Path | None = None) -> dict[str, 
 
     ``{prop}`` stands for a name, alias, part, or kind noun. A film file
     replaces any list it includes. An empty list clears that list.
+    A phrase that starts with leave, abandon, walk, or look also counts in
+    the perfect: has, have, and had plus the participle. The same expansion
+    applies to the ambiguous list, so "has left the prop in" stays a review.
     """
     from movie_swarm.paths import repo_root
 
@@ -515,7 +518,56 @@ def load_absence_phrases(production_dir: str | Path | None = None) -> dict[str, 
                 phrases = list(over["phrases"])
             if "ambiguous" in over:
                 ambiguous = list(over["ambiguous"])
-    return {"phrases": phrases, "ambiguous": ambiguous}
+    return {"phrases": _with_perfect(phrases), "ambiguous": _with_perfect(ambiguous)}
+
+
+# Generic English for the absence verbs. A film's own nouns do not belong here.
+# The participle is what follows has, have, or had.
+_PARTICIPLE = {
+    "leave": "left",
+    "leaves": "left",
+    "leaving": "left",
+    "left": "left",
+    "abandon": "abandoned",
+    "abandons": "abandoned",
+    "abandoning": "abandoned",
+    "abandoned": "abandoned",
+    "walk": "walked",
+    "walks": "walked",
+    "walking": "walked",
+    "walked": "walked",
+    "look": "looked",
+    "looks": "looked",
+    "looking": "looked",
+    "looked": "looked",
+}
+
+
+def _with_perfect(phrases: list[str]) -> list[str]:
+    """Add has/have/had plus the participle in front of a known absence verb."""
+    expanded: list[str] = []
+    seen: set[str] = set()
+
+    def add(value: str) -> None:
+        text = " ".join(str(value).split())
+        key = text.casefold()
+        if not text or key in seen:
+            return
+        seen.add(key)
+        expanded.append(text)
+
+    for phrase in phrases:
+        add(phrase)
+        words = phrase.split()
+        if not words:
+            continue
+        participle = _PARTICIPLE.get(words[0].casefold())
+        if not participle:
+            continue
+        rest = " ".join(words[1:])
+        for auxiliary in ("has", "have", "had"):
+            add(f"{auxiliary} {participle} {rest}".strip())
+    return expanded
 
 
 def _read_kind_nouns(path: Path) -> dict[str, list[str]]:
@@ -645,6 +697,49 @@ def _phrase_covers(text: str, template: str, label: str, start: int, end: int) -
     return False
 
 
+def _span_state(text: str, label: str, start: int, end: int, phrases: list[str], ambiguous: list[str]) -> str:
+    """One label hit. An explicit ambiguous phrase wins over an absence phrase.
+
+    Sentence-final punctuation is not a continuation word. "Has left the prop."
+    is absence. "Has left the prop in" is the ambiguous list.
+    """
+    if any(_phrase_covers(text, template, label, start, end) for template in ambiguous):
+        return "ambiguous"
+    if any(_phrase_covers(text, template, label, start, end) for template in phrases):
+        return "absent"
+    return "in-frame"
+
+
+def _mention_states(text: str, spans: list[tuple[int, int, str]], phrases: list[str], ambiguous: list[str]) -> list[str]:
+    """One state per mention. Overlapping labels are the same mention.
+
+    A longer label such as "the bike" sits on the same word as the alias "bike".
+    The absence template already includes "the", so the longer label does not
+    match it and would otherwise look like a second, in-frame mention.
+    """
+    ordered = sorted(spans, key=lambda item: (item[0], item[1]))
+    clusters: list[dict] = []
+    for start, end, label in ordered:
+        if clusters and start < clusters[-1]["end"]:
+            clusters[-1]["hits"].append((start, end, label))
+            clusters[-1]["end"] = max(clusters[-1]["end"], end)
+        else:
+            clusters.append({"end": end, "hits": [(start, end, label)]})
+    states = []
+    for cluster in clusters:
+        local = [
+            _span_state(text, label, start, end, phrases, ambiguous)
+            for start, end, label in cluster["hits"]
+        ]
+        if "ambiguous" in local:
+            states.append("ambiguous")
+        elif "absent" in local:
+            states.append("absent")
+        else:
+            states.append("in-frame")
+    return states
+
+
 def prop_frame_state(
     prop: dict,
     text: str,
@@ -656,7 +751,7 @@ def prop_frame_state(
 
     Every mention inside an absence phrase keeps the prop out of the frame.
     An ambiguous phrase, or a mix of an absence phrase and a bare mention,
-    is not guessed.
+    is not guessed. Overlapping labels of one mention are one decision.
     """
     if not prop_mentioned(prop, text, props, kind_nouns):
         return "unnamed"
@@ -668,14 +763,7 @@ def prop_frame_state(
             spans.append((match.start(), match.end(), label))
     if not spans:
         return "in-frame"
-    states = []
-    for start, end, label in spans:
-        if any(_phrase_covers(text, template, label, start, end) for template in ambiguous):
-            states.append("ambiguous")
-        elif any(_phrase_covers(text, template, label, start, end) for template in phrases):
-            states.append("absent")
-        else:
-            states.append("in-frame")
+    states = _mention_states(text, spans, phrases, ambiguous)
     if any(state == "ambiguous" for state in states):
         return "ambiguous"
     if states and all(state == "absent" for state in states):
@@ -683,6 +771,32 @@ def prop_frame_state(
     if any(state == "absent" for state in states) and any(state == "in-frame" for state in states):
         return "ambiguous"
     return "in-frame"
+
+
+def prop_shown(
+    prop: dict,
+    text: str,
+    structured_ids: set[str] | list[str],
+    props: list[dict],
+    kind_nouns: dict[str, list[str]] | None = None,
+    absence: dict | None = None,
+) -> bool:
+    """True when the storyboard tag or the absence rules put this prop in frame.
+
+    A tag is the storyboard's decision, including a prop carried from the
+    previous shot. The picture line is what the absence phrases read. A name
+    in that line is not enough, and a later note that says "prop" is not a
+    second detector.
+    """
+    identity = str(prop.get("prop_id") or "")
+    ids = {str(item) for item in structured_ids}
+    if identity and identity in ids:
+        return True
+    labels = prop_labels(prop)
+    for item in ids:
+        if mentioned(item, labels):
+            return True
+    return prop_frame_state(prop, text, props or [prop], kind_nouns, absence) == "in-frame"
 
 
 _NON_VISUAL_CUE = re.compile(

@@ -15,10 +15,12 @@ from movie_swarm.handoff import HandoffError, read_handoff
 from movie_swarm.mentions import (
     character_aliases,
     character_catalog,
+    load_absence_phrases,
+    load_kind_nouns,
     mentioned,
     phrases_stated,
     previs_advertising_hits,
-    prop_labels,
+    prop_shown,
     resolve_scene_characters,
 )
 from movie_swarm.prep_inputs import mark_superseded_shot_list
@@ -59,7 +61,10 @@ def check_continuity(production_dir: Path, llm=None) -> dict:
         sources.append("wardrobe/costume-lock.json")
     if makeup is not None:
         sources.append("makeup/makeup-lock.json")
-    findings = _findings(locked, documents)
+    kind_nouns = load_kind_nouns(production_dir)
+    absence = load_absence_phrases(production_dir)
+    props = [item for item in locked.get("props") or [] if isinstance(item, dict)]
+    findings = _findings(locked, documents, props, kind_nouns, absence)
     findings.extend(_character_findings(costume, documents, "costume_id", wardrobe=True))
     findings.extend(_character_findings(makeup, documents, "makeup_id", wardrobe=False))
     findings.extend(_advertising_findings(production_dir))
@@ -215,6 +220,7 @@ def _shots(path: Path, label: str) -> list[dict]:
                 "shot_id": shot_id,
                 "source": f"{label} {shot_id}".strip(),
                 "text": text,
+                "picture": str(shot.get("description") or ""),
                 "structured_ids": structured,
             }
         )
@@ -233,11 +239,20 @@ def _optional_lock(path: Path, schema: str, label: str) -> dict | None:
     return locked
 
 
-def _findings(locked: dict, documents: list[dict]) -> list[dict]:
+def _findings(locked: dict, documents: list[dict], props: list[dict], kind_nouns: dict, absence: dict) -> list[dict]:
     findings = []
     for prop in locked.get("props") or []:
         for attribute in prop.get("attributes") or []:
-            findings.extend(_attribute_findings(prop, attribute, documents))
+            findings.extend(
+                _attribute_findings(
+                    prop,
+                    attribute,
+                    documents,
+                    props=props,
+                    kind_nouns=kind_nouns,
+                    absence=absence,
+                )
+            )
     for fact in locked.get("facts") or []:
         findings.extend(_fact_findings(fact, documents))
     return findings
@@ -272,7 +287,15 @@ def _character_findings(
     return findings
 
 
-def _attribute_findings(prop: dict, attribute: dict, documents: list[dict], lock_reference: str = "") -> list[dict]:
+def _attribute_findings(
+    prop: dict,
+    attribute: dict,
+    documents: list[dict],
+    lock_reference: str = "",
+    props: list[dict] | None = None,
+    kind_nouns: dict | None = None,
+    absence: dict | None = None,
+) -> list[dict]:
     found = []
     label = attribute.get("label") or attribute.get("attribute_id")
     value = attribute.get("value") or ""
@@ -284,7 +307,14 @@ def _attribute_findings(prop: dict, attribute: dict, documents: list[dict], lock
         if not _scene_applies(attribute, document):
             continue
         text = document["text"]
-        visible = _visible(prop, text, document["structured_ids"])
+        visible = _visible(
+            prop,
+            document.get("picture") or text,
+            document["structured_ids"],
+            props=props,
+            kind_nouns=kind_nouns,
+            absence=absence,
+        )
         for phrase in forbidden:
             if _contains(text, phrase) and (visible or document["kind"] == "scene"):
                 found.append(
@@ -371,15 +401,33 @@ def _scene_applies(attribute: dict, document: dict) -> bool:
     return str(document.get("scene_id") or "") == wanted
 
 
-def _visible(prop: dict, text: str, structured_ids: set[str]) -> bool:
+def _visible(
+    prop: dict,
+    text: str,
+    structured_ids: set[str],
+    props: list[dict] | None = None,
+    kind_nouns: dict | None = None,
+    absence: dict | None = None,
+) -> bool:
+    """A person is shown when the shot names them. A prop uses the shared frame rules.
+
+    The storyboard tag, or the same absence phrases the storyboard uses, decides
+    whether a prop is in the frame. A raw mention of the name does not.
+    """
     for key in ("prop_id", "character_id"):
         identity = prop.get(key)
         if identity and identity in structured_ids:
             return True
     if prop.get("prop_id"):
-        labels = prop_labels(prop)
-    else:
-        labels = character_aliases(prop)
+        return prop_shown(
+            prop,
+            text,
+            structured_ids,
+            props or [prop],
+            kind_nouns,
+            absence,
+        )
+    labels = character_aliases(prop)
     if mentioned(text, labels):
         return True
     for item in structured_ids:
