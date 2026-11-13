@@ -1444,3 +1444,12 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: The command is `python3 scripts/director.py --production the-last-marker --run first-film-1 reconform --request <hash>`, from the repo root, with the films root set. Replace `<hash>` with the final-pass request hash. Then run `python3 scripts/studio.py --production the-last-marker --run first-film-1 --redo previs`.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
+## D164 — Phase 8.16.1 hotfix approved by Ron, 2026-11-12
+
+- Status: decided
+- Date: 2026-11-12
+- Context: `--redo previs` on a real film died in the cinematographer boards with `NameError: name 'mentioned' is not defined`. `_person_in_shot` still asked whether a locked person was named in the shot. Phase 8.16 had switched prop matching to `prop_mentioned` and dropped the people matcher from that file. The tests only resolved a person who was already on the shot, so they never took the branch.
+- Decision: Phase 8.16.1 hotfix approved by Ron, 2026-11-12. A person matches with the word-boundary matcher, the same one the catalog uses. A pronoun that already resolved to one locked character still brings that person's wardrobe and makeup. A prop still uses `prop_mentioned`, including a kind noun and a carried action. The engine stays generic. D30 and D38 stay as they are.
+- Consequences: The rerun command is unchanged: `python3 scripts/studio.py --production the-last-marker --run first-film-1 --redo previs`, from the repo root, with the films root set. A failed redo does not approve the previs gate and does not write a half-finished storyboard. Run the same command again. Earlier locks from that attempt are overwritten. Nothing needs to be deleted first. No live call. Spent on this step: $0.00.
+- Who decided: Ron, 2026-11-12
+
