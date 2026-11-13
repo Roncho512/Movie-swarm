@@ -1615,3 +1615,75 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: "again", "another", "still", or a shared action verb still carry one previous prop, and the stop rules still apply. A shot with no shared verb carries only a previous prop whose label is joined to a trace noun in that shot, and only when there is no absence phrase, it is not a close-up or insert of another object, it does not open on a different subject, and it is not only sound, a fade, a hold, black, or a title. "He starts the bike" then "He opens the door" does not carry. "He looks toward the open road" with no trace does not carry. "He rolls the throttle" then "He looks toward the open desert. The tire tracks lead south" does carry. A later pronoun shot with neither a trace nor a shared verb does not carry. A trace is still not a subject (D181).
 - Who decided: Ron, 2026-11-13
 
+## D183 — The graphic designer writes a real brand guide
+
+- Status: decided
+- Date: 2026-11-13
+- Context: Previs is approved. The graphics gate is next. A read of the film's graphics guide found a thin draft: no fonts or licenses, no title, poster, or credit layout, and no safe area. The role had been extracting only what the production documents literally name. The screenplay's title card was also being read wrong, and the brief's featured-object rules never reached the guide.
+- Decision: Ron, 2026-11-13. Fix the title-card parse and carry featured-object placement rules into graphics for any film that has them. The movie graphic designer does the job: research the time period, the genre's graphic design and posters, and period fonts and colors, and write a robust brand guide. The designer may suggest fonts and may propose a font or custom lettering for the title. Credits use a sans-serif. Proposals stay labeled for the graphics gate. The guide stays a draft until Ron approves it. No paid call is part of this phase.
+- Consequences: The choices for how the parse, the packs, the safe area, the font list, and the placement wording work are D185 through D189. Those are proposals. A Script Supervisor breakdown gate is a separate plan (D184). Spent on this step: $0.00.
+- Who decided: Ron, 2026-11-13
+
+## D184 — Plan a script-breakdown gate, and do not build it yet
+
+- Status: decided
+- Date: 2026-11-13
+- Context: The script and the treatment are human-readable. Previs needs a machine-readable breakdown of scenes and shots, and unclear lines should be flagged before boards are trusted. That role does not exist yet as a gate in front of previs.
+- Decision: Ron, 2026-11-13. Plan a Script Supervisor / 1st AD role and a script-breakdown gate. The human-readable script and treatment stay as they are. The role would draft a per-scene and per-shot breakdown (characters, locked props in or out of frame, time of day, carry), flag unclear lines, and stop for Ron before previs. Published breakdown schemas and Fountain-style formats are read first. No code until Ron gives the go to build it.
+- Consequences: The roadmap records the sources that were read and leaves the work planned. The table number 8.19 is a filing choice (D190), not part of this decision.
+- Who decided: Ron, 2026-11-13
+
+## D185 — A title card splits copy from direction
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: D183 says the displayed text is the title or the card copy, and that direction such as background and typography is captured separately. The screenplay line can hold both, or the copy can sit on the next line.
+- Decision: A cue that starts with a placement word, or that names typography, a typeface, lettering, a font, or a background, is design direction. A quoted title on that line, a markdown or bold title on the next line, or an all-capital title line is the card copy. `TITLE CARD: THREE DAYS LATER` is the copy, because that remainder is not direction. A direction with no following copy is not used as the words on screen. A typography phrase, with a leading "same" dropped, is a sourced style cue on the research and the guide.
+- Consequences: The storyboard still skips TITLE CARD lines. The graphics package stores `design_direction` beside the card text. The spelling check still requires the card text to appear in the screenplay.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D186 — Design packs are data, and proposals stay labeled
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: D183 asks for researched graphic design without hard-coding one film. The research has to stay offline.
+- Decision: Packs live in `config/design-references/` and are checked against `design-reference.schema.json`. A pack matches when `always` is set, or when one of its terms appears in the production's genre, tone, world, look name, look summary, or brief decisions. A year span on the pack filters only when the pack sets one. The engine does not contain a film's name, props, or years. A gap in the documents stays labeled `SOURCED FROM PRODUCTION DOCS`. A pack suggestion is `DESIGNER PROPOSAL` and carries its reference. The guide is built only from the research. `write_guide` leaves `status` at `draft`. A live research mode that calls a model is not built. If one is useful later, it waits on Ron.
+- Consequences: Harbor Night, a documentary, does not pick up a western pack. A film whose own look or tone names that genre does. Changing a matched pack makes the research stale until it is written again.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D187 — Safe area and missing hex values are proposals
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: D183 asks the guide to cover a safe area and to propose a hex when a named color has none. The delivery spec often does not name an inset.
+- Decision: When the delivery spec names `safe_graphics_inset_percent`, that number is what the package copies. When it does not, the package uses the proposal from `config/design-references/ebu-r95-safe-area.json`: EBU R 95 version 1.1, action inset 3.5 percent and graphics inset 5 percent on each edge, cited to https://tech.ebu.ch/docs/r/r095.pdf. The proposal is still written when the spec already names an inset, and it does not replace that number. A palette name with no hex is filled only when it equals a CSS color keyword in `config/design-references/css-color-names.json`, using the sRGB value in https://www.w3.org/TR/css-color-3/#svg-color. That fill is still a designer proposal. Other names stay as written unless a matched pack proposes them.
+- Consequences: A film that names its own inset keeps it. A poetic color name does not receive a CSS hex unless the whole name matches a keyword.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D188 — The western pack's faces, colors, and lettering
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: D183 allows the designer to suggest period faces and a custom title treatment. Credits must be a sans-serif. Only faces whose license allows use in a film are eligible. The pack for 1960s Italian western posters is the first one shipped.
+- Decision: For a production whose documents match that pack, the guide proposes Rye (Nicole Fally, Sorkin Type Co) as the title face, with Sancreek as an alternate display face, Source Sans 3 for credits, Noto Sans for subtitles, and Alfa Slab One for marketing. Each is under the SIL Open Font License 1.1. The license text says its conditions do not apply to a document made with the font. The font file is not sold by itself. These files are stand-ins. The pack does not claim they were the faces cut on the period posters. Painted pulp capitals are described as a custom title option and are not built. Blood red, black, warm yellow, and dusk blue are proposed with hex values the cited pages do not give. Artist names and poster facts are copied from the cited pages and are not merged where two pages spell a name differently.
+- Consequences: Ron approves or rejects the faces, the hex values, and the lettering description at the graphics gate. A credits face in any pack that is not a sans-serif is refused before research is written.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D189 — Placement rules are carried, and a sale is not
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: D183 says any film with a featured object in the brief must carry those placement rules into graphics, and the guide must not present the object as advertising. D159 already refuses a banned phrase in generated previs text.
+- Decision: Research reads `featured_product` when the brief has one. Intent and rules are copied when they contain none of the banned phrases. A rule that contains one is replaced with the story-purpose sentence, and that replacement is a designer proposal. The guide adds a don't: do not present the named object as something for sale. Key art and each collateral spec copy the same lines. The words "featured product" are not written into the guide.
+- Consequences: A film with no such block gets no placement section. A brief may still contain a banned phrase. The generated guide and the graphics package do not.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D190 — The planned breakdown gate is filed as 8.19
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: D184 plans the breakdown gate and does not number it. The roadmap table uses numbers.
+- Decision: The planned Script Supervisor / 1st AD breakdown sits in the roadmap table as phase 8.19 so it has a row. The number is a filing choice. It is not a start order Ron has approved, and it is not code.
+- Consequences: Ron can renumber it or leave it. Nothing in the engine reads that number.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+

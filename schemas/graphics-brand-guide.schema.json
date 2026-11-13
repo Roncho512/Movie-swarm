@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "graphics-brand-guide.schema.json",
   "title": "Brand Guide",
-  "description": "Per-film graphic rules built from graphics research. A rule traces to a research item. Graphics wait until status is approved. The checker does not know which film this is.",
+  "description": "Per-film graphic rules built from graphics research. Each font, color, and rule is labeled as coming from the production documents or as a designer proposal. A rule traces to a research item. Graphics wait until status is approved. The checker does not know which film this is.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -100,7 +100,11 @@
       "required": ["style_bible", "look"],
       "properties": {
         "style_bible": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/file_print" }] },
-        "look": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/file_print" }] }
+        "look": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/file_print" }] },
+        "reference_packs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/file_print" }
+        }
       }
     },
     "change_log": {
@@ -109,6 +113,12 @@
       "items": { "$ref": "#/$defs/change" }
     },
     "rules_fingerprint": { "type": "string", "minLength": 1 },
+    "surfaces": { "$ref": "#/$defs/surfaces" },
+    "notes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rule" }
+    },
+    "custom_title": { "$ref": "#/$defs/custom_title" },
     "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
     "model": { "type": "string", "minLength": 1 },
     "note": { "type": "string" },
@@ -118,30 +128,78 @@
     "font": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["family", "licensing", "trace"],
+      "required": ["family", "licensing", "trace", "provenance", "reference"],
       "properties": {
         "family": { "type": "string", "minLength": 1 },
         "licensing": { "type": "string", "minLength": 1 },
+        "trace": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "provenance": { "type": "string", "enum": ["SOURCED FROM PRODUCTION DOCS", "DESIGNER PROPOSAL"] },
+        "reference": { "type": ["string", "null"] },
+        "category": { "type": "string", "enum": ["display", "sans-serif", "serif"] },
+        "alternates": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/alternate_font" }
+        }
+      }
+    },
+    "alternate_font": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family", "licensing", "provenance", "reference"],
+      "properties": {
+        "family": { "type": "string", "minLength": 1 },
+        "licensing": { "type": "string", "minLength": 1 },
+        "provenance": { "type": "string", "enum": ["SOURCED FROM PRODUCTION DOCS", "DESIGNER PROPOSAL"] },
+        "reference": { "type": ["string", "null"] },
+        "category": { "type": "string", "enum": ["display", "sans-serif", "serif"] },
         "trace": { "type": "string", "pattern": "^[a-z0-9-]+$" }
       }
     },
     "color": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "value", "trace"],
+      "required": ["name", "value", "trace", "provenance", "reference"],
       "properties": {
         "name": { "type": "string", "minLength": 1 },
         "value": { "type": "string", "minLength": 1 },
-        "trace": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+        "trace": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "provenance": { "type": "string", "enum": ["SOURCED FROM PRODUCTION DOCS", "DESIGNER PROPOSAL"] },
+        "reference": { "type": ["string", "null"] }
       }
     },
     "rule": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["rule_id", "text", "trace"],
+      "required": ["rule_id", "text", "trace", "provenance", "reference"],
       "properties": {
         "rule_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
         "text": { "type": "string", "minLength": 1 },
+        "trace": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "provenance": { "type": "string", "enum": ["SOURCED FROM PRODUCTION DOCS", "DESIGNER PROPOSAL"] },
+        "reference": { "type": ["string", "null"] }
+      }
+    },
+    "surfaces": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "array", "items": { "$ref": "#/$defs/rule" } },
+        "poster": { "type": "array", "items": { "$ref": "#/$defs/rule" } },
+        "key_art": { "type": "array", "items": { "$ref": "#/$defs/rule" } },
+        "credits": { "type": "array", "items": { "$ref": "#/$defs/rule" } }
+      }
+    },
+    "custom_title": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "style", "construction", "built", "provenance", "reference", "trace"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "style": { "type": "string", "minLength": 1 },
+        "construction": { "type": "string", "minLength": 1 },
+        "built": { "type": "boolean", "const": false },
+        "provenance": { "type": "string", "const": "DESIGNER PROPOSAL" },
+        "reference": { "type": "string", "minLength": 1 },
         "trace": { "type": "string", "pattern": "^[a-z0-9-]+$" }
       }
     },

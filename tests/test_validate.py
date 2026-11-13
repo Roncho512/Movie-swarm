@@ -822,25 +822,97 @@ def test_each_schema_accepts_a_minimal_document():
             "status": "draft",
             "research": "graphics/research.json",
             "fonts": {
-                "title": {"family": "not named", "licensing": "No license is named.", "trace": "period-type"},
-                "credits": {"family": "not named", "licensing": "No license is named.", "trace": "period-type"},
-                "subtitles": {"family": "not named", "licensing": "No license is named.", "trace": "period-type"},
-                "marketing": {"family": "not named", "licensing": "No license is named.", "trace": "period-type"},
+                "title": {
+                    "family": "not named",
+                    "licensing": "No license is named.",
+                    "trace": "period-type",
+                    "provenance": "SOURCED FROM PRODUCTION DOCS",
+                    "reference": None,
+                },
+                "credits": {
+                    "family": "not named",
+                    "licensing": "No license is named.",
+                    "trace": "period-type",
+                    "provenance": "SOURCED FROM PRODUCTION DOCS",
+                    "reference": None,
+                },
+                "subtitles": {
+                    "family": "not named",
+                    "licensing": "No license is named.",
+                    "trace": "period-type",
+                    "provenance": "SOURCED FROM PRODUCTION DOCS",
+                    "reference": None,
+                },
+                "marketing": {
+                    "family": "not named",
+                    "licensing": "No license is named.",
+                    "trace": "period-type",
+                    "provenance": "SOURCED FROM PRODUCTION DOCS",
+                    "reference": None,
+                },
             },
-            "palette": [{"name": "not named", "value": "not named", "trace": "palette-unnamed"}],
+            "palette": [
+                {
+                    "name": "not named",
+                    "value": "not named",
+                    "trace": "palette-unnamed",
+                    "provenance": "SOURCED FROM PRODUCTION DOCS",
+                    "reference": None,
+                }
+            ],
             "wordmark": {
                 "title": "Demo",
-                "rules": [{"rule_id": "wordmark-spelling", "text": "Set the title as written.", "trace": "film-title"}],
+                "rules": [
+                    {
+                        "rule_id": "wordmark-spelling",
+                        "text": "Set the title as written.",
+                        "trace": "film-title",
+                        "provenance": "SOURCED FROM PRODUCTION DOCS",
+                        "reference": None,
+                    }
+                ],
             },
             "layout": {
                 "safe_area": "not named",
-                "rules": [{"rule_id": "layout-safe", "text": "No inset is named.", "trace": "safe-area"}],
+                "rules": [
+                    {
+                        "rule_id": "layout-safe",
+                        "text": "No inset is named.",
+                        "trace": "safe-area",
+                        "provenance": "SOURCED FROM PRODUCTION DOCS",
+                        "reference": None,
+                    }
+                ],
             },
             "image_treatment": {
-                "rules": [{"rule_id": "treatment-look", "text": "Follow the research.", "trace": "look-summary"}]
+                "rules": [
+                    {
+                        "rule_id": "treatment-look",
+                        "text": "Follow the research.",
+                        "trace": "look-summary",
+                        "provenance": "SOURCED FROM PRODUCTION DOCS",
+                        "reference": None,
+                    }
+                ]
             },
-            "dos": [{"rule_id": "do-palette", "text": "Use the palette.", "trace": "palette-unnamed"}],
-            "donts": [{"rule_id": "dont-invent", "text": "Do not invent a face.", "trace": "period-type"}],
+            "dos": [
+                {
+                    "rule_id": "do-palette",
+                    "text": "Use the palette.",
+                    "trace": "palette-unnamed",
+                    "provenance": "SOURCED FROM PRODUCTION DOCS",
+                    "reference": None,
+                }
+            ],
+            "donts": [
+                {
+                    "rule_id": "dont-invent",
+                    "text": "Do not invent a face.",
+                    "trace": "period-type",
+                    "provenance": "SOURCED FROM PRODUCTION DOCS",
+                    "reference": None,
+                }
+            ],
             "fingerprints": {"style_bible": None, "look": None},
             "change_log": [{"version": "1.0.0", "at": "2026-01-01T00:00:00Z", "change": "Created from research."}],
             "rules_fingerprint": "abc",
@@ -1027,6 +1099,10 @@ def test_each_schema_accepts_a_minimal_document():
             "model": "claude-haiku-5-5",
             "note": "Sample.",
             "written_at": "2026-01-01T00:00:00Z",
+        },
+        "design-reference.schema.json": {
+            "id": "sample-pack",
+            "match": {"always": True},
         },
         "absence-phrases.schema.json": {
             "version": "1.1.0",

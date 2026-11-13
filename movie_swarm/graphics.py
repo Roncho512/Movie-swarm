@@ -2,12 +2,13 @@
 
 The Art Director owns the in-film look. This role reads that work and designs
 the titles, the credits, the subtitle style, the key art, and the collateral.
-It does not invent a fact the production documents do not state.
 
-Research is written first. The brand guide is built only from that research.
-Graphics are built only from an approved guide. Offline is the default. A
-model reply that adds a fact is discarded. This module does not read a key,
-does not open a network connection, and does not pass ``--live``.
+Research is written first. A fact from the production documents is sourced or
+inferred. A suggestion from a design-reference pack is a designer proposal and
+cites its reference. The brand guide is built only from that research, and it
+stays a draft until the graphics gate. Graphics are built only from an
+approved guide. Offline is the default. This module does not read a key, does
+not open a network connection, and does not pass ``--live``.
 """
 
 from __future__ import annotations
@@ -20,6 +21,8 @@ import subprocess
 from pathlib import Path
 
 from movie_swarm.handoff import HandoffError, read_handoff
+from movie_swarm.mentions import advertising_phrases, story_purpose_line
+from movie_swarm.paths import config_dir, repo_root
 from movie_swarm.previs_common import (
     PrevisError,
     approved_treatment,
@@ -33,6 +36,7 @@ from movie_swarm.previs_common import (
     system_prompt,
     try_model_json,
 )
+from movie_swarm.validate import load_schema, validate_data
 
 
 class GraphicsError(PrevisError):
@@ -40,9 +44,25 @@ class GraphicsError(PrevisError):
 
 
 _TOPICS = ("director", "setting", "genre", "period", "references")
+_FROM_DOCS = "SOURCED FROM PRODUCTION DOCS"
+_PROPOSAL = "DESIGNER PROPOSAL"
 _SLUGLINE = re.compile(r"^(?:INT\.?/EXT\.?|EXT\.?/INT\.?|I/E\.?|INT\.?|EXT\.?|EST\.?)\b", re.I)
 _RESOLUTION = re.compile(r"(\d{2,5})\s*[x×]\s*(\d{2,5})")
 _FONT = re.compile(r"(?im)^(?:font family|typeface)\s*:\s*(.+)$")
+_HEX = re.compile(r"^#[0-9A-Fa-f]{6}$")
+_DIRECTION_OPEN = re.compile(
+    r"^(?:over|on|against|across|under|above|behind|through|into|onto|during|same|using|with|amid|amidst|upon|before|after|while|from|at)\b",
+    re.I,
+)
+_STYLE_WORD = re.compile(r"\b(?:typography|typeface|typefaces|font|fonts|lettering|background)\b", re.I)
+_TRANSITION = re.compile(r"^(?:FADE|CUT|DISSOLVE|SMASH|MATCH|JUMP|IRIS|WIPE|HOLD)\b", re.I)
+_STYLE_CUE = re.compile(
+    r"\b((?:[A-Za-z][\w'-]*\s+){0,5}(?:typography|typeface|lettering|font))\b",
+    re.I,
+)
+_QUOTED = re.compile(r"[\"“]([^\"”]+)[\"”]")
+_CARD_LABEL = re.compile(r"^TITLE\s+CARD\b", re.I)
+_PROHIBITION = re.compile(r"^(?:do not|don't|never|no)\b", re.I)
 
 
 def research_path(production_dir: Path) -> Path:
@@ -219,23 +239,34 @@ def _research_document(production_dir: Path) -> dict:
     items: list[dict] = []
     used: set[str] = set()
 
-    def add(item_id: str, topic: str, text: str, basis: str, source_file: str | None, source_field: str | None) -> None:
+    def add(
+        item_id: str,
+        topic: str,
+        text: str,
+        basis: str,
+        source_file: str | None,
+        source_field: str | None,
+        **extra,
+    ) -> None:
         final = item_id
         count = 2
         while final in used:
             final = f"{item_id}-{count}"
             count += 1
         used.add(final)
-        items.append(
-            {
-                "item_id": final,
-                "topic": topic,
-                "text": " ".join(text.split()),
-                "basis": basis,
-                "source_file": source_file,
-                "source_field": source_field,
-            }
-        )
+        row = {
+            "item_id": final,
+            "topic": topic,
+            "text": " ".join(text.split()),
+            "basis": basis,
+            "source_file": source_file,
+            "source_field": source_field,
+            "reference": extra.pop("reference", None),
+        }
+        for key, value in extra.items():
+            if value is not None:
+                row[key] = value
+        items.append(row)
 
     title = str(treatment.get("title") or "").strip()
     if title:
@@ -338,14 +369,7 @@ def _research_document(production_dir: Path) -> dict:
         add("genre-name", "genre", f"Genre: {genre}.", "sourced", "treatment/treatment.json", "tone_and_genre.genre")
     else:
         add("genre-name", "genre", "The documents do not name a genre.", "inferred", None, None)
-    add(
-        "genre-graphics-unnamed",
-        "genre",
-        "The documents do not name a title layout, a poster layout, or a credit style for this genre. Do not import one.",
-        "inferred",
-        None,
-        None,
-    )
+    genre_gap = True
 
     named_year = False
     for field in ("logline", "world_and_period"):
@@ -368,7 +392,7 @@ def _research_document(production_dir: Path) -> dict:
         add(
             "period-type",
             "period",
-            "The documents do not name a typeface or a print method. Do not add one.",
+            "The documents do not name a typeface or a print method.",
             "inferred",
             None,
             None,
@@ -377,7 +401,7 @@ def _research_document(production_dir: Path) -> dict:
         add(
             "period-type",
             "period",
-            "The documents do not name a typeface, a print method, or a year. Do not add one.",
+            "The documents do not name a typeface, a print method, or a year.",
             "inferred",
             None,
             None,
@@ -456,11 +480,37 @@ def _research_document(production_dir: Path) -> dict:
         add(
             "safe-area",
             "genre",
-            "The documents do not name a graphics-safe inset. Do not invent one.",
+            "The documents do not name a graphics-safe inset.",
             "inferred",
             None,
             None,
         )
+
+    packs = _matched_packs(treatment, brief, look)
+    term_packs = [pair for pair in packs if not (pair[1].get("match") or {}).get("always")]
+    if term_packs:
+        genre_gap = False
+    if genre_gap:
+        add(
+            "genre-graphics-unnamed",
+            "genre",
+            "The documents do not name a title layout, a poster layout, or a credit style for this genre. Do not import one.",
+            "inferred",
+            None,
+            None,
+        )
+    _add_pack_items(add, packs)
+    add(
+        "credits-sans",
+        "period",
+        "Credits are set in a sans-serif face.",
+        "designer-proposal",
+        "DECISIONS.md",
+        "D183",
+        reference="Ron, 2026-11-13",
+    )
+    _add_placement_items(add, brief)
+    _add_card_items(add, production_dir, scripts)
 
     for path in scripts:
         add(
@@ -492,59 +542,76 @@ def _research_document(production_dir: Path) -> dict:
         "fingerprints": {
             "style_bible": _fingerprint(production_dir, bible_path, bible),
             "look": _fingerprint(production_dir, look_path, look),
+            "reference_packs": _pack_prints(packs),
         },
         "draft_method": "offline-deterministic",
         "model": model_name("title-graphic-design", "research"),
-        "note": "Research from the production documents. Each item is sourced or inferred. Nothing was added.",
+        "note": (
+            "Production documents are sourced or inferred. "
+            "A designer proposal cites its reference. Nothing here is approved."
+        ),
         "written_at": now(),
     }
 
 
 def _guide_document(production_dir: Path, research: dict) -> dict:
-    by_id = {item["item_id"]: item for item in research["items"]}
-    fonts = {}
-    for key in ("title", "credits", "subtitles", "marketing"):
-        if by_id["period-type"]["basis"] == "sourced" and key == "title":
-            family = by_id["period-type"]["text"].split(":", 1)[-1].strip().rstrip(".")
-            licensing = "Use only the face the research names. Confirm the license before delivery."
-        else:
-            family = "not named"
-            licensing = "No license is named in the documents. Do not assume a face is free to use."
-        fonts[key] = {"family": family, "licensing": licensing, "trace": "period-type"}
-
-    palette = []
-    seen = set()
-    for item in research["items"]:
-        if not item["item_id"].startswith("palette-bible-"):
-            continue
-        name, hex_value = _split_palette(item["text"])
-        palette.append({"name": name, "value": hex_value, "trace": item["item_id"]})
-        seen.add(name.casefold())
-    for item in research["items"]:
-        if not item["item_id"].startswith("palette-look-"):
-            continue
-        name = item["text"].split(":", 1)[-1].strip().rstrip(".")
-        if name.casefold() in seen:
-            continue
-        palette.append({"name": name, "value": name, "trace": item["item_id"]})
-        seen.add(name.casefold())
-    if not palette:
-        palette.append({"name": "not named", "value": "not named", "trace": "palette-unnamed"})
-
+    items = list(research["items"])
+    by_id = {item["item_id"]: item for item in items}
+    fonts = _font_roles(items, by_id["period-type"])
+    palette = _palette_from(items)
     title_item = by_id["film-title"]
     title = title_item["text"].split(":", 1)[-1].strip().rstrip(".") if title_item["basis"] == "sourced" else "not named"
-    safe = by_id["safe-area"]["text"]
-    safe_value = "not named"
-    if by_id["safe-area"]["basis"] == "sourced":
-        match = re.search(r"([0-9]+(?:\.[0-9]+)?)", safe)
-        safe_value = match.group(1) if match else safe
+    safe_value, layout_rules = _layout_rules(by_id)
     if "look-summary" in by_id:
         look_trace = "look-summary"
     elif "references-unnamed" in by_id:
         look_trace = "references-unnamed"
     else:
-        look_trace = next(item["item_id"] for item in research["items"] if item["topic"] == "references")
+        look_trace = next(item["item_id"] for item in items if item["topic"] == "references")
     look_text = by_id[look_trace]["text"] if look_trace in by_id else "No look is named."
+    wordmark_rules = [_rule("wordmark-spelling", "Set the title as the research spells it.", title_item)]
+    image_rules = [_rule("treatment-look", f"Image treatment follows the research. {look_text}", by_id[look_trace])]
+    surface_key = {"title": "title", "poster": "poster", "key-art": "key_art", "credits": "credits"}
+    surfaces = {name: [] for name in surface_key.values()}
+    if "credits-sans" in by_id:
+        surfaces["credits"].append(_rule("credits-sans", by_id["credits-sans"]["text"], by_id["credits-sans"]))
+    notes = []
+    for item in items:
+        if item["item_id"].startswith("typography-"):
+            wordmark_rules.append(_rule(f"wordmark-{item['item_id']}", item["text"], item))
+        kind = item.get("claim_kind")
+        if kind == "lettering":
+            wordmark_rules.append(_rule(f"wordmark-{item['item_id']}", item["text"], item))
+        elif kind == "print":
+            image_rules.append(_rule(f"treatment-{item['item_id']}", item["text"], item))
+        elif kind == "layout" and item.get("surface") in surface_key:
+            surfaces[surface_key[item["surface"]]].append(
+                _rule(f"surface-{item['item_id']}", item["text"], item)
+            )
+        elif kind in {"artist", "convention", "credits", "other"}:
+            notes.append(_rule(f"note-{item['item_id']}", item["text"], item))
+    dos = [
+        _rule(
+            "do-palette",
+            "Use only palette values that trace to research.",
+            next(item for item in items if item["item_id"] == palette[0]["trace"]),
+        )
+    ]
+    donts = [
+        _rule(
+            "dont-invent",
+            "Do not treat a designer proposal as a fact the production documents stated. "
+            "Do not add a typeface, a color, or a layout the research does not contain.",
+            by_id["period-type"],
+        )
+    ]
+    for item in items:
+        if not item["item_id"].startswith("placement-"):
+            continue
+        if _PROHIBITION.match(item["text"]):
+            donts.append(_rule(f"dont-{item['item_id']}", item["text"], item))
+        else:
+            dos.append(_rule(f"do-{item['item_id']}", item["text"], item))
     document = {
         "version": "1.0.0",
         "production_id": production_dir.name,
@@ -552,58 +619,34 @@ def _guide_document(production_dir: Path, research: dict) -> dict:
         "research": "graphics/research.json",
         "fonts": fonts,
         "palette": palette,
-        "wordmark": {
-            "title": title,
-            "rules": [
-                {
-                    "rule_id": "wordmark-spelling",
-                    "text": "Set the title as the research spells it.",
-                    "trace": "film-title",
-                }
-            ],
-        },
-        "layout": {
-            "safe_area": safe_value,
-            "rules": [
-                {
-                    "rule_id": "layout-safe",
-                    "text": by_id["safe-area"]["text"],
-                    "trace": "safe-area",
-                }
-            ],
-        },
-        "image_treatment": {
-            "rules": [
-                {
-                    "rule_id": "treatment-look",
-                    "text": f"Image treatment follows the research. {look_text}",
-                    "trace": look_trace,
-                }
-            ],
-        },
-        "dos": [
-            {
-                "rule_id": "do-palette",
-                "text": "Use only palette values that trace to research.",
-                "trace": palette[0]["trace"],
-            }
-        ],
-        "donts": [
-            {
-                "rule_id": "dont-invent",
-                "text": "Do not add a typeface, a print method, a year, or a layout the research does not name.",
-                "trace": "period-type",
-            }
-        ],
+        "wordmark": {"title": title, "rules": wordmark_rules},
+        "layout": {"safe_area": safe_value, "rules": layout_rules},
+        "image_treatment": {"rules": image_rules},
+        "dos": dos,
+        "donts": donts,
         "fingerprints": research["fingerprints"],
-        "change_log": [
-            {"version": "1.0.0", "at": now(), "change": "Created from research."}
-        ],
+        "change_log": [{"version": "1.0.0", "at": now(), "change": "Created from research."}],
         "draft_method": "offline-deterministic",
         "model": model_name("title-graphic-design", "guide"),
-        "note": "Built only from graphics/research.json. Not approved yet.",
+        "note": "Built only from graphics/research.json. Designer proposals are suggestions. Not approved yet.",
         "written_at": now(),
     }
+    kept = {key: value for key, value in surfaces.items() if value}
+    if kept:
+        document["surfaces"] = kept
+    if notes:
+        document["notes"] = notes
+    lettering = next((item for item in items if item.get("lettering_name")), None)
+    if lettering is not None:
+        document["custom_title"] = {
+            "name": lettering["lettering_name"],
+            "style": lettering.get("lettering_style") or lettering["text"],
+            "construction": lettering.get("lettering_construction") or "Description only. No font file is built.",
+            "built": False,
+            "provenance": _PROPOSAL,
+            "reference": str(lettering.get("reference") or ""),
+            "trace": lettering["item_id"],
+        }
     document["rules_fingerprint"] = _rules_fingerprint(document)
     return document
 
@@ -617,7 +660,12 @@ def _merge_guide(old: dict | None, fresh: dict) -> dict:
         return old
     version = _bump(str(old.get("version") or "1.0.0"))
     if old.get("fingerprints") != fresh.get("fingerprints"):
-        change = "The style bible or the look changed. The guide was rebuilt from new research."
+        old_core = {key: value for key, value in (old.get("fingerprints") or {}).items() if key != "reference_packs"}
+        new_core = {key: value for key, value in (fresh.get("fingerprints") or {}).items() if key != "reference_packs"}
+        if old_core != new_core:
+            change = "The style bible or the look changed. The guide was rebuilt from new research."
+        else:
+            change = "A design reference pack changed. The guide was rebuilt from new research."
     else:
         change = "Rebuilt from research."
     fresh["version"] = version
@@ -694,6 +742,11 @@ def _graphics_document(production_dir: Path, research: dict, guide: dict) -> dic
         "note": "Specs from the approved brand guide. Placeholder frames are not a designed picture.",
         "written_at": now(),
     }
+    placement = _placement_lines(research)
+    if placement:
+        document["key_art"]["placement_rules"] = placement
+        for item in document["collateral"]:
+            item["placement_rules"] = placement
     document["package_fingerprint"] = _package_fingerprint(document)
     return document
 
@@ -706,45 +759,137 @@ def _title_cards(production_dir: Path, brief: dict, safe: str) -> list[dict]:
         except OSError as exc:
             raise GraphicsError(f"Could not read the screenplay {path.name}. {exc}") from exc
         relative = _rel(production_dir, path)
-        for line_number, card_text in _card_lines(text):
+        for card in _parse_title_cards(text):
+            if not card["text"]:
+                continue
             cards.append(
                 {
                     "card_id": f"card-{len(cards) + 1}",
-                    "text": card_text,
+                    "text": card["text"],
                     "source_file": relative,
-                    "source_line": line_number,
+                    "source_line": card["line"],
                     "safe_area": safe,
+                    "design_direction": card["direction"],
                 }
             )
     return cards
 
 
-def _card_lines(text: str) -> list[tuple[int, str]]:
+def _parse_title_cards(text: str) -> list[dict]:
+    """Split a TITLE CARD into the words on screen and the design direction.
+
+    Direction is background, placement, or a typography note on the cue line.
+    The displayed text is a quoted title, a following title line, or the cue
+    line itself when that line is the card copy. Direction is never used as
+    the words on screen.
+    """
     found = []
     lines = text.splitlines()
     index = 0
     while index < len(lines):
         stripped = lines[index].strip().strip("*").strip()
-        upper = stripped.upper().rstrip(".")
-        if not upper.startswith("TITLE CARD"):
+        if not _CARD_LABEL.match(stripped):
             index += 1
             continue
-        rest = stripped[len("TITLE CARD") :].strip(" .:-")
-        if rest:
-            found.append((index + 1, rest))
+        rest = _CARD_LABEL.sub("", stripped, count=1).strip(" .:-")
+        quoted = [item.strip() for item in _QUOTED.findall(rest) if item.strip()]
+        if quoted:
+            display = _unwrap_copy(quoted[-1])
+            direction = _QUOTED.sub(" ", rest)
+            direction = " ".join(direction.split()).strip(" .:-")
+            found.append(_card_record(index + 1, display, direction))
             index += 1
             continue
-        follower = ""
-        next_index = index + 1
-        while next_index < len(lines) and not lines[next_index].strip():
-            next_index += 1
-        if next_index < len(lines):
-            candidate = lines[next_index].strip().strip("*").strip()
-            if candidate and not _SLUGLINE.match(candidate) and not candidate.upper().startswith("TITLE CARD"):
-                follower = candidate
+        if rest and not _looks_like_direction(rest):
+            found.append(_card_record(index + 1, _unwrap_copy(rest), ""))
+            index += 1
+            continue
+        follower = _following_copy(lines, index)
         if follower:
-            found.append((next_index + 1, follower))
-        index = next_index + 1 if follower else index + 1
+            line_number, display = follower
+            found.append(_card_record(line_number, display, rest, cue_line=index + 1))
+            index = line_number
+            continue
+        found.append(_card_record(index + 1, "", rest))
+        index += 1
+    return found
+
+
+def _card_record(line: int, display: str, direction: str, cue_line: int | None = None) -> dict:
+    direction = " ".join(direction.split()).strip()
+    return {
+        "line": line,
+        "cue_line": cue_line or line,
+        "text": " ".join(display.split()).strip(),
+        "direction": direction,
+        "cues": _style_cues(direction),
+    }
+
+
+def _following_copy(lines: list[str], index: int) -> tuple[int, str] | None:
+    next_index = index + 1
+    while next_index < len(lines) and not lines[next_index].strip():
+        next_index += 1
+    if next_index >= len(lines):
+        return None
+    raw = lines[next_index].strip()
+    if _is_structural(raw):
+        return None
+    display = _unwrap_copy(raw)
+    if not display or _looks_like_direction(display):
+        return None
+    marked = raw.lstrip().startswith("#") or "**" in raw or bool(_QUOTED.search(raw))
+    if marked or _is_caps_title(display):
+        return next_index + 1, display
+    return None
+
+
+def _is_structural(raw: str) -> bool:
+    cleaned = _unwrap_copy(raw)
+    if not cleaned:
+        return True
+    if _SLUGLINE.match(cleaned) or _CARD_LABEL.match(cleaned) or _TRANSITION.match(cleaned):
+        return True
+    return False
+
+
+def _looks_like_direction(text: str) -> bool:
+    body = text.strip()
+    if not body:
+        return False
+    if _DIRECTION_OPEN.match(body) or _STYLE_WORD.search(body):
+        return True
+    return False
+
+
+def _is_caps_title(text: str) -> bool:
+    letters = re.sub(r"[^A-Za-z]", "", text)
+    if not letters or text != text.upper() or len(text.split()) > 12:
+        return False
+    return not _looks_like_direction(text)
+
+
+def _unwrap_copy(raw: str) -> str:
+    text = raw.strip()
+    text = re.sub(r"^#{1,6}\s*", "", text)
+    changed = True
+    while changed and text:
+        changed = False
+        for mark in ("**", "__"):
+            if text.startswith(mark) and text.endswith(mark) and len(text) > len(mark) * 2:
+                text = text[len(mark) : -len(mark)].strip()
+                changed = True
+    if len(text) >= 2 and text[0] in "\"'“" and text[-1] in "\"'”":
+        text = text[1:-1].strip()
+    return " ".join(text.split())
+
+
+def _style_cues(direction: str) -> list[str]:
+    found = []
+    for match in _STYLE_CUE.finditer(direction):
+        cue = re.sub(r"^(?:same|the|a|an)\s+", "", match.group(1).strip(), flags=re.I).strip()
+        if cue and cue.casefold() not in {item.casefold() for item in found}:
+            found.append(cue)
     return found
 
 
@@ -893,6 +1038,21 @@ def _require_fresh(production_dir: Path, research: dict, *, for_guide: bool) -> 
         "look": _live_fingerprint(production_dir, "look"),
     }
     stored = research.get("fingerprints") or {}
+    try:
+        treatment = approved_treatment(production_dir)
+    except PrevisError as exc:
+        raise GraphicsError(str(exc)) from exc
+    live_packs = _pack_prints(_matched_packs(treatment, read_brief(production_dir), _look_data(production_dir)))
+    if list(stored.get("reference_packs") or []) != live_packs:
+        if for_guide:
+            raise GraphicsError(
+                "A design reference pack changed after the research was written. "
+                "Write the research again before the brand guide."
+            )
+        raise GraphicsError(
+            "A design reference pack changed after the brand guide was approved. "
+            "Update the research and the brand guide before building graphics."
+        )
     for key in ("style_bible", "look"):
         old = stored.get(key)
         now_fp = current[key]
@@ -1260,6 +1420,9 @@ def _rules_fingerprint(document: dict) -> str:
         "image_treatment": document.get("image_treatment"),
         "dos": document.get("dos"),
         "donts": document.get("donts"),
+        "surfaces": document.get("surfaces"),
+        "notes": document.get("notes"),
+        "custom_title": document.get("custom_title"),
         "fingerprints": document.get("fingerprints"),
     }
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
@@ -1271,7 +1434,11 @@ def _package_fingerprint(document: dict) -> str:
         "title_cards": document.get("title_cards"),
         "end_credits": document.get("end_credits"),
         "subtitles": document.get("subtitles"),
-        "key_art": {key: value for key, value in (document.get("key_art") or {}).items() if key != "render_status"},
+        "key_art": {
+            key: value
+            for key, value in (document.get("key_art") or {}).items()
+            if key not in {"render_status"}
+        },
         "collateral": [
             {key: value for key, value in item.items() if key != "render_status"}
             for item in document.get("collateral") or []
@@ -1303,9 +1470,12 @@ def _read_json(path: Path) -> dict | None:
 def _research_markdown(document: dict) -> str:
     lines = ["# Graphics research", "", document.get("note") or "", ""]
     for item in document.get("items") or []:
-        where = "inferred"
-        if item.get("basis") == "sourced":
-            where = f"sourced from {item.get('source_file')} {item.get('source_field')}"
+        if item.get("basis") == "designer-proposal":
+            where = f"DESIGNER PROPOSAL ({item.get('reference')})"
+        elif item.get("basis") == "sourced":
+            where = f"SOURCED FROM PRODUCTION DOCS ({item.get('source_file')} {item.get('source_field')})"
+        else:
+            where = "SOURCED FROM PRODUCTION DOCS (the documents do not state this)"
         lines.append(f"- {item['topic']}: {item['text']} ({where})")
     lines.append("")
     return "\n".join(lines).rstrip() + "\n"
@@ -1323,24 +1493,44 @@ def _guide_markdown(document: dict) -> str:
         "",
     ]
     for name, font in (document.get("fonts") or {}).items():
-        lines.append(f"- {name}: {font.get('family')}. {font.get('licensing')}")
+        lines.append(
+            f"- {name}: {font.get('family')}. {font.get('licensing')} {_mark(font)}"
+        )
+        for alternate in font.get("alternates") or []:
+            lines.append(f"  - alternate: {alternate.get('family')}. {alternate.get('licensing')} {_mark(alternate)}")
     lines.extend(["", "## Palette", ""])
     for color in document.get("palette") or []:
-        lines.append(f"- {color.get('name')}: {color.get('value')}")
+        lines.append(f"- {color.get('name')}: {color.get('value')} {_mark(color)}")
     wordmark = document.get("wordmark") or {}
     lines.extend(["", "## Wordmark", "", str(wordmark.get("title") or ""), ""])
     for rule in wordmark.get("rules") or []:
-        lines.append(f"- {rule.get('text')}")
+        lines.append(f"- {rule.get('text')} {_mark(rule)}")
     layout = document.get("layout") or {}
     lines.extend(["", "## Layout", "", f"Safe area: {layout.get('safe_area')}.", ""])
     for rule in layout.get("rules") or []:
-        lines.append(f"- {rule.get('text')}")
+        lines.append(f"- {rule.get('text')} {_mark(rule)}")
+    surfaces = document.get("surfaces") or {}
+    for surface, rules in surfaces.items():
+        lines.extend(["", f"## {surface}", ""])
+        for rule in rules:
+            lines.append(f"- {rule.get('text')} {_mark(rule)}")
+    if document.get("custom_title"):
+        custom = document["custom_title"]
+        lines.extend(
+            [
+                "",
+                "## Custom title lettering",
+                "",
+                f"{custom.get('name')}. {custom.get('style')} {custom.get('construction')} {_mark(custom)}",
+                "No font file is built.",
+            ]
+        )
     lines.extend(["", "## Do", ""])
     for rule in document.get("dos") or []:
-        lines.append(f"- {rule.get('text')}")
+        lines.append(f"- {rule.get('text')} {_mark(rule)}")
     lines.extend(["", "## Don't", ""])
     for rule in document.get("donts") or []:
-        lines.append(f"- {rule.get('text')}")
+        lines.append(f"- {rule.get('text')} {_mark(rule)}")
     lines.extend(["", "## Change log", ""])
     for entry in document.get("change_log") or []:
         lines.append(f"- {entry.get('version')}: {entry.get('change')}")
@@ -1357,10 +1547,18 @@ def _graphics_markdown(document: dict) -> str:
         lines.append("Title cards:")
         lines.append("")
         for card in document["title_cards"]:
-            lines.append(f"- {card.get('text')} ({card.get('source_file')})")
+            direction = card.get("design_direction") or ""
+            extra = f" Direction: {direction}." if direction else ""
+            lines.append(f"- {card.get('text')} ({card.get('source_file')}).{extra}")
         lines.append("")
     else:
         lines.append("No TITLE CARD lines were in the screenplay.")
+        lines.append("")
+    key = document.get("key_art") or {}
+    if key.get("placement_rules"):
+        lines.extend(["Placement:", ""])
+        for rule in key["placement_rules"]:
+            lines.append(f"- {rule}")
         lines.append("")
     credits = (document.get("end_credits") or {}).get("lines") or []
     lines.append("End credits:")
@@ -1384,3 +1582,462 @@ def _graphics_markdown(document: dict) -> str:
         lines.append(f"- {item.get('id')}: {item.get('filename')} ({item.get('render_status')}).")
     lines.append("")
     return "\n".join(lines).rstrip() + "\n"
+
+
+def _mark(node: dict) -> str:
+    label = node.get("provenance") or ""
+    reference = node.get("reference")
+    if label == _PROPOSAL and reference:
+        return f"({label}: {reference})"
+    if label:
+        return f"({label})"
+    return ""
+
+
+def _label(item: dict) -> tuple[str, str | None]:
+    if item.get("basis") == "designer-proposal":
+        return _PROPOSAL, item.get("reference")
+    return _FROM_DOCS, item.get("source_file")
+
+
+def _rule(rule_id: str, text: str, item: dict) -> dict:
+    label, reference = _label(item)
+    return {
+        "rule_id": rule_id,
+        "text": " ".join(str(text).split()),
+        "trace": item["item_id"],
+        "provenance": label,
+        "reference": reference,
+    }
+
+
+def _font_roles(items: list[dict], period_item: dict) -> dict:
+    grouped = {role: [] for role in ("title", "credits", "subtitles", "marketing")}
+    for item in items:
+        if not item.get("family") or not str(item.get("item_id") or "").startswith("font-"):
+            continue
+        role = str(item["item_id"]).split("-")[1]
+        if role in grouped:
+            grouped[role].append(item)
+    fonts = {}
+    for role, proposals in grouped.items():
+        if role == "title" and period_item.get("basis") == "sourced":
+            family = period_item["text"].split(":", 1)[-1].strip().rstrip(".")
+            label, reference = _label(period_item)
+            font = {
+                "family": family,
+                "licensing": "Use only the face the research names. Confirm the license before delivery.",
+                "trace": "period-type",
+                "provenance": label,
+                "reference": reference,
+            }
+            alternates = [_alternate(item) for item in proposals]
+            if alternates:
+                font["alternates"] = alternates
+            fonts[role] = font
+            continue
+        if proposals:
+            primary = proposals[0]
+            if role == "credits" and primary.get("category") != "sans-serif":
+                raise GraphicsError(f"{primary.get('family')} is not a sans-serif. Credits stay a sans-serif.")
+            label, reference = _label(primary)
+            font = {
+                "family": primary["family"],
+                "licensing": primary.get("license_name") or "The proposal names the license.",
+                "trace": primary["item_id"],
+                "provenance": label,
+                "reference": reference,
+            }
+            if primary.get("category"):
+                font["category"] = primary["category"]
+            alternates = [_alternate(item) for item in proposals[1:]]
+            if alternates:
+                font["alternates"] = alternates
+            fonts[role] = font
+            continue
+        label, reference = _label(period_item)
+        fonts[role] = {
+            "family": "not named",
+            "licensing": "No license is named in the documents. Do not assume a face is free to use.",
+            "trace": "period-type",
+            "provenance": label,
+            "reference": reference,
+        }
+    return fonts
+
+
+def _alternate(item: dict) -> dict:
+    label, reference = _label(item)
+    alternate = {
+        "family": item["family"],
+        "licensing": item.get("license_name") or "The proposal names the license.",
+        "provenance": label,
+        "reference": reference,
+        "trace": item["item_id"],
+    }
+    if item.get("category"):
+        alternate["category"] = item["category"]
+    return alternate
+
+
+def _palette_from(items: list[dict]) -> list[dict]:
+    palette = []
+    seen = set()
+    for item in items:
+        if not item["item_id"].startswith("palette-bible-"):
+            continue
+        name, hex_value = _split_palette(item["text"])
+        palette.append(_swatch(name, hex_value, item))
+        seen.add(name.casefold())
+    for item in items:
+        if not item["item_id"].startswith("palette-look-"):
+            continue
+        name = item["text"].split(":", 1)[-1].strip().rstrip(".")
+        if name.casefold() in seen:
+            continue
+        palette.append(_swatch(name, name, item))
+        seen.add(name.casefold())
+    if not palette:
+        unnamed = next(item for item in items if item["item_id"] == "palette-unnamed")
+        palette.append(_swatch("not named", "not named", unnamed))
+        seen.add("not named")
+    fills = [item for item in items if item.get("hex") and item.get("swatch_name")]
+    for color in palette:
+        if _HEX.match(str(color["value"])):
+            continue
+        match = next((item for item in fills if item["swatch_name"].casefold() == color["name"].casefold()), None)
+        if match is None:
+            continue
+        color["value"] = match["hex"]
+        color["trace"] = match["item_id"]
+        color["provenance"] = _PROPOSAL
+        color["reference"] = match.get("reference")
+    for item in fills:
+        if item.get("swatch_use") != "propose":
+            continue
+        if item["swatch_name"].casefold() in seen:
+            continue
+        palette.append(_swatch(item["swatch_name"], item["hex"], item))
+        seen.add(item["swatch_name"].casefold())
+    return palette
+
+
+def _swatch(name: str, value: str, item: dict) -> dict:
+    label, reference = _label(item)
+    return {
+        "name": name,
+        "value": value,
+        "trace": item["item_id"],
+        "provenance": label,
+        "reference": reference,
+    }
+
+
+def _layout_rules(by_id: dict) -> tuple[str, list[dict]]:
+    safe_item = by_id["safe-area"]
+    proposal = by_id.get("safe-area-proposal")
+    rules = [_rule("layout-safe", safe_item["text"], safe_item)]
+    if safe_item.get("basis") == "sourced":
+        match = re.search(r"([0-9]+(?:\.[0-9]+)?)", safe_item["text"])
+        safe_value = match.group(1) if match else safe_item["text"]
+    elif proposal:
+        safe_value = _safe_summary(proposal["text"])
+    else:
+        safe_value = "not named"
+    if proposal:
+        rules.append(_rule("layout-safe-proposal", proposal["text"], proposal))
+    return safe_value, rules
+
+
+def _safe_summary(text: str) -> str:
+    action = re.search(r"action inset ([0-9]+(?:\.[0-9]+)?)", text)
+    graphics = re.search(r"graphics inset ([0-9]+(?:\.[0-9]+)?)", text)
+    if action and graphics:
+        return f"graphics {graphics.group(1)}% each edge; action {action.group(1)}% each edge"
+    return text
+
+
+def _placement_lines(research: dict) -> list[str]:
+    return [
+        str(item.get("text") or "")
+        for item in research.get("items") or []
+        if str(item.get("item_id") or "").startswith("placement-") and item.get("text")
+    ]
+
+
+def _look_data(production_dir: Path) -> dict | None:
+    path = _first_file(production_dir, ("look/look.json",))
+    if path is None:
+        return None
+    data = load_optional(path, "look")
+    return data if isinstance(data, dict) else None
+
+
+def _pack_directory() -> Path:
+    return config_dir() / "design-references"
+
+
+def _matched_packs(treatment: dict, brief: dict, look: dict | None, directory: Path | None = None) -> list[tuple[Path, dict]]:
+    folder = directory or _pack_directory()
+    if not folder.is_dir():
+        return []
+    schema = load_schema("design-reference")
+    text = _match_text(treatment, brief, look)
+    years = _story_years(treatment)
+    matched = []
+    for path in sorted(folder.glob("*.json")):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise GraphicsError(f"{path.name} is not valid JSON. {exc}") from exc
+        if not isinstance(data, dict):
+            raise GraphicsError(f"{path.name} must be a JSON object.")
+        errors = validate_data(data, schema)
+        if errors:
+            raise GraphicsError(path.name + " does not match the design reference schema. " + " ".join(errors))
+        for font in data.get("fonts") or []:
+            if font.get("role") == "credits" and font.get("category") != "sans-serif":
+                raise GraphicsError(
+                    f"{path.name} lists {font.get('family')} for credits. Credits stay a sans-serif."
+                )
+        if _pack_matches(data, text, years):
+            matched.append((path, data))
+    return matched
+
+
+def _pack_matches(pack: dict, text: str, years: list[int]) -> bool:
+    match = pack.get("match") or {}
+    if match.get("always"):
+        return True
+    terms = [str(term).strip() for term in match.get("terms") or [] if str(term).strip()]
+    if not terms or not any(term.casefold() in text.casefold() for term in terms):
+        return False
+    if match.get("year_min") is None and match.get("year_max") is None:
+        return True
+    if not years:
+        return not bool(match.get("require_year"))
+    low = int(match.get("year_min") or 0)
+    high = int(match.get("year_max") or 9999)
+    return any(low <= year <= high for year in years)
+
+
+def _match_text(treatment: dict, brief: dict, look: dict | None) -> str:
+    parts = []
+    tone = treatment.get("tone_and_genre") if isinstance(treatment.get("tone_and_genre"), dict) else {}
+    parts.append(str((tone or {}).get("genre") or ""))
+    parts.append(str((tone or {}).get("tone") or ""))
+    parts.append(str(treatment.get("world_and_period") or ""))
+    if isinstance(brief, dict):
+        parts.append(str(brief.get("genre") or ""))
+        parts.append(str(brief.get("tone") or ""))
+        decisions = brief.get("decisions") or []
+        if isinstance(decisions, list):
+            parts.extend(str(item) for item in decisions)
+    if isinstance(look, dict):
+        parts.append(str(look.get("look_name") or ""))
+        parts.append(str(look.get("summary") or ""))
+    return "\n".join(parts)
+
+
+def _story_years(treatment: dict) -> list[int]:
+    found = []
+    for field in ("logline", "world_and_period"):
+        year = _year_in(str(treatment.get(field) or ""))
+        if year:
+            found.append(int(year))
+    return found
+
+
+def _pack_prints(packs: list[tuple[Path, dict]]) -> list[dict]:
+    root = repo_root().resolve()
+    rows = []
+    for path, pack in packs:
+        try:
+            relative = path.resolve().relative_to(root).as_posix()
+        except ValueError:
+            relative = path.name
+        rows.append(
+            {
+                "path": relative,
+                "version": str(pack["version"]) if pack.get("version") else None,
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            }
+        )
+    return rows
+
+
+def _repo_relative(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(repo_root().resolve()).as_posix()
+    except ValueError:
+        return path.name
+
+
+def _add_pack_items(add, packs: list[tuple[Path, dict]]) -> None:
+    for path, pack in packs:
+        relative = _repo_relative(path)
+        pack_id = str(pack.get("id") or slug(path.stem, "pack"))
+        for claim in pack.get("claims") or []:
+            add(
+                f"claim-{pack_id}-{claim['claim_id']}",
+                claim["topic"],
+                claim["text"],
+                "designer-proposal",
+                relative,
+                f"claims.{claim['claim_id']}",
+                reference=claim["url"],
+                claim_kind=claim["kind"],
+                surface=claim.get("surface"),
+            )
+        for font in pack.get("fonts") or []:
+            family = str(font["family"])
+            add(
+                f"font-{font['role']}-{slug(family, 'face')}",
+                "period",
+                f"{font['role']} face proposal: {family}. {font['note']}",
+                "designer-proposal",
+                relative,
+                f"fonts.{font['role']}.{slug(family, 'face')}",
+                reference=font["license_url"],
+                family=family,
+                license_name=font["license_name"],
+                category=font["category"],
+            )
+        for color in pack.get("colors") or []:
+            add(
+                f"palette-proposal-{pack_id}-{slug(color['name'], 'color')}",
+                "references",
+                f"Palette proposal: {color['name']} {color['hex']}. {color['note']}",
+                "designer-proposal",
+                relative,
+                f"colors.{slug(color['name'], 'color')}",
+                reference=color["url"],
+                hex=color["hex"],
+                swatch_name=color["name"],
+                swatch_use=color["use"],
+            )
+        for layout in pack.get("layouts") or []:
+            add(
+                f"layout-{pack_id}-{layout['layout_id']}",
+                "genre",
+                layout["text"],
+                "designer-proposal",
+                relative,
+                f"layouts.{layout['layout_id']}",
+                reference=layout["url"],
+                claim_kind="layout",
+                surface=layout["surface"],
+            )
+        safe = pack.get("safe_area")
+        if isinstance(safe, dict):
+            add(
+                "safe-area-proposal",
+                "genre",
+                (
+                    f"Proposed safe area: action inset {safe['action_inset_percent']}% each edge, "
+                    f"graphics inset {safe['graphics_inset_percent']}% each edge. {safe['note']}"
+                ),
+                "designer-proposal",
+                relative,
+                "safe_area",
+                reference=safe["url"],
+            )
+        lettering = pack.get("custom_lettering")
+        if isinstance(lettering, dict):
+            add(
+                f"custom-title-{pack_id}",
+                "period",
+                (
+                    f"Custom title lettering proposal: {lettering['name']}. "
+                    f"{lettering['style']} {lettering['construction']}"
+                ),
+                "designer-proposal",
+                relative,
+                "custom_lettering",
+                reference=" ".join(lettering.get("urls") or []),
+                lettering_name=lettering["name"],
+                lettering_style=lettering["style"],
+                lettering_construction=lettering["construction"],
+            )
+
+
+def _add_placement_items(add, brief: dict) -> None:
+    featured = brief.get("featured_product") if isinstance(brief, dict) else None
+    if not isinstance(featured, dict):
+        return
+    product = " ".join(str(featured.get("product") or "").split()).strip()
+    if advertising_phrases(product):
+        product = ""
+    label = product or "This object"
+    intent = " ".join(str(featured.get("placement_intent") or "").split()).strip()
+    if intent:
+        banned = bool(advertising_phrases(intent))
+        add(
+            "placement-intent",
+            "references",
+            _clean_placement(intent, label),
+            "designer-proposal" if banned else "sourced",
+            "production-brief.json",
+            "featured_product.placement_intent",
+            reference="Ron, 2026-11-13" if banned else None,
+        )
+    for index, rule in enumerate(featured.get("rules") or []):
+        if not isinstance(rule, str) or not rule.strip():
+            continue
+        raw = " ".join(rule.split())
+        banned = bool(advertising_phrases(raw))
+        add(
+            f"placement-rule-{index + 1}",
+            "references",
+            _clean_placement(raw, label),
+            "designer-proposal" if banned else "sourced",
+            "production-brief.json",
+            f"featured_product.rules[{index}]",
+            reference="Ron, 2026-11-13" if banned else None,
+        )
+    add(
+        "placement-not-for-sale",
+        "references",
+        f"Do not present {label} as something for sale. Key art and collateral keep it inside the story.",
+        "designer-proposal",
+        "production-brief.json",
+        "featured_product",
+        reference="Ron, 2026-11-13",
+    )
+
+
+def _clean_placement(text: str, label: str) -> str:
+    if advertising_phrases(text):
+        return story_purpose_line(label)
+    if text.endswith((".", "!", "?")):
+        return text
+    return text + "."
+
+
+def _add_card_items(add, production_dir: Path, scripts: list[Path]) -> None:
+    for path in scripts:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError as exc:
+            raise GraphicsError(f"Could not read the screenplay {path.name}. {exc}") from exc
+        relative = _rel(production_dir, path)
+        for card in _parse_title_cards(text):
+            cue_line = card["cue_line"]
+            if card["direction"]:
+                add(
+                    f"title-direction-{slug(path.stem, 'script')}-{cue_line}",
+                    "references",
+                    f"Title card direction: {card['direction']}.",
+                    "sourced",
+                    relative,
+                    f"line {cue_line}",
+                )
+            for cue in card["cues"]:
+                add(
+                    f"typography-{slug(cue, 'style')}",
+                    "period",
+                    f"Typography style: {cue}.",
+                    "sourced",
+                    relative,
+                    f"line {cue_line}",
+                )

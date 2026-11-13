@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "graphics-research.schema.json",
   "title": "Graphics Research",
-  "description": "What Title and Graphic Design read before designing. Each item is sourced from a production file or marked inferred. The checker does not know which film this is.",
+  "description": "What Title and Graphic Design read before designing. Each item is sourced from a production file, marked inferred, or marked as a designer proposal with a reference. The checker does not know which film this is.",
   "type": "object",
   "additionalProperties": false,
   "required": ["version", "production_id", "items", "fingerprints", "draft_method", "model", "note", "written_at"],
@@ -29,9 +29,24 @@
         "item_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
         "topic": { "type": "string", "enum": ["director", "setting", "genre", "period", "references"] },
         "text": { "type": "string", "minLength": 1 },
-        "basis": { "type": "string", "enum": ["sourced", "inferred"] },
+        "basis": { "type": "string", "enum": ["sourced", "inferred", "designer-proposal"] },
         "source_file": { "type": ["string", "null"], "minLength": 1 },
-        "source_field": { "type": ["string", "null"], "minLength": 1 }
+        "source_field": { "type": ["string", "null"], "minLength": 1 },
+        "reference": { "type": ["string", "null"] },
+        "family": { "type": "string", "minLength": 1 },
+        "license_name": { "type": "string", "minLength": 1 },
+        "category": { "type": "string", "enum": ["display", "sans-serif", "serif"] },
+        "hex": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "swatch_name": { "type": "string", "minLength": 1 },
+        "swatch_use": { "type": "string", "enum": ["fill-missing-hex", "propose"] },
+        "claim_kind": {
+          "type": "string",
+          "enum": ["convention", "artist", "lettering", "print", "credits", "layout", "other"]
+        },
+        "surface": { "type": "string", "enum": ["title", "poster", "key-art", "credits"] },
+        "lettering_name": { "type": "string", "minLength": 1 },
+        "lettering_style": { "type": "string", "minLength": 1 },
+        "lettering_construction": { "type": "string", "minLength": 1 }
       }
     },
     "file_print": {
@@ -50,7 +65,11 @@
       "required": ["style_bible", "look"],
       "properties": {
         "style_bible": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/file_print" }] },
-        "look": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/file_print" }] }
+        "look": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/file_print" }] },
+        "reference_packs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/file_print" }
+        }
       }
     }
   }
