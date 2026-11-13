@@ -500,6 +500,20 @@ def load_kind_nouns(production_dir: str | Path | None = None) -> dict[str, list[
 # list the storyboard and the continuity check both read. This is the fallback
 # when that file does not name ``closed_clause``.
 _DEFAULT_CONJUNCTIONS = ("and", "but", "or", "nor", "so", "yet")
+# Marks a part can leave behind. The config file is the list. This is the
+# fallback when that file does not name ``trace_nouns``.
+_DEFAULT_TRACE_NOUNS = (
+    "tracks",
+    "track",
+    "marks",
+    "prints",
+    "footprints",
+    "ruts",
+    "skid marks",
+    "tread marks",
+    "trail",
+    "imprint",
+)
 _PERFECT_AUX = {"has", "have", "had"}
 
 
@@ -512,8 +526,11 @@ def load_absence_phrases(production_dir: str | Path | None = None) -> dict:
     the perfect: has, have, and had plus the participle. The same expansion
     applies to the ambiguous list, so "has left the prop in" stays a review.
     ``conjunctions`` are the words that start a new clause after a perfect
-    absence. The storyboard review and the frame classifier both read this
-    dict, including a film's ``props/absence-phrases.json``.
+    absence. ``trace_nouns`` are marks a part leaves behind. A film file
+    replaces a phrase list or the conjunctions. It adds trace nouns to the
+    shared list, and an empty trace list adds nothing. The storyboard review,
+    the frame classifier, and the continuity check all read this dict,
+    including a film's ``props/absence-phrases.json``.
     """
     from movie_swarm.paths import repo_root
 
@@ -524,6 +541,10 @@ def load_absence_phrases(production_dir: str | Path | None = None) -> dict:
         conjunctions = list(loaded["conjunctions"])
     else:
         conjunctions = list(_DEFAULT_CONJUNCTIONS)
+    if "trace_nouns" in loaded:
+        trace_nouns = list(loaded["trace_nouns"])
+    else:
+        trace_nouns = list(_DEFAULT_TRACE_NOUNS)
     if production_dir is not None:
         override = Path(production_dir) / "props" / "absence-phrases.json"
         if override.is_file():
@@ -534,10 +555,13 @@ def load_absence_phrases(production_dir: str | Path | None = None) -> dict:
                 ambiguous = list(over["ambiguous"])
             if "conjunctions" in over:
                 conjunctions = list(over["conjunctions"])
+            if "trace_nouns" in over:
+                trace_nouns = _extend_terms(trace_nouns, over["trace_nouns"])
     return {
         "phrases": _with_perfect(phrases),
         "ambiguous": _with_perfect(ambiguous),
         "conjunctions": conjunctions,
+        "trace_nouns": trace_nouns,
     }
 
 
@@ -643,17 +667,88 @@ def generic_nouns_for(prop: dict, props: list[dict], kind_nouns: dict[str, list[
     return labels
 
 
+def _trace_nouns(absence: dict | None) -> list[str]:
+    """Trace nouns from the dict the caller already loaded, or the shared file."""
+    if isinstance(absence, dict) and "trace_nouns" in absence:
+        return [str(word) for word in absence.get("trace_nouns") or []]
+    loaded = load_absence_phrases()
+    if "trace_nouns" in loaded:
+        return list(loaded["trace_nouns"])
+    return list(_DEFAULT_TRACE_NOUNS)
+
+
+def _trace_follows(text: str, end: int, nouns: list[str]) -> bool:
+    """True when a trace noun sits against the end of a label match.
+
+    A space or a hyphen joins them, including a hyphen with spaces around it.
+    ``tracks`` wins over ``track`` because the longer noun is tried first.
+    """
+    if not nouns or end >= len(text):
+        return False
+    rest = text[end:]
+    if rest[0] == "-":
+        rest = rest[1:].lstrip()
+    elif rest[0].isspace():
+        rest = rest.lstrip()
+        if rest.startswith("-"):
+            rest = rest[1:].lstrip()
+    else:
+        return False
+    if not rest:
+        return False
+    for noun in sorted(nouns, key=len, reverse=True):
+        if re.match(rf"{_label_pattern(noun)}(?!\w)", rest, re.I):
+            return True
+    return False
+
+
+def _has_real_mention(text: str, labels: list[str], nouns: list[str]) -> bool:
+    """True when a label stands as its own words and is not a trace compound."""
+    if not text:
+        return False
+    for label in labels:
+        cleaned = " ".join(str(label).split())
+        if len(cleaned) < 2:
+            continue
+        pattern = rf"(?<!\w){_label_pattern(cleaned)}(?!\w)"
+        for match in re.finditer(pattern, text, re.I):
+            if not _trace_follows(text, match.end(), nouns):
+                return True
+    return False
+
+
+def joined_to_trace(text: str, end: int, absence: dict | None = None) -> bool:
+    """True when a trace noun is joined to this match by a space or a hyphen."""
+    return _trace_follows(text, end, _trace_nouns(absence))
+
+
+def named_phrase(text: str, phrases: list[str], absence: dict | None = None) -> bool:
+    """True when a phrase is present and is not a trace a part leaves behind.
+
+    The trace nouns are the shared phrase file, or the list already on
+    ``absence`` when the caller loaded a film's file.
+    """
+    return _has_real_mention(text, phrases, _trace_nouns(absence))
+
+
 def prop_mentioned(
     prop: dict,
     text: str,
     props: list[dict],
     kind_nouns: dict[str, list[str]] | None = None,
+    absence: dict | None = None,
 ) -> bool:
-    """True when the text names this prop, including an unshared generic noun."""
-    if mentioned(text, prop_labels(prop)):
+    """True when the text names this prop, including an unshared generic noun.
+
+    A label immediately followed by a trace noun is a mark left behind. It
+    does not name the prop. ``absence`` is the shared phrase file, including
+    a film's added nouns.
+    """
+    nouns = _trace_nouns(absence)
+    if _has_real_mention(text, prop_labels(prop), nouns):
         return True
     for noun in generic_nouns_for(prop, props, kind_nouns):
-        if not mentioned(text, [noun]):
+        if not _has_real_mention(text, [noun], nouns):
             continue
         owners = [
             item
@@ -703,7 +798,35 @@ def _read_absence_file(path: Path) -> dict:
                 if text.casefold() not in {item.casefold() for item in kept}:
                     kept.append(text)
         found["conjunctions"] = kept
+    if "trace_nouns" in data:
+        found["trace_nouns"] = _term_list(data.get("trace_nouns"), minimum=3)
     return found
+
+
+def _term_list(words, *, minimum: int) -> list[str]:
+    kept = []
+    if not isinstance(words, list):
+        return kept
+    for word in words:
+        text = " ".join(str(word).split())
+        if len(text) < minimum:
+            continue
+        if text.casefold() not in {item.casefold() for item in kept}:
+            kept.append(text)
+    return kept
+
+
+def _extend_terms(base: list[str], extra: list[str]) -> list[str]:
+    """Shared nouns first, then any film noun that is not already there."""
+    merged = list(base)
+    seen = {item.casefold() for item in merged}
+    for item in extra:
+        key = item.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(item)
+    return merged
 
 
 def _match_labels(prop: dict, props: list[dict], kind_nouns: dict[str, list[str]] | None) -> list[str]:
@@ -868,10 +991,12 @@ def prop_frame_state(
     A perfect-tense absence with nothing after the object is absent. Punctuation,
     or a conjunction from the shared phrase file, still counts as nothing.
     An ambiguous continuation in the same clause, or a mix of an absence phrase
-    and a bare mention, is not guessed. Overlapping labels of one mention are
-    one decision. The storyboard review uses this same result.
+    and a bare mention, is not guessed. A label immediately followed by a trace
+    noun is not a mention. Overlapping labels of one mention are one decision.
+    The storyboard review and the continuity check use this same result.
     """
-    if not prop_mentioned(prop, text, props, kind_nouns):
+    nouns = _trace_nouns(absence)
+    if not prop_mentioned(prop, text, props, kind_nouns, absence):
         return "unnamed"
     phrases = list((absence or {}).get("phrases") or [])
     ambiguous = list((absence or {}).get("ambiguous") or [])
@@ -882,9 +1007,11 @@ def prop_frame_state(
     spans = []
     for label in _match_labels(prop, props, kind_nouns):
         for match in re.finditer(rf"(?<!\w){_label_pattern(label)}(?!\w)", text, re.I):
+            if _trace_follows(text, match.end(), nouns):
+                continue
             spans.append((match.start(), match.end(), label))
     if not spans:
-        return "in-frame"
+        return "unnamed"
     states = _mention_states(text, spans, phrases, ambiguous, conjunctions)
     if any(state == "ambiguous" for state in states):
         return "ambiguous"

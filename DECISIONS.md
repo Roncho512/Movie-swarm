@@ -1570,3 +1570,21 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: "He left the bike in the barn" is a review. "He left it in the barn" is not a prop mention, and it is not a review, unless the lock's label is "it".
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
+## D178 — A trace a part leaves behind is not the prop
+
+- Status: decided
+- Date: 2026-11-13
+- Context: After Phase 8.17.2, "He has left the bike." is clear. A later line in the same shot, "following the faint tire tracks of riders who came through here before him," still listed the shot for review. The part word "tire" matched inside "tire tracks." Those tracks were left by other riders. The prop is not in frame.
+- Decision: Ron, 2026-11-13: approved the 8.17.3 hotfix so a trace a part leaves behind (tire tracks, prints, ruts, skid marks) does not count as the prop being named.
+- Consequences: That mention is not a name, not a tag, and not an ambiguous-presence review. "The front tire spins", "he kicks the tire", and "the tire is flat" still name the prop. The engine stays generic. How the shared phrase file lists those nouns is D179.
+- Who decided: Ron, 2026-11-13
+
+## D179 — Trace nouns live in the shared phrase file and a film can add to them
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: The review list, the frame classifier, and the continuity check have to use one list, or a trace can be a review in one place and unnamed in another. The nouns are not one film's words.
+- Decision: `config/absence-phrases.json` holds `trace_nouns`: tracks, track, marks, prints, footprints, ruts, skid marks, tread marks, trail, and imprint. A film adds nouns under that key in `props/absence-phrases.json`. Added nouns join the shared list. An empty list adds nothing and leaves the shared nouns in place. A name, an alias, a part, or a kind noun that is immediately followed by one of those nouns, with a space or a hyphen between them, is not a mention. A longer noun is tried before a shorter one, so "skid marks" and "tread marks" count as one noun. The storyboard review and the continuity check read that result from `prop_frame_state`. The schema is `schemas/absence-phrases.schema.json`. The words are matched as written. The list does not separate a verb from a noun, and an apostrophe-s between the label and the noun stays a mention.
+- Consequences: "The faint tire tracks" is unnamed. "Tire-tracks" is unnamed. "Skid marks on the road" is unnamed when the part is "skid". "Tread marks" is unnamed when the part is "tread". "Hub skid marks" is unnamed when the part is "hub", because the two words after it are one trace noun. "The front tire spins" stays in frame. A film that adds "furrows" also drops "tire furrows" and still drops "tire tracks". "The tire marks the ground" is unnamed, because "marks" follows the part. "The tire's tracks" stays a mention.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+

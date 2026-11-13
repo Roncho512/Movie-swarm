@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "absence-phrases.schema.json",
   "title": "Absence phrases",
-  "description": "Phrases that name a prop without putting it in the frame. The storyboard review and the frame classifier read this file. A film may replace any key in props/absence-phrases.json.",
+  "description": "Phrases that name a prop without putting it in the frame, and trace nouns a part can leave behind. The storyboard review, the frame classifier, and the continuity check read this file. A film may replace phrases, ambiguous, or closed_clause in props/absence-phrases.json. A film extends trace_nouns. An empty trace list adds nothing.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -21,6 +21,10 @@
         }
       },
       "required": ["conjunctions"]
+    },
+    "trace_nouns": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 3 }
     }
   },
   "$defs": {

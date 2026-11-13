@@ -1034,6 +1034,7 @@ def test_each_schema_accepts_a_minimal_document():
             "phrases": ["has left the {prop}"],
             "ambiguous": ["left the {prop} in"],
             "closed_clause": {"conjunctions": ["and", "but"]},
+            "trace_nouns": ["tracks", "skid marks"],
         },
         "providers.schema.json": {
             "version": "1.0.0",
