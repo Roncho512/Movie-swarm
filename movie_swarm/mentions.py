@@ -496,7 +496,14 @@ def load_kind_nouns(production_dir: str | Path | None = None) -> dict[str, list[
     return nouns
 
 
-def load_absence_phrases(production_dir: str | Path | None = None) -> dict[str, list[str]]:
+# Coordinating conjunctions that start another clause. The config file is the
+# list the storyboard and the continuity check both read. This is the fallback
+# when that file does not name ``closed_clause``.
+_DEFAULT_CONJUNCTIONS = ("and", "but", "or", "nor", "so", "yet")
+_PERFECT_AUX = {"has", "have", "had"}
+
+
+def load_absence_phrases(production_dir: str | Path | None = None) -> dict:
     """Phrases that name a prop without putting it in the frame.
 
     ``{prop}`` stands for a name, alias, part, or kind noun. A film file
@@ -504,12 +511,19 @@ def load_absence_phrases(production_dir: str | Path | None = None) -> dict[str, 
     A phrase that starts with leave, abandon, walk, or look also counts in
     the perfect: has, have, and had plus the participle. The same expansion
     applies to the ambiguous list, so "has left the prop in" stays a review.
+    ``conjunctions`` are the words that start a new clause after a perfect
+    absence. The storyboard review and the frame classifier both read this
+    dict, including a film's ``props/absence-phrases.json``.
     """
     from movie_swarm.paths import repo_root
 
     loaded = _read_absence_file(repo_root() / "config" / "absence-phrases.json")
     phrases = list(loaded.get("phrases") or [])
     ambiguous = list(loaded.get("ambiguous") or [])
+    if "conjunctions" in loaded:
+        conjunctions = list(loaded["conjunctions"])
+    else:
+        conjunctions = list(_DEFAULT_CONJUNCTIONS)
     if production_dir is not None:
         override = Path(production_dir) / "props" / "absence-phrases.json"
         if override.is_file():
@@ -518,7 +532,13 @@ def load_absence_phrases(production_dir: str | Path | None = None) -> dict[str, 
                 phrases = list(over["phrases"])
             if "ambiguous" in over:
                 ambiguous = list(over["ambiguous"])
-    return {"phrases": _with_perfect(phrases), "ambiguous": _with_perfect(ambiguous)}
+            if "conjunctions" in over:
+                conjunctions = list(over["conjunctions"])
+    return {
+        "phrases": _with_perfect(phrases),
+        "ambiguous": _with_perfect(ambiguous),
+        "conjunctions": conjunctions,
+    }
 
 
 # Generic English for the absence verbs. A film's own nouns do not belong here.
@@ -671,6 +691,18 @@ def _read_absence_file(path: Path) -> dict:
                 if text.casefold() not in {item.casefold() for item in kept}:
                     kept.append(text)
         found[key] = kept
+    clause = data.get("closed_clause")
+    if isinstance(clause, dict) and "conjunctions" in clause:
+        kept = []
+        words = clause.get("conjunctions")
+        if isinstance(words, list):
+            for word in words:
+                text = " ".join(str(word).split())
+                if not text:
+                    continue
+                if text.casefold() not in {item.casefold() for item in kept}:
+                    kept.append(text)
+        found["conjunctions"] = kept
     return found
 
 
@@ -686,31 +718,114 @@ def _label_pattern(label: str) -> str:
     return re.escape(" ".join(label.split())).replace(r"\ ", r"[\s-]+")
 
 
-def _phrase_covers(text: str, template: str, label: str, start: int, end: int) -> bool:
+def _covering_span(text: str, template: str, label: str, start: int, end: int) -> tuple[int, int] | None:
+    """The template match that contains this label hit, or None."""
     if "{prop}" not in template:
-        return False
+        return None
     phrase = " ".join(template.replace("{prop}", label).split())
     pattern = rf"(?<!\w){_label_pattern(phrase)}(?!\w)"
     for match in re.finditer(pattern, text, re.I):
         if match.start() <= start and match.end() >= end:
+            return match.start(), match.end()
+    return None
+
+
+def _phrase_covers(text: str, template: str, label: str, start: int, end: int) -> bool:
+    return _covering_span(text, template, label, start, end) is not None
+
+
+def _is_clause_punct(char: str) -> bool:
+    return not (char.isalnum() or char.isspace() or char == "_")
+
+
+def _tail_is_closed(tail: str, conjunctions: set[str]) -> bool:
+    """True when nothing after the object continues the same clause.
+
+    The end of the text, punctuation, or a conjunction that starts the next
+    clause all close it. A word such as "in" or "running" does not.
+    """
+    index = 0
+    length = len(tail)
+    while index < length and (tail[index].isspace() or _is_clause_punct(tail[index])):
+        index += 1
+    if index >= length:
+        return True
+    found = re.match(r"[A-Za-z]+", tail[index:])
+    if not found:
+        return False
+    return found.group(0).casefold() in conjunctions
+
+
+def _match_is_perfect(text: str, template: str, match_start: int) -> bool:
+    words = template.split()
+    if words and words[0].casefold() in _PERFECT_AUX:
+        return True
+    before = re.search(r"([A-Za-z]+)\W*$", text[:match_start])
+    return bool(before and before.group(1).casefold() in _PERFECT_AUX)
+
+
+def _perfect_tail_closed(
+    text: str,
+    label: str,
+    start: int,
+    end: int,
+    phrases: list[str],
+    conjunctions: set[str],
+) -> bool:
+    """True when has, have, or had plus an absence phrase ends the clause."""
+    for template in phrases:
+        span = _covering_span(text, template, label, start, end)
+        if span is None:
+            continue
+        match_start, match_end = span
+        if not _match_is_perfect(text, template, match_start):
+            continue
+        if _tail_is_closed(text[match_end:], conjunctions):
             return True
     return False
 
 
-def _span_state(text: str, label: str, start: int, end: int, phrases: list[str], ambiguous: list[str]) -> str:
-    """One label hit. An explicit ambiguous phrase wins over an absence phrase.
+def _ambiguous_covers(text: str, template: str, label: str, start: int, end: int) -> bool:
+    """An ambiguous continuation counts only inside the same clause as the object."""
+    span = _covering_span(text, template, label, start, end)
+    if span is None:
+        return False
+    between = text[end:span[1]]
+    return not any(_is_clause_punct(char) and char not in "-'" for char in between)
 
-    Sentence-final punctuation is not a continuation word. "Has left the prop."
-    is absence. "Has left the prop in" is the ambiguous list.
+
+def _span_state(
+    text: str,
+    label: str,
+    start: int,
+    end: int,
+    phrases: list[str],
+    ambiguous: list[str],
+    conjunctions: set[str],
+) -> str:
+    """One label hit.
+
+    A perfect-tense absence with nothing after the object is absence. Punctuation,
+    or a conjunction that starts the next clause, is still nothing. An ambiguous
+    continuation in the same clause, such as "in", "on", "running", or "there",
+    is a review. The storyboard review reads this same state.
     """
-    if any(_phrase_covers(text, template, label, start, end) for template in ambiguous):
+    if _perfect_tail_closed(text, label, start, end, phrases, conjunctions):
+        return "absent"
+    if any(_ambiguous_covers(text, template, label, start, end) for template in ambiguous):
         return "ambiguous"
     if any(_phrase_covers(text, template, label, start, end) for template in phrases):
         return "absent"
     return "in-frame"
 
 
-def _mention_states(text: str, spans: list[tuple[int, int, str]], phrases: list[str], ambiguous: list[str]) -> list[str]:
+def _mention_states(
+    text: str,
+    spans: list[tuple[int, int, str]],
+    phrases: list[str],
+    ambiguous: list[str],
+    conjunctions: set[str],
+) -> list[str]:
     """One state per mention. Overlapping labels are the same mention.
 
     A longer label such as "the bike" sits on the same word as the alias "bike".
@@ -728,7 +843,7 @@ def _mention_states(text: str, spans: list[tuple[int, int, str]], phrases: list[
     states = []
     for cluster in clusters:
         local = [
-            _span_state(text, label, start, end, phrases, ambiguous)
+            _span_state(text, label, start, end, phrases, ambiguous, conjunctions)
             for start, end, label in cluster["hits"]
         ]
         if "ambiguous" in local:
@@ -750,20 +865,27 @@ def prop_frame_state(
     """How a named prop sits in the shot: in-frame, absent, ambiguous, or unnamed.
 
     Every mention inside an absence phrase keeps the prop out of the frame.
-    An ambiguous phrase, or a mix of an absence phrase and a bare mention,
-    is not guessed. Overlapping labels of one mention are one decision.
+    A perfect-tense absence with nothing after the object is absent. Punctuation,
+    or a conjunction from the shared phrase file, still counts as nothing.
+    An ambiguous continuation in the same clause, or a mix of an absence phrase
+    and a bare mention, is not guessed. Overlapping labels of one mention are
+    one decision. The storyboard review uses this same result.
     """
     if not prop_mentioned(prop, text, props, kind_nouns):
         return "unnamed"
     phrases = list((absence or {}).get("phrases") or [])
     ambiguous = list((absence or {}).get("ambiguous") or [])
+    if isinstance(absence, dict) and "conjunctions" in absence:
+        conjunctions = {str(word).casefold() for word in absence.get("conjunctions") or []}
+    else:
+        conjunctions = {word.casefold() for word in _DEFAULT_CONJUNCTIONS}
     spans = []
     for label in _match_labels(prop, props, kind_nouns):
         for match in re.finditer(rf"(?<!\w){_label_pattern(label)}(?!\w)", text, re.I):
             spans.append((match.start(), match.end(), label))
     if not spans:
         return "in-frame"
-    states = _mention_states(text, spans, phrases, ambiguous)
+    states = _mention_states(text, spans, phrases, ambiguous, conjunctions)
     if any(state == "ambiguous" for state in states):
         return "ambiguous"
     if states and all(state == "absent" for state in states):

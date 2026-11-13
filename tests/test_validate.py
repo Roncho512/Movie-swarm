@@ -1028,6 +1028,13 @@ def test_each_schema_accepts_a_minimal_document():
             "note": "Sample.",
             "written_at": "2026-01-01T00:00:00Z",
         },
+        "absence-phrases.schema.json": {
+            "version": "1.1.0",
+            "note": "Sample.",
+            "phrases": ["has left the {prop}"],
+            "ambiguous": ["left the {prop} in"],
+            "closed_clause": {"conjunctions": ["and", "but"]},
+        },
         "providers.schema.json": {
             "version": "1.0.0",
             "fal": {

@@ -1,6 +1,10 @@
 {
-  "version": "1.0.0",
-  "note": "Phrases that name a prop without putting it in the frame. {prop} stands for the lock's name, an alias, a part, or a kind noun. phrases are absence: the prop stays out of the shot. ambiguous phrases could still show the prop, so the shot is listed for review and is not guessed. has, have, and had in front of leave, abandon, walk, or look count as that same phrase, including on the ambiguous list, so only in, on, running, and there stay a review. A film replaces either list by writing that key in props/absence-phrases.json. An empty list clears it. Words for one film do not belong here.",
+  "version": "1.1.0",
+  "note": "Phrases that name a prop without putting it in the frame. {prop} stands for the lock's name, an alias, a part, or a kind noun. phrases are absence: the prop stays out of the shot. ambiguous phrases could still show the prop, so the shot is listed for review and is not guessed. has, have, and had in front of leave, abandon, walk, or look count as that same phrase, including on the ambiguous list. A perfect-tense absence with nothing after the object is clear: end of the clause, punctuation, or a closed_clause conjunction that starts the next clause. A continuation in the same clause, such as in, on, running, or there, stays a review. The storyboard review and the frame classifier both read this file. A film replaces phrases, ambiguous, or closed_clause by writing that key in props/absence-phrases.json. An empty list clears it. Words for one film do not belong here.",
+  "closed_clause": {
+    "note": "After has, have, or had plus an absence phrase, one of these words starts the next clause. The object then has nothing after it, and the absence stays clear.",
+    "conjunctions": ["and", "but", "or", "nor", "so", "yet"]
+  },
   "phrases": [
     "has left the {prop}",
     "have left the {prop}",

@@ -1543,3 +1543,30 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: The ride and motion words stay generic English. The names still come from the locks. A vehicle that is only waiting is not a rider passing the camera.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
+## D175 — A perfect-tense absence with nothing after the object is clear
+
+- Status: decided
+- Date: 2026-11-13
+- Context: After Phase 8.17.1, a line such as "he has left the bike" left the prop untagged and the continuity check clear. The storyboard review could still treat that line as an ambiguous absence when nothing followed the object. The continuation words "in", "on", "running", and "there" belong to a later clause in the same shot, or they are not there at all.
+- Decision: Ron, 2026-11-13: approved the 8.17.2 hotfix so a perfect-tense absence with nothing after the object is clear, not ambiguous.
+- Consequences: "He has left the bike." and "She had left the truck" are clear. They are not tagged and they are not listed for review. "Has left the bike running", "left the bike in the barn", "left the bike on its stand", and "left the X there" stay reviews. The engine stays generic. How the shared phrase file draws that line is D176.
+- Who decided: Ron, 2026-11-13
+
+## D176 — A closed perfect-tense tail is read from the shared phrase file
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: The review list and the frame classifier have to use one phrase file, or a perfect-tense line can be clear in one place and a review in the other. A conjunction can start the next clause without naming the prop again.
+- Decision: `config/absence-phrases.json` holds the absence phrases, the ambiguous continuations, and `closed_clause.conjunctions`. A film replaces any of those keys in `props/absence-phrases.json`. An empty list clears that key. has, have, or had plus an absence phrase, with nothing after the object, is absence. Punctuation is nothing. One conjunction from that list is nothing, because it starts the next clause. An ambiguous continuation in the same clause still wins, including "in", "on", "running", and "there". The storyboard review is the ambiguous result of that same decision. The schema is `schemas/absence-phrases.schema.json`.
+- Consequences: "He has left the bike, and he walks on." is clear. "He has left the bike in the barn." is a review. A film that lists "and" as an ambiguous continuation still gets a clear line when "and" is one of its closed-clause conjunctions. Clearing those conjunctions lets that continuation stay a review.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D177 — The pronoun "it" is not an absence object on its own
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: "Left it in the barn" is the same shape as "left the X in", with a pronoun where the object name would be. The phrase file stands in `{prop}` for a name, an alias, a part, or a kind noun.
+- Decision: "It" names the prop only when a lock lists that word as a label. The review for a place after the object stays "left the X in", "on", "running", or "there", with the lock's own word in place of X.
+- Consequences: "He left the bike in the barn" is a review. "He left it in the barn" is not a prop mention, and it is not a review, unless the lock's label is "it".
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+

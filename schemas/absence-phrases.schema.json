@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "absence-phrases.schema.json",
+  "title": "Absence phrases",
+  "description": "Phrases that name a prop without putting it in the frame. The storyboard review and the frame classifier read this file. A film may replace any key in props/absence-phrases.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string" },
+    "note": { "type": "string" },
+    "phrases": { "$ref": "#/$defs/phraseList" },
+    "ambiguous": { "$ref": "#/$defs/phraseList" },
+    "closed_clause": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "note": { "type": "string" },
+        "conjunctions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "required": ["conjunctions"]
+    }
+  },
+  "$defs": {
+    "phraseList": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3,
+        "pattern": "\\{prop\\}"
+      }
+    }
+  }
+}
