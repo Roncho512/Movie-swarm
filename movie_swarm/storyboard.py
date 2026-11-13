@@ -33,6 +33,7 @@ from movie_swarm.mentions import (
     prop_frame_state,
     prop_labels,
     prop_mentioned,
+    trace_of_prop,
     resolve_scene_characters,
     story_purpose_line,
 )
@@ -333,7 +334,7 @@ def _frames(
                         "kind": "carried-prop",
                         "detail": (
                             f"Carried {carried_name} from the previous shot in {scene_id}. "
-                            "The action continues and this shot does not name a different prop."
+                            "This shot does not leave that prop out, and it does not name a different subject."
                         ),
                     }
                 )
@@ -995,11 +996,14 @@ def _props_for_scene(
     shot_types: list[str] | None = None,
     absence: dict | None = None,
 ) -> list[dict]:
-    """Tag props that are in frame, then carry one prop when the action continues.
+    """Tag props that are in frame, then carry one prop from the previous shot.
 
     An absence phrase does not put the prop in frame, so the next shot has
-    nothing to carry from it. A close view of some other object, a different
-    subject, or a line with no picture does not inherit the previous prop.
+    nothing to carry from it. A trace is not a mention and not an absence,
+    so it does not start a tag and it does not stop a carry. Carry still
+    needs a shared action verb, or again, another, or still, unless this
+    shot has a trace of that prop. A close view of some other object, a
+    different subject, or a line with no picture does not inherit it.
     """
     rows = []
     previous = []
@@ -1010,9 +1014,10 @@ def _props_for_scene(
         available = [item for item in previous if _prop_key(item["prop"]) not in blocked]
         carried = []
         carry_review = ""
-        if not direct and available and action_continues(previous_text, text):
+        pool = _carry_pool(text, previous_text, available, props, kind_nouns, absence)
+        if not direct and pool:
             carried, carry_review = _carry_forward(
-                text, shot_type, available, props, kind_nouns, absence
+                text, shot_type, pool, props, kind_nouns, absence
             )
         chosen = direct or carried
         review = " ".join(part for part in (beat_review, carry_review) if part)
@@ -1020,6 +1025,19 @@ def _props_for_scene(
         previous = chosen
         previous_text = text
     return rows
+
+
+def _carry_pool(text, previous_text, available, props, kind_nouns, absence):
+    """Props that may carry: the shared-verb set, or only a traced prop."""
+    if not available:
+        return []
+    if action_continues(previous_text, text):
+        return available
+    return [
+        item
+        for item in available
+        if trace_of_prop(item["prop"], text, props, kind_nouns, absence)
+    ]
 
 
 def _props_for_beat(
@@ -1252,10 +1270,35 @@ def _different_subject(text: str, prop: dict, props: list[dict], kind_nouns: dic
         return False
     if prop_mentioned(prop, " ".join(words[:4]), props, kind_nouns, absence):
         return False
+    # A trace is not a subject. "Tire tracks" does not mean the shot left the prop.
+    if _head_is_trace(text, prop, props, kind_nouns, absence):
+        return False
     head = words[0].casefold()
     if len(head) < 3 or head in _OBJECT_SKIP:
         return False
     return True
+
+
+def _head_is_trace(text: str, prop: dict, props: list[dict], kind_nouns: dict, absence=None) -> bool:
+    """True when the first content word begins a label joined to a trace noun."""
+    words = _content_words(text)
+    if not words:
+        return False
+    sentence = re.split(r"[.!?]", str(text).strip(), maxsplit=1)[0]
+    head = words[0]
+    labels = list(prop_labels(prop))
+    for noun in generic_nouns_for(prop, props, kind_nouns):
+        if noun.casefold() not in {item.casefold() for item in labels}:
+            labels.append(noun)
+    for label in labels:
+        parts = str(label).split()
+        if not parts or parts[0].casefold() != head.casefold():
+            continue
+        flexible = re.escape(" ".join(parts)).replace(r"\ ", r"[\s-]+")
+        for found in re.finditer(rf"(?<!\w){flexible}(?!\w)", sentence, re.I):
+            if joined_to_trace(sentence, found.end(), absence):
+                return True
+    return False
 
 
 def _other_object_words(text: str) -> list[str]:

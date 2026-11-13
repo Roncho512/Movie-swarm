@@ -1588,3 +1588,30 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: "The faint tire tracks" is unnamed. "Tire-tracks" is unnamed. "Skid marks on the road" is unnamed when the part is "skid". "Tread marks" is unnamed when the part is "tread". "Hub skid marks" is unnamed when the part is "hub", because the two words after it are one trace noun. "The front tire spins" stays in frame. A film that adds "furrows" also drops "tire furrows" and still drops "tire tracks". "The tire marks the ground" is unnamed, because "marks" follows the part. "The tire's tracks" stays a mention.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
+## D180 — A trace does not stop a prop carrying within a continuous beat
+
+- Status: decided
+- Date: 2026-11-13
+- Context: After Phase 8.17.3, a trace was correctly unnamed. A medium shot between two shots that still had the vehicle in frame lost that tag. The only earlier hook had been the part word inside the trace. The rider had not left the vehicle. Carry from the previous shot did not apply.
+- Decision: Ron, 2026-11-13: approved the 8.17.4 hotfix so a trace mention does not stop a prop carrying within a continuous beat.
+- Consequences: A label joined to a trace noun does not name the prop and does not block carry. After a clear absence, a later trace does not bring the prop back. The frame classifier, the storyboard review, and the continuity check still share `prop_frame_state`. The classifier says the trace is unnamed. The board writes the carried tag. The check follows that tag. A trace is not a subject (D181, proposed). Carry without a shared verb is only the case in D182.
+- Who decided: Ron, 2026-11-13
+
+## D181 — A trace is not a subject
+
+- Status: proposed
+- Date: 2026-11-13
+- Context: Carry stops when the shot opens on something other than the prop. After 8.17.3 the part word inside a trace is not a mention, so that word looked like a new subject and stopped the carry.
+- Decision: The first content word of a label joined to a trace noun is not a different subject. The trace is not an absence either. `prop_frame_state` reports it as unnamed. The storyboard may still carry the previous prop. The continuity check reads the resulting tag, not a second reading of the trace.
+- Consequences: "The tire tracks lead south" after a shot that has the vehicle in frame can carry that vehicle. "The lantern sits beside the tire tracks" still opens on the lantern, so it does not carry. "Close on the lantern" with a trace in the same shot does not carry.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D182 — Carry without a shared verb only when the shot traces that prop
+
+- Status: decided
+- Date: 2026-11-13
+- Context: The first draft of this hotfix carried every later shot that missed the stop rules. "He starts the bike" then "He opens the door" carried the bike. That was wider than the trace fix. A look-toward shot with no trace was carried the same way.
+- Decision: Ron, 2026-11-13: carry without a shared verb applies only when the shot has a trace of the carried prop; otherwise the shared-verb rule stays.
+- Consequences: "again", "another", "still", or a shared action verb still carry one previous prop, and the stop rules still apply. A shot with no shared verb carries only a previous prop whose label is joined to a trace noun in that shot, and only when there is no absence phrase, it is not a close-up or insert of another object, it does not open on a different subject, and it is not only sound, a fade, a hold, black, or a title. "He starts the bike" then "He opens the door" does not carry. "He looks toward the open road" with no trace does not carry. "He rolls the throttle" then "He looks toward the open desert. The tire tracks lead south" does carry. A later pronoun shot with neither a trace nor a shared verb does not carry. A trace is still not a subject (D181).
+- Who decided: Ron, 2026-11-13
+
