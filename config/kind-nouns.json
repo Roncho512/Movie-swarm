@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "note": "Generic nouns for a prop kind. The engine uses a kind's list only when exactly one locked prop has that kind. A film replaces a kind by naming it in props/kind-nouns.json. Words for one film do not belong here.",
+  "kinds": {
+    "vehicle": ["vehicle", "bike", "bicycle", "motorcycle", "motorbike", "scooter"]
+  }
+}

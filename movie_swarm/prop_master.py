@@ -113,10 +113,11 @@ def _prop_from_treatment(prop: dict) -> dict:
     aliases = explicit or [name]
     if name and name not in aliases:
         aliases = [name, *aliases]
+    kind = " ".join(str(prop.get("kind") or "prop").split()) or "prop"
     locked = {
         "prop_id": slug(name, "prop"),
         "name": name,
-        "kind": "prop",
+        "kind": kind,
         "aliases": aliases,
         "locked_spec": str(prop.get("locked_spec") or name),
         "reference_images": list(prop.get("reference_images") or []),
@@ -125,6 +126,9 @@ def _prop_from_treatment(prop: dict) -> dict:
     parts = [str(part).strip() for part in prop.get("parts") or [] if str(part).strip()]
     if parts:
         locked["parts"] = parts
+    generic = [str(noun).strip() for noun in prop.get("generic_nouns") or [] if str(noun).strip()]
+    if generic:
+        locked["generic_nouns"] = generic
     return locked
 
 

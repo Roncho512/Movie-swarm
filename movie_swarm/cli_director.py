@@ -151,8 +151,15 @@ def _run(args) -> int:
         print(f"Draft treatment: {result['treatment']}")
         print(f"Readable draft: {result['treatment_markdown']}")
         print(f"Questions: {result['questions']} ({result['question_count']} questions)")
-        print(f"Run: {result['run_id']}")
-        print("Status: draft. Ron has not approved it. No new model call was made.")
+        if result.get("run_id"):
+            print(f"Run: {result['run_id']}")
+        if result.get("status") == "approved":
+            print(
+                "Status: approved. The treatment gate was not changed. "
+                "Only a stale draft note was cleared. No new model call was made."
+            )
+        else:
+            print("Status: draft. Ron has not approved it. No new model call was made.")
         return 0
     llm = None
     if args.command in {"intake", "answer"}:

@@ -1360,6 +1360,87 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Date: 2026-11-12
 - Context: After `reconform` succeeded, the draft note still said the final model pass had failed and the earlier draft was kept. An operator with the treatment approved and the previs gate still closed needs to regenerate the previs outputs without approving anything.
 - Decision: A successful `reconform` removes that failure sentence and writes the repair history. `scripts/studio.py --redo previs`, and the same flag on the Director `studio` command, regenerates the previs package and stops. The command is offline. `--live` is refused. The treatment gate must already be approved. If the previs gate is already approved, the command refuses and does not rewrite the files or the gate.
-- Consequences: The command for run `first-film-1` is `python3 scripts/studio.py --production the-last-marker --run first-film-1 --redo previs`, from the repo root, with the films root set. Nothing is spent.
+- Consequences: The command for run `first-film-1` is `python3 scripts/studio.py --production the-last-marker --run first-film-1 --redo previs`, from the repo root, with the films root set. Nothing is spent. D163 covers the case where the treatment is already approved and the stale sentence is still in the note.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D155 — Phase 8.16 approved by Ron, 2026-11-12
+
+- Status: decided
+- Date: 2026-11-12
+- Context: An offline previs pass after Phase 8.15 still missed pronoun shots, generic nouns, continued actions, placement wording, a false lighting flag, a stunt beat, a short scene, and a stale note on an approved treatment. D148 through D154 were already the Phase 8.15 proposals, so this approval is D155.
+- Decision: Fix that path. Keep the engine generic. Film facts stay in the film folder. Product placement stays a continuity fact and is not framed as advertising. The choices for how the fixes work are D156 through D163. Those are proposals. No paid call is part of this phase.
+- Consequences: An approved previs gate is not rewritten. `--redo previs` still does not touch an approved treatment. No live call was made. Spent on this step: $0.00.
+- Who decided: Ron, 2026-11-12
+
+## D156 — A pronoun can inherit one locked character
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: Shots that refer to the lead only as "he", "his", or "him" were not tagged, so the wardrobe and makeup lines never reached those prompts.
+- Decision: Inside one scene, a shot that uses a personal pronoun and names no locked character inherits the only locked character in that scene. If more than one locked character is named, the pronoun uses the most recent shot that named exactly one, and only when no other character was named in between. If it is ambiguous, the shot is not tagged. The storyboard and the continuity check list it as needing review. A tagged character brings the wardrobe and makeup lines onto the prompt.
+- Consequences: The words are generic pronouns. The names still come from the locks.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D157 — Generic nouns, and a kind word when the kind is unique
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: A shot that said "his bike" was not tagged, because that word was not an alias. The engine must not hard-code one film's nouns.
+- Decision: A lock may list `generic_nouns`. Those match that lock when no other lock claims the same noun. `config/kind-nouns.json` lists ordinary nouns for a kind. A film replaces a kind by naming it in `props/kind-nouns.json`. The kind word and that list match only when the locked props contain exactly one prop of that kind.
+- Consequences: A second vehicle in the same film stops the kind list from guessing. The film can still name `generic_nouns` on one lock.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D158 — A continued action can carry one prop
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: A shot such as "He kicks again" continues an action from the previous shot and does not rename the prop.
+- Decision: Within one scene, if this shot names no prop, and it says "again", "another", or "still", or it repeats an action verb from the previous shot, and that previous shot has exactly one tagged prop, the prop is carried forward. The storyboard and the continuity check say so. If the previous shot has more than one prop, the shot is listed for review and nothing is carried.
+- Consequences: The rule does not invent a prop the previous shot did not already have.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D159 — Placement lines describe the story, and a banned phrase fails
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: A why-line said "not a product shot". A negation still uses the banned vocabulary. Some prompts also added a sentence that framed the object as something being sold.
+- Decision: A moment's why-line is kept only when it contains none of the banned phrases. Otherwise the line says the object stays in the frame for the story the scene is already telling. "The detail stays readable." is added only when the brief asks for a legible detail. It is a focus instruction. Generated previs documents and prompts are scanned. A banned phrase is a continuity finding and the verdict is drift.
+- Consequences: The banned list stays in the engine. It is not a list of one film's products. A film's own source file can still contain a banned phrase. The generated package will not copy it, and the check will report it if some other generated file does.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D160 — Time of day is an explicit statement
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: "Fifteen minutes of day left" was flagged as a change from a pre-dusk heading, because the checker treated the bare word "day" as a time of day.
+- Decision: Drift is flagged when the shot states a time of day, such as "at dawn", "night falls", or a heading. A phrase about remaining daylight is not a time-of-day change.
+- Consequences: A pre-dusk scene can mention the day that is left. "At dawn" against that heading is still drift.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D161 — Every stunt beat is on the safety list
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: A kick beat was in the action breakdown and missing from the schedule's safety section, because no storyboard sentence shared a long enough phrase with it.
+- Decision: Every beat in the action breakdown appears in the schedule's safety section. The note is the beat's full safety sentence from the stunt rules. If those rules say there are no special safety needs, the line says "No special safety needs, per stunt rules." A shot that overlaps a beat is still flagged.
+- Consequences: A beat with no matching shot is still listed. The engine does not invent a safety need the rules did not state.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D162 — Leftover scene time fills shots that have room
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: Clamping shots to 1–12 seconds left a scene at 44 seconds against a 45 second target, and the film a fraction under its target, while some shots were not yet at the limit.
+- Decision: After the limits are applied, leftover time in a scene is spread across shots in that scene that are not pinned to a length the screenplay named and that still have room inside the limits. A named length stays. If every movable shot is already at a limit, the boards say the remainder cannot be placed. A scene that can hit its target does so within a small rounding tolerance.
+- Consequences: The word "hold" still sets the transition. It does not freeze the duration unless the screenplay names the seconds.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D163 — reconform clears a stale note without unapproving
+
+- Status: proposed
+- Date: 2026-11-12
+- Context: An approved treatment still said the final model pass failed and the earlier draft was kept. `reconform` refused to touch an approved file, so the sentence stayed. `--redo previs` correctly leaves the treatment alone.
+- Decision: When `reconform` reads a cached reply and that reply conforms, an already approved treatment keeps its scenes, its status, and its approval block. Only a stale "The final model pass failed … The earlier draft was kept" sentence is removed from `draft_note`. The command does not call a model and does not book. The Line Producer's gate decision is not rewritten, so the approval stays valid.
+- Consequences: The command is `python3 scripts/director.py --production the-last-marker --run first-film-1 reconform --request <hash>`, from the repo root, with the films root set. Replace `<hash>` with the final-pass request hash. Then run `python3 scripts/studio.py --production the-last-marker --run first-film-1 --redo previs`.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 

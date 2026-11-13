@@ -381,8 +381,14 @@ def test_intake_and_reconform_still_refuse_an_approved_treatment_and_answered_qu
     write_handoff(treatment_json_path(production), document, schema="treatment")
     with pytest.raises(DirectorError, match="approved"):
         director.intake(screenplay=script, run_id="run-1")
-    with pytest.raises(DirectorError, match="approved"):
+    before = load_treatment(production)
+    with pytest.raises(DirectorError, match="cache"):
         director.reconform("abcdef0123456789", run_id="run-1")
+    saved = load_treatment(production)
+    assert saved["status"] == "approved"
+    assert saved["logline"] == before["logline"]
+    assert saved["approval"] == before["approval"]
+    assert saved["scenes"] == before["scenes"]
 
     other = tmp_path / "other-demo"
     other.mkdir()

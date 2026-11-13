@@ -15,11 +15,16 @@ from pathlib import Path
 
 from movie_swarm.handoff import write_handoff
 from movie_swarm.mentions import (
+    action_continues,
+    advertising_phrases,
     character_aliases,
+    character_catalog,
     character_prompt_line,
     faithful_spec,
-    mentioned,
-    prop_labels,
+    load_kind_nouns,
+    prop_mentioned,
+    resolve_scene_characters,
+    story_purpose_line,
 )
 from movie_swarm.prep_inputs import mark_superseded_shot_list
 from movie_swarm.previs_common import approved_treatment, model_name, now, read_brief, save_pair
@@ -115,7 +120,8 @@ def build_boards(production_dir: Path, llm=None, image_client=None) -> dict:
     script_scenes = _script_scenes(production_dir, brief)
     model = model_name("cinematographer", "boards")
     minimum, maximum = _shot_limits(production_dir)
-    shots, frames, placements, pacing = _frames(
+    kind_nouns = load_kind_nouns(production_dir)
+    shots, frames, placements, pacing, tag_notes = _frames(
         treatment,
         package,
         props,
@@ -125,6 +131,7 @@ def build_boards(production_dir: Path, llm=None, image_client=None) -> dict:
         image_client,
         minimum,
         maximum,
+        kind_nouns,
     )
     created = now()
     shot_list = {
@@ -144,6 +151,7 @@ def build_boards(production_dir: Path, llm=None, image_client=None) -> dict:
         "shot_list_path": "storyboard/shot-list.json",
         "look": _look_block(package),
         "featured_placements": placements,
+        "tag_notes": tag_notes,
         "pacing": pacing,
         "frames": frames,
         "animatic": {
@@ -211,17 +219,19 @@ def _frames(
     image_client,
     minimum,
     maximum,
+    kind_nouns,
 ):
     shots = []
     frames = []
     placements = []
     pacing_notes = []
     scene_notes = []
+    tag_notes = []
     order = 1
     scenes = treatment.get("scenes") or []
     plan = str(treatment.get("color_and_light_plan") or "")
     used_script = set()
-    catalog = _character_catalog(treatment, character_locks)
+    catalog = character_catalog(treatment, character_locks)
     for index, scene in enumerate(scenes, start=1):
         scene_id = str(scene.get("scene_id") or f"s{index:02d}")
         source = _scene_text(scene, script_scenes, used_script)
@@ -233,11 +243,49 @@ def _frames(
         scene_notes.append((scene_id, budget, round(sum(durations), 3)))
         light = _scene_light(plan, index)
         heading = str(scene.get("heading") or "")
+        actions = [beat["text"] for beat in beats]
+        resolved_people = resolve_scene_characters(actions, catalog, heading)
+        resolved_props = _props_for_scene(actions, props, kind_nouns)
         for shot_number, beat in enumerate(beats, start=1):
             shot_id = shot_ids[shot_number - 1]
             shot_type = beat["shot_type"]
             action = _finish(beat["text"])
             shown = f"{heading} {action}"
+            people_row = resolved_people[shot_number - 1]
+            prop_row = resolved_props[shot_number - 1]
+            people = people_row["names"]
+            in_frame = prop_row["props"]
+            if people_row["inherited"] and people:
+                tag_notes.append(
+                    {
+                        "shot_id": shot_id,
+                        "kind": "inherited-character",
+                        "detail": (
+                            f"Pronouns in this shot use {people[0]}. "
+                            "One locked character is in the scene, so the shot was not left blank."
+                        ),
+                    }
+                )
+            if people_row["review"]:
+                tag_notes.append(
+                    {"shot_id": shot_id, "kind": "needs-review", "detail": people_row["review"]}
+                )
+            if prop_row["carried"]:
+                carried_name = prop_row["props"][0]["name"] if prop_row["props"] else "the prop"
+                tag_notes.append(
+                    {
+                        "shot_id": shot_id,
+                        "kind": "carried-prop",
+                        "detail": (
+                            f"Carried {carried_name} from the previous shot in {scene_id}. "
+                            "The action continues and this shot does not name a different prop."
+                        ),
+                    }
+                )
+            if prop_row["review"]:
+                tag_notes.append(
+                    {"shot_id": shot_id, "kind": "needs-review", "detail": prop_row["review"]}
+                )
             if featured and _mentions_product(action, featured) and _wants_legible(featured):
                 if shot_type not in {"detail", "close", "extreme-close", "medium-close"}:
                     shot_type = "close"
@@ -249,16 +297,16 @@ def _frames(
                 transition_out = "hold" if beat.get("hold_out") else "cut"
             lens = _lens_for(package, shot_type)
             camera = _camera_line(shot_type, lens, light)
-            people = _people(shown, catalog)
-            in_frame = _props_for_beat(props, shown)
             spec_line = _spec_line(in_frame, action)
             character_line = _character_line(people, character_locks, f"{action} {spec_line}")
             prompt = _prompt(action, camera, " ".join(part for part in (spec_line, character_line) if part))
             if featured and _mentions_product(action, featured):
                 why = _placement_why(featured, action, shot_type)
                 placements.append({"shot_id": shot_id, "product": featured["product"], "why": why})
-                if _wants_legible(featured) and shot_type in {"close", "extreme-close", "detail", "medium-close"}:
-                    camera = camera + " The detail stays readable."
+                focus = _detail_focus(featured, in_frame)
+                if focus and shot_type in {"close", "extreme-close", "detail", "medium-close"}:
+                    if focus.casefold() not in camera.casefold():
+                        camera = f"{camera} {focus}"
                     prompt = _prompt(action, camera, " ".join(part for part in (spec_line, character_line) if part))
             images = _reference_images(in_frame)
             note = _frame_note(in_frame, character_line)
@@ -326,7 +374,7 @@ def _frames(
     if not frames:
         raise ValueError("The approved treatment has no scenes to board.")
     pacing = _pacing_report(minimum, maximum, pacing_notes, scene_notes, treatment)
-    return shots, frames, placements, pacing
+    return shots, frames, placements, pacing, tag_notes
 
 
 def _scene_text(scene: dict, script_scenes: list[dict], used: set[int]) -> str:
@@ -475,7 +523,8 @@ def _durations(beats: list[dict], scene_seconds) -> tuple[list[float], float, li
     except (TypeError, ValueError):
         budget = 0.0
     explicit = [_explicit_seconds(beat["text"]) for beat in beats]
-    held = [value is not None or bool(beat.get("hold_out")) for beat, value in zip(beats, explicit)]
+    # A named length stays put. The word "hold" by itself only sets the transition.
+    held = [value is not None for value in explicit]
     named = [value for value in explicit if value]
     if budget <= 0:
         budget = sum(named) + (3.0 * (len(beats) - len(named)) or 4.0)
@@ -544,36 +593,63 @@ def _pace(shot_ids, durations, held, budget, minimum, maximum):
     return current, notes
 
 
+def _millis(value: float) -> int:
+    return int(round(float(value) * 1000))
+
+
 def _redistribute(current, held, budget, minimum, maximum):
-    current = [float(value) for value in current]
-    for _ in range(16):
-        delta = budget - sum(current)
-        if abs(delta) < 0.02:
+    """Move leftover time onto shots that still have room inside the limits.
+
+    Work in milliseconds so a rounding leftover is not dropped when the last
+    shot cannot take the whole remainder.
+    """
+    current = [_millis(value) for value in current]
+    budget_ms = _millis(budget)
+    minimum_ms = _millis(minimum)
+    maximum_ms = _millis(maximum)
+    for _ in range(len(current) + 4):
+        delta = budget_ms - sum(current)
+        if delta == 0:
             break
         if delta > 0:
-            room = [index for index, locked in enumerate(held) if not locked and current[index] < maximum - 0.001]
-            capacity = sum(maximum - current[index] for index in room)
+            room = [index for index, locked in enumerate(held) if not locked and current[index] < maximum_ms]
+            capacity = sum(maximum_ms - current[index] for index in room)
         else:
-            room = [index for index, locked in enumerate(held) if not locked and current[index] > minimum + 0.001]
-            capacity = sum(current[index] - minimum for index in room)
+            room = [index for index, locked in enumerate(held) if not locked and current[index] > minimum_ms]
+            capacity = sum(current[index] - minimum_ms for index in room)
         if not room or capacity <= 0:
             break
         step = min(abs(delta), capacity)
-        if delta > 0:
-            for index in room:
-                current[index] += step * ((maximum - current[index]) / capacity)
-        else:
-            for index in room:
-                current[index] -= step * ((current[index] - minimum) / capacity)
-    current = [round(value, 3) for value in current]
-    flex = [index for index, locked in enumerate(held) if not locked]
-    if flex:
-        drift = round(budget - sum(current), 3)
-        last = flex[-1]
-        nudged = round(current[last] + drift, 3)
-        if minimum <= nudged <= maximum:
-            current[last] = nudged
-    return current
+        assigned = 0
+        for position, index in enumerate(room):
+            if delta > 0:
+                space = maximum_ms - current[index]
+            else:
+                space = current[index] - minimum_ms
+            if position == len(room) - 1:
+                give = step - assigned
+            else:
+                give = int(step * (space / capacity))
+            give = max(0, min(give, space, step - assigned))
+            if delta > 0:
+                current[index] += give
+            else:
+                current[index] -= give
+            assigned += give
+        left = step - assigned
+        for index in room:
+            if left <= 0:
+                break
+            if delta > 0:
+                space = maximum_ms - current[index]
+                give = min(space, left)
+                current[index] += give
+            else:
+                space = current[index] - minimum_ms
+                give = min(space, left)
+                current[index] -= give
+            left -= give
+    return [round(value / 1000, 3) for value in current]
 
 
 def _pacing_report(minimum, maximum, notes, scene_notes, treatment) -> dict:
@@ -584,16 +660,26 @@ def _pacing_report(minimum, maximum, notes, scene_notes, treatment) -> dict:
         if abs(total - target) >= 0.05:
             sentences.append(
                 f"Scene {scene_id} targets {target:g}s and the boards total {total:g}s. "
-                "The shot limits left no room to move the rest."
+                "The shot limits left no room to place the remainder."
             )
         else:
             sentences.append(f"Scene {scene_id} targets {target:g}s and the boards total {total:g}s.")
     runtime = _runtime_seconds(treatment)
     boarded = round(sum(total for _, _, total in scene_notes), 3)
-    if runtime is not None:
+    targets = round(sum(target for _, target, _ in scene_notes), 3)
+    if abs(boarded - targets) >= 0.05:
         sentences.append(
-            f"The deliverable names {runtime:g}s. The scene targets on these boards add up to {boarded:g}s."
+            f"The scene targets add up to {targets:g}s and the boards total {boarded:g}s."
         )
+    if runtime is not None:
+        if abs(runtime - boarded) < 0.05:
+            sentences.append(
+                f"The deliverable names {runtime:g}s. The boards total {boarded:g}s, within rounding."
+            )
+        else:
+            sentences.append(
+                f"The deliverable names {runtime:g}s. The boards total {boarded:g}s."
+            )
     return {
         "minimum_seconds": minimum,
         "maximum_seconds": maximum,
@@ -685,18 +771,45 @@ def _camera_line(shot_type: str, lens: dict | None, light: str) -> str:
     return " ".join(parts)
 
 
-def _props_for_beat(props: list[dict], text: str) -> list[dict]:
+def _props_for_scene(actions: list[str], props: list[dict], kind_nouns: dict) -> list[dict]:
+    """Tag props in each shot, then carry one prop when the action continues."""
+    rows = []
+    previous = []
+    previous_text = ""
+    for text in actions:
+        direct = _props_for_beat(props, text, kind_nouns)
+        carried = []
+        review = ""
+        if not direct and previous and action_continues(previous_text, text):
+            if len(previous) == 1:
+                item = previous[0]
+                carried = [
+                    {
+                        "prop": item["prop"],
+                        "name": item["name"],
+                        "line": _missing_phrase(item["prop"], text),
+                    }
+                ]
+            else:
+                review = (
+                    "The action may continue a prop from the previous shot, "
+                    "but that shot has more than one. Needs review."
+                )
+        chosen = direct or carried
+        rows.append({"props": chosen, "carried": bool(carried), "review": review})
+        previous = chosen
+        previous_text = text
+    return rows
+
+
+def _props_for_beat(props: list[dict], text: str, kind_nouns: dict | None = None) -> list[dict]:
     found = []
     for prop in props:
-        if not _prop_in_text(prop, text):
+        if not prop_mentioned(prop, text, props, kind_nouns):
             continue
         missing = _missing_phrase(prop, text)
         found.append({"prop": prop, "name": prop.get("name") or "Prop", "line": missing})
     return found
-
-
-def _prop_in_text(prop: dict, text: str) -> bool:
-    return mentioned(text, prop_labels(prop))
 
 
 def _spec_line(in_frame: list[dict], action: str) -> str:
@@ -812,28 +925,6 @@ def _person_in_shot(character: dict, people: list[str], text: str) -> bool:
     return False
 
 
-def _character_catalog(treatment: dict, locks: list[dict]) -> list[dict]:
-    """One entry per person, with aliases from the treatment and from the locks."""
-    by_name: dict[str, dict] = {}
-    for person in treatment.get("characters") or []:
-        if not isinstance(person, dict) or not person.get("name"):
-            continue
-        by_name[str(person["name"]).casefold()] = {
-            "name": str(person["name"]),
-            "aliases": list(person.get("aliases") or []),
-        }
-    for lock in locks:
-        for character in lock.get("characters") or []:
-            if not isinstance(character, dict) or not character.get("name"):
-                continue
-            key = str(character["name"]).casefold()
-            current = by_name.setdefault(key, {"name": str(character["name"]), "aliases": []})
-            for alias in character.get("aliases") or []:
-                if alias not in current["aliases"]:
-                    current["aliases"].append(alias)
-    return list(by_name.values())
-
-
 def _negative(in_frame: list[dict], people: list[str] | None = None, locks: list[dict] | None = None, text: str = "") -> str:
     phrases = []
     for item in in_frame:
@@ -862,7 +953,7 @@ def _mentions_product(text: str, featured: dict) -> bool:
 
 
 def _placement_why(featured: dict, action: str, shot_type: str) -> str:
-    """One plain sentence. A matching moment from the brief wins. Otherwise a single generic line."""
+    """One plain sentence about the story. A brief line is kept only when it does not sell."""
     del shot_type
     haystack = action.casefold()
     best = None
@@ -874,10 +965,31 @@ def _placement_why(featured: dict, action: str, shot_type: str) -> str:
         if len(when) >= 3 and when.casefold() in haystack and why:
             if best is None or len(when) > len(str(best.get("when") or "")):
                 best = moment
-    if best is not None:
+    if best is not None and not advertising_phrases(str(best["why"])):
         return _finish(str(best["why"]))
-    product = str(featured.get("product") or "The product").strip() or "The product"
-    return _finish(f"The {product} is already part of this moment, so it stays in the frame")
+    product = str(featured.get("product") or "").strip()
+    return _finish(story_purpose_line(product))
+
+
+def _detail_focus(featured: dict, in_frame: list[dict]) -> str:
+    """A focus line when the brief asks the detail to be legible.
+
+    A short sentence already on the lock is copied. Otherwise this is a camera
+    instruction. It does not say the frame is or is not an advertisement.
+    """
+    if not _wants_legible(featured):
+        return ""
+    for item in in_frame:
+        spec = faithful_spec(str(item["prop"].get("locked_spec") or ""))
+        for sentence in re.split(r"(?<=[.!?])\s+", spec):
+            if not re.search(r"\b(legible|readable)\b", sentence, re.I):
+                continue
+            if advertising_phrases(sentence):
+                continue
+            if len(sentence.split()) > 18:
+                continue
+            return _finish(sentence)
+    return "The detail stays readable."
 
 
 def _wants_legible(featured: dict) -> bool:
@@ -896,14 +1008,6 @@ def _shot_refs(in_frame: list[dict]) -> tuple[list[dict], list[str]]:
             note = item["line"] or prop.get("name") or ""
             prop_refs.append({"prop_id": prop["prop_id"], "visibility_note": note})
     return prop_refs, vehicles
-
-
-def _people(text: str, catalog: list[dict]) -> list[str]:
-    names = []
-    for person in catalog:
-        if mentioned(text, character_aliases(person)) and person["name"] not in names:
-            names.append(person["name"])
-    return names
 
 
 def _look_block(package: dict) -> dict:
@@ -980,6 +1084,13 @@ def _markdown(document: dict, treatment: dict) -> str:
         lines.append("")
         for item in pacing.get("adjustments") or []:
             lines.append(f"- {item}")
+        lines.append("")
+    notes = document.get("tag_notes") or []
+    if notes:
+        lines.append("## Tags")
+        lines.append("")
+        for item in notes:
+            lines.append(f"- {item['shot_id']}: {item['detail']}")
         lines.append("")
     placements = document.get("featured_placements") or []
     lines.append("## Hero prop moments")

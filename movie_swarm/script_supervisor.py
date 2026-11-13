@@ -12,7 +12,15 @@ import json
 from pathlib import Path
 
 from movie_swarm.handoff import HandoffError, read_handoff
-from movie_swarm.mentions import character_aliases, phrases_stated, prop_labels, mentioned
+from movie_swarm.mentions import (
+    character_aliases,
+    character_catalog,
+    mentioned,
+    phrases_stated,
+    previs_advertising_hits,
+    prop_labels,
+    resolve_scene_characters,
+)
 from movie_swarm.prep_inputs import mark_superseded_shot_list
 from movie_swarm.previs_common import (
     PrevisError,
@@ -54,10 +62,13 @@ def check_continuity(production_dir: Path, llm=None) -> dict:
     findings = _findings(locked, documents)
     findings.extend(_character_findings(costume, documents, "costume_id", wardrobe=True))
     findings.extend(_character_findings(makeup, documents, "makeup_id", wardrobe=False))
+    findings.extend(_advertising_findings(production_dir))
+    reviews = _reviews(production_dir, documents, costume, makeup)
     for index, finding in enumerate(findings, start=1):
         finding["finding_id"] = f"c-{index:03d}"
     contradictions = sum(1 for item in findings if item["kind"] == "contradiction")
     missing = sum(1 for item in findings if item["kind"] == "unstated")
+    banned = sum(1 for item in findings if item["kind"] == "banned-phrase")
     watched = "props"
     if costume is not None and makeup is not None:
         watched = "props, wardrobe, and makeup"
@@ -68,16 +79,22 @@ def check_continuity(production_dir: Path, llm=None) -> dict:
     skipped_note = ""
     if skipped:
         skipped_note = " " + " ".join(item["reason"] for item in skipped)
+    review_note = ""
+    if reviews:
+        review_note = f" {len(reviews)} shot(s) need review."
     if findings:
         summary = (
-            f"{len(findings)} drift finding(s): {contradictions} contradiction(s) "
-            f"and {missing} missing lock(s). "
+            f"{len(findings)} drift finding(s): {contradictions} contradiction(s), "
+            f"{missing} missing lock(s), and {banned} banned phrase(s). "
             "Scenes are checked for forbidden phrases. "
             "A shot that shows one of those locks is also flagged when a required phrase is missing."
             + skipped_note
+            + review_note
         )
     else:
-        summary = f"No drift. The checked scenes and shots match the locked {watched}.{skipped_note}"
+        summary = (
+            f"No drift. The checked scenes and shots match the locked {watched}.{skipped_note}{review_note}"
+        )
     document = {
         "version": "1.0.0",
         "production_id": production_dir.name,
@@ -91,6 +108,7 @@ def check_continuity(production_dir: Path, llm=None) -> dict:
     }
     if skipped:
         document["skipped_sources"] = skipped
+    document["reviews"] = reviews
     if llm is not None:
         document["summary"] = _model_summary(llm, document) or document["summary"]
     save_pair(check_path(production_dir), document, "continuity-check", _markdown(document))
@@ -403,6 +421,80 @@ def _finding(*, kind, severity, document, expected, observed, detail, prop_id=No
     return item
 
 
+def _advertising_findings(production_dir: Path) -> list[dict]:
+    found = []
+    for hit in previs_advertising_hits(production_dir):
+        found.append(
+            {
+                "severity": "major",
+                "kind": "banned-phrase",
+                "detail": (
+                    f"{hit['path']} contains a banned placement phrase ({hit['phrase']}). "
+                    "Generated previs text does not use that wording."
+                ),
+                "source": hit["path"],
+                "expected": "story purpose, without placement slang",
+                "observed": hit["phrase"],
+            }
+        )
+    return found
+
+
+def _reviews(production_dir: Path, documents: list[dict], costume: dict | None, makeup: dict | None) -> list[dict]:
+    treatment = approved_treatment(production_dir)
+    catalog = character_catalog(treatment, [lock for lock in (costume, makeup) if lock])
+    by_scene: dict[str, list[dict]] = {}
+    for document in documents:
+        if document.get("kind") != "shot" or not document.get("shot_id"):
+            continue
+        by_scene.setdefault(str(document.get("scene_id") or ""), []).append(document)
+    reviews = []
+    seen = set()
+
+    def add(shot_id: str, kind: str, detail: str) -> None:
+        key = (shot_id, kind, detail)
+        if key in seen or not detail:
+            return
+        seen.add(key)
+        reviews.append({"shot_id": shot_id, "kind": kind, "detail": detail})
+
+    for documents_in_scene in by_scene.values():
+        texts = [item["text"] for item in documents_in_scene]
+        resolved = resolve_scene_characters(texts, catalog)
+        for document, item in zip(documents_in_scene, resolved):
+            if not item["review"] or _structured_character(document, catalog):
+                continue
+            add(str(document["shot_id"]), "pronoun", item["review"])
+    board = production_dir / "storyboard" / "storyboard.json"
+    if board.is_file():
+        try:
+            payload = json.loads(board.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            payload = {}
+        for note in (payload.get("tag_notes") if isinstance(payload, dict) else None) or []:
+            if not isinstance(note, dict):
+                continue
+            kind = note.get("kind")
+            shot_id = str(note.get("shot_id") or "")
+            detail = str(note.get("detail") or "")
+            if kind == "carried-prop":
+                add(shot_id, "carried", detail)
+            elif kind == "needs-review" and "prop" in detail.casefold():
+                add(shot_id, "prop-continuation", detail)
+    return reviews
+
+
+def _structured_character(document: dict, catalog: list[dict]) -> bool:
+    structured = {str(item).casefold() for item in document.get("structured_ids") or set()}
+    if not structured:
+        return False
+    for person in catalog:
+        names = {person["name"].casefold(), *(alias.casefold() for alias in character_aliases(person))}
+        if structured & names:
+            return True
+    return False
+
+
 def _markdown(document: dict) -> str:
     lines = [
         "# Continuity check",
@@ -423,5 +515,11 @@ def _markdown(document: dict) -> str:
         lines.append("")
     for finding in document["findings"]:
         lines.append(f"- {finding['detail']}")
+    if document.get("reviews"):
+        lines.append("")
+        lines.append("Needs review:")
+        lines.append("")
+        for item in document["reviews"]:
+            lines.append(f"- {item['shot_id']}: {item['detail']}")
     lines.append("")
     return "\n".join(lines).rstrip() + "\n"

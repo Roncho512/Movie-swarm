@@ -5,7 +5,9 @@ The words come from the lock. This module does not name a film.
 
 from __future__ import annotations
 
+import json
 import re
+from pathlib import Path
 
 
 # Phrases the engine must not write when a hero prop is simply in frame.
@@ -258,3 +260,372 @@ def faithful_spec(spec: str) -> str:
 def _add_fact(facts: list[str], fact: str) -> None:
     if fact and fact.casefold() not in {item.casefold() for item in facts}:
         facts.append(fact)
+
+
+# A person, not a film. Used only when the shot does not name a locked character.
+_PRONOUNS = (
+    "he",
+    "him",
+    "his",
+    "himself",
+    "she",
+    "her",
+    "hers",
+    "herself",
+    "they",
+    "them",
+    "their",
+    "theirs",
+    "themselves",
+)
+
+_CONTINUATION = ("again", "another", "still")
+
+_STOP = {
+    "a",
+    "an",
+    "the",
+    "and",
+    "or",
+    "but",
+    "if",
+    "then",
+    "than",
+    "that",
+    "this",
+    "these",
+    "those",
+    "with",
+    "from",
+    "into",
+    "onto",
+    "over",
+    "under",
+    "about",
+    "after",
+    "before",
+    "again",
+    "another",
+    "still",
+    "once",
+    "just",
+    "only",
+    "very",
+    "here",
+    "there",
+    "when",
+    "while",
+    "where",
+    "what",
+    "who",
+    "whom",
+    "whose",
+    "which",
+    "been",
+    "being",
+    "have",
+    "has",
+    "had",
+    "was",
+    "were",
+    "are",
+    "is",
+    "not",
+    "for",
+    "his",
+    "her",
+    "hers",
+    "him",
+    "she",
+    "they",
+    "them",
+    "their",
+    "theirs",
+    "you",
+    "your",
+    "our",
+    "its",
+}
+
+
+def has_personal_pronoun(text: str) -> bool:
+    """True when the text uses a personal pronoun as its own word."""
+    return mentioned(text, list(_PRONOUNS))
+
+
+def named_characters(text: str, catalog: list[dict]) -> list[str]:
+    """Locked people named in text. The catalog supplies the names. Nothing is invented."""
+    names = []
+    for person in catalog:
+        if not isinstance(person, dict) or not person.get("name"):
+            continue
+        if mentioned(text, character_aliases(person)) and person["name"] not in names:
+            names.append(str(person["name"]))
+    return names
+
+
+def character_catalog(treatment: dict, locks: list[dict] | None = None) -> list[dict]:
+    """One entry per person, with aliases from the treatment and from the locks."""
+    by_name: dict[str, dict] = {}
+    for person in (treatment or {}).get("characters") or []:
+        if not isinstance(person, dict) or not person.get("name"):
+            continue
+        by_name[str(person["name"]).casefold()] = {
+            "name": str(person["name"]),
+            "aliases": list(person.get("aliases") or []),
+        }
+    for lock in locks or []:
+        if not isinstance(lock, dict):
+            continue
+        for character in lock.get("characters") or []:
+            if not isinstance(character, dict) or not character.get("name"):
+                continue
+            key = str(character["name"]).casefold()
+            current = by_name.setdefault(key, {"name": str(character["name"]), "aliases": []})
+            for alias in character.get("aliases") or []:
+                if alias not in current["aliases"]:
+                    current["aliases"].append(alias)
+    return list(by_name.values())
+
+
+def resolve_scene_characters(shots: list[str], catalog: list[dict], heading: str = "") -> list[dict]:
+    """Carry a pronoun to one locked character, or mark the shot for review.
+
+    A scene with exactly one locked character gives that person to a shot that
+    only uses a pronoun. When more than one person is named, the pronoun uses
+    the most recent shot that named exactly one, and only when nobody else was
+    named in between. Anything else is left untagged.
+    """
+    named = [named_characters(text, catalog) for text in shots]
+    heading_names = named_characters(heading, catalog) if heading else []
+    everyone: list[str] = []
+    for group in (heading_names, *named):
+        for name in group:
+            if name not in everyone:
+                everyone.append(name)
+    results = []
+    if len(everyone) == 1:
+        sole = everyone[0]
+        for names, text in zip(named, shots):
+            if names:
+                results.append({"names": names, "inherited": False, "review": ""})
+            elif has_personal_pronoun(text):
+                results.append({"names": [sole], "inherited": True, "review": ""})
+            else:
+                results.append({"names": [], "inherited": False, "review": ""})
+        return results
+    recent = heading_names[0] if len(heading_names) == 1 else None
+    if len(heading_names) > 1:
+        recent = None
+    for names, text in zip(named, shots):
+        if len(names) == 1:
+            recent = names[0]
+            results.append({"names": names, "inherited": False, "review": ""})
+        elif len(names) > 1:
+            recent = None
+            results.append({"names": names, "inherited": False, "review": ""})
+        elif has_personal_pronoun(text) and recent:
+            results.append({"names": [recent], "inherited": True, "review": ""})
+        elif has_personal_pronoun(text):
+            results.append(
+                {
+                    "names": [],
+                    "inherited": False,
+                    "review": "A pronoun does not name one character. Needs review.",
+                }
+            )
+        else:
+            results.append({"names": [], "inherited": False, "review": ""})
+    return results
+
+
+def _stem(word: str) -> str:
+    if word.endswith("ies") and len(word) > 4:
+        return word[:-3] + "y"
+    if word.endswith("es") and len(word) > 4:
+        return word[:-2]
+    if word.endswith("s") and not word.endswith("ss") and len(word) > 3:
+        return word[:-1]
+    if word.endswith("ing") and len(word) > 5:
+        return word[:-3]
+    if word.endswith("ed") and len(word) > 4:
+        return word[:-2]
+    return word
+
+
+def _verb_stems(text: str) -> set[str]:
+    stems = set()
+    for word in re.findall(r"[a-z]+", text.casefold()):
+        if word in _STOP or len(word) < 4:
+            continue
+        verbish = word.endswith("ing") or word.endswith("ed") or (word.endswith("s") and not word.endswith("ss"))
+        if verbish:
+            stems.add(_stem(word))
+    return stems
+
+
+def action_continues(previous: str, current: str) -> bool:
+    """True when this shot keeps going on the previous shot's action.
+
+    Continuation words are generic. A shared action verb is a word in this
+    shot with a verb ending whose stem is also in the previous shot.
+    """
+    if mentioned(current, list(_CONTINUATION)):
+        return True
+    current_stems = _verb_stems(current)
+    if not current_stems:
+        return False
+    previous_stems = set()
+    for word in re.findall(r"[a-z]+", previous.casefold()):
+        if word in _STOP or len(word) < 4:
+            continue
+        previous_stems.add(_stem(word))
+    return bool(current_stems & previous_stems)
+
+
+def load_kind_nouns(production_dir: str | Path | None = None) -> dict[str, list[str]]:
+    """Kind-level nouns from config, with a film file replacing any kind it names."""
+    from movie_swarm.paths import repo_root
+
+    nouns = _read_kind_nouns(repo_root() / "config" / "kind-nouns.json")
+    if production_dir is not None:
+        override = Path(production_dir) / "props" / "kind-nouns.json"
+        if override.is_file():
+            for kind, words in _read_kind_nouns(override).items():
+                nouns[kind] = words
+    return nouns
+
+
+def _read_kind_nouns(path: Path) -> dict[str, list[str]]:
+    if not path.is_file():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    kinds = data.get("kinds") if isinstance(data, dict) else None
+    if not isinstance(kinds, dict):
+        return {}
+    cleaned: dict[str, list[str]] = {}
+    for kind, words in kinds.items():
+        if not isinstance(words, list):
+            continue
+        kept = []
+        for word in words:
+            text = " ".join(str(word).split())
+            if len(text) >= 3 and text.casefold() not in {item.casefold() for item in kept}:
+                kept.append(text)
+        if kept:
+            cleaned[str(kind).strip().casefold()] = kept
+    return cleaned
+
+
+def generic_nouns_for(prop: dict, props: list[dict], kind_nouns: dict[str, list[str]] | None = None) -> list[str]:
+    """Nouns that can mean this prop when they are not shared with another lock.
+
+    A lock's own ``generic_nouns`` are included. The kind word and the kind
+    list are included only when this is the only lock of that kind.
+    """
+    labels: list[str] = []
+
+    def add(value: str) -> None:
+        text = " ".join(str(value).split())
+        if len(text) < 3:
+            return
+        if text.casefold() not in {item.casefold() for item in labels}:
+            labels.append(text)
+
+    for noun in prop.get("generic_nouns") or []:
+        add(str(noun))
+    kind = str(prop.get("kind") or "").strip().casefold()
+    if not kind:
+        return labels
+    same = [item for item in props if str(item.get("kind") or "").strip().casefold() == kind]
+    if len(same) != 1:
+        return labels
+    add(kind)
+    for noun in (kind_nouns or {}).get(kind) or []:
+        add(str(noun))
+    return labels
+
+
+def prop_mentioned(
+    prop: dict,
+    text: str,
+    props: list[dict],
+    kind_nouns: dict[str, list[str]] | None = None,
+) -> bool:
+    """True when the text names this prop, including an unshared generic noun."""
+    if mentioned(text, prop_labels(prop)):
+        return True
+    for noun in generic_nouns_for(prop, props, kind_nouns):
+        if not mentioned(text, [noun]):
+            continue
+        owners = [
+            item
+            for item in props
+            if any(noun.casefold() == label.casefold() for label in generic_nouns_for(item, props, kind_nouns))
+        ]
+        if len(owners) == 1 and owners[0] is prop:
+            return True
+        if len(owners) == 1 and str(owners[0].get("prop_id") or "") == str(prop.get("prop_id") or "") and prop.get("prop_id"):
+            return True
+    return False
+
+
+_PREVIS_TEXT_FILES = (
+    "storyboard/storyboard.json",
+    "storyboard/storyboard.md",
+    "storyboard/shot-list.json",
+    "lighting/lighting-plan.json",
+    "lighting/lighting-plan.md",
+    "schedule/shooting-schedule.json",
+    "schedule/shooting-schedule.md",
+    "stunts/action-breakdown.json",
+    "stunts/action-breakdown.md",
+    "camera/camera-package.json",
+    "camera/camera-package.md",
+    "grip/grip-plan.json",
+    "grip/grip-plan.md",
+    "props/hero-props.json",
+    "props/hero-props.md",
+    "wardrobe/costume-lock.json",
+    "wardrobe/costume-lock.md",
+    "makeup/makeup-lock.json",
+    "makeup/makeup-lock.md",
+    "vfx/vfx-breakdown.json",
+    "vfx/vfx-breakdown.md",
+    "graphics/research.json",
+    "graphics/research.md",
+    "graphics/brand-guide.json",
+    "graphics/brand-guide.md",
+)
+
+
+def previs_advertising_hits(production_dir: str | Path) -> list[dict]:
+    """Banned placement phrases in generated previs text.
+
+    The continuity report is not scanned. A finding that quotes a phrase would
+    otherwise flag itself.
+    """
+    root = Path(production_dir)
+    hits = []
+    for relative in _PREVIS_TEXT_FILES:
+        path = root / relative
+        if not path.is_file():
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for phrase in advertising_phrases(text):
+            hits.append({"path": relative, "phrase": phrase})
+    return hits
+
+
+def story_purpose_line(label: str) -> str:
+    """Why a hero prop is in the frame. Story purpose, with no placement slang."""
+    name = " ".join(str(label or "").split()).strip() or "This object"
+    if advertising_phrases(name):
+        name = "This object"
+    return f"{name} stays in the frame for the story this scene is already telling."
