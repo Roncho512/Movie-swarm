@@ -22,6 +22,7 @@ from movie_swarm.mentions import (
     character_prompt_line,
     faithful_spec,
     load_kind_nouns,
+    mentioned,
     prop_mentioned,
     resolve_scene_characters,
     story_purpose_line,
@@ -915,14 +916,21 @@ def _character_line(people: list[str], locks: list[dict], text: str) -> str:
 
 
 def _person_in_shot(character: dict, people: list[str], text: str) -> bool:
-    names = character_aliases(character)
-    if character.get("character_id"):
-        names = [*names, str(character["character_id"])]
+    """True when this lock is a person already resolved for the shot, or the shot names them.
+
+    ``people`` comes from ``resolve_scene_characters``, so a pronoun that
+    inherited one locked character is already a name. A name written in the
+    shot uses the same word-boundary match as the catalog. Props use
+    ``prop_mentioned`` instead, which also accepts a kind noun.
+    """
+    names = [name for name in character_aliases(character) if len(name) >= 2]
+    character_id = str(character.get("character_id") or "").strip()
+    if len(character_id) >= 2 and character_id.casefold() not in {name.casefold() for name in names}:
+        names.append(character_id)
     folded_people = {person.casefold() for person in people}
-    for name in names:
-        if len(name) >= 2 and (name.casefold() in folded_people or mentioned(text, [name])):
-            return True
-    return False
+    if any(name.casefold() in folded_people for name in names):
+        return True
+    return mentioned(text, names)
 
 
 def _negative(in_frame: list[dict], people: list[str] | None = None, locks: list[dict] | None = None, text: str = "") -> str:
