@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "note": "Phrases that name a prop without putting it in the frame. {prop} stands for the lock's name, an alias, a part, or a kind noun. phrases are absence: the prop stays out of the shot. ambiguous phrases could still show the prop, so the shot is listed for review and is not guessed. A film replaces either list by writing that key in props/absence-phrases.json. An empty list clears it. Words for one film do not belong here.",
+  "note": "Phrases that name a prop without putting it in the frame. {prop} stands for the lock's name, an alias, a part, or a kind noun. phrases are absence: the prop stays out of the shot. ambiguous phrases could still show the prop, so the shot is listed for review and is not guessed. has, have, and had in front of leave, abandon, walk, or look count as that same phrase, including on the ambiguous list, so only in, on, running, and there stay a review. A film replaces either list by writing that key in props/absence-phrases.json. An empty list clears it. Words for one film do not belong here.",
   "phrases": [
     "has left the {prop}",
     "have left the {prop}",
