@@ -1594,7 +1594,7 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Date: 2026-11-13
 - Context: After Phase 8.17.3, a trace was correctly unnamed. A medium shot between two shots that still had the vehicle in frame lost that tag. The only earlier hook had been the part word inside the trace. The rider had not left the vehicle. Carry from the previous shot did not apply.
 - Decision: Ron, 2026-11-13: approved the 8.17.4 hotfix so a trace mention does not stop a prop carrying within a continuous beat.
-- Consequences: A label joined to a trace noun does not name the prop and does not block carry. If the previous shot in the same scene has the prop in frame, and this shot has no absence phrase, is not a close-up or insert of another object, does not open on a different subject, and is not only sound, a fade, a hold, black, or a title, the prop carries and the board says so. After a clear absence, a later trace does not bring the prop back. The frame classifier, the storyboard review, and the continuity check still share `prop_frame_state`. The classifier says the trace is unnamed. The board writes the carried tag. The check follows that tag. How a trace fails to be a subject, and that a shared verb is not required, are D181 and D182.
+- Consequences: A label joined to a trace noun does not name the prop and does not block carry. After a clear absence, a later trace does not bring the prop back. The frame classifier, the storyboard review, and the continuity check still share `prop_frame_state`. The classifier says the trace is unnamed. The board writes the carried tag. The check follows that tag. A trace is not a subject (D181, proposed). Carry without a shared verb is only the case in D182.
 - Who decided: Ron, 2026-11-13
 
 ## D181 — A trace is not a subject
@@ -1606,12 +1606,12 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: "The tire tracks lead south" after a shot that has the vehicle in frame can carry that vehicle. "The lantern sits beside the tire tracks" still opens on the lantern, so it does not carry. "Close on the lantern" with a trace in the same shot does not carry.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
-## D182 — A shared action verb is not required for a carry
+## D182 — Carry without a shared verb only when the shot traces that prop
 
-- Status: proposed
+- Status: decided
 - Date: 2026-11-13
-- Context: Carry used to require "again", "another", "still", or a shared action verb. A look-toward shot after a throttle roll shares none of those, so the prop dropped out once the trace stopped counting as a name. Treating the trace as the thing that turns carry on would make the trace a signal. It is neutral.
-- Decision: Inside one scene, the previous in-frame prop carries into the next shot when that shot has no absence phrase, is not a close-up, insert, or extreme close-up of another object, does not open on a different subject, and is not only sound, a fade, a hold, black, or a title. A shared verb is not required. The same look-toward shot carries with or without the trace sentence. An absence still clears the prop, so a later trace has nothing to carry.
-- Consequences: "He rolls the throttle" then "He looks toward the open road" carries the vehicle. "He has left the bike" then "The tire tracks lead south" does not. "He starts the bike" then "The lantern sits on the step" does not. A line that is only a fade or a hold is still listed for review and does not carry.
-- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+- Context: The first draft of this hotfix carried every later shot that missed the stop rules. "He starts the bike" then "He opens the door" carried the bike. That was wider than the trace fix. A look-toward shot with no trace was carried the same way.
+- Decision: Ron, 2026-11-13: carry without a shared verb applies only when the shot has a trace of the carried prop; otherwise the shared-verb rule stays.
+- Consequences: "again", "another", "still", or a shared action verb still carry one previous prop, and the stop rules still apply. A shot with no shared verb carries only a previous prop whose label is joined to a trace noun in that shot, and only when there is no absence phrase, it is not a close-up or insert of another object, it does not open on a different subject, and it is not only sound, a fade, a hold, black, or a title. "He starts the bike" then "He opens the door" does not carry. "He looks toward the open road" with no trace does not carry. "He rolls the throttle" then "He looks toward the open desert. The tire tracks lead south" does carry. A later pronoun shot with neither a trace nor a shared verb does not carry. A trace is still not a subject (D181).
+- Who decided: Ron, 2026-11-13
 

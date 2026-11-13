@@ -232,6 +232,71 @@ def test_a_trace_after_a_clear_absence_stays_untagged(tmp_path):
     )
 
 
+def test_opening_a_door_does_not_carry_the_bike(tmp_path):
+    """A later pronoun shot with no shared verb and no trace stays untagged."""
+    production = _harbor(tmp_path)
+    _vehicle(production)
+    _scene(production, "He starts the bike.\n\nHe opens the door.")
+    lock_props(production)
+    boards = build_boards(production)
+    shots = _shots(production)
+    started = _by_text(shots, "starts the bike")
+    door = _by_text(shots, "opens the door")
+    assert started.get("vehicles_in_shot") == ["dusty-bike"]
+    assert _carried(boards["tag_notes"], started["shot_id"]) == []
+    assert "vehicles_in_shot" not in door
+    assert "props_in_shot" not in door
+    assert "pipe on the right" not in door["generation_prompt"].casefold()
+    assert _carried(boards["tag_notes"], door["shot_id"]) == []
+    check = check_continuity(production)
+    assert not any(item["shot_id"] == door["shot_id"] and item["kind"] == "carried" for item in check["reviews"])
+
+
+def test_a_look_without_a_trace_does_not_carry(tmp_path):
+    """No trace sentence, so only a shared verb would carry. This shot has neither."""
+    production = _harbor(tmp_path)
+    _vehicle(production)
+    _scene(production, "He rolls the throttle.\n\nHe looks toward the open road.")
+    lock_props(production)
+    boards = build_boards(production)
+    shots = _shots(production)
+    throttle = _by_text(shots, "rolls the throttle")
+    look = _by_text(shots, "looks toward the open road")
+    assert "tire tracks" not in look["description"].casefold()
+    assert throttle.get("vehicles_in_shot") == ["dusty-bike"]
+    assert "vehicles_in_shot" not in look
+    assert "pipe on the right" not in look["generation_prompt"].casefold()
+    assert _carried(boards["tag_notes"], look["shot_id"]) == []
+    check = check_continuity(production)
+    assert not any(item["shot_id"] == look["shot_id"] and item["kind"] == "carried" for item in check["reviews"])
+
+
+def test_a_later_pronoun_shot_without_a_trace_does_not_carry(tmp_path):
+    """The trace shot carries. The next pronoun shot, with no trace and no shared verb, does not."""
+    production = _harbor(tmp_path)
+    _vehicle(production)
+    _scene(
+        production,
+        "He rolls the throttle.\n\n"
+        "He looks toward the open desert. The tire tracks lead south.\n\n"
+        "He checks the ridge.",
+    )
+    lock_props(production)
+    boards = build_boards(production)
+    shots = _shots(production)
+    tracks = _by_text(shots, "tire tracks lead south")
+    ridge = _by_text(shots, "checks the ridge")
+    assert tracks.get("vehicles_in_shot") == ["dusty-bike"]
+    assert _carried(boards["tag_notes"], tracks["shot_id"])
+    assert "vehicles_in_shot" not in ridge
+    assert "props_in_shot" not in ridge
+    assert "pipe on the right" not in ridge["generation_prompt"].casefold()
+    assert _carried(boards["tag_notes"], ridge["shot_id"]) == []
+    check = check_continuity(production)
+    assert any(item["kind"] == "carried" and item["shot_id"] == tracks["shot_id"] for item in check["reviews"])
+    assert not any(item["shot_id"] == ridge["shot_id"] and item["kind"] == "carried" for item in check["reviews"])
+
+
 def test_a_trace_in_a_close_up_of_another_object_does_not_carry(tmp_path):
     production = _harbor(tmp_path)
     _vehicle(production)

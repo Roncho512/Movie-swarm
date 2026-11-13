@@ -15,6 +15,7 @@ from pathlib import Path
 
 from movie_swarm.handoff import write_handoff
 from movie_swarm.mentions import (
+    action_continues,
     advertising_phrases,
     character_aliases,
     character_catalog,
@@ -32,6 +33,7 @@ from movie_swarm.mentions import (
     prop_frame_state,
     prop_labels,
     prop_mentioned,
+    trace_of_prop,
     resolve_scene_characters,
     story_purpose_line,
 )
@@ -998,27 +1000,44 @@ def _props_for_scene(
 
     An absence phrase does not put the prop in frame, so the next shot has
     nothing to carry from it. A trace is not a mention and not an absence,
-    so it does not start a tag and it does not stop a carry. A close view of
-    some other object, a different subject, or a line with no picture does
-    not inherit the previous prop. A shared action verb is not required.
+    so it does not start a tag and it does not stop a carry. Carry still
+    needs a shared action verb, or again, another, or still, unless this
+    shot has a trace of that prop. A close view of some other object, a
+    different subject, or a line with no picture does not inherit it.
     """
     rows = []
     previous = []
+    previous_text = ""
     types = shot_types or ["medium"] * len(actions)
     for text, shot_type in zip(actions, types):
         direct, beat_review, blocked = _props_for_beat(props, text, kind_nouns, absence)
         available = [item for item in previous if _prop_key(item["prop"]) not in blocked]
         carried = []
         carry_review = ""
-        if not direct and available:
+        pool = _carry_pool(text, previous_text, available, props, kind_nouns, absence)
+        if not direct and pool:
             carried, carry_review = _carry_forward(
-                text, shot_type, available, props, kind_nouns, absence
+                text, shot_type, pool, props, kind_nouns, absence
             )
         chosen = direct or carried
         review = " ".join(part for part in (beat_review, carry_review) if part)
         rows.append({"props": chosen, "carried": bool(carried), "review": review})
         previous = chosen
+        previous_text = text
     return rows
+
+
+def _carry_pool(text, previous_text, available, props, kind_nouns, absence):
+    """Props that may carry: the shared-verb set, or only a traced prop."""
+    if not available:
+        return []
+    if action_continues(previous_text, text):
+        return available
+    return [
+        item
+        for item in available
+        if trace_of_prop(item["prop"], text, props, kind_nouns, absence)
+    ]
 
 
 def _props_for_beat(

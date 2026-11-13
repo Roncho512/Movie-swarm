@@ -469,9 +469,8 @@ def action_continues(previous: str, current: str) -> bool:
 
     Continuation words are generic. A shared action verb is a word in this
     shot with a verb ending whose stem is also in the previous shot.
-    The storyboard does not require this for a carry. A trace is not a
-    reason to stop, and the stop rules are absence, a different subject,
-    a tight view of another object, and a line with no picture.
+    The storyboard requires this for a carry, unless the shot has a trace
+    of the prop being carried.
     """
     if mentioned(current, list(_CONTINUATION)):
         return True
@@ -723,6 +722,29 @@ def _has_real_mention(text: str, labels: list[str], nouns: list[str]) -> bool:
 def joined_to_trace(text: str, end: int, absence: dict | None = None) -> bool:
     """True when a trace noun is joined to this match by a space or a hyphen."""
     return _trace_follows(text, end, _trace_nouns(absence))
+
+
+def trace_of_prop(
+    prop: dict,
+    text: str,
+    props: list[dict],
+    kind_nouns: dict[str, list[str]] | None = None,
+    absence: dict | None = None,
+) -> bool:
+    """True when a label of this prop is joined to a trace noun.
+
+    The compound does not name the prop. It is the only reason a shot can
+    carry that prop without a shared action verb.
+    """
+    nouns = _trace_nouns(absence)
+    if not text or not nouns:
+        return False
+    for label in _match_labels(prop, props, kind_nouns):
+        pattern = rf"(?<!\w){_label_pattern(label)}(?!\w)"
+        for match in re.finditer(pattern, text, re.I):
+            if _trace_follows(text, match.end(), nouns):
+                return True
+    return False
 
 
 def named_phrase(text: str, phrases: list[str], absence: dict | None = None) -> bool:
