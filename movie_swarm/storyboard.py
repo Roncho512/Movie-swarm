@@ -1035,6 +1035,9 @@ def _props_for_beat(
             blocked.add(key)
             continue
         if state == "ambiguous":
+            # The same prop_frame_state decision as the absence classifier.
+            # A perfect-tense line with nothing after the object is "absent"
+            # and does not reach this review.
             blocked.add(key)
             name = prop.get("name") or "A prop"
             reviews.append(

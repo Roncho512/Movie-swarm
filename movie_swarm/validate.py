@@ -76,6 +76,7 @@ _SCHEMA_BY_FILENAME = {
     "delivery-plan.json": "delivery-plan.schema.json",
     "qc-report.json": "qc-report.schema.json",
     "delivery-manifest.json": "delivery-manifest.schema.json",
+    "absence-phrases.json": "absence-phrases.schema.json",
 }
 
 _QUESTIONS_ROUND = re.compile(r"^questions-round-\d+\.json$")
