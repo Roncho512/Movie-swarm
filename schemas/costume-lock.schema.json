@@ -64,6 +64,11 @@
           "items": { "type": "string", "minLength": 1 }
         },
         "locked_spec": { "type": "string", "minLength": 1 },
+        "reference_images": {
+          "type": "array",
+          "description": "Optional face or wardrobe photos. Paths are relative to the film folder. A character lock file wins when it already has photos for this person.",
+          "items": { "type": "string", "minLength": 1 }
+        },
         "garment": { "type": "string", "minLength": 1 },
         "color": { "type": "string", "minLength": 1 },
         "condition": { "type": "string", "minLength": 1 },

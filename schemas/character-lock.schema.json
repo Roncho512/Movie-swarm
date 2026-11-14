@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "character-lock.schema.json",
+  "title": "Character Lock",
+  "description": "Optional locked faces for one production. Photos are paths relative to the film folder. The checker does not know which film this is.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "production_id", "status", "characters"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "status": { "type": "string", "enum": ["draft", "locked"] },
+    "source": { "type": "string" },
+    "characters": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/character" }
+    },
+    "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
+    "model": { "type": ["string", "null"] },
+    "note": { "type": "string" },
+    "locked_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "character": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["character_id", "name", "locked_spec", "reference_images"],
+      "properties": {
+        "character_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "name": { "type": "string", "minLength": 1 },
+        "aliases": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "locked_spec": { "type": "string", "minLength": 1 },
+        "reference_images": {
+          "type": "array",
+          "description": "Face photos, best likeness first. Paths are relative to the film folder.",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

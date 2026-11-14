@@ -17,6 +17,7 @@ from movie_swarm.duration import clip_lengths, seconds_text as _seconds_text
 from movie_swarm.models import resolve_model
 from movie_swarm.money import as_money, money_number
 from movie_swarm.rates import generator_rate, load_rate_card, usd_per_second
+from movie_swarm.references import prepare_references, quote_lines
 
 
 class GenerationError(Exception):
@@ -42,7 +43,9 @@ def load_shots(production_dir: str | Path) -> tuple[list[dict], str]:
     if storyboard.is_file():
         frames = _read_json(storyboard).get("frames") or []
         if frames:
-            return [_from_frame(frame) for frame in frames if isinstance(frame, dict)], "storyboard/storyboard.json"
+            shots = [_from_frame(frame) for frame in frames if isinstance(frame, dict)]
+            _merge_shot_list(folder, shots)
+            return shots, "storyboard/storyboard.json"
     for relative in ("storyboard/shot-list.json", "shot-lists/shot-list.json"):
         path = folder / relative
         if not path.is_file():
@@ -74,7 +77,7 @@ def build_generation_plan(
         )
     lock = load_prop_lock(folder)
     priced_shots = [
-        _price_shot(shot, card, lock, routing_path=routing_path)
+        _price_shot(shot, card, lock, routing_path=routing_path, folder=folder)
         for shot in shots
     ]
     picture = _sum(item["shot_usd"] for item in priced_shots)
@@ -307,13 +310,26 @@ def run_picture(producer, call) -> str:
     raise GenerationError(f"The picture pipeline has no '{call.command}' command.")
 
 
-def _price_shot(shot: dict, card: dict, lock: dict | None, *, routing_path) -> dict:
+def _price_shot(shot: dict, card: dict, lock: dict | None, *, routing_path, folder: Path) -> dict:
     enforced = enforce_prompt(shot["prompt"], shot["props"], lock)
     preview_model, preview_override = _resolve("preview", shot, routing_path)
     final_model, final_override = _resolve("final", shot, routing_path)
-    preview = _pass_cost(shot, preview_model, card)
-    final = _pass_cost(shot, final_model, card)
+    preview_rate, preview_refs = _reference_rate(folder, shot, enforced.prompt, preview_model, card)
+    if final_model == preview_model:
+        final_rate, final_refs = preview_rate, preview_refs
+    else:
+        final_rate, final_refs = _reference_rate(folder, shot, enforced.prompt, final_model, card)
+    preview = _pass_cost(shot, preview_model, card, per_second=preview_rate)
+    final = _pass_cost(shot, final_model, card, per_second=final_rate)
     notes = list(preview["notes"]) + [note for note in final["notes"] if note not in preview["notes"]]
+    for prepared in (preview_refs, final_refs):
+        if prepared is None:
+            continue
+        for line in quote_lines(prepared):
+            if line not in notes:
+                notes.append(line)
+        if final_refs is preview_refs:
+            break
     priced = preview["priced"] and final["priced"]
     shot_usd = preview["usd"] + final["usd"] if priced else as_money(0)
     retake_usd = preview["usd"] if priced else as_money(0)
@@ -342,7 +358,7 @@ def _price_shot(shot: dict, card: dict, lock: dict | None, *, routing_path) -> d
     }
 
 
-def _pass_cost(shot: dict, model: str, card: dict) -> dict:
+def _pass_cost(shot: dict, model: str, card: dict, *, per_second=None) -> dict:
     row = generator_rate(card, model)
     duration = shot["duration_seconds"]
     if row is None or duration is None:
@@ -350,7 +366,8 @@ def _pass_cost(shot: dict, model: str, card: dict) -> dict:
         return {"priced": False, "usd": as_money(0), "billed": as_money(0), "pieces": [], "notes": [reason] if reason else []}
     lengths, notes = clip_lengths(duration, row)
     billed = _sum(lengths)
-    cost = usd_per_second(row) * billed
+    rate = as_money(per_second) if per_second is not None else usd_per_second(row)
+    cost = rate * billed
     return {
         "priced": True,
         "usd": as_money(cost),
@@ -381,6 +398,17 @@ def _generator_label(preview: str, final: str, override: bool, card: dict) -> st
     if override:
         text += ", from a routing override"
     return text
+
+
+def _reference_rate(folder: Path, shot: dict, prompt: str, model: str, card: dict):
+    """The reference-to-video price when this shot would send images on that model."""
+    row = generator_rate(card, model)
+    if row is None:
+        return None, None
+    prepared = prepare_references(folder, shot, prompt, row)
+    if prepared.per_second is None:
+        return None, prepared
+    return prepared.per_second, prepared
 
 
 def _label(card: dict, model: str) -> str:
@@ -494,9 +522,7 @@ def _from_frame(frame: dict) -> dict:
         "prompt": str(frame.get("board_prompt") or frame.get("what_we_see") or ""),
         "props": frame.get("props_in_frame") or [],
     }
-    images = [str(path) for path in frame.get("reference_images") or [] if str(path).strip()]
-    if images:
-        shot["reference_images"] = images
+    _copy_reference_fields(shot, frame)
     return shot
 
 
@@ -512,10 +538,74 @@ def _from_shot(shot: dict) -> dict:
         "prompt": str(shot.get("generation_prompt") or shot.get("description") or ""),
         "props": shot.get("props_in_frame") or shot.get("props_in_shot") or [],
     }
-    images = [str(path) for path in shot.get("reference_images") or [] if str(path).strip()]
+    _copy_reference_fields(loaded, shot)
+    return loaded
+
+
+def _copy_reference_fields(loaded: dict, source: dict) -> None:
+    """Keep the shot's own image list and the ids a lock can match. Omit empty fields."""
+    images = [str(path).strip() for path in source.get("reference_images") or [] if str(path).strip()]
     if images:
         loaded["reference_images"] = images
-    return loaded
+    characters = [str(item).strip() for item in source.get("characters_in_shot") or [] if str(item).strip()]
+    if characters:
+        loaded["characters_in_shot"] = characters
+    for key in ("location_id", "location"):
+        value = source.get(key)
+        if isinstance(value, str) and value.strip():
+            loaded[key] = value.strip()
+    block = source.get("reference_from")
+    if isinstance(block, dict):
+        loaded["reference_from"] = block
+
+
+def _merge_shot_list(folder: Path, shots: list[dict]) -> None:
+    """Fill ids the storyboard frame does not carry from the shot list, when one exists."""
+    index = _shot_list_index(folder)
+    if not index:
+        return
+    for shot in shots:
+        source = index.get(shot.get("shot_id") or "")
+        if not isinstance(source, dict):
+            continue
+        if "reference_images" not in shot:
+            images = [str(path).strip() for path in source.get("reference_images") or [] if str(path).strip()]
+            if images:
+                shot["reference_images"] = images
+        if "characters_in_shot" not in shot:
+            characters = [
+                str(item).strip() for item in source.get("characters_in_shot") or [] if str(item).strip()
+            ]
+            if characters:
+                shot["characters_in_shot"] = characters
+        for key in ("location_id", "location"):
+            if key in shot:
+                continue
+            value = source.get(key)
+            if isinstance(value, str) and value.strip():
+                shot[key] = value.strip()
+        if "reference_from" not in shot and isinstance(source.get("reference_from"), dict):
+            shot["reference_from"] = source["reference_from"]
+
+
+def _shot_list_index(folder: Path) -> dict:
+    for relative in ("storyboard/shot-list.json", "shot-lists/shot-list.json"):
+        path = folder / relative
+        if not path.is_file():
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(data, dict) or data.get("superseded") is True:
+            continue
+        index = {}
+        for item in data.get("shots") or []:
+            if isinstance(item, dict) and item.get("shot_id"):
+                index[str(item["shot_id"])] = item
+        if index:
+            return index
+    return {}
 
 
 def _duration(value):

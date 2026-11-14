@@ -38,6 +38,8 @@ _SCHEMA_BY_FILENAME = {
     "line-producer.json": "line-producer-record.schema.json",
     "questions.json": "director-questions.schema.json",
     "hero-props.json": "hero-props.schema.json",
+    "location-lock.json": "location-lock.schema.json",
+    "character-lock.json": "character-lock.schema.json",
     "prop-definitions.json": "hero-props.schema.json",
     "continuity-check.json": "continuity-check.schema.json",
     "look.json": "look.schema.json",

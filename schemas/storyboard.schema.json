@@ -89,6 +89,26 @@
             "description": "Locked prop reference paths for providers that accept an image reference.",
             "items": { "type": "string", "minLength": 1 }
           },
+          "characters_in_shot": {
+            "type": "array",
+            "description": "character_id values visible in this shot. Generation uses them to pull face photos.",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "location_id": {
+            "type": "string",
+            "description": "location_id from locations/location-lock.json when this shot should use that place's photos."
+          },
+          "location": { "type": "string" },
+          "reference_from": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Optional explicit lock ids. An empty list for a key pulls nothing from that lock. A missing key is inferred.",
+            "properties": {
+              "characters": { "type": "array", "items": { "type": "string" } },
+              "location": { "type": "string" },
+              "props": { "type": "array", "items": { "type": "string" } }
+            }
+          },
           "image_status": { "type": "string", "enum": ["not-generated", "fake-client"] },
           "image_ref": { "type": ["string", "null"] }
         }

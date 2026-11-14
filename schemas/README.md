@@ -67,6 +67,8 @@ When you're debugging why Shot 14 has the wrong lighting, you need to trace the 
 | `director-questions.schema.json` | One round of questions for Ron. Answers live in the file. |
 | `line-producer-record.schema.json` | Ledger, stage split, credits, schedule, and Ron's decisions for one run. |
 | `hero-props.schema.json` | Locked hero props. The attributes are whatever the production defined. A prop can list `generic_nouns`. |
+| `location-lock.schema.json` | Optional locked places and their photos. A shot pulls the place that matches its setting. |
+| `character-lock.schema.json` | Optional locked faces. Costume photos are used only when this file has none for that person. |
 | `continuity-check.schema.json` | Script Supervisor findings before a shot is generated. |
 | `look.schema.json` | The look one production chose: lenses, framing, lighting, palette. |
 | `camera-package.schema.json` | The Cinematographer's package, copied from that look. |
