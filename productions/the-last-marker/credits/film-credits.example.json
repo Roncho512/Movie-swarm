@@ -10,16 +10,16 @@
     {"role": "Producer", "name": "R. Edwin Merrill III"}
   ],
   "cast": [
-    {"role": "Miguel Vega", "name": "Teodoro Abasolo", "fictional_placeholder": true}
+    {"role": "Miguel Vega", "name": "Teodoro Abasolo"}
   ],
   "crew": [
-    {"role": "Director of Photography", "name": "Enzo Callegaris", "fictional_placeholder": true},
-    {"role": "Editor", "name": "Halina Wierzbicka", "fictional_placeholder": true},
-    {"role": "Music", "name": "Aurelio Benvenga", "fictional_placeholder": true},
-    {"role": "Production Design", "name": "Rodrigo Llanes Ortuño", "fictional_placeholder": true},
-    {"role": "Art Director", "name": "Massimo Ferlandi", "fictional_placeholder": true},
-    {"role": "Costumes", "name": "Graziella Fontecchio", "fictional_placeholder": true},
-    {"role": "Sound", "name": "Bogdan Przybyłek", "fictional_placeholder": true},
-    {"role": "Makeup", "name": "Pilar Arreguín", "fictional_placeholder": true}
+    {"role": "Director of Photography", "name": "Enzo Callegaris"},
+    {"role": "Editor", "name": "Halina Wierzbicka"},
+    {"role": "Music", "name": "Aurelio Benvenga"},
+    {"role": "Production Design", "name": "Rodrigo Llanes Ortuño"},
+    {"role": "Art Director", "name": "Massimo Ferlandi"},
+    {"role": "Costumes", "name": "Graziella Fontecchio"},
+    {"role": "Sound", "name": "Bogdan Przybyłek"},
+    {"role": "Makeup", "name": "Pilar Arreguín"}
   ]
 }

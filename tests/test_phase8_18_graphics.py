@@ -286,7 +286,11 @@ def test_film_credits_subtitles_and_external_key_art(tmp_path):
     archive = repo_root() / "productions" / "the-last-marker" / "credits"
     assert example.is_file()
     assert not (archive / "film-credits.json").exists()
-    errors = validate_data(json.loads(example.read_text(encoding="utf-8")), load_schema("film-credits"))
+    raw_credits = example.read_text(encoding="utf-8")
+    assert "fictional" not in raw_credits.casefold()
+    assert "invented" not in raw_credits.casefold()
+    assert "placeholder" not in raw_credits.casefold()
+    errors = validate_data(json.loads(raw_credits), load_schema("film-credits"))
     assert errors == []
     credits_path = production / "credits" / "film-credits.json"
     credits_path.parent.mkdir()
@@ -321,18 +325,24 @@ def test_film_credits_subtitles_and_external_key_art(tmp_path):
         ("Producer", "R. Edwin Merrill III"),
     ]
     assert lines[0]["detail"] == "mansepic.com"
-    assert "fictional_placeholder" not in lines[1]
+    assert all("fictional_placeholder" not in line and "mark" not in line for line in lines)
     cast = lines[4]
     assert cast["name"] == "Teodoro Abasolo"
     assert cast["role"] == "Miguel Vega"
     assert cast["billing"] == "as"
-    assert cast["mark"] == "FICTIONAL PLACEHOLDER"
+    official = {
+        ("Miguel Vega", "Teodoro Abasolo"),
+        ("Director of Photography", "Enzo Callegaris"),
+        ("Editor", "Halina Wierzbicka"),
+        ("Music", "Aurelio Benvenga"),
+        ("Production Design", "Rodrigo Llanes Ortuño"),
+        ("Art Director", "Massimo Ferlandi"),
+        ("Costumes", "Graziella Fontecchio"),
+        ("Sound", "Bogdan Przybyłek"),
+        ("Makeup", "Pilar Arreguín"),
+    }
+    assert {(line["role"], line["name"]) for line in lines[4:]} == official
     names = [line["name"] for line in lines]
-    assert "Bogdan Przybyłek" in names
-    assert "Pilar Arreguín" in names
-    assert "Rodrigo Llanes Ortuño" in names
-    assert "Halina Wierzbicka" in names
-    assert all(line.get("mark") == "FICTIONAL PLACEHOLDER" for line in lines[4:])
     assert "Nia" not in names
     crew = package["end_credits"]["studio_crew"]
     assert crew["heading"] == "Made with Movie-swarm crew"
@@ -340,15 +350,21 @@ def test_film_credits_subtitles_and_external_key_art(tmp_path):
     assert {"role": "Executive Producer", "name": "Ron"} in crew["lines"]
     assert "Executive Producer" not in [line["role"] for line in lines]
     billing = "\n".join(package["key_art"]["billing_block"])
-    assert "Teodoro Abasolo as Miguel Vega — FICTIONAL PLACEHOLDER" in billing
-    assert "Bogdan Przybyłek — FICTIONAL PLACEHOLDER" in billing
+    assert "Teodoro Abasolo as Miguel Vega" in billing
+    assert "Sound: Bogdan Przybyłek" in billing
+    assert "Makeup: Pilar Arreguín" in billing
+    assert "Production Design: Rodrigo Llanes Ortuño" in billing
+    assert "FICTIONAL PLACEHOLDER" not in billing
+    assert "fictional" not in billing.casefold()
     assert "Nia" not in billing
     assert "breitling" not in billing.casefold()
     assert "watch" not in billing.casefold()
     notes = (production / "graphics" / "graphics.md").read_text(encoding="utf-8")
     assert "Przybyłek" in notes
     assert "Arreguín" in notes
-    assert "FICTIONAL PLACEHOLDER" in notes
+    assert "Ortuño" in notes
+    assert "FICTIONAL PLACEHOLDER" not in notes
+    assert "fictional" not in notes.casefold()
     assert "Made with Movie-swarm crew" in notes
     assert "Old Standard TT Bold" in notes
     assert "Noto Sans" in notes
@@ -364,3 +380,45 @@ def test_film_credits_subtitles_and_external_key_art(tmp_path):
     assert again["key_art"]["approved_file"] == "graphics/brand/key-art-poster.png"
     assert brand.read_bytes() == payload
     assert not (production / "graphics" / "key-art-poster.png").exists()
+
+
+def test_another_film_can_still_flag_a_placeholder_line(tmp_path):
+    production, producer = _ready(tmp_path / "other-film")
+    credits = {
+        "version": "1.0.0",
+        "cast": [{"role": "Ada", "name": "Sample Player", "fictional_placeholder": True}],
+        "crew": [{"role": "Gaffer", "name": "Sample Crew"}],
+    }
+    path = production / "credits" / "film-credits.json"
+    path.parent.mkdir()
+    path.write_text(json.dumps(credits), encoding="utf-8")
+    write_research(production)
+    write_guide(production)
+    producer.approve_gate("graphics", "approved", "ron", note="Use the guide.")
+    package = build_graphics(production)
+    assert validate_file(production / "graphics" / "graphics.json").ok
+    lines = package["end_credits"]["lines"]
+    flagged = next(line for line in lines if line["name"] == "Sample Player")
+    plain = next(line for line in lines if line["name"] == "Sample Crew")
+    assert flagged["role"] == "Ada"
+    assert flagged["billing"] == "as"
+    assert flagged["fictional_placeholder"] is True
+    assert flagged["mark"] == "FICTIONAL PLACEHOLDER"
+    assert "fictional_placeholder" not in plain
+    assert "mark" not in plain
+    billing = "\n".join(package["key_art"]["billing_block"])
+    assert "Sample Player as Ada — FICTIONAL PLACEHOLDER" in billing
+    assert "Gaffer: Sample Crew" in billing
+    assert "— FICTIONAL PLACEHOLDER" not in billing.split("Gaffer: Sample Crew", 1)[1]
+    for name in (
+        "Teodoro Abasolo",
+        "Enzo Callegaris",
+        "Halina Wierzbicka",
+        "Aurelio Benvenga",
+        "Rodrigo Llanes Ortuño",
+        "Massimo Ferlandi",
+        "Graziella Fontecchio",
+        "Bogdan Przybyłek",
+        "Pilar Arreguín",
+    ):
+        assert name not in billing
