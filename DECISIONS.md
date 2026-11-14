@@ -1688,11 +1688,29 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: Ron can renumber it or leave it. Nothing in the engine reads that number.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
+## D191 — Plan a visual brand guide PDF, and do not build it yet
+
+- Status: decided
+- Date: 2026-11-13
+- Context: The graphics gate shows Ron `graphics/brand-guide.md`, a text brand guide. Ron wants an actual visual brand guide to review at that gate. Hero props and featured-product placement rules already live in the production folder. The engine has to stay generic (D30).
+- Decision: Ron, 2026-11-13. Title and Graphic Design must produce a visual brand guide as a PDF for Ron to review at the graphics gate. The PDF includes color swatches with hex codes. It includes font specimens that render each proposed face, for the title, the credits, the subtitles, and marketing, with the type rules: sizes, casing, tracking, hierarchy, and safe area. It shows the text rules and the credit-block rules on the page. It includes hero-prop imagery for each film's locked hero props, for example a vehicle or a watch, consistent with the locked prop specs and with the featured-product placement rules. It includes at least one proposed scene or key-art frame. An image that needs paid generation uses the art director budget line and the generation approval that already exist. Laying out the PDF is offline. The engine reads the production's locks and does not hard-code a film (D30). No code until Ron gives the go to build it.
+- Consequences: The roadmap files this as phase 8.20, after the planned breakdown gate (8.19, D184). That number is a filing choice. It is not a start order. For The Last Marker, Ron's Grok Bot designer teammate, Beautiful 3, is producing the first such PDF by hand as the reference example while this capability is planned. Spent on this step: $0.00.
+- Who decided: Ron, 2026-11-13
+
+## D192 — Plan a live designer research mode, and leave it off
+
+- Status: decided
+- Date: 2026-11-13
+- Context: Title and Graphic Design reads offline reference packs in `config/design-references/`. A coding agent researched those packs and checked them in (Phase 8.18, D186). The designer does not research a film on its own.
+- Decision: Ron, 2026-11-13. Plan a live research mode for the studio's designer. The designer researches that film's period, genre, posters, fonts, and colors, and writes citations. The step is metered and paid. It bills to the art director budget line and waits for gate approval. It is never on by default. It writes a new reference pack for Ron to approve. The engine stays generic (D30). No code until Ron gives the go to build it.
+- Consequences: The roadmap files this as phase 8.21, after 8.20. That number is a filing choice. It is not a start order. The offline packs from Phase 8.18 stay the path that runs today. The planned Script Supervisor / 1st AD breakdown gate (D184) stays as already listed. Spent on this step: $0.00.
+- Who decided: Ron, 2026-11-13
+
 ## D193 — Techniscope 35mm for The Last Marker
 
 - Status: decided
 - Date: 2026-11-13
-- Context: The style bible stated 16mm Ektachrome. The look, the treatment, and the lookbook described a warm grainy 1960s picture and did not name that stock. Ron named a different stock in chat on 2026-11-13 at 8:28 PM CT. Branch `roadmap-graphics-visual-guide` is unmerged and already records D191 and D192, so this entry is D193.
+- Context: The style bible stated 16mm Ektachrome. The look, the treatment, and the lookbook described a warm grainy 1960s picture and did not name that stock. Ron named a different stock in chat on 2026-11-13 at 8:28 PM CT. D191 and D192 were already recorded on `roadmap-graphics-visual-guide`, now merged to main in pull request 29, so this entry is D193.
 - Decision: Ron, 2026-11-13. The Last Marker is Techniscope 35mm (2-perf, 2.39:1), in the Leone-style sun-blasted grainy spaghetti western look, pushed harder. That stock replaces 16mm Ektachrome. The frame stays 2.39:1. The engine stays generic (D30) and does not hard-code this stock.
 - Consequences: The in-repo film copy states the new stock in the style bible, `look/look.json`, the treatment, the lookbook, the brief, the screenplay, the generation prompts, and the shot list. The wide lens line in that copy says spherical, because 2-perf Techniscope is spherical capture, framed 2.39:1. Prior gate files in `archive/` stay the record of the earlier approval. QA notes and the seedance source prompt stay records of the earlier pass. Spent on this step: $0.00.
 - Who decided: Ron, 2026-11-13
@@ -1710,8 +1728,7 @@ Choices that are already made. Each entry has the context, the decision, what fo
 
 - Status: proposed
 - Date: 2026-11-14
-- Context: A designer collaborator is producing visual brand guide drafts for review. Those drafts are not a decision Ron recorded in the 8:28 PM or 8:29 PM CT notes. D191 and D192, on the unmerged branch `roadmap-graphics-visual-guide`, already plan a visual brand guide PDF and a live research mode. This note does not use those numbers.
+- Context: A designer collaborator is producing visual brand guide drafts for review. Those drafts are not a decision Ron recorded in the 8:28 PM or 8:29 PM CT notes. D191, now on main, plans the visual brand guide PDF and says Beautiful 3 is producing the first such PDF by hand. D192 plans live designer research and leaves it off. This entry records the hand drafts. It does not change D191 or D192.
 - Decision: Record that visual brand guide drafts v1 through v4 are being produced outside this repo by a designer collaborator, and that v4 is in progress. Do not add the PDFs to the repo.
-- Consequences: The roadmap says the same thing. No PDF is committed. This entry is a proposal. Ron has not accepted or rejected it.
+- Consequences: The roadmap says the same thing, beside the planned PDF in D191. No PDF is committed. This entry is a proposal. Ron has not accepted or rejected it.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
-

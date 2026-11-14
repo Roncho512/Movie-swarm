@@ -176,7 +176,7 @@ python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 ap
 |---|---|---|
 | treatment | `treatment/treatment.md` | The plan is accepted and the stage lines lock. |
 | previs | Props, wardrobe, makeup, continuity, camera, storyboard, schedule, light, grip, stunts, VFX, and the title research. | The package can go forward. |
-| graphics | `graphics/brand-guide.md` | Titles, credits, and key art may be built. Credits follow the typeface in the active design-reference pack. Read the designer proposals first. This stop comes after previs. The guide stays a draft until you approve it. |
+| graphics | `graphics/brand-guide.md`. A visual brand guide PDF is planned for this same review (D191, Ron, 2026-11-13). It is not written yet. | Titles, credits, and key art may be built. Credits follow the typeface in the active design-reference pack (D194). Read the designer proposals first. This stop comes after previs. The guide stays a draft until you approve it. When that PDF is built, this gate shows color swatches with hex codes, rendered specimens of the title, credits, subtitle, and marketing faces with the type rules (sizes, casing, tracking, hierarchy, safe area), the text rules and the credit-block rules on the page, hero-prop imagery that follows the locked prop specs and the featured-product placement rules, and at least one proposed scene or key-art frame. |
 | production | The generation plan under `generation/`. | The quote may be written. This is not a paid call. |
 | dailies | `dailies/dailies-report.md` | Circled takes may be cut. |
 | editor | The same report, before assembly. | The editor may assemble. |
@@ -335,7 +335,7 @@ The Director is role 00. Ron talks to the Director. The Director writes the trea
 | 16 | Costume Designer | Locks wardrobe. |
 | 17 | Makeup and Hair | Locks makeup, hair, and effects. |
 | 18 | VFX Supervisor | Breakdown before production, and a read of the VFX shots after dailies. |
-| 19 | Title and Graphic Design | Research, a draft brand guide, titles, credits, and key art. Credits follow the active design-reference pack. Proposals stay labeled until the graphics gate. |
+| 19 | Title and Graphic Design | Research, a draft brand guide, titles, credits, and key art. Credits follow the active design-reference pack (D194). Proposals stay labeled until the graphics gate. That gate shows Ron the draft guide. A visual PDF of the guide is planned for the same review (D191) and is not built yet. |
 | 20 | Trailer Editor | Teaser and trailer from approved takes, after picture lock, and only when the budget turns the trailer on. |
 
 The Dailies Reviewer, the Composer, the Colorist, the Re-recording Mixer, and the Post Supervisor are part of the studio walk. They are not numbered 01 to 20. Their gates are dailies, sound, color-mix, and delivery.
