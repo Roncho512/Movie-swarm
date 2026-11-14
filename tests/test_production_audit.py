@@ -70,6 +70,7 @@ def test_pilot_audit_matches_the_recorded_gaps():
         "productions/the-last-marker/edit/edit-decision-list.json",
         "productions/the-last-marker/seedance-output/cost-report.json",
         "productions/the-last-marker/treatment/inputs.json",
+        "productions/the-last-marker/credits/film-credits.example.json",
     }
 
     assert set(by_path) == passed | set(known) | skipped

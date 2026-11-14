@@ -18,7 +18,8 @@
     "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
     "model": { "type": "string", "minLength": 1 },
     "note": { "type": "string" },
-    "written_at": { "type": "string", "format": "date-time" }
+    "written_at": { "type": "string", "format": "date-time" },
+    "subtitle_spec": { "$ref": "#/$defs/subtitle_spec" }
   },
   "$defs": {
     "item": {
@@ -46,7 +47,15 @@
         "surface": { "type": "string", "enum": ["title", "poster", "key-art", "credits"] },
         "lettering_name": { "type": "string", "minLength": 1 },
         "lettering_style": { "type": "string", "minLength": 1 },
-        "lettering_construction": { "type": "string", "minLength": 1 }
+        "lettering_construction": { "type": "string", "minLength": 1 },
+        "font_role": { "type": "string", "minLength": 1 },
+        "duty": { "type": "string", "enum": ["primary", "mockup-stand-in", "glyph-fallback"] },
+        "fallback_glyphs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "swatch_scope": { "type": "string", "enum": ["print", "screen", "any"] }
       }
     },
     "file_print": {
@@ -70,6 +79,57 @@
           "type": "array",
           "items": { "$ref": "#/$defs/file_print" }
         }
+      }
+    },
+    "subtitle_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["burned_in", "player"],
+      "properties": {
+        "burned_in": { "$ref": "#/$defs/burned_in" },
+        "player": { "$ref": "#/$defs/player_subtitles" }
+      }
+    },
+    "burned_in": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "weight",
+        "case",
+        "color_name",
+        "color",
+        "edge",
+        "position",
+        "picture",
+        "max_lines",
+        "max_characters_per_line"
+      ],
+      "properties": {
+        "family": { "type": "string", "minLength": 1 },
+        "weight": { "type": "string", "minLength": 1 },
+        "case": { "type": "string", "minLength": 1 },
+        "color_name": { "type": "string", "minLength": 1 },
+        "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "edge": { "type": "string", "minLength": 1 },
+        "position": { "type": "string", "minLength": 1 },
+        "picture": { "type": "string", "minLength": 1 },
+        "max_lines": { "type": "integer", "minimum": 1 },
+        "max_characters_per_line": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "player_subtitles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family", "files", "note"],
+      "properties": {
+        "family": { "type": "string", "minLength": 1 },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "enum": ["srt", "vtt"] }
+        },
+        "note": { "type": "string", "minLength": 1 }
       }
     }
   }

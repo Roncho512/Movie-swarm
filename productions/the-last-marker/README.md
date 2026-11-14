@@ -16,6 +16,7 @@ The live files are inputs, not an approved gate:
 - Prop locks are `props/prop-definitions.json` and `props/hero-props.json`. Exhaust is on the right. The watch is on the left wrist.
 - The look is `look/look.json`. The style bible is `visual-style-bible.json`.
 - Ron's locked answers are in `treatment/inputs.json`. Theme, tone, and references are locked. Miguel wants to finish the race, but water and life matter more. Withhold whether the canyon really has water. The action beats are approved.
+- Approved credits for the working film are described in `credits/README.md`. Copy `credits/film-credits.example.json` to `PER-Films/the-last-marker/credits/film-credits.json`. This archive does not contain the live credits file (D196, D197).
 
 Intake reads `treatment/inputs.json`, merges those facts into the draft, and leaves the gate closed. `budget.json` is the quote. The trailer is on, contingency is 10 percent, and the picture tier is better. Those three are proposed, Ron to confirm. Best is the upgrade.
 

@@ -1667,7 +1667,8 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Date: 2026-11-13
 - Context: D183 allows the designer to suggest period faces and a custom title treatment. Credits must be a sans-serif. Only faces whose license allows use in a film are eligible. The pack for 1960s Italian western posters is the first one shipped.
 - Decision: For a production whose documents match that pack, the guide proposes Rye (Nicole Fally, Sorkin Type Co) as the title face, with Sancreek as an alternate display face, Source Sans 3 for credits, Noto Sans for subtitles, and Alfa Slab One for marketing. Each is under the SIL Open Font License 1.1. The license text says its conditions do not apply to a document made with the font. The font file is not sold by itself. These files are stand-ins. The pack does not claim they were the faces cut on the period posters. Painted pulp capitals are described as a custom title option and are not built. Blood red, black, warm yellow, and dusk blue are proposed with hex values the cited pages do not give. Artist names and poster facts are copied from the cited pages and are not merged where two pages spell a name differently.
-- Consequences: Ron approves or rejects the faces, the hex values, and the lettering description at the graphics gate. The credits face named here, and the refusal of a credits face that is not a sans-serif, are superseded by D194. The title faces, the painted pulp capitals, the subtitle and marketing faces, and the color notes stay proposals.
+- Consequences: Ron approves or rejects the faces, the hex values, and the lettering description at the graphics gate. The credits face named here, and the refusal of a credits face that is not a sans-serif, are superseded by D194. The faces, the dusk-blue hex, and the subtitle face in this entry are superseded by D196.
+- Superseded in part: D194 supersedes the credits face and the sans-serif refusal. D196 (Ron, 2026-11-13) supersedes the remaining faces, the dusk-blue hex #3E5C73, and the subtitle face.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
 ## D189 — Placement rules are carried, and a sale is not
@@ -1721,7 +1722,8 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Date: 2026-11-13
 - Context: D183 said credits use a sans-serif. Ron withdrew that request in chat on 2026-11-13 at 8:29 PM CT. The painted pulp capitals title direction in the western design-reference pack is a proposal and was not withdrawn.
 - Decision: Ron, 2026-11-13. Forget the sans-serif credits request. Typography for the film — title, credits, subheads, and body — is period-accurate to classic 1960s spaghetti westerns. The sans-serif credits clause in D183 is superseded. The rest of D183 stands. Credits follow the period typography of the active design-reference pack. The engine does not force a category. Painted pulp capitals remain the title direction, and that direction is still a proposal.
-- Consequences: The western pack proposes Libre Baskerville, a serif stand-in, for credits, subheads, and body. It does not claim that file was the metal face on a 1960s credit block. Painted pulp capitals stay a description and are not a built font. Subtitles stay the pack's readability proposal. A film whose documents match no pack does not receive an invented credits face. D188's credits face and its refusal of any other category are superseded by this decision. Spent on this step: $0.00.
+- Superseded in part: The Libre Baskerville stand-in, and the clause that painted pulp capitals remain only a proposal, are superseded by D196 (Ron, 2026-11-13). Period typography, and the withdrawal of the sans-serif credits clause, still stand.
+- Consequences: The western pack proposes Libre Baskerville, a serif stand-in, for credits, subheads, and body. It does not claim that file was the metal face on a 1960s credit block. Painted pulp capitals stay a description and are not a built font. Subtitles stay the pack's readability proposal. A film whose documents match no pack does not receive an invented credits face. D188's credits face and its refusal of any other category are superseded by this decision. D196 replaces the Libre Baskerville stand-in and approves the painted pulp capitals direction. Spent on this step: $0.00.
 - Who decided: Ron, 2026-11-13
 
 ## D195 — Visual brand guide drafts stay outside the repo
@@ -1730,5 +1732,32 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Date: 2026-11-14
 - Context: A designer collaborator is producing visual brand guide drafts for review. Those drafts are not a decision Ron recorded in the 8:28 PM or 8:29 PM CT notes. D191, now on main, plans the visual brand guide PDF and says Beautiful 3 is producing the first such PDF by hand. D192 plans live designer research and leaves it off. This entry records the hand drafts. It does not change D191 or D192.
 - Decision: Record that visual brand guide drafts v1 through v4 are being produced outside this repo by a designer collaborator, and that v4 is in progress. Do not add the PDFs to the repo.
-- Consequences: The roadmap says the same thing, beside the planned PDF in D191. No PDF is committed. This entry is a proposal. Ron has not accepted or rejected it.
+- Superseded in part: The words "v4 is in progress" are overtaken by D196 (Ron, 2026-11-13), which approves the graphics gate on brand guide v4. The drafts still stay outside the repo.
+- Consequences: The roadmap says the same thing, beside the planned PDF in D191. No PDF is committed. This entry is a proposal. Ron has not accepted or rejected the filing rule. D196 records the approval of the external v4 draft.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
+
+## D196 — Graphics gate approved on brand guide v4
+
+- Status: decided
+- Date: 2026-11-13
+- Context: The offline graphics build was still using western pack 1.1.0. That pack set the title in Rye, the credits in Libre Baskerville, and the subtitles in Noto Sans, and the package took a palette swatch for the subtitle color. The key art was a flat stand-in. Ron approved the external brand guide v4 on 2026-11-13 at 10:40 PM CT. The palette note on page 17 of that guide was earlier the same day, at 1:28 PM. D194 had left painted pulp capitals as a proposal and had named Libre Baskerville as the credits stand-in. D195 records that the guide drafts stay outside this repo.
+- Decision: Ron, 2026-11-13.
+  1. The graphics gate is approved on brand guide v4.
+  2. Credits face: Caprasimo (SIL Open Font License 1.1, google/fonts), drawn to Cooper Black proportions, after the stretched Cooper Black opening credits of Once Upon a Time in the West (1968). Glyphs it lacks (Ł ł Ń ń) fall back to Fraunces (OFL 1.1). This replaces the Libre Baskerville stand-in.
+  3. Subheads and section labels: Alfa Slab One (OFL 1.1), a stand-in for the period French Clarendon and Italienne faces.
+  4. Body, billing, and burned-in subtitles: Old Standard TT (OFL 1.1).
+  5. Title: painted pulp capitals. Rye and Sancreek are mockup stand-ins only. The final is hand-drawn later and does not trace Rye.
+  6. Burned-in subtitles: Old Standard TT Bold, sentence case, bone #E8DCC8 with a 1 px charcoal edge, bottom-centre inside the 2.39:1 picture, at most 2 lines, about 41 characters per line. Noto Sans is only for player-rendered sidecar SRT and VTT files. Timing stays with the Post Supervisor.
+  7. Palette, from the page 17 note at 1:28 PM: accept #6B7F96 cool dusk blue and #BFAE93 dust, keep the sourced blue dusk #4A5D7A and drop #3E5C73, and #14110E black is print only.
+  8. Credits for The Last Marker: production company Man's Epic Productions (mansepic.com). Director Ronaldo M. Writer Roncho. Producer R. Edwin Merrill III. The cast and crew below are invented placeholders and are marked FICTIONAL PLACEHOLDER: Teodoro Abasolo as Miguel Vega, Director of Photography Enzo Callegaris, Editor Halina Wierzbicka, Music Aurelio Benvenga, Production Design Rodrigo Llanes Ortuño, Art Director Massimo Ferlandi, Costumes Graziella Fontecchio, Sound Bogdan Przybyłek, Makeup Pilar Arreguín. The diacritics stay.
+- Consequences: The western design-reference pack is version 2.0.0 and carries the faces, the licenses, the subtitle spec, and the palette. The engine stays generic (D30). The names live in the production's credits file, not in the engine. Credits and billing do not name a watch or a brand (D38). D188's remaining faces and D194's Libre Baskerville stand-in, and the clause that left painted pulp capitals as only a proposal, are superseded. Spent on this step: $0.00.
+- Who decided: Ron, 2026-11-13
+
+## D197 — Where the build reads credits and approved key art
+
+- Status: proposed
+- Date: 2026-11-14
+- Context: D196 names the credits and the faces. D129 says the working film lives outside this repo, and `productions/the-last-marker` is an archive. The graphics build was copying agent role names into the end credits and could draw a flat key-art stand-in.
+- Decision: A production supplies `credits/film-credits.json`, checked against `film-credits.schema.json`. When that file is present, the end credits and the billing block come from it. A line with `fictional_placeholder` true is printed with the words FICTIONAL PLACEHOLDER. Agent credits stay on the Line Producer record. When the film file is present they are listed under the heading "Made with Movie-swarm crew", and they are not part of the billing block. When the film file is absent, the end credits stay the Line Producer record. The archive keeps `credits/film-credits.example.json` and does not keep a live `credits/film-credits.json`, so a build of the archive is not a second credits source. Ron copies the example to `PER-Films/the-last-marker/credits/film-credits.json`. Approved key art is `graphics/brand/key-art-poster.png` in that same film folder. The build records that path and does not draw a stand-in. The charcoal edge stays the words "1 px charcoal", because no hex was given. Pack rows stay labeled DESIGNER PROPOSAL (D186). A run's brand guide stays a draft until that run's graphics gate.
+- Consequences: Harbor Night, with no credits file, still uses the Line Producer names. A film whose documents match the western pack, and whose folder has the credits file, uses those names and the pack's burned-in subtitle spec plus the Noto Sans player files. No key-art image is drawn.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.

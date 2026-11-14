@@ -1,7 +1,7 @@
 {
   "id": "1960s-italian-spaghetti-western",
-  "version": "1.1.0",
-  "note": "Design era of Italian western posters and title sequences from the mid-1960s, checked against the pages named on each claim. Match is the genre phrase in the production's own genre, tone, or look. The story year is not required, because the poster practice belongs to the years the films were sold, not to the year the story is set. This pack does not name a production, a vehicle, or a watch. Names are copied from the cited page. Two spellings of one poster painter are left as two citations and are not merged.",
+  "version": "2.0.0",
+  "note": "Design era of Italian western posters and title sequences from the mid-1960s, checked against the pages named on each claim. Match is the genre phrase in the production's own genre, tone, or look. The story year is not required, because the poster practice belongs to the years the films were sold, not to the year the story is set. This pack does not name a production, a vehicle, or a watch. Names are copied from the cited page. Two spellings of one poster painter are left as two citations and are not merged. Version 2.0.0 replaces the 1.1.0 credits stand-in and records the faces, the burned-in subtitle treatment, and the palette accepted for this era.",
   "match": {
     "terms": ["spaghetti western", "italian western", "western all'italiana"]
   },
@@ -103,46 +103,102 @@
       "role": "title",
       "family": "Rye",
       "category": "display",
+      "duty": "mockup-stand-in",
       "license_name": "SIL Open Font License 1.1",
       "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/rye/OFL.txt",
       "source_url": "https://fonts.google.com/specimen/Rye",
-      "note": "Designed by Nicole Fally for Sorkin Type Co. The font's own description calls it a medium-contrast wood-type face with a feeling of the American West, for headlines and large sizes. It is a free stand-in for a display title, not a face used on the Italian posters. Those titles were painted. The license text says its conditions do not apply to a document made with the font. Do not sell the font file by itself."
+      "note": "Designed by Nicole Fally for Sorkin Type Co. Mockup stand-in only, Ron, 2026-11-13. The final title is hand-drawn later and does not trace this file. It is not a face used on the Italian posters. Those titles were painted. The license text says its conditions do not apply to a document made with the font. Do not sell the font file by itself."
     },
     {
       "role": "title",
       "family": "Sancreek",
       "category": "display",
+      "duty": "mockup-stand-in",
       "license_name": "SIL Open Font License 1.1",
       "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/sancreek/OFL.txt",
       "source_url": "https://fonts.google.com/specimen/Sancreek",
-      "note": "The font's own description calls Sancreek a caps-oriented display face and a contemporary take on large wooden poster letters of the nineteenth century. Alternate title face, not a claim that an Italian poster used this file. Same license terms as the other faces in this pack: a document made with the font is not the font file."
+      "note": "Mockup stand-in only, Ron, 2026-11-13. The font's own description calls Sancreek a caps-oriented display face. It is not the final title, and the final does not trace it. Same license terms: a document made with the font is not the font file."
     },
     {
       "role": "credits",
-      "family": "Libre Baskerville",
-      "category": "serif",
+      "family": "Caprasimo",
+      "category": "display",
+      "duty": "primary",
       "license_name": "SIL Open Font License 1.1",
-      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/librebaskerville/OFL.txt",
-      "source_url": "https://fonts.google.com/specimen/Libre+Baskerville",
-      "note": "Libre Baskerville, a serif. Proposed for credits, and for the subheads and body that follow the same period habit: a serif or letterpress face, not a geometric sans. It is a free stand-in. This pack does not claim it was the face set on a 1960s Italian credit block. The license text says its conditions do not apply to a document made with the font. Do not sell the font file by itself."
+      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/caprasimo/OFL.txt",
+      "source_url": "https://fonts.google.com/specimen/Caprasimo",
+      "note": "Credits face, Ron, 2026-11-13. Copyright 2023 The Caprasimo Project Authors (https://github.com/docrepair-fonts/caprasimo-fonts), SIL Open Font License 1.1. Drawn to Cooper Black proportions, after the stretched Cooper Black opening credits of Once Upon a Time in the West (1968). This file is not Cooper Black and it is not the metal face on that credit roll. It replaces the Libre Baskerville stand-in. Glyphs it lacks, Ł ł Ń ń, fall back to Fraunces. The license text says its conditions do not apply to a document made with the font. Do not sell the font file by itself."
     },
     {
-      "role": "subtitles",
-      "family": "Noto Sans",
-      "category": "sans-serif",
+      "role": "credits",
+      "family": "Fraunces",
+      "category": "serif",
+      "duty": "glyph-fallback",
+      "fallback_glyphs": ["Ł", "ł", "Ń", "ń"],
       "license_name": "SIL Open Font License 1.1",
-      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/OFL.txt",
-      "source_url": "https://fonts.google.com/specimen/Noto+Sans",
-      "note": "Noto Sans, copyright 2022 The Noto Project Authors. A plain sans-serif proposed for subtitles because it stays readable at small sizes. Timing stays with the Post Supervisor. Same license terms: the subtitle file is a document, and the font file is not sold by itself."
+      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/OFL.txt",
+      "source_url": "https://fonts.google.com/specimen/Fraunces",
+      "note": "Glyph fallback for the credits face, Ron, 2026-11-13. Copyright 2018 The Fraunces Project Authors (https://github.com/undercasetype/Fraunces), SIL Open Font License 1.1. Use it only for Ł ł Ń ń, which Caprasimo lacks. It is not a second credits design. Same license terms: a document made with the font is not the font file."
+    },
+    {
+      "role": "subheads",
+      "family": "Alfa Slab One",
+      "category": "display",
+      "duty": "primary",
+      "license_name": "SIL Open Font License 1.1",
+      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/alfaslabone/OFL.txt",
+      "source_url": "https://fonts.google.com/specimen/Alfa+Slab+One",
+      "note": "Subheads and section labels, Ron, 2026-11-13. Copyright 2016 The Alfa Slab One Project Authors, reserved name Alfa Slab, SIL Open Font License 1.1. A stand-in for the period French Clarendon and Italienne faces. It is not claimed to be the lettering cut on a 1960s poster. Same license terms as the other faces here."
     },
     {
       "role": "marketing",
       "family": "Alfa Slab One",
       "category": "display",
+      "duty": "primary",
       "license_name": "SIL Open Font License 1.1",
       "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/alfaslabone/OFL.txt",
       "source_url": "https://fonts.google.com/specimen/Alfa+Slab+One",
-      "note": "Alfa Slab One, copyright 2016 The Alfa Slab One Project Authors, reserved name Alfa Slab. The font's description calls it a very heavy slab. Proposed for marketing lines that need a poster weight. It is not claimed to be the lettering on a 1960s Italian poster. Same license terms as the other faces here."
+      "note": "Section labels on posters and cards, the same face as subheads, Ron, 2026-11-13. Copyright 2016 The Alfa Slab One Project Authors, SIL Open Font License 1.1. Same license terms."
+    },
+    {
+      "role": "body",
+      "family": "Old Standard TT",
+      "category": "serif",
+      "duty": "primary",
+      "license_name": "SIL Open Font License 1.1",
+      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/oldstandardtt/OFL.txt",
+      "source_url": "https://fonts.google.com/specimen/Old+Standard+TT",
+      "note": "Body text, Ron, 2026-11-13. Copyright 2011 The Old Standard Project Authors (amkryukov@gmail.com), SIL Open Font License 1.1. Billing and burned-in subtitles use this family too. It is a free stand-in, not a claim that this file was the metal face on a 1960s credit block. Same license terms."
+    },
+    {
+      "role": "billing",
+      "family": "Old Standard TT",
+      "category": "serif",
+      "duty": "primary",
+      "license_name": "SIL Open Font License 1.1",
+      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/oldstandardtt/OFL.txt",
+      "source_url": "https://fonts.google.com/specimen/Old+Standard+TT",
+      "note": "Billing block, Ron, 2026-11-13. The same Old Standard TT file as body, SIL Open Font License 1.1, https://raw.githubusercontent.com/google/fonts/main/ofl/oldstandardtt/OFL.txt. Same license terms."
+    },
+    {
+      "role": "subtitles",
+      "family": "Old Standard TT",
+      "category": "serif",
+      "duty": "primary",
+      "license_name": "SIL Open Font License 1.1",
+      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/oldstandardtt/OFL.txt",
+      "source_url": "https://fonts.google.com/specimen/Old+Standard+TT",
+      "note": "Burned-in subtitles, Ron, 2026-11-13. Old Standard TT Bold, SIL Open Font License 1.1. The weight, case, color, and placement are in subtitle_spec. Timing stays with the Post Supervisor. Noto Sans is not this face."
+    },
+    {
+      "role": "player-subtitles",
+      "family": "Noto Sans",
+      "category": "sans-serif",
+      "duty": "primary",
+      "license_name": "SIL Open Font License 1.1",
+      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/OFL.txt",
+      "source_url": "https://fonts.google.com/specimen/Noto+Sans",
+      "note": "Player-rendered sidecar subtitle files only, Ron, 2026-11-13. Noto Sans, copyright 2022 The Noto Project Authors, SIL Open Font License 1.1. SRT and VTT. It is not the burned-in treatment. Timing stays with the Post Supervisor. Same license terms: the subtitle file is a document, and the font file is not sold by itself."
     }
   ],
   "colors": [
@@ -157,8 +213,9 @@
       "name": "black",
       "hex": "#14110E",
       "use": "propose",
+      "scope": "print",
       "url": "https://www.pixartprinting.co.uk/blog/fonts-sergio-leone/",
-      "note": "Pixartprinting names black as one of the two title colours, with red. The page gives no hex. This near-black is a designer proposal for print black, not the CSS keyword."
+      "note": "Print only, Ron, 2026-11-13. Pixartprinting names black as one of the two title colours, with red. The page gives no hex. This near-black stays off the screen. It is not the CSS keyword."
     },
     {
       "name": "warm yellow",
@@ -168,13 +225,53 @@
       "note": "Stylogeny names warm yellows in the painted-poster palette. The page gives no hex. This hex is a designer proposal."
     },
     {
-      "name": "dusk blue",
-      "hex": "#3E5C73",
+      "name": "blue dusk",
+      "hex": "#4A5D7A",
       "use": "propose",
       "url": "https://stylogeny.com/styles/italian-painted-film-poster/",
-      "note": "Stylogeny names dusk blues against those warm colours. The page gives no hex. This hex is a designer proposal."
+      "note": "Sourced blue dusk kept, Ron, 2026-11-13. The earlier proposal #3E5C73 is dropped. Stylogeny names dusk blues and does not print this hex."
+    },
+    {
+      "name": "cool dusk blue",
+      "hex": "#6B7F96",
+      "use": "propose",
+      "url": "https://stylogeny.com/styles/italian-painted-film-poster/",
+      "note": "Accepted, Ron, 2026-11-13, from the page 17 palette note at 1:28 PM. Stylogeny names dusk blues and does not print this hex."
+    },
+    {
+      "name": "dust",
+      "hex": "#BFAE93",
+      "use": "propose",
+      "url": "https://stylogeny.com/styles/italian-painted-film-poster/",
+      "note": "Accepted, Ron, 2026-11-13, from the page 17 palette note at 1:28 PM. The cited page does not print this hex."
+    },
+    {
+      "name": "bone",
+      "hex": "#E8DCC8",
+      "use": "propose",
+      "url": "https://stylogeny.com/styles/italian-painted-film-poster/",
+      "note": "Burned-in subtitle color, Ron, 2026-11-13. Bone. The cited page does not print this hex. The edge on that type is 1 px charcoal, and no charcoal hex was given."
     }
   ],
+  "subtitle_spec": {
+    "burned_in": {
+      "family": "Old Standard TT",
+      "weight": "Bold",
+      "case": "sentence",
+      "color_name": "bone",
+      "color": "#E8DCC8",
+      "edge": "1 px charcoal",
+      "position": "bottom-centre",
+      "picture": "inside the 2.39:1 picture",
+      "max_lines": 2,
+      "max_characters_per_line": 41
+    },
+    "player": {
+      "family": "Noto Sans",
+      "files": ["srt", "vtt"],
+      "note": "Noto Sans is only for player-rendered sidecar subtitle files. It is not the burned-in treatment. Timing stays with the Post Supervisor."
+    }
+  },
   "layouts": [
     {
       "layout_id": "title-in-picture",
@@ -203,7 +300,7 @@
     {
       "layout_id": "credits-period-face",
       "surface": "credits",
-      "text": "Set credits, subheads, and body in the period face this pack names for credits. Do not force a geometric sans. The title direction remains the painted pulp capitals described in this pack.",
+      "text": "Set credits in the credits face this pack names. Set subheads and section labels in the subheads face. Set body and billing in the body face. Do not force a geometric sans for those lines. The title direction is the painted pulp capitals in this pack. Retail title files are mockup stand-ins and are not traced.",
       "url": "https://stylogeny.com/styles/italian-painted-film-poster/"
     },
     {
@@ -216,7 +313,7 @@
   "custom_lettering": {
     "name": "Painted pulp capitals",
     "style": "All-capital letters, tightly set, drawn to join the picture. Hand-lettering and all-caps are the painted-poster habit Stylogeny describes. Lardani's titles, as Art of the Title describes them, are uneven on purpose and sit in the scene.",
-    "construction": "Draw the capitals by hand or as vectors that keep brush breaks and a condensed width. Do not start from a geometric sans. Do not trace a finished retail alphabet. This entry is a description for approval. No font file is built.",
+    "construction": "Draw the capitals by hand later. Do not trace Rye, Sancreek, or any other retail alphabet. Those files are mockup stand-ins only. This entry is the title direction. No font file is built.",
     "urls": [
       "https://stylogeny.com/styles/italian-painted-film-poster/",
       "https://www.artofthetitle.com/feature/a-fistful-of-titles-the-westerns-of-iginio/"

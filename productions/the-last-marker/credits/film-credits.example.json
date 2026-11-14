@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "production_company": {
+    "name": "Man's Epic Productions",
+    "site": "mansepic.com"
+  },
+  "billing": [
+    {"role": "Director", "name": "Ronaldo M."},
+    {"role": "Writer", "name": "Roncho"},
+    {"role": "Producer", "name": "R. Edwin Merrill III"}
+  ],
+  "cast": [
+    {"role": "Miguel Vega", "name": "Teodoro Abasolo", "fictional_placeholder": true}
+  ],
+  "crew": [
+    {"role": "Director of Photography", "name": "Enzo Callegaris", "fictional_placeholder": true},
+    {"role": "Editor", "name": "Halina Wierzbicka", "fictional_placeholder": true},
+    {"role": "Music", "name": "Aurelio Benvenga", "fictional_placeholder": true},
+    {"role": "Production Design", "name": "Rodrigo Llanes Ortuño", "fictional_placeholder": true},
+    {"role": "Art Director", "name": "Massimo Ferlandi", "fictional_placeholder": true},
+    {"role": "Costumes", "name": "Graziella Fontecchio", "fictional_placeholder": true},
+    {"role": "Sound", "name": "Bogdan Przybyłek", "fictional_placeholder": true},
+    {"role": "Makeup", "name": "Pilar Arreguín", "fictional_placeholder": true}
+  ]
+}

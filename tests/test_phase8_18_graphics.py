@@ -148,6 +148,8 @@ def test_a_matching_pack_is_a_proposal_and_harbor_night_does_not_inherit_it(tmp_
     assert quiet["palette"][0]["value"].startswith("#")
     assert quiet["palette"][0]["provenance"] == "SOURCED FROM PRODUCTION DOCS"
     assert quiet.get("custom_title") is None
+    assert quiet.get("subtitle_spec") is None
+    assert "player_subtitles" not in quiet["fonts"]
     assert quiet["status"] == "draft"
     assert "DESIGNER PROPOSAL" in (plain / "graphics" / "brand-guide.md").read_text(encoding="utf-8")
     assert "SOURCED FROM PRODUCTION DOCS" in (plain / "graphics" / "brand-guide.md").read_text(encoding="utf-8")
@@ -170,28 +172,56 @@ def test_a_matching_pack_is_a_proposal_and_harbor_night_does_not_inherit_it(tmp_
     assert any(item["basis"] == "designer-proposal" and item["reference"].startswith("https://") for item in research["items"])
     guide = write_guide(production)
     assert guide["status"] == "draft"
-    assert guide["fonts"]["title"]["family"] == "Rye"
+    assert guide["fonts"]["title"]["family"] == "Painted pulp capitals"
     assert guide["fonts"]["title"]["provenance"] == "DESIGNER PROPOSAL"
-    assert "SIL Open Font License 1.1" in guide["fonts"]["title"]["licensing"]
-    assert {item["family"] for item in guide["fonts"]["title"]["alternates"]} == {"Sancreek"}
-    assert guide["fonts"]["credits"]["family"] == "Libre Baskerville"
-    assert guide["fonts"]["credits"]["category"] == "serif"
-    assert guide["fonts"]["subtitles"]["family"] == "Noto Sans"
+    assert "hand-drawn later" in guide["fonts"]["title"]["licensing"]
+    assert {item["family"] for item in guide["fonts"]["title"]["stand_ins"]} == {"Rye", "Sancreek"}
+    assert "SIL Open Font License 1.1" in guide["fonts"]["title"]["stand_ins"][0]["licensing"]
+    assert guide["fonts"]["credits"]["family"] == "Caprasimo"
+    assert guide["fonts"]["credits"]["category"] == "display"
+    fallback = guide["fonts"]["credits"]["glyph_fallback"]
+    assert fallback["family"] == "Fraunces"
+    assert fallback["glyphs"] == ["Ł", "ł", "Ń", "ń"]
+    assert guide["fonts"]["subheads"]["family"] == "Alfa Slab One"
+    assert guide["fonts"]["body"]["family"] == "Old Standard TT"
+    assert guide["fonts"]["billing"]["family"] == "Old Standard TT"
+    assert guide["fonts"]["subtitles"]["family"] == "Old Standard TT"
+    assert guide["fonts"]["player_subtitles"]["family"] == "Noto Sans"
     assert guide["fonts"]["marketing"]["family"] == "Alfa Slab One"
+    assert "Libre Baskerville" not in json.dumps(guide["fonts"])
+    burned = guide["subtitle_spec"]["burned_in"]
+    assert burned["family"] == "Old Standard TT"
+    assert burned["weight"] == "Bold"
+    assert burned["case"] == "sentence"
+    assert burned["color"] == "#E8DCC8"
+    assert burned["edge"] == "1 px charcoal"
+    assert burned["position"] == "bottom-centre"
+    assert burned["max_lines"] == 2
+    assert burned["max_characters_per_line"] == 41
+    assert guide["subtitle_spec"]["player"]["family"] == "Noto Sans"
+    assert guide["subtitle_spec"]["player"]["files"] == ["srt", "vtt"]
     custom = guide["custom_title"]
     assert custom["name"] == "Painted pulp capitals"
     assert custom["built"] is False
+    assert "Do not trace Rye" in custom["construction"]
     assert custom["provenance"] == "DESIGNER PROPOSAL"
     colors = {color["name"]: color for color in guide["palette"]}
     assert colors["red"]["value"] == "#FF0000"
     assert colors["red"]["provenance"] == "DESIGNER PROPOSAL"
     assert colors["blood red"]["provenance"] == "DESIGNER PROPOSAL"
     assert colors["blood red"]["value"] == "#8C1C13"
+    assert colors["blue dusk"]["value"] == "#4A5D7A"
+    assert colors["cool dusk blue"]["value"] == "#6B7F96"
+    assert colors["dust"]["value"] == "#BFAE93"
+    assert colors["bone"]["value"] == "#E8DCC8"
+    assert colors["black"]["value"] == "#14110E"
+    assert colors["black"]["scope"] == "print"
+    assert "#3E5C73" not in json.dumps(guide["palette"])
     assert guide["surfaces"]["title"]
     assert guide["surfaces"]["poster"]
     assert guide["surfaces"]["key_art"]
     assert guide["surfaces"]["credits"]
-    assert any("period face" in rule["text"] for rule in guide["surfaces"]["credits"])
+    assert any("credits face" in rule["text"] for rule in guide["surfaces"]["credits"])
     assert not any("sans-serif" in rule["text"] for rule in guide["surfaces"]["credits"])
     assert "5%" in guide["layout"]["safe_area"]
     assert validate_file(production / "graphics" / "brand-guide.json").ok
@@ -240,3 +270,97 @@ def test_the_graphics_module_stays_offline_and_generic():
     assert "requests" not in text
     for word in ("leone", "spaghetti", "triumph", "breitling", "baja", "morricone", "1965", "1967"):
         assert word not in text.casefold()
+    for word in ("caprasimo", "fraunces", "old standard", "e8dcc8", "przyby", "abasolo", "mansepic"):
+        assert word not in text.casefold()
+
+
+def test_film_credits_subtitles_and_external_key_art(tmp_path):
+    production = _harbor(tmp_path / "west")
+    producer = LineProducer.start(production, run_id="run-1")
+    producer.approve_gate("treatment", "approved", "ron", stage_split=proposed_split(500))
+    look_path = production / "look" / "look.json"
+    look = json.loads(look_path.read_text(encoding="utf-8"))
+    look["look_name"] = "spaghetti western"
+    look_path.write_text(json.dumps(look), encoding="utf-8")
+    example = repo_root() / "productions" / "the-last-marker" / "credits" / "film-credits.example.json"
+    archive = repo_root() / "productions" / "the-last-marker" / "credits"
+    assert example.is_file()
+    assert not (archive / "film-credits.json").exists()
+    errors = validate_data(json.loads(example.read_text(encoding="utf-8")), load_schema("film-credits"))
+    assert errors == []
+    credits_path = production / "credits" / "film-credits.json"
+    credits_path.parent.mkdir()
+    credits_path.write_bytes(example.read_bytes())
+    producer.add_credit("Boat Hand", "Nia")
+    write_research(production)
+    write_guide(production)
+    producer.approve_gate("graphics", "approved", "ron", note="Use the guide.")
+    package = build_graphics(production)
+    assert validate_file(production / "graphics" / "graphics.json").ok
+    assert package["main_title"]["font"] == "Painted pulp capitals"
+    assert set(package["main_title"]["stand_ins"]) == {"Rye", "Sancreek"}
+    assert "Rye" != package["main_title"]["font"]
+    burned = package["subtitles"]["burned_in"]
+    assert package["subtitles"]["family"] == "Old Standard TT"
+    assert package["subtitles"]["color"] == "#E8DCC8"
+    assert burned["weight"] == "Bold"
+    assert burned["case"] == "sentence"
+    assert burned["edge"] == "1 px charcoal"
+    assert burned["position"] == "bottom-centre"
+    assert "2.39:1" in burned["picture"]
+    assert burned["max_lines"] == 2
+    assert burned["max_characters_per_line"] == 41
+    assert package["subtitles"]["player"]["family"] == "Noto Sans"
+    assert package["subtitles"]["player"]["files"] == ["srt", "vtt"]
+    assert package["subtitles"]["timing_owner"] == "post-supervisor"
+    lines = package["end_credits"]["lines"]
+    assert [(line["role"], line["name"]) for line in lines[:4]] == [
+        ("Production company", "Man's Epic Productions"),
+        ("Director", "Ronaldo M."),
+        ("Writer", "Roncho"),
+        ("Producer", "R. Edwin Merrill III"),
+    ]
+    assert lines[0]["detail"] == "mansepic.com"
+    assert "fictional_placeholder" not in lines[1]
+    cast = lines[4]
+    assert cast["name"] == "Teodoro Abasolo"
+    assert cast["role"] == "Miguel Vega"
+    assert cast["billing"] == "as"
+    assert cast["mark"] == "FICTIONAL PLACEHOLDER"
+    names = [line["name"] for line in lines]
+    assert "Bogdan Przybyłek" in names
+    assert "Pilar Arreguín" in names
+    assert "Rodrigo Llanes Ortuño" in names
+    assert "Halina Wierzbicka" in names
+    assert all(line.get("mark") == "FICTIONAL PLACEHOLDER" for line in lines[4:])
+    assert "Nia" not in names
+    crew = package["end_credits"]["studio_crew"]
+    assert crew["heading"] == "Made with Movie-swarm crew"
+    assert {"role": "Boat Hand", "name": "Nia"} in crew["lines"]
+    assert {"role": "Executive Producer", "name": "Ron"} in crew["lines"]
+    assert "Executive Producer" not in [line["role"] for line in lines]
+    billing = "\n".join(package["key_art"]["billing_block"])
+    assert "Teodoro Abasolo as Miguel Vega — FICTIONAL PLACEHOLDER" in billing
+    assert "Bogdan Przybyłek — FICTIONAL PLACEHOLDER" in billing
+    assert "Nia" not in billing
+    assert "breitling" not in billing.casefold()
+    assert "watch" not in billing.casefold()
+    notes = (production / "graphics" / "graphics.md").read_text(encoding="utf-8")
+    assert "Przybyłek" in notes
+    assert "Arreguín" in notes
+    assert "FICTIONAL PLACEHOLDER" in notes
+    assert "Made with Movie-swarm crew" in notes
+    assert "Old Standard TT Bold" in notes
+    assert "Noto Sans" in notes
+    assert not (production / "graphics" / "key-art-poster.png").exists()
+    assert package["key_art"]["render_status"] == "not-rendered"
+    assert package["key_art"]["expected_approved_file"] == "graphics/brand/key-art-poster.png"
+    brand = production / "graphics" / "brand" / "key-art-poster.png"
+    brand.parent.mkdir(parents=True)
+    payload = b"approved-key-art"
+    brand.write_bytes(payload)
+    again = build_graphics(production)
+    assert again["key_art"]["render_status"] == "external"
+    assert again["key_art"]["approved_file"] == "graphics/brand/key-art-poster.png"
+    assert brand.read_bytes() == payload
+    assert not (production / "graphics" / "key-art-poster.png").exists()

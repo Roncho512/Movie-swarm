@@ -38,7 +38,11 @@
         "title": { "$ref": "#/$defs/font" },
         "credits": { "$ref": "#/$defs/font" },
         "subtitles": { "$ref": "#/$defs/font" },
-        "marketing": { "$ref": "#/$defs/font" }
+        "marketing": { "$ref": "#/$defs/font" },
+        "subheads": { "$ref": "#/$defs/font" },
+        "body": { "$ref": "#/$defs/font" },
+        "billing": { "$ref": "#/$defs/font" },
+        "player_subtitles": { "$ref": "#/$defs/font" }
       }
     },
     "palette": {
@@ -119,6 +123,7 @@
       "items": { "$ref": "#/$defs/rule" }
     },
     "custom_title": { "$ref": "#/$defs/custom_title" },
+    "subtitle_spec": { "$ref": "#/$defs/subtitle_spec" },
     "draft_method": { "type": "string", "enum": ["offline-deterministic", "model"] },
     "model": { "type": "string", "minLength": 1 },
     "note": { "type": "string" },
@@ -139,6 +144,29 @@
         "alternates": {
           "type": "array",
           "items": { "$ref": "#/$defs/alternate_font" }
+        },
+        "stand_ins": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/alternate_font" }
+        },
+        "glyph_fallback": { "$ref": "#/$defs/glyph_fallback" }
+      }
+    },
+    "glyph_fallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family", "licensing", "provenance", "reference", "trace", "glyphs"],
+      "properties": {
+        "family": { "type": "string", "minLength": 1 },
+        "licensing": { "type": "string", "minLength": 1 },
+        "provenance": { "type": "string", "enum": ["SOURCED FROM PRODUCTION DOCS", "DESIGNER PROPOSAL"] },
+        "reference": { "type": ["string", "null"] },
+        "trace": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "category": { "type": "string", "enum": ["display", "sans-serif", "serif"] },
+        "glyphs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
         }
       }
     },
@@ -164,7 +192,8 @@
         "value": { "type": "string", "minLength": 1 },
         "trace": { "type": "string", "pattern": "^[a-z0-9-]+$" },
         "provenance": { "type": "string", "enum": ["SOURCED FROM PRODUCTION DOCS", "DESIGNER PROPOSAL"] },
-        "reference": { "type": ["string", "null"] }
+        "reference": { "type": ["string", "null"] },
+        "scope": { "type": "string", "enum": ["print", "screen", "any"] }
       }
     },
     "rule": {
@@ -221,6 +250,57 @@
         "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
         "at": { "type": "string", "format": "date-time" },
         "change": { "type": "string", "minLength": 1 }
+      }
+    },
+    "subtitle_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["burned_in", "player"],
+      "properties": {
+        "burned_in": { "$ref": "#/$defs/burned_in" },
+        "player": { "$ref": "#/$defs/player_subtitles" }
+      }
+    },
+    "burned_in": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "weight",
+        "case",
+        "color_name",
+        "color",
+        "edge",
+        "position",
+        "picture",
+        "max_lines",
+        "max_characters_per_line"
+      ],
+      "properties": {
+        "family": { "type": "string", "minLength": 1 },
+        "weight": { "type": "string", "minLength": 1 },
+        "case": { "type": "string", "minLength": 1 },
+        "color_name": { "type": "string", "minLength": 1 },
+        "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "edge": { "type": "string", "minLength": 1 },
+        "position": { "type": "string", "minLength": 1 },
+        "picture": { "type": "string", "minLength": 1 },
+        "max_lines": { "type": "integer", "minimum": 1 },
+        "max_characters_per_line": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "player_subtitles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family", "files", "note"],
+      "properties": {
+        "family": { "type": "string", "minLength": 1 },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "enum": ["srt", "vtt"] }
+        },
+        "note": { "type": "string", "minLength": 1 }
       }
     }
   }
