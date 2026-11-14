@@ -1,5 +1,5 @@
 {
-  "version": "1.13.0",
+  "version": "1.14.0",
   "roles": {
     "line-producer": {
       "provider": "anthropic",
@@ -75,7 +75,7 @@
       "provider": "fal.ai",
       "model": "seedance-2.0",
       "source": "agents/05-production/src/config.py",
-      "notes": "The older production program still calls Seedance 2.0 on fal.ai. The generation pipeline uses the purposes below. Preview and final use Gemini Omni 1.2 Flash, the cheap picture model. The tiers match the budget rate card. Good is Gemini Omni 1.2 Flash, which is planned and has no endpoint. Better is Seedance 2.0 fast. Best is Seedance 2.0. A test shot uses --model, then --tier, then the film budget's tier for this stage, then this file. A model with no endpoint is refused. The message lists the wired models and the flag. It does not switch models. Seedance and Kling stay on the rate card. A routing override can name one for a shot. A live call uses the fal queue only when that model's rate row names an endpoint, and only when --live is passed. The default is offline. A dry run reads no key. When a shot has reference images and the rate row names reference-to-video, that call uses the reference endpoint on the rate card. The routing endpoints below are the same addresses. A shot with no reference images stays on text-to-video.",
+      "notes": "The older production program still calls Seedance 2.0 on fal.ai. The generation pipeline uses the purposes below. Preview and final use Gemini Omni 1.2 Flash, the cheap picture model. The tiers match the budget rate card. Good is Gemini Omni 1.2 Flash, which is planned and has no endpoint. Better is Seedance 2.0 fast. Best is Seedance 2.0. A test shot uses --model, then --tier, then the film budget's tier for this stage, then this file. A model with no endpoint is refused. The message lists the wired models and the flag. It does not switch models. Seedance, Kling 4.0, and MiniMax H3 Max stay on the rate card. Kling 4.0 and MiniMax H3 Max are wired and are not the default. A test shot selects them with --model kling-4.0 or --model minimax-h3-max. The tiers and the preview and final purposes stay as they are. A routing override can name one for a shot. A live call uses the fal queue only when that model's rate row names an endpoint, and only when --live is passed. The default is offline. A dry run reads no key. When a shot has reference images and the rate row names reference-to-video, that call uses the reference endpoint on the rate card. The routing endpoints below are the same addresses. A shot with no reference images stays on text-to-video. A shot whose only image is start_image uses image-to-video when that model has one.",
       "purposes": {
         "preview": "gemini-omni-1.2-flash",
         "final": "gemini-omni-1.2-flash"
@@ -91,7 +91,13 @@
         "reference-to-video": "bytedance/seedance-2.0/reference-to-video",
         "fast-text-to-video": "bytedance/seedance-2.0/fast/text-to-video",
         "fast-image-to-video": "bytedance/seedance-2.0/fast/image-to-video",
-        "fast-reference-to-video": "bytedance/seedance-2.0/fast/reference-to-video"
+        "fast-reference-to-video": "bytedance/seedance-2.0/fast/reference-to-video",
+        "kling-text-to-video": "kling/v4/text-to-video",
+        "kling-image-to-video": "kling/v4/image-to-video",
+        "kling-reference-to-video": "kling/v4/reference-to-video",
+        "minimax-h3-max-text-to-video": "minimax/h3-max/text-to-video",
+        "minimax-h3-max-image-to-video": "minimax/h3-max/image-to-video",
+        "minimax-h3-max-reference-to-video": "minimax/h3-max/reference-to-video"
       }
     },
     "sound-designer": {

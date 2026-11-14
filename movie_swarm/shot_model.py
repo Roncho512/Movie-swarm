@@ -155,6 +155,15 @@ def format_shot_quote(producer, shot: dict, choice: dict, rates_path=None) -> st
     if choice.get("note"):
         parts.append(str(choice["note"]))
     parts.extend(quote_lines(prepared))
+    from movie_swarm.references import aliases_for, allowed_for, film_aspect, fit_aspect
+
+    fit = fit_aspect(film_aspect(producer.production_dir), allowed_for(row, prepared), aliases_for(row, prepared))
+    if fit.note:
+        parts.append(fit.note)
+    elif fit.ratio and isinstance(row, dict) and "aspect_ratios" in row:
+        parts.append(f"Aspect ratio {fit.ratio}.")
+    if isinstance(row, dict) and row.get("quote_note"):
+        parts.append(str(row["quote_note"]))
     return "\n".join(parts)
 
 

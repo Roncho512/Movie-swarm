@@ -72,7 +72,8 @@ def test_duration_rules_match_the_pages_that_were_read():
     assert kling["min_seconds"] == "3"
     assert kling["max_seconds"] == "30"
     assert kling["allowed_resolutions"] == ["720p", "1080p"]
-    assert "endpoint" not in kling
+    assert kling["endpoint"] == "kling/v4/text-to-video"
+    assert kling["resolution_prices"] == {"720p": "0.157", "1080p": "0.235"}
     assert gemini["duration_rule_status"] == "assumption"
     assert gemini["whole_seconds"] is False
     assert "endpoint" not in gemini

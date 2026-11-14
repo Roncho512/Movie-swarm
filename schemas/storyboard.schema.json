@@ -89,6 +89,11 @@
             "description": "Locked prop reference paths for providers that accept an image reference.",
             "items": { "type": "string", "minLength": 1 }
           },
+          "start_image": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Optional first frame. A model that publishes a start-image field sends this path there. It is not also sent as a reference image."
+          },
           "characters_in_shot": {
             "type": "array",
             "description": "character_id values visible in this shot. Generation uses them to pull face photos.",

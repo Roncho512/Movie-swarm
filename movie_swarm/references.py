@@ -19,9 +19,12 @@ subject:
    chosen.
 
 The cap is the model's ``max_images``. Seedance reference-to-video
-publishes 9. A missing file, a file outside the film folder, an
-unsupported suffix, or a file over the published size is logged and
-skipped. The call continues with whatever remains.
+publishes 9. A rate row can send some subjects as elements instead of
+flat images: one frontal image, then extra angles, up to the published
+caps. Character is the tier used that way when the row says so. Location
+and prop stills stay reference images. A missing file, a file outside
+the film folder, an unsupported suffix, or a file over the published
+size is logged and skipped. The call continues with whatever remains.
 """
 
 from __future__ import annotations
@@ -46,7 +49,6 @@ ROLE = {
     "prop": "prop",
     "shot": "shot image",
 }
-_TOKEN = re.compile(r"@Image(\d+)", re.I)
 _DEFAULT_FORMATS = (
     "jpeg",
     "jpg",
@@ -81,23 +83,51 @@ class ChosenReference:
 
 
 @dataclass
+class ChosenElement:
+    """One subject sent as an element: a frontal image, then extra angles."""
+
+    tier: str
+    role: str
+    label: str
+    token: str
+    index: int
+    frontal: ChosenReference
+    angles: list[ChosenReference] = field(default_factory=list)
+
+
+@dataclass
+class AspectFit:
+    """The aspect ratio a request would send, and whether that request stops."""
+
+    ratio: str | None
+    note: str
+    refuse: bool
+
+
+@dataclass
 class PreparedReferences:
-    """The images for one shot, and the prompt with @Image tokens filled in."""
+    """The images for one shot, and the prompt with the model's tokens filled in."""
 
     chosen: list[ChosenReference] = field(default_factory=list)
+    elements: list[ChosenElement] = field(default_factory=list)
+    start: ChosenReference | None = None
     skipped: list[str] = field(default_factory=list)
     spec: dict | None = None
     prompt: str = ""
 
     @property
     def endpoint(self) -> str | None:
-        if self.chosen and self.spec:
+        if not self.spec:
+            return None
+        if self.chosen or self.elements:
             return str(self.spec["endpoint"])
+        if self.start and self.spec.get("image_endpoint"):
+            return str(self.spec["image_endpoint"])
         return None
 
     @property
     def per_second(self):
-        if self.chosen and self.spec and self.spec.get("usd_per_second") not in (None, ""):
+        if (self.chosen or self.elements) and self.spec and self.spec.get("usd_per_second") not in (None, ""):
             return as_money(self.spec["usd_per_second"])
         return None
 
@@ -136,20 +166,57 @@ def reference_spec(row: dict | None) -> dict | None:
         max_bytes = int(block.get("max_bytes") or _DEFAULT_MAX_BYTES)
     except (TypeError, ValueError):
         max_bytes = _DEFAULT_MAX_BYTES
+    try:
+        max_elements = int(block.get("max_elements") or 0)
+    except (TypeError, ValueError):
+        max_elements = 0
+    try:
+        max_angles = int(block.get("max_angles") or 0)
+    except (TypeError, ValueError):
+        max_angles = 0
     formats = block.get("formats") or list(_DEFAULT_FORMATS)
     if not isinstance(formats, list):
         formats = list(_DEFAULT_FORMATS)
-    price = block.get("usd_per_second")
+    price = _price_for_resolution(block, row)
     if price in (None, ""):
         price = row.get("usd_per_second")
+    image = row.get("image_to_video") if isinstance(row.get("image_to_video"), dict) else {}
+    tiers = [str(item).strip() for item in block.get("element_tiers") or [] if str(item).strip()]
+    aliases = row.get("aspect_aliases") if isinstance(row.get("aspect_aliases"), dict) else {}
+    request_fields = row.get("request_fields") if isinstance(row.get("request_fields"), dict) else {}
     return {
         "endpoint": str(block["endpoint"]).strip(),
         "usd_per_second": price,
         "max_images": max(0, max_images),
+        "max_elements": max(0, max_elements),
+        "max_angles": max(0, max_angles),
         "max_bytes": max_bytes,
         "formats": {str(item).lower().lstrip(".") for item in formats if str(item).strip()},
         "image_field": str(block.get("image_field") or "image_urls"),
+        "element_field": str(block.get("element_field") or "").strip(),
+        "element_tiers": tiers,
+        "frontal_field": str(block.get("frontal_field") or "frontal_image_url"),
+        "angles_field": str(block.get("angles_field") or "reference_image_urls"),
+        "element_token": str(block.get("element_token") or "@Element"),
+        "element_style": str(block.get("element_style") or "at"),
         "prompt_token": str(block.get("prompt_token") or "@Image"),
+        "token_style": str(block.get("token_style") or "at"),
+        "start_field": str(block.get("start_image_field") or "").strip(),
+        "start_counts": bool(block.get("start_counts_toward_images")),
+        "aspect_ratios": _ratio_list(block, "aspect_ratios"),
+        "image_endpoint": str(image.get("endpoint") or "").strip(),
+        "image_start_field": str(image.get("start_image_field") or "").strip(),
+        "image_aspect_ratios": _ratio_list(image, "aspect_ratios"),
+        "text_endpoint": str(row.get("endpoint") or "").strip(),
+        "aspect_ratios_text": _ratio_list(row, "aspect_ratios"),
+        "aspect_aliases": {str(key): str(value) for key, value in aliases.items()},
+        "request_fields": dict(request_fields),
+        "audio_note": str(row.get("audio_note") or "").strip(),
+        "quote_text_endpoint": isinstance(row.get("endpoints"), dict),
+        "included_square_images": block.get("included_square_images"),
+        "extra_square_image_usd": block.get("extra_square_image_usd"),
+        "included_reference_tokens": block.get("included_reference_tokens"),
+        "text_usd": _price_for_resolution(row, row) or row.get("usd_per_second"),
     }
 
 
@@ -163,7 +230,7 @@ def prepare_references(
     folder = Path(production_dir)
     spec = reference_spec(row)
     text = prompt or ""
-    if spec is None or spec["max_images"] <= 0:
+    if spec is None or (spec["max_images"] <= 0 and spec["max_elements"] <= 0):
         subjects = _subjects(folder, shot, text, {"formats": None, "max_bytes": None})
         skipped = [note for subject in subjects for note in subject.skipped]
         if any(subject.images for subject in subjects) or skipped:
@@ -175,25 +242,67 @@ def prepare_references(
         _log(shot, prepared, spec)
         return prepared
     subjects = _subjects(folder, shot, text, spec)
-    kept, dropped = _cap(subjects, spec["max_images"])
+    element_subjects, image_subjects = _split_subjects(subjects, spec)
+    start, start_note = _start_image(folder, shot, spec)
+    if start is not None:
+        for subject in image_subjects:
+            subject.images = [image for image in subject.images if image.relative != start.relative]
+    raw_elements, element_notes = _elements(element_subjects, spec)
+    reserve = 1 if start is not None and spec["start_counts"] and (raw_elements or _has_images(image_subjects)) else 0
+    kept, dropped = _cap(image_subjects, max(0, spec["max_images"] - reserve))
     skipped = [note for subject in subjects for note in subject.skipped]
+    if start_note:
+        skipped.append(start_note)
+    skipped.extend(element_notes)
     skipped.extend(dropped)
-    chosen = _number(kept)
-    bound = bind_prompt(text, chosen)
-    prepared = PreparedReferences(chosen=chosen, skipped=skipped, spec=spec, prompt=bound)
+    chosen = _number(kept, spec)
+    elements = _number_elements(raw_elements, spec)
+    if chosen or elements:
+        use_start = start if spec.get("start_field") else None
+    elif start is not None and spec.get("image_endpoint"):
+        use_start = start
+    else:
+        use_start = None
+    bound = bind_prompt(text, chosen, elements, spec)
+    prepared = PreparedReferences(
+        chosen=chosen,
+        elements=elements,
+        start=use_start,
+        skipped=skipped,
+        spec=spec,
+        prompt=bound,
+    )
     _log(shot, prepared, spec)
     return prepared
 
 
-def bind_prompt(prompt: str, chosen: list[ChosenReference]) -> str:
-    """Name each sent image as @Image1, @Image2, when the prompt does not already."""
-    if not chosen:
+def bind_prompt(
+    prompt: str,
+    chosen: list[ChosenReference],
+    elements: list[ChosenElement] | None = None,
+    spec: dict | None = None,
+) -> str:
+    """Name each sent image with the model's token, when the prompt does not already."""
+    elements = elements or []
+    spec = spec or {}
+    if not chosen and not elements:
         return prompt or ""
-    present = {int(match.group(1)) for match in _TOKEN.finditer(prompt or "")}
-    missing = [item for item in chosen if item.index not in present]
-    if not missing:
+    bits = _missing_sentences(
+        prompt,
+        elements,
+        spec.get("element_style") or "at",
+        spec.get("element_token") or "@Element",
+    )
+    bits.extend(
+        _missing_sentences(
+            prompt,
+            chosen,
+            spec.get("token_style") or "at",
+            spec.get("prompt_token") or "@Image",
+        )
+    )
+    if not bits:
         return prompt or ""
-    bits = [f"Use {item.token} as the {item.role} ({item.label})." for item in missing]
     text = (prompt or "").rstrip()
     if not text:
         return " ".join(bits)
@@ -201,22 +310,52 @@ def bind_prompt(prompt: str, chosen: list[ChosenReference]) -> str:
 
 
 def quote_lines(prepared: PreparedReferences) -> list[str]:
-    """Sentences for a dry-run quote. Empty when this shot sends no references."""
+    """Sentences for a dry-run quote. Empty when this shot sends nothing new."""
     lines: list[str] = []
-    if prepared.chosen and prepared.spec:
-        price = prepared.spec.get("usd_per_second")
+    spec = prepared.spec or {}
+    if (prepared.chosen or prepared.elements) and spec:
+        price = spec.get("usd_per_second")
         shown_price = f"${money_number(price):.4f}" if price not in (None, "") else "unknown"
         lines.append(
-            f"Reference endpoint {prepared.spec['endpoint']} at {shown_price} per second. "
+            f"Reference endpoint {spec['endpoint']} at {shown_price} per second. "
             "This quote does not upload files and does not call the provider."
         )
-        shown = "; ".join(
-            f"{item.token} {item.role} {item.relative}" for item in prepared.chosen
-        )
+        if prepared.elements:
+            shown = "; ".join(_element_shown(item) for item in prepared.elements)
+            lines.append(
+                "Elements that would be sent, frontal image then extra angles: "
+                f"{shown}."
+            )
+        if prepared.chosen:
+            shown = "; ".join(_image_shown(item) for item in prepared.chosen)
+            if prepared.elements:
+                lines.append(
+                    "References that would be sent, location, then prop, then the shot's own images, "
+                    "one image per subject before a second from the same subject: "
+                    f"{shown}."
+                )
+            else:
+                lines.append(
+                    "References that would be sent, character face first, then location, then prop, "
+                    "then the shot's own images, one image per subject before a second from the same "
+                    f"subject: {shown}."
+                )
+        if prepared.start is not None:
+            lines.append(f"First frame that would be sent: {prepared.start.relative}.")
+        token_line = _token_sentence(spec, len(prepared.chosen))
+        if token_line:
+            lines.append(token_line)
+    elif prepared.start is not None and spec.get("image_endpoint"):
+        shown_price = _shown_price(spec.get("text_usd"))
         lines.append(
-            "References that would be sent, character face first, then location, then prop, "
-            "then the shot's own images, one image per subject before a second from the same "
-            f"subject: {shown}."
+            f"Image endpoint {spec['image_endpoint']} at {shown_price} per second. "
+            "This quote does not upload files and does not call the provider."
+        )
+        lines.append(f"First frame that would be sent: {prepared.start.relative}.")
+    elif spec.get("quote_text_endpoint") and spec.get("text_endpoint"):
+        lines.append(
+            f"Endpoint {spec['text_endpoint']} at {_shown_price(spec.get('text_usd'))} per second. "
+            "This quote does not call the provider."
         )
     elif any("no reference-to-video endpoint" in note for note in prepared.skipped):
         lines.append(
@@ -225,6 +364,8 @@ def quote_lines(prepared: PreparedReferences) -> list[str]:
     for note in prepared.skipped:
         if note not in lines and "no reference-to-video endpoint" not in note:
             lines.append(note)
+    if spec.get("audio_note") and spec["audio_note"] not in lines:
+        lines.append(spec["audio_note"])
     return lines
 
 
@@ -237,6 +378,285 @@ def upload_urls(chosen: list[ChosenReference], upload) -> list[str]:
             continue
         urls.append(upload(item.path))
     return urls
+
+
+def picture_kind(prepared: PreparedReferences | None) -> str:
+    """Which fal path this shot would use: reference, image, or text."""
+    if prepared is None or not prepared.spec:
+        return "text"
+    if prepared.elements or prepared.chosen:
+        return "reference"
+    if prepared.start and prepared.spec.get("image_endpoint"):
+        return "image"
+    return "text"
+
+
+def allowed_for(row: dict | None, prepared: PreparedReferences | None):
+    """The aspect ratios the active endpoint publishes. None means send the film's ratio."""
+    spec = prepared.spec if prepared is not None else None
+    kind = picture_kind(prepared)
+    if kind == "image":
+        if spec is not None and spec.get("image_aspect_ratios") is not None:
+            return spec["image_aspect_ratios"]
+        return []
+    if kind == "reference" and spec is not None and spec.get("aspect_ratios") is not None:
+        return spec["aspect_ratios"]
+    if spec is not None and spec.get("aspect_ratios_text") is not None:
+        return spec["aspect_ratios_text"]
+    if isinstance(row, dict) and "aspect_ratios" in row:
+        return row.get("aspect_ratios")
+    return None
+
+
+def aliases_for(row: dict | None, prepared: PreparedReferences | None) -> dict:
+    spec = prepared.spec if prepared is not None else None
+    if spec and isinstance(spec.get("aspect_aliases"), dict) and spec["aspect_aliases"]:
+        return spec["aspect_aliases"]
+    if isinstance(row, dict) and isinstance(row.get("aspect_aliases"), dict):
+        return row["aspect_aliases"]
+    return {}
+
+
+def fit_aspect(asked, allowed, aliases: dict | None = None) -> AspectFit:
+    """Keep a published ratio. Map an alias when the row names one. Do not crop to 16:9."""
+    if allowed is None:
+        text = str(asked).strip() if asked else ""
+        return AspectFit(text or None, "", False)
+    if isinstance(allowed, list) and len(allowed) == 0:
+        return AspectFit(
+            None,
+            "This endpoint has no aspect_ratio field. The picture follows the start image "
+            "and is not cropped to 16:9.",
+            False,
+        )
+    text = str(asked).strip() if asked else ""
+    if not text:
+        return AspectFit(None, "", False)
+    names = [str(item) for item in allowed]
+    if text in names:
+        return AspectFit(text, "", False)
+    alias = str((aliases or {}).get(text) or "").strip()
+    if alias and alias in names:
+        return AspectFit(
+            alias,
+            f"The film asks for {text}. This model accepts {alias}, so the request uses {alias}. "
+            "The picture is not cropped to 16:9.",
+            False,
+        )
+    listed = ", ".join(names)
+    return AspectFit(
+        None,
+        f"The film asks for {text}. This model accepts {listed}. "
+        "The request is refused so the picture is not cropped. Nothing was sent.",
+        True,
+    )
+
+
+def film_aspect(production_dir: str | Path) -> str | None:
+    """The aspect ratio on the film's treatment, when that file names one."""
+    path = Path(production_dir) / "treatment" / "treatment.json"
+    if not path.is_file():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    ratio = (data.get("deliverables") or {}).get("aspect_ratio")
+    text = str(ratio).strip() if ratio else ""
+    return text or None
+
+
+def _price_for_resolution(block: dict | None, row: dict | None):
+    if not isinstance(block, dict):
+        return None
+    prices = block.get("resolution_prices")
+    resolution = row.get("resolution") if isinstance(row, dict) else None
+    if isinstance(prices, dict) and resolution in prices and prices[resolution] not in (None, ""):
+        return prices[resolution]
+    value = block.get("usd_per_second")
+    if value not in (None, ""):
+        return value
+    return None
+
+
+def _ratio_list(block: dict, key: str):
+    if key not in block:
+        return None
+    value = block.get(key)
+    if not isinstance(value, list):
+        return []
+    return [str(item).strip() for item in value if str(item).strip()]
+
+
+def _shown_price(price) -> str:
+    if price in (None, ""):
+        return "unknown"
+    return f"${money_number(price):.4f}"
+
+
+def _split_subjects(subjects: list[_Subject], spec: dict) -> tuple[list[_Subject], list[_Subject]]:
+    tiers = set(spec.get("element_tiers") or [])
+    if not spec.get("max_elements") or not tiers:
+        return [], subjects
+    elements = [subject for subject in subjects if subject.tier in tiers]
+    images = [subject for subject in subjects if subject.tier not in tiers]
+    return elements, images
+
+
+def _has_images(subjects: list[_Subject]) -> bool:
+    return any(subject.images for subject in subjects)
+
+
+def _start_image(folder: Path, shot: dict, spec: dict) -> tuple[ChosenReference | None, str | None]:
+    if not spec.get("start_field") and not spec.get("image_start_field"):
+        return None, None
+    raw = str(shot.get("start_image") or "").strip()
+    if not raw:
+        return None, None
+    image, note = _inspect(folder, raw, spec)
+    if note or image is None:
+        return None, note
+    chosen = ChosenReference(
+        tier="shot",
+        role="first frame",
+        label="first frame",
+        token="",
+        index=0,
+        raw=image.raw,
+        relative=image.relative,
+        path=image.path,
+        url=image.url,
+        size=image.size,
+        mtime_ns=image.mtime_ns,
+    )
+    return chosen, None
+
+
+def _elements(subjects: list[_Subject], spec: dict) -> tuple[list[tuple[_Subject, _Image, list[_Image]]], list[str]]:
+    limit = int(spec.get("max_elements") or 0)
+    angles_cap = int(spec.get("max_angles") or 0)
+    kept: list[tuple[_Subject, _Image, list[_Image]]] = []
+    dropped: list[str] = []
+    for subject in subjects:
+        if not subject.images:
+            continue
+        if len(kept) >= limit:
+            for image in subject.images:
+                dropped.append(f"Not sent, over the {limit} element cap: {image.relative}.")
+            continue
+        frontal = subject.images[0]
+        angles = subject.images[1:1 + angles_cap]
+        for image in subject.images[1 + angles_cap:]:
+            dropped.append(f"Not sent, over the {angles_cap} extra-angle cap: {image.relative}.")
+        kept.append((subject, frontal, angles))
+    return kept, dropped
+
+
+def _number_elements(
+    kept: list[tuple[_Subject, _Image, list[_Image]]],
+    spec: dict,
+) -> list[ChosenElement]:
+    style = spec.get("element_style") or "at"
+    prefix = spec.get("element_token") or "@Element"
+    elements = []
+    for index, (subject, frontal, angles) in enumerate(kept, start=1):
+        token = _format_token(style, prefix, index)
+        role = ROLE[subject.tier]
+        elements.append(
+            ChosenElement(
+                tier=subject.tier,
+                role=role,
+                label=subject.label or role,
+                token=token,
+                index=index,
+                frontal=_as_chosen(subject, frontal, token, index),
+                angles=[_as_chosen(subject, image, token, index) for image in angles],
+            )
+        )
+    return elements
+
+
+def _as_chosen(subject: _Subject, image: _Image, token: str, index: int) -> ChosenReference:
+    role = ROLE[subject.tier]
+    return ChosenReference(
+        tier=subject.tier,
+        role=role,
+        label=subject.label or role,
+        token=token,
+        index=index,
+        raw=image.raw,
+        relative=image.relative,
+        path=image.path,
+        url=image.url,
+        size=image.size,
+        mtime_ns=image.mtime_ns,
+    )
+
+
+def _format_token(style: str, prefix: str, index: int) -> str:
+    if style == "word":
+        return f"{prefix} {index}"
+    return f"{prefix}{index}"
+
+
+def _missing_sentences(prompt: str, items, style: str, prefix: str) -> list[str]:
+    if not items:
+        return []
+    present = _present(prompt, style, prefix)
+    missing = [item for item in items if item.index not in present]
+    return [_token_sentence_for(item, style) for item in missing]
+
+
+def _present(prompt: str, style: str, prefix: str) -> set[int]:
+    if style == "word":
+        pattern = re.compile(rf"(?<![A-Za-z0-9]){re.escape(prefix)}\s+(\d+)", re.I)
+    else:
+        pattern = re.compile(rf"{re.escape(prefix)}(\d+)", re.I)
+    return {int(match.group(1)) for match in pattern.finditer(prompt or "")}
+
+
+def _token_sentence_for(item, style: str) -> str:
+    if style == "word":
+        return f"{item.token} is the {item.role} ({item.label})."
+    return f"Use {item.token} as the {item.role} ({item.label})."
+
+
+def _image_shown(item: ChosenReference) -> str:
+    return f"{item.token} {item.role} {item.relative}"
+
+
+def _element_shown(item: ChosenElement) -> str:
+    base = f"{item.token} {item.role} {item.frontal.relative}"
+    if not item.angles:
+        return base
+    angles = ", ".join(angle.relative for angle in item.angles)
+    return f"{base} (angles {angles})"
+
+
+def _token_sentence(spec: dict, count: int) -> str:
+    included = spec.get("included_square_images")
+    extra = spec.get("extra_square_image_usd")
+    tokens = spec.get("included_reference_tokens")
+    if included in (None, "") or extra in (None, "") or tokens in (None, ""):
+        return ""
+    try:
+        free = int(included)
+    except (TypeError, ValueError):
+        return ""
+    if count <= free:
+        return (
+            f"Reference tokens: the first {tokens} are included. With no video or audio, "
+            f"the first {free} square images add no charge. This quote adds none."
+        )
+    over = count - free
+    return (
+        f"Reference tokens: the first {tokens} are included. With no video or audio, "
+        f"the first {free} square images add no charge, and each further square image "
+        f"is ${extra}. This shot would send {count} reference images. Pixel size is not "
+        f"measured, so the dollar line does not add a token charge for the {over} images past {free}."
+    )
 
 
 def _subjects(folder: Path, shot: dict, prompt: str, spec: dict) -> list[_Subject]:
@@ -407,26 +827,13 @@ def _cap(subjects: list[_Subject], limit: int) -> tuple[list[tuple[_Subject, _Im
     return kept, dropped
 
 
-def _number(kept: list[tuple[_Subject, _Image]]) -> list[ChosenReference]:
+def _number(kept: list[tuple[_Subject, _Image]], spec: dict | None = None) -> list[ChosenReference]:
+    spec = spec or {}
+    style = spec.get("token_style") or "at"
+    prefix = spec.get("prompt_token") or "@Image"
     chosen = []
     for index, (subject, image) in enumerate(kept, start=1):
-        role = ROLE[subject.tier]
-        label = subject.label or role
-        chosen.append(
-            ChosenReference(
-                tier=subject.tier,
-                role=role,
-                label=label,
-                token=f"@Image{index}",
-                index=index,
-                raw=image.raw,
-                relative=image.relative,
-                path=image.path,
-                url=image.url,
-                size=image.size,
-                mtime_ns=image.mtime_ns,
-            )
-        )
+        chosen.append(_as_chosen(subject, image, _format_token(style, prefix, index), index))
     return chosen
 
 
@@ -642,12 +1049,14 @@ def _log(shot: dict, prepared: PreparedReferences, spec: dict | None) -> None:
         return
     shot_id = shot.get("shot_id") or "(unset)"
     cap = spec["max_images"] if spec else 0
+    elements = ", ".join(_element_shown(item) for item in prepared.elements) or "none"
     sent = ", ".join(f"{item.token} {item.role} {item.relative}" for item in prepared.chosen) or "none"
     logger.info(
         "Reference priority for %s: character face, then location, then prop, then the shot's own images. "
-        "Cap %s. Sending %s.",
+        "Cap %s. Elements %s. Sending %s.",
         shot_id,
         cap,
+        elements,
         sent,
     )
     for note in prepared.skipped:

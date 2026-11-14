@@ -33,7 +33,7 @@ def clip_lengths(duration, row: dict | None) -> tuple[list[Decimal], list[str]]:
     if whole:
         seconds = original.to_integral_value(rounding=ROUND_CEILING)
     if floor is not None and seconds < floor:
-        notes.append(_minimum_note(original, seconds, floor, cap, label, status))
+        notes.append(_minimum_note(original, seconds, floor, cap, label, status, whole))
         return [floor], notes
     if cap is None or seconds <= cap:
         if whole and seconds != original:
@@ -87,8 +87,17 @@ def billed_runtime(runtime, shots, row: dict | None) -> tuple[Decimal, list[str]
 
 
 def request_value(seconds, row: dict | None):
-    """The duration field for one request. Seedance wants a string. Kling wants an integer."""
+    """The duration field for one request.
+
+    Seedance wants a string. Kling wants an integer. MiniMax wants a JSON
+    number, whole when the length is whole and a decimal otherwise.
+    """
     number = as_money(seconds)
+    if row and row.get("duration_format") == "number":
+        text = seconds_text(number)
+        if "." in text:
+            return float(text)
+        return int(text)
     if row and row.get("duration_format") == "integer":
         return int(number.to_integral_value())
     if row and (row.get("whole_seconds") or row.get("duration_format") == "string"):
@@ -110,10 +119,16 @@ def _tail(status: str) -> str:
     return "This is an assumption."
 
 
-def _minimum_note(original, seconds, floor, cap, label, status: str) -> str:
-    if status == "verified" and cap is not None:
+def _minimum_note(original, seconds, floor, cap, label, status: str, whole: bool = True) -> str:
+    if status == "verified" and cap is not None and whole:
         return (
             f"The shot is {seconds_text(original)} seconds. {label} accepts a whole number from "
+            f"{seconds_text(floor)} to {seconds_text(cap)}, so the request uses {seconds_text(floor)}. "
+            f"{_tail(status)}"
+        )
+    if status == "verified" and cap is not None:
+        return (
+            f"The shot is {seconds_text(original)} seconds. {label} accepts a length from "
             f"{seconds_text(floor)} to {seconds_text(cap)}, so the request uses {seconds_text(floor)}. "
             f"{_tail(status)}"
         )
