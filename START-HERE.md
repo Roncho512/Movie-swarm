@@ -258,6 +258,8 @@ That shot exists after the studio has written the storyboard. `--tier better` na
 
 When the shot has reference images and the model has a reference-to-video endpoint, the dry run adds the endpoint, the price per second, and the files that would be sent. The order is character face, then the location, then the prop, then the shot's own images. Fast image references are the same $0.2419 per second as fast text-to-video, so the dollar line above does not change. Seedance 2.0 image references are $0.3024 per second. The dry run does not upload the files and does not call fal. A live call uploads each file from the film folder and sends the URLs. A missing file is logged and skipped. A shot with no image that can be sent keeps the text-to-video quote. Face photos live in `characters/character-lock.json` in the film folder. Place photos live in `locations/location-lock.json`. Prop photos live on the locked hero props. Those files are optional. The engine does not name a film.
 
+Two other picture models are wired and are not the default. `--model kling-4.0` is Kling 4.0 on fal, $0.157 per second at 720p. A character lock becomes an element, tagged `@Element1`, and places and props become reference images, tagged `@Image1`. `--model minimax-h3-max` is MiniMax H3 Max, $0.08 per second at 768P. It tags stills `Image 1`, `Image 2`, and so on. Both accept 21:9. The dry run names the endpoint and the ordered elements and images. It does not upload and it does not call fal. The film's budget tier is unchanged.
+
 ```bash
 python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 --live test-shot \
   --shot s01-sh01 --model seedance-2.0-fast
@@ -307,7 +309,7 @@ The package holds the master, the variants the delivery spec asked for, a poster
 - A trailer command says the trailer is off: set `trailer_on` to true in `budget.json` when you want one.
 - "The trailer is off" is a skip, not a failure. Delivery still runs.
 - A live call says a key is missing: set that name in `.env` or in the shell. Do not put the value in the repo. Doctor says whether each name is set.
-- A live picture call says no endpoint is configured: that model is unwired. Pass `--model seedance-2.0-fast` or `--tier better` for the cheapest wired picture model. The message lists the choices.
+- A live picture call says no endpoint is configured: that model is unwired. The message lists the wired picture models, cheapest first. `--tier better` is still Seedance 2.0 fast. `--model kling-4.0` and `--model minimax-h3-max` are the other wired picture models. The film default does not change.
 - A live picture or sound call says the rate is unknown: the rate card has no verified price for that model. Pass `--price-override` only for that one call, and approve the request it writes. A text model with a null price is refused. Claude Haiku 5.5, Claude Sonnet 5.5, and Claude Opus 5.5 are priced.
 - A live text call prints a writing quote and stops: record `approve-writing` for that run, then run the same command again. The generation gate can stay closed.
 - A failed call left an estimate on the ledger and produced nothing: `python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 release --entry spend-014 --by ron --note "Nothing was produced."` The original entry stays. The running total goes back down.

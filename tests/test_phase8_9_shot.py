@@ -65,7 +65,12 @@ def test_picture_tiers_match_the_budget_rate_card():
     assert routing["tiers"]["good"] == "gemini-omni-1.2-flash"
     assert routing["tiers"]["better"] == "seedance-2.0-fast"
     assert routing["tiers"]["best"] == "seedance-2.0"
-    assert wired_model_ids() == ["seedance-2.0-fast", "seedance-2.0"]
+    assert wired_model_ids() == [
+        "minimax-h3-max",
+        "kling-4.0",
+        "seedance-2.0-fast",
+        "seedance-2.0",
+    ]
     rates = json.loads((repo_root() / "config" / "generation-rates.json").read_text(encoding="utf-8"))
     gemini = next(row for row in rates["generators"] if row["model"] == "gemini-omni-1.2-flash")
     assert gemini.get("status") == "planned"

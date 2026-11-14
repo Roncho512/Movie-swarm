@@ -1,5 +1,5 @@
 {
-  "version": "1.5.0",
+  "version": "1.6.0",
   "checked_on": "2026-11-14",
   "assumptions": [
     "Preview and final both use the published 720p Gemini Omni 1.2 Flash rate. Google says a draft can be 360p, and it does not publish a separate 360p price.",
@@ -15,7 +15,8 @@
     "A generator row may name a provider and an endpoint. Those are call addresses already stored in config/model-routing.json. They are not prices. A row without an endpoint cannot be called live.",
     "Audio, color, and delivery still have no published dollar amount in this repo. A live call for one of those is refused until a per-call price override is approved.",
     "Seedance 2.0 and Seedance 2.0 fast accept duration auto, or a whole number of seconds from 4 to 15. A shot is rounded up to the next allowed second and quoted at that length. The rule was read from the fal API pages on 2026-11-12. Fast accepts 480p and 720p. Seedance 2.0 also accepts 1080p and 4k. This row still prices 720p.",
-    "Kling 4.0 on fal accepts a whole number of seconds from 3 to 30, at 720p or 1080p. That duration rule was read from the fal text-to-video page on 2026-11-12. The row still has no endpoint, so a live call is refused. The per-shot multi-prompt minimum of 1 second is not the rule for this row.",
+    "Kling 4.0 on fal accepts a whole number of seconds from 3 to 30, at 720p or 1080p, and aspect ratios 16:9, 9:16, 1:1, and 21:9. Reference-to-video also accepts auto. That rule was read again from the fal pages on 2026-11-14. The row sends 720p at $0.157 per second. 1080p is $0.235 per second. The page default is 1080p. This row does not use that default. A reference video would be $0.094 per second at 720p and $0.141 at 1080p, billed on input plus output. This engine sends no video, so that discount is not used. The per-shot multi-prompt minimum of 1 second is not the rule for this row.",
+    "MiniMax H3 Max on fal accepts a length from 0.92 to 15 seconds. The output can run about 0.7 seconds longer than requested. Resolutions are 480P, 768P, and 1080P. 1080P is a latent refinement of a native 768P source. Standard rates, read on 2026-11-14, are $0.05, $0.08, and $0.16 per second. This row sends 768P at $0.08. The text-to-video and image-to-video pages also list a promotion through 2026-11-15 of $0.035, $0.056, and $0.112 per second, and say the standard rates apply from 2026-11-16. The reference-to-video page lists the standard rates. This row quotes the standard rates. Reference-to-video includes 4,096 reference tokens. With no video or audio, the first four square images add no charge, and each further square image is $0.02048. Pixel size is not measured, so the dollar line does not add that charge.",
     "Gemini Omni's 3 to 15 second quote is still an assumption. Whole seconds were not verified for that model, so a length inside that range is not rounded.",
     "Claude text prices are dollars per million tokens, read from Anthropic's pricing page on 2026-11-12. A writing quote uses the input-token estimate times the input price, plus the max output tokens times the output price. Haiku 5.5 uses the higher pair when that estimate is over 100,000 tokens. Cache writes, cache reads, batch, and fast mode are not used. The model id claude-sonnet-4-20250514 is not listed on that page, so its price is null and a live call for it is refused.",
     "Seedance reference-to-video prices were read on 2026-11-14. Fast image references are $0.2419 per second at 720p, the same as fast text-to-video. Seedance 2.0 image references are $0.3024 per second at 720p. Text-to-video for that model stays $0.3034. A reference video is cheaper, and this engine does not send video or audio references, so that discount is not used. The quote uses the image-reference price only when the shot would send at least one image."
@@ -106,17 +107,148 @@
       "usd_per_second": "0.157",
       "resolution": "720p",
       "allowed_resolutions": ["720p", "1080p"],
+      "resolution_prices": {
+        "720p": "0.157",
+        "1080p": "0.235"
+      },
       "min_seconds": "3",
       "max_seconds": "30",
       "whole_seconds": true,
       "duration_format": "integer",
       "duration_rule_status": "verified",
-      "duration_source": "https://fal.ai/models/kling/v4/text-to-video/api",
-      "duration_source_date": "2026-11-12",
-      "source": "https://kling.ai/document-api/pricing/base/video.md",
-      "source_date": "2026-11-10",
-      "quote": "Kling 4.0 with no input video is $0.157 per second at 720p.",
-      "note": "No provider endpoint is configured, so a live call is refused. The fal text-to-video page accepts a whole number of seconds from 3 to 30, at 720p or 1080p. The per-shot multi-prompt minimum of 1 second is not used for this row."
+      "duration_source": "https://fal.ai/models/kling/v4/text-to-video/llms.txt",
+      "duration_source_date": "2026-11-14",
+      "provider": "fal.ai",
+      "endpoint": "kling/v4/text-to-video",
+      "queue_app": "full",
+      "endpoints": {
+        "text-to-video": "kling/v4/text-to-video",
+        "image-to-video": "kling/v4/image-to-video",
+        "reference-to-video": "kling/v4/reference-to-video"
+      },
+      "aspect_ratios": ["16:9", "9:16", "1:1", "21:9"],
+      "aspect_aliases": {
+        "2.39:1": "21:9",
+        "2.35:1": "21:9",
+        "2.40:1": "21:9"
+      },
+      "audio_note": "Audio: keep_audio and voice_ids are not sent. The page default for keep_audio is false. These endpoints have no generate_audio field. No reference video and no voice are sent.",
+      "source": "https://fal.ai/models/kling/v4/text-to-video/llms.txt",
+      "source_date": "2026-11-14",
+      "quote": "Kling 4.0 is $0.157 per second at 720p and $0.235 per second at 1080p. This row sends 720p. The page default is 1080p. A reference video would be $0.094 per second at 720p and $0.141 at 1080p. This engine sends images only.",
+      "note": "Duration is a whole number from 3 to 30. The page default duration is 5. The per-shot multi-prompt minimum of 1 second is not used. Reference images are capped at 10 and each file at 30 MB. The schema does not publish a suffix list, so this row uses the same suffixes as the other fal image fields. Elements are capped at 7, with one frontal image and up to 3 extra angles. The page default resolution is 1080p. This row sends 720p so the quote matches the $0.157 rate.",
+      "image_to_video": {
+        "endpoint": "kling/v4/image-to-video",
+        "start_image_field": "start_image_url",
+        "aspect_ratios": [],
+        "source": "https://fal.ai/models/kling/v4/image-to-video/llms.txt",
+        "source_date": "2026-11-14"
+      },
+      "reference_to_video": {
+        "endpoint": "kling/v4/reference-to-video",
+        "usd_per_second": "0.157",
+        "resolution_prices": {
+          "720p": "0.157",
+          "1080p": "0.235"
+        },
+        "video_reference_usd_per_second": {
+          "720p": "0.094",
+          "1080p": "0.141"
+        },
+        "max_images": 10,
+        "max_elements": 7,
+        "max_angles": 3,
+        "max_bytes": 31457280,
+        "formats": ["jpeg", "jpg", "png", "webp", "bmp", "tif", "tiff", "gif", "heic", "heif"],
+        "image_field": "image_urls",
+        "element_field": "elements",
+        "element_tiers": ["character"],
+        "frontal_field": "frontal_image_url",
+        "angles_field": "reference_image_urls",
+        "element_token": "@Element",
+        "element_style": "at",
+        "prompt_token": "@Image",
+        "token_style": "at",
+        "start_image_field": "start_image_url",
+        "start_counts_toward_images": true,
+        "aspect_ratios": ["auto", "16:9", "9:16", "1:1", "21:9"],
+        "source": "https://fal.ai/models/kling/v4/reference-to-video/llms.txt",
+        "price_source": "https://fal.ai/models/kling/v4/reference-to-video/llms.txt",
+        "source_date": "2026-11-14"
+      }
+    },
+    {
+      "model": "minimax-h3-max",
+      "label": "MiniMax H3 Max",
+      "usd_per_second": "0.08",
+      "resolution": "768P",
+      "allowed_resolutions": ["480P", "768P", "1080P"],
+      "resolution_prices": {
+        "480P": "0.05",
+        "768P": "0.08",
+        "1080P": "0.16"
+      },
+      "min_seconds": "0.92",
+      "max_seconds": "15",
+      "whole_seconds": false,
+      "duration_format": "number",
+      "duration_rule_status": "verified",
+      "duration_source": "https://fal.ai/models/minimax/h3-max/text-to-video/llms.txt",
+      "duration_source_date": "2026-11-14",
+      "provider": "fal.ai",
+      "endpoint": "minimax/h3-max/text-to-video",
+      "queue_app": "full",
+      "endpoints": {
+        "text-to-video": "minimax/h3-max/text-to-video",
+        "image-to-video": "minimax/h3-max/image-to-video",
+        "reference-to-video": "minimax/h3-max/reference-to-video"
+      },
+      "request_fields": {
+        "prompt_expansion_mode": "disabled"
+      },
+      "aspect_ratios": ["21:9", "16:9", "4:3", "1:1", "3:4", "9:16"],
+      "aspect_aliases": {
+        "2.39:1": "21:9",
+        "2.35:1": "21:9",
+        "2.40:1": "21:9"
+      },
+      "audio_note": "Audio: target_audio_url and reference_audio_urls are not sent. These endpoints have no generate_audio field. The model may still make a soundtrack. prompt_expansion_mode is disabled so the written prompt is not rewritten.",
+      "quote_note": "The dollar line uses the standard rate. Through 2026-11-15 the text-to-video and image-to-video pages list 30 percent off, $0.035, $0.056, and $0.112 per second. From 2026-11-16 the standard rates apply. The reference-to-video page lists the standard rates.",
+      "source": "https://fal.ai/models/minimax/h3-max/text-to-video/llms.txt",
+      "source_date": "2026-11-14",
+      "quote": "MiniMax H3 Max standard rates are $0.05 per second at 480P, $0.08 at 768P, and $0.16 at 1080P. This row sends 768P. 1080P is a refinement of 768P. A promotion through 2026-11-15 lists $0.035, $0.056, and $0.112 on text-to-video and image-to-video. This quote uses the standard rate.",
+      "note": "Duration is a number from 0.92 to 15, not a whole-second grid. The page default duration is 5 and the page default resolution is 768P. The page default for prompt_expansion_mode is balanced. This row sends disabled so the reference tags stay in the prompt. enable_safety_checker is omitted, and the page default is true.",
+      "image_to_video": {
+        "endpoint": "minimax/h3-max/image-to-video",
+        "start_image_field": "image_url",
+        "aspect_ratios": [],
+        "source": "https://fal.ai/models/minimax/h3-max/image-to-video/llms.txt",
+        "source_date": "2026-11-14"
+      },
+      "reference_to_video": {
+        "endpoint": "minimax/h3-max/reference-to-video",
+        "usd_per_second": "0.08",
+        "resolution_prices": {
+          "480P": "0.05",
+          "768P": "0.08",
+          "1080P": "0.16"
+        },
+        "max_images": 12,
+        "max_bytes": 31457280,
+        "included_reference_tokens": 4096,
+        "included_square_images": 4,
+        "extra_square_image_usd": "0.02048",
+        "formats": ["jpeg", "jpg", "png", "webp", "bmp", "tif", "tiff", "gif", "heic", "heif"],
+        "image_field": "reference_image_urls",
+        "prompt_token": "Image",
+        "token_style": "word",
+        "start_image_field": "image_url",
+        "start_counts_toward_images": false,
+        "aspect_ratios": ["adaptive", "21:9", "16:9", "4:3", "1:1", "3:4", "9:16"],
+        "source": "https://fal.ai/models/minimax/h3-max/reference-to-video/llms.txt",
+        "price_source": "https://fal.ai/models/minimax/h3-max/reference-to-video/llms.txt",
+        "source_date": "2026-11-14"
+      }
     }
   ],
   "text": [

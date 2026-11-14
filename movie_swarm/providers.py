@@ -406,6 +406,12 @@ def run_provider_call(
             model, duration_seconds, settings.rates_path, per_second=per_second,
         )
     if kind == "video" and row is not None:
+        from movie_swarm.references import aliases_for, allowed_for, fit_aspect
+
+        fit = fit_aspect(aspect_ratio, allowed_for(row, prepared), aliases_for(row, prepared))
+        if fit.refuse:
+            return _stopped("refused", fit.note, shot_id=shot_id, cue_id=cue_id)
+        aspect_ratio = fit.ratio
         refusal = _video_request_refusal(model, row, duration_seconds)
         if refusal is not None:
             return _stopped("refused", refusal, shot_id=shot_id, cue_id=cue_id)
@@ -427,12 +433,23 @@ def run_provider_call(
         "max_tokens": max_tokens or 0,
         "aspect_ratio": aspect_ratio or "",
     }
-    if prepared is not None and prepared.chosen:
+    if prepared is not None and (prepared.chosen or prepared.elements or prepared.start):
         hash_body["reference_paths"] = [
             f"{item.relative}|{'' if item.size is None else item.size}|"
             f"{'' if item.mtime_ns is None else item.mtime_ns}"
             for item in prepared.chosen
         ]
+        if prepared.elements:
+            hash_body["elements"] = [
+                {
+                    "token": item.token,
+                    "frontal": item.frontal.relative,
+                    "angles": [angle.relative for angle in item.angles],
+                }
+                for item in prepared.elements
+            ]
+        if prepared.start is not None:
+            hash_body["start_image"] = prepared.start.relative
     request_hash = _request_hash(hash_body)
 
     cache = _load_cache(producer)
@@ -555,7 +572,7 @@ def run_provider_call(
                 row,
                 purpose,
                 settings,
-                prepared.chosen if prepared is not None and prepared.endpoint else None,
+                prepared if prepared is not None and prepared.endpoint else None,
             )
         except HttpTimeout as exc:
             return _keep(
@@ -616,6 +633,7 @@ def run_provider_call(
                 settings,
                 status_url=cached.get("status_url"),
                 response_url=cached.get("response_url"),
+                full_queue_app=bool(row and row.get("queue_app") == "full"),
             )
             if kind == "video"
             else None
@@ -799,7 +817,7 @@ def llm_for_command(
 def _submit(
     kind, endpoint, key, provider_name, model, prompt, duration, voice_id,
     system, max_tokens, aspect_ratio, row, purpose, settings: CallSettings,
-    references=None,
+    prepared=None,
 ):
     """Send the request.
 
@@ -815,23 +833,7 @@ def _submit(
             raise ProviderRejected(
                 f"{model} does not accept {resolution}. Allowed resolutions: {names}. Nothing was produced."
             )
-        payload = {"prompt": prompt}
-        if duration is not None and row is not None:
-            lengths, _notes = clip_lengths(duration, row)
-            if len(lengths) == 1:
-                payload["duration"] = request_value(lengths[0], row)
-            else:
-                payload["duration"] = request_value(duration, row)
-        elif duration is not None:
-            payload["duration"] = _seconds_text(duration)
-        if resolution:
-            payload["resolution"] = resolution
-        if aspect_ratio:
-            payload["aspect_ratio"] = aspect_ratio
-        if row and row.get("with_audio") is True:
-            payload["generate_audio"] = True
-        if references:
-            payload["image_urls"] = _reference_urls(references, settings)
+        payload = _video_body(prompt, duration, row, aspect_ratio, prepared, settings)
         response = send_with_retry(
             transport,
             method="POST",
@@ -901,6 +903,62 @@ def _submit(
     return None, _json_object(response.body), {}
 
 
+def _video_body(prompt, duration, row, aspect_ratio, prepared, settings: CallSettings) -> dict:
+    """The fal input fields for one picture call. Uploads only when references are passed."""
+    from movie_swarm.references import picture_kind
+
+    payload = {"prompt": prompt}
+    if duration is not None and row is not None:
+        lengths, _notes = clip_lengths(duration, row)
+        value = lengths[0] if len(lengths) == 1 else duration
+        payload["duration"] = request_value(value, row)
+    elif duration is not None:
+        payload["duration"] = _seconds_text(duration)
+    resolution = row.get("resolution") if row else None
+    if resolution:
+        payload["resolution"] = resolution
+    if aspect_ratio:
+        payload["aspect_ratio"] = aspect_ratio
+    if row and isinstance(row.get("request_fields"), dict):
+        for key, value in row["request_fields"].items():
+            if key not in payload:
+                payload[key] = value
+    if row and row.get("with_audio") is True:
+        payload["generate_audio"] = True
+    if prepared is None or not prepared.spec or not prepared.endpoint:
+        return payload
+    spec = prepared.spec
+    kind = picture_kind(prepared)
+    if kind == "image" and prepared.start is not None:
+        field = spec.get("image_start_field") or "start_image_url"
+        payload[field] = _one_url(prepared.start, settings)
+        return payload
+    if prepared.elements and spec.get("element_field"):
+        payload[spec["element_field"]] = [
+            _element_body(item, spec, settings) for item in prepared.elements
+        ]
+    if prepared.chosen:
+        payload[spec.get("image_field") or "image_urls"] = [
+            _one_url(item, settings) for item in prepared.chosen
+        ]
+    if prepared.start is not None and spec.get("start_field"):
+        payload[spec["start_field"]] = _one_url(prepared.start, settings)
+    return payload
+
+
+def _element_body(element, spec: dict, settings: CallSettings) -> dict:
+    body = {spec.get("frontal_field") or "frontal_image_url": _one_url(element.frontal, settings)}
+    if element.angles:
+        body[spec.get("angles_field") or "reference_image_urls"] = [
+            _one_url(item, settings) for item in element.angles
+        ]
+    return body
+
+
+def _one_url(item, settings: CallSettings) -> str:
+    return _reference_urls([item], settings)[0]
+
+
 def _poll_fal(
     endpoint,
     key,
@@ -908,13 +966,14 @@ def _poll_fal(
     settings: CallSettings,
     status_url=None,
     response_url=None,
+    full_queue_app=False,
 ) -> dict:
     if not request_id:
         raise ProviderRejected("The picture call has no provider request id to check. Nothing was produced.")
     transport = settings.transport or UrllibTransport()
     headers = {"Authorization": f"Key {key}"}
-    status_url = _fal_queue_url(status_url) or _fal_status_url(endpoint, request_id)
-    result_url = _fal_queue_url(response_url) or _fal_result_url(endpoint, request_id)
+    status_url = _fal_queue_url(status_url) or _fal_status_url(endpoint, request_id, full_queue_app)
+    result_url = _fal_queue_url(response_url) or _fal_result_url(endpoint, request_id, full_queue_app)
     window = poll_window(settings)
     waited = 0.0
     interval = window["start"]
@@ -1704,18 +1763,9 @@ def _location_name() -> str:
 
 
 def _aspect_ratio(production_dir: Path) -> str | None:
-    path = Path(production_dir) / "treatment" / "treatment.json"
-    if not path.is_file():
-        return None
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return None
-    if not isinstance(data, dict):
-        return None
-    ratio = (data.get("deliverables") or {}).get("aspect_ratio")
-    text = str(ratio).strip() if ratio else ""
-    return text or None
+    from movie_swarm.references import film_aspect
+
+    return film_aspect(production_dir)
 
 
 def _media_url(payload: dict) -> str | None:
@@ -1910,20 +1960,28 @@ def _fal_queue_url(value) -> str | None:
     return None
 
 
-def _fal_app_id(endpoint: str) -> str:
-    """The owner and the app. fal status URLs use those two segments, not the full endpoint."""
+def _fal_app_id(endpoint: str, full: bool = False) -> str:
+    """The queue app.
+
+    Seedance status URLs use the owner and the app, the first two segments.
+    Kling and MiniMax publish the status path on the full endpoint. A row
+    sets ``queue_app`` to ``full`` for that shape. The URL returned by the
+    submit response is used first, when fal sends one.
+    """
+    if full:
+        return str(endpoint).strip("/")
     parts = [part for part in str(endpoint).strip("/").split("/") if part]
     if len(parts) >= 2:
         return f"{parts[0]}/{parts[1]}"
     return "/".join(parts)
 
 
-def _fal_status_url(endpoint: str, request_id: str) -> str:
-    return f"{FAL_QUEUE}/{_fal_app_id(endpoint)}/requests/{request_id}/status"
+def _fal_status_url(endpoint: str, request_id: str, full: bool = False) -> str:
+    return f"{FAL_QUEUE}/{_fal_app_id(endpoint, full)}/requests/{request_id}/status"
 
 
-def _fal_result_url(endpoint: str, request_id: str) -> str:
-    return f"{FAL_QUEUE}/{_fal_app_id(endpoint)}/requests/{request_id}"
+def _fal_result_url(endpoint: str, request_id: str, full: bool = False) -> str:
+    return f"{FAL_QUEUE}/{_fal_app_id(endpoint, full)}/requests/{request_id}"
 
 
 def _provider_error_message(data: dict) -> str | None:

@@ -165,6 +165,11 @@
             "description": "Paths from the locked prop. Generation passes these to a provider that accepts an image reference.",
             "items": { "type": "string", "minLength": 1 }
           },
+          "start_image": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Optional first frame. A model that publishes a start-image field sends this path there."
+          },
           "location_id": {
             "type": "string",
             "description": "location_id from locations/location-lock.json when this shot should use that place's photos."

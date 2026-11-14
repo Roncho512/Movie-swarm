@@ -29,7 +29,11 @@ def generator_rate(card: dict, model: str) -> dict | None:
 
 
 def usd_per_second(row: dict):
-    """The published per-second price as a dollar amount."""
+    """The published per-second price for the resolution this row sends."""
+    prices = row.get("resolution_prices") if isinstance(row, dict) else None
+    resolution = row.get("resolution") if isinstance(row, dict) else None
+    if isinstance(prices, dict) and resolution in prices and prices[resolution] not in (None, ""):
+        return as_money(prices[resolution])
     return as_money(row["usd_per_second"])
 
 

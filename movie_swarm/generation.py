@@ -547,6 +547,9 @@ def _copy_reference_fields(loaded: dict, source: dict) -> None:
     images = [str(path).strip() for path in source.get("reference_images") or [] if str(path).strip()]
     if images:
         loaded["reference_images"] = images
+    start = source.get("start_image")
+    if isinstance(start, str) and start.strip():
+        loaded["start_image"] = start.strip()
     characters = [str(item).strip() for item in source.get("characters_in_shot") or [] if str(item).strip()]
     if characters:
         loaded["characters_in_shot"] = characters
@@ -572,6 +575,10 @@ def _merge_shot_list(folder: Path, shots: list[dict]) -> None:
             images = [str(path).strip() for path in source.get("reference_images") or [] if str(path).strip()]
             if images:
                 shot["reference_images"] = images
+        if "start_image" not in shot:
+            start = source.get("start_image")
+            if isinstance(start, str) and start.strip():
+                shot["start_image"] = start.strip()
         if "characters_in_shot" not in shot:
             characters = [
                 str(item).strip() for item in source.get("characters_in_shot") or [] if str(item).strip()
