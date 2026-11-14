@@ -21,10 +21,15 @@ subject:
 The cap is the model's ``max_images``. Seedance reference-to-video
 publishes 9. A rate row can send some subjects as elements instead of
 flat images: one frontal image, then extra angles, up to the published
-caps. Character is the tier used that way when the row says so. Location
-and prop stills stay reference images. A missing file, a file outside
-the film folder, an unsupported suffix, or a file over the published
-size is logged and skipped. The call continues with whatever remains.
+caps. Character is the tier used that way when the row says so. An
+element that needs extra angles is not sent when the person has only
+one still. That still is sent as a reference image, and the quote says
+so. ``element_reference_images`` on the character lock supplies the
+extra angles. Location and prop stills stay reference images. A missing
+file, a file outside the film folder, an unsupported suffix, or a file
+over the published size is logged and skipped. The call continues with
+whatever remains. A payload the endpoint would reject is refused before
+any upload.
 """
 
 from __future__ import annotations
@@ -93,6 +98,7 @@ class ChosenElement:
     index: int
     frontal: ChosenReference
     angles: list[ChosenReference] = field(default_factory=list)
+    video: str | None = None
 
 
 @dataclass
@@ -174,6 +180,12 @@ def reference_spec(row: dict | None) -> dict | None:
         max_angles = int(block.get("max_angles") or 0)
     except (TypeError, ValueError):
         max_angles = 0
+    try:
+        min_angles = int(block.get("min_angles") or 0)
+    except (TypeError, ValueError):
+        min_angles = 0
+    if min_angles < 1 and max_angles > 0:
+        min_angles = 1
     formats = block.get("formats") or list(_DEFAULT_FORMATS)
     if not isinstance(formats, list):
         formats = list(_DEFAULT_FORMATS)
@@ -190,6 +202,7 @@ def reference_spec(row: dict | None) -> dict | None:
         "max_images": max(0, max_images),
         "max_elements": max(0, max_elements),
         "max_angles": max(0, max_angles),
+        "min_angles": max(0, min_angles),
         "max_bytes": max_bytes,
         "formats": {str(item).lower().lstrip(".") for item in formats if str(item).strip()},
         "image_field": str(block.get("image_field") or "image_urls"),
@@ -247,7 +260,8 @@ def prepare_references(
     if start is not None:
         for subject in image_subjects:
             subject.images = [image for image in subject.images if image.relative != start.relative]
-    raw_elements, element_notes = _elements(element_subjects, spec)
+    raw_elements, demoted, element_notes = _elements(element_subjects, spec)
+    image_subjects = list(demoted) + list(image_subjects)
     reserve = 1 if start is not None and spec["start_counts"] and (raw_elements or _has_images(image_subjects)) else 0
     kept, dropped = _cap(image_subjects, max(0, spec["max_images"] - reserve))
     skipped = [note for subject in subjects for note in subject.skipped]
@@ -328,18 +342,7 @@ def quote_lines(prepared: PreparedReferences) -> list[str]:
             )
         if prepared.chosen:
             shown = "; ".join(_image_shown(item) for item in prepared.chosen)
-            if prepared.elements:
-                lines.append(
-                    "References that would be sent, location, then prop, then the shot's own images, "
-                    "one image per subject before a second from the same subject: "
-                    f"{shown}."
-                )
-            else:
-                lines.append(
-                    "References that would be sent, character face first, then location, then prop, "
-                    "then the shot's own images, one image per subject before a second from the same "
-                    f"subject: {shown}."
-                )
+            lines.append(_reference_order_sentence(prepared, shown))
         if prepared.start is not None:
             lines.append(f"First frame that would be sent: {prepared.start.relative}.")
         token_line = _token_sentence(spec, len(prepared.chosen))
@@ -366,6 +369,9 @@ def quote_lines(prepared: PreparedReferences) -> list[str]:
             lines.append(note)
     if spec.get("audio_note") and spec["audio_note"] not in lines:
         lines.append(spec["audio_note"])
+    blocked = reference_request_refusal(prepared)
+    if blocked and blocked not in lines:
+        lines.insert(0, blocked)
     return lines
 
 
@@ -534,13 +540,22 @@ def _start_image(folder: Path, shot: dict, spec: dict) -> tuple[ChosenReference 
     return chosen, None
 
 
-def _elements(subjects: list[_Subject], spec: dict) -> tuple[list[tuple[_Subject, _Image, list[_Image]]], list[str]]:
+def _elements(
+    subjects: list[_Subject],
+    spec: dict,
+) -> tuple[list[tuple[_Subject, _Image, list[_Image]]], list[_Subject], list[str]]:
     limit = int(spec.get("max_elements") or 0)
     angles_cap = int(spec.get("max_angles") or 0)
+    min_angles = int(spec.get("min_angles") or 0)
     kept: list[tuple[_Subject, _Image, list[_Image]]] = []
+    demoted: list[_Subject] = []
     dropped: list[str] = []
     for subject in subjects:
         if not subject.images:
+            continue
+        if min_angles >= 1 and len(subject.images) < 1 + min_angles:
+            demoted.append(subject)
+            dropped.append(_single_still_note(subject, min_angles))
             continue
         if len(kept) >= limit:
             for image in subject.images:
@@ -548,10 +563,93 @@ def _elements(subjects: list[_Subject], spec: dict) -> tuple[list[tuple[_Subject
             continue
         frontal = subject.images[0]
         angles = subject.images[1:1 + angles_cap]
+        if angles_cap and not angles:
+            demoted.append(subject)
+            dropped.append(_single_still_note(subject, 1))
+            continue
         for image in subject.images[1 + angles_cap:]:
             dropped.append(f"Not sent, over the {angles_cap} extra-angle cap: {image.relative}.")
         kept.append((subject, frontal, angles))
-    return kept, dropped
+    return kept, demoted, dropped
+
+
+def _single_still_note(subject: _Subject, min_angles: int) -> str:
+    count = len(subject.images)
+    still = "1 still" if count == 1 else f"{count} stills"
+    extra = "1 extra angle" if min_angles == 1 else f"{min_angles} extra angles"
+    label = subject.label or ROLE.get(subject.tier, "subject")
+    return (
+        f"{label} has {still}, so the still is sent as a reference image, not an element. "
+        f"This endpoint needs a frontal image and at least {extra}."
+    )
+
+
+def reference_request_refusal(prepared: PreparedReferences | None) -> str | None:
+    """Stop a payload the endpoint would reject. Does not upload or call out."""
+    if prepared is None:
+        return None
+    spec = prepared.spec or {}
+    if not prepared.elements and not spec.get("element_field"):
+        return None
+    try:
+        max_elements = int(spec.get("max_elements") or 0)
+    except (TypeError, ValueError):
+        max_elements = 0
+    try:
+        max_angles = int(spec.get("max_angles") or 0)
+    except (TypeError, ValueError):
+        max_angles = 0
+    try:
+        min_angles = int(spec.get("min_angles") or 0)
+    except (TypeError, ValueError):
+        min_angles = 0
+    try:
+        max_images = int(spec.get("max_images") or 0)
+    except (TypeError, ValueError):
+        max_images = 0
+    if max_elements and len(prepared.elements) > max_elements:
+        return (
+            f"This request has {len(prepared.elements)} elements. "
+            f"The endpoint accepts at most {max_elements}. Nothing was sent."
+        )
+    frames = len(prepared.chosen) + (1 if prepared.start is not None else 0)
+    if max_images and frames > max_images:
+        return (
+            f"This request has {frames} reference images, counting first, middle, and end frames. "
+            f"The endpoint accepts at most {max_images}. Nothing was sent."
+        )
+    requires_angles = min_angles >= 1 or max_angles > 0
+    angle_cap = max_angles or 3
+    for element in prepared.elements:
+        if element.frontal is not None and element.video:
+            return (
+                f"{element.label} has both a frontal image and a video. "
+                "The endpoint accepts one or the other, not both. Nothing was sent."
+            )
+        if requires_angles and element.frontal is not None and not element.angles and not element.video:
+            return (
+                f"{element.label} has a frontal image and no extra angle. "
+                f"The endpoint needs a frontal image and 1 to {angle_cap} extra angles, or a video. "
+                "Nothing was sent."
+            )
+        if element.angles and len(element.angles) > angle_cap:
+            return (
+                f"{element.label} has {len(element.angles)} extra angles. "
+                f"The endpoint accepts at most {angle_cap}. Nothing was sent."
+            )
+    return None
+
+
+def _reference_order_sentence(prepared: PreparedReferences, shown: str) -> str:
+    has_character = any(item.tier == "character" for item in prepared.chosen)
+    if prepared.elements and not has_character:
+        lead = "location, then prop, then the shot's own images"
+    else:
+        lead = "character face first, then location, then prop, then the shot's own images"
+    return (
+        "References that would be sent, "
+        f"{lead}, one image per subject before a second from the same subject: {shown}."
+    )
 
 
 def _number_elements(
@@ -691,7 +789,7 @@ def _character_subjects(folder: Path, shot: dict, prompt: str, spec: dict) -> li
         by_id[key] = {
             "names": _character_names(entry),
             "label": str(entry.get("name") or entry.get("character_id") or "character"),
-            "images": _image_list(entry),
+            "images": _image_list(entry, "reference_images", "element_reference_images"),
         }
         order.append(key)
     for entry in costumes:
@@ -926,13 +1024,22 @@ def _read_lock(path: Path, label: str) -> dict | None:
     return data
 
 
-def _image_list(entry: dict) -> list[str]:
+def _image_list(entry: dict, *fields: str) -> list[str]:
+    names = fields or ("reference_images",)
     images = []
-    for item in entry.get("reference_images") or []:
-        if isinstance(item, str) and item.strip():
-            images.append(item.strip())
-        elif isinstance(item, dict) and str(item.get("path") or "").strip():
-            images.append(str(item["path"]).strip())
+    seen = set()
+    for name in names:
+        for item in entry.get(name) or []:
+            if isinstance(item, str) and item.strip():
+                text = item.strip()
+            elif isinstance(item, dict) and str(item.get("path") or "").strip():
+                text = str(item["path"]).strip()
+            else:
+                continue
+            if text in seen:
+                continue
+            seen.add(text)
+            images.append(text)
     return images
 
 

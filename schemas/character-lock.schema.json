@@ -35,7 +35,12 @@
         "locked_spec": { "type": "string", "minLength": 1 },
         "reference_images": {
           "type": "array",
-          "description": "Face photos, best likeness first. Paths are relative to the film folder.",
+          "description": "Face photos, best likeness first. Paths are relative to the film folder. The first is the frontal still when an endpoint sends this person as an element.",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "element_reference_images": {
+          "type": "array",
+          "description": "Optional extra angles for an element, after reference_images. An endpoint that needs a frontal still plus 1 to 3 extra angles uses these when reference_images has only the frontal still. Paths are relative to the film folder.",
           "items": { "type": "string", "minLength": 1 }
         }
       }

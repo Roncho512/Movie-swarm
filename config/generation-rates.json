@@ -157,6 +157,7 @@
         },
         "max_images": 10,
         "max_elements": 7,
+        "min_angles": 1,
         "max_angles": 3,
         "max_bytes": 31457280,
         "formats": ["jpeg", "jpg", "png", "webp", "bmp", "tif", "tiff", "gif", "heic", "heif"],

@@ -256,6 +256,13 @@ def run_test_shot(
     quote = redact(format_shot_quote(producer, shot, choice, settings.rates_path))
     if live and announce is not None:
         announce(quote)
+    from movie_swarm.rates import generator_rate, load_rate_card
+    from movie_swarm.references import prepare_references, reference_request_refusal
+
+    rate_row = generator_rate(load_rate_card(settings.rates_path), choice["model"]) if choice.get("model") else None
+    blocked = reference_request_refusal(
+        prepare_references(folder, shot, enforced.prompt, rate_row)
+    )
     result = run_provider_call(
         producer,
         live=live,
@@ -275,6 +282,10 @@ def run_test_shot(
         if not choice["wired"]:
             extra = "\n" + unwired_note(choice["model"], settings.rates_path, routing_path)
         result["message"] = redact(result["message"].rstrip() + "\n" + quote + extra)
+        if blocked:
+            result["status"] = "refused"
+            result["sent"] = False
+            result["message"] = redact(blocked + "\n" + quote)
     result["quote"] = quote
     result["model"] = choice["model"]
     result["tier"] = choice["tier"]
@@ -405,6 +416,12 @@ def run_provider_call(
         estimate, billed, price_note = _estimate(
             model, duration_seconds, settings.rates_path, per_second=per_second,
         )
+    if kind == "video" and prepared is not None:
+        from movie_swarm.references import reference_request_refusal
+
+        blocked = reference_request_refusal(prepared)
+        if blocked:
+            return _stopped("refused", blocked, shot_id=shot_id, cue_id=cue_id)
     if kind == "video" and row is not None:
         from movie_swarm.references import aliases_for, allowed_for, fit_aspect
 

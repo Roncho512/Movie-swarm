@@ -14,7 +14,16 @@ from movie_swarm.http_retry import HttpResult
 from movie_swarm.paths import repo_root
 from movie_swarm.providers import _video_request_refusal
 from movie_swarm.rates import generator_rate, load_rate_card, usd_per_second
-from movie_swarm.references import fit_aspect, prepare_references
+from movie_swarm.references import (
+    ChosenElement,
+    ChosenReference,
+    PreparedReferences,
+    fit_aspect,
+    prepare_references,
+    reference_request_refusal,
+    reference_spec,
+)
+from movie_swarm.validate import load_schema, validate_data
 from tests.test_phase8_10_fal import _row
 from tests.test_phase8_5 import SECRET, Scripted, _harbor, _open, _settings
 from tests.test_reference_to_video import _board, _film, _png, _write
@@ -170,9 +179,9 @@ def test_kling_reference_payload_maps_characters_to_elements(tmp_path, monkeypat
             "frontal_image_url": "https://fal.example/characters/ada/front.png",
             "reference_image_urls": ["https://fal.example/characters/ada/side.png"],
         },
-        {"frontal_image_url": "https://fal.example/characters/beau/front.png"},
     ]
     assert body["image_urls"] == [
+        "https://fal.example/characters/beau/front.png",
         "https://fal.example/locations/dock/wide.png",
         "https://fal.example/props/scarf/face.png",
         "https://fal.example/shots/extra.png",
@@ -180,11 +189,11 @@ def test_kling_reference_payload_maps_characters_to_elements(tmp_path, monkeypat
         "https://fal.example/props/scarf/back.png",
         "https://fal.example/shots/second.png",
     ]
-    assert "characters/" not in " ".join(body["image_urls"])
     assert "Use @Element1 as the character face (Ada)." in body["prompt"]
-    assert "Use @Element2 as the character face (Beau)." in body["prompt"]
-    assert "Use @Image1 as the location (The dock)." in body["prompt"]
-    assert "Use @Image2 as the prop (Red scarf)." in body["prompt"]
+    assert "Use @Element2" not in body["prompt"]
+    assert "Use @Image1 as the character face (Beau)." in body["prompt"]
+    assert "Use @Image2 as the location (The dock)." in body["prompt"]
+    assert "Use @Image3 as the prop (Red scarf)." in body["prompt"]
     assert [path.relative_to(folder.resolve()).as_posix() for path in uploads] == [
         "characters/ada/front.png",
         "characters/ada/side.png",
@@ -196,6 +205,9 @@ def test_kling_reference_payload_maps_characters_to_elements(tmp_path, monkeypat
         "props/scarf/back.png",
         "shots/second.png",
     ]
+    for element in body["elements"]:
+        assert element["frontal_image_url"]
+        assert 1 <= len(element["reference_image_urls"]) <= 3
     for element in body["elements"]:
         assert "voice_id" not in element
         assert "video_url" not in element
@@ -395,11 +407,15 @@ def test_caps_drop_extra_elements_angles_and_images(tmp_path):
     characters = []
     for index in range(8):
         _png(folder, f"characters/c{index}/front.png")
+        _png(folder, f"characters/c{index}/side.png")
         characters.append({
             "character_id": f"c{index}",
             "name": f"Person {index}",
             "locked_spec": "The face in the photograph.",
-            "reference_images": [f"characters/c{index}/front.png"],
+            "reference_images": [
+                f"characters/c{index}/front.png",
+                f"characters/c{index}/side.png",
+            ],
         })
     _write(folder, "characters/character-lock.json", {
         "version": "1.0.0",
@@ -532,8 +548,10 @@ def test_quotes_price_the_models_and_make_no_network_calls(tmp_path, monkeypatch
     assert KLING_REFERENCE in kling["quote"]
     assert "$0.1570 per second" in kling["quote"]
     assert "@Element1 character face characters/ada/front.png (angles characters/ada/side.png)" in kling["quote"]
-    assert "@Element2 character face characters/beau/front.png" in kling["quote"]
-    assert "@Image1 location locations/dock/wide.png" in kling["quote"]
+    assert "@Element2" not in kling["quote"]
+    assert "@Image1 character face characters/beau/front.png" in kling["quote"]
+    assert "Beau has 1 still, so the still is sent as a reference image, not an element." in kling["quote"]
+    assert "@Image2 location locations/dock/wide.png" in kling["quote"]
     assert "characters/ada/front.png" in kling["quote"].split("References that would be sent", 1)[0]
     assert "Aspect ratio 21:9." in kling["quote"]
     assert "keep_audio" in kling["quote"]
@@ -631,6 +649,173 @@ def test_a_scope_ratio_is_sent_as_21_9_and_the_queue_fallback_uses_the_full_endp
     assert transport.calls[2]["url"] == f"{FAL_QUEUE}/{KLING_TEXT}/requests/job-9"
     assert "2.39:1" in result["quote"]
     assert "21:9" in result["quote"]
+
+
+def test_one_still_is_not_an_element_and_extra_angles_are(tmp_path, monkeypatch):
+    monkeypatch.setenv("FAL_KEY", SECRET)
+    folder = _film(tmp_path)
+    _write(folder, "characters/character-lock.json", {
+        "version": "1.0.0",
+        "production_id": "harbor-night",
+        "status": "locked",
+        "characters": [
+            {
+                "character_id": "ada",
+                "name": "Ada",
+                "locked_spec": "The face in the photograph.",
+                "reference_images": ["characters/ada/front.png"],
+                "element_reference_images": ["characters/ada/side.png"],
+            },
+            {
+                "character_id": "beau",
+                "name": "Beau",
+                "locked_spec": "The face in the photograph.",
+                "reference_images": ["characters/beau/front.png"],
+            },
+        ],
+    })
+    _board(
+        folder,
+        characters_in_shot=["ada", "beau"],
+        location_id="",
+        reference_images=[],
+        reference_from={"characters": ["ada", "beau"], "location": "", "props": []},
+    )
+    assert validate_data(
+        json.loads((folder / "characters" / "character-lock.json").read_text(encoding="utf-8")),
+        load_schema("character-lock"),
+    ) == []
+    from movie_swarm.providers import run_test_shot
+
+    producer = _open(folder)
+    producer.approve_gate("generation", "approved", "ron")
+    transport = Scripted(_done(KLING_REFERENCE))
+    uploads = []
+    result = run_test_shot(
+        producer,
+        "s01-sh01",
+        live=True,
+        settings=_settings(transport, uploader=_uploader(folder, uploads)),
+        model="kling-4.0",
+        announce=lambda _text: None,
+    )
+    assert result["status"] == "generated", result["message"]
+    body = transport.calls[0]["body"]
+    assert body["elements"] == [
+        {
+            "frontal_image_url": "https://fal.example/characters/ada/front.png",
+            "reference_image_urls": ["https://fal.example/characters/ada/side.png"],
+        }
+    ]
+    assert body["image_urls"] == ["https://fal.example/characters/beau/front.png"]
+    assert "frontal_image_url" not in json.dumps(body["image_urls"])
+    assert all("reference_image_urls" in element for element in body["elements"])
+    assert "Use @Image1 as the character face (Beau)." in body["prompt"]
+    assert "Beau has 1 still" in result["quote"]
+    assert "not an element" in result["quote"]
+    assert uploads[0].name == "front.png"
+    assert uploads[1].name == "side.png"
+    assert uploads[2].name == "front.png"
+
+
+def test_illegal_element_shapes_are_refused_before_upload(tmp_path, monkeypatch):
+    spec = reference_spec(_row("kling-4.0"))
+    frontal = _still("characters/ada/front.png")
+    angles = [_still(f"characters/ada/angle-{index}.png") for index in range(4)]
+    alone = PreparedReferences(
+        elements=[_element(frontal, [])],
+        spec=spec,
+        prompt="Ada.",
+    )
+    assert "no extra angle" in reference_request_refusal(alone)
+    too_many_angles = PreparedReferences(
+        elements=[_element(frontal, angles)],
+        spec=spec,
+        prompt="Ada.",
+    )
+    assert "4 extra angles" in reference_request_refusal(too_many_angles)
+    both = _element(frontal, angles[:1])
+    both.video = "https://example.test/clip.mp4"
+    assert "not both" in reference_request_refusal(
+        PreparedReferences(elements=[both], spec=spec, prompt="Ada.")
+    )
+    crowd = PreparedReferences(
+        elements=[_element(_still(f"characters/c{index}/front.png"), [_still(f"characters/c{index}/side.png")], label=f"Person {index}") for index in range(8)],
+        spec=spec,
+        prompt="A crowd.",
+    )
+    assert "8 elements" in reference_request_refusal(crowd)
+    images = [_still(f"shots/ref-{index}.png", tier="shot", role="shot image") for index in range(10)]
+    packed = PreparedReferences(chosen=images, start=_still("shots/first.png", tier="shot", role="first frame"), spec=spec, prompt="Wide.")
+    assert "11 reference images" in reference_request_refusal(packed)
+    assert reference_request_refusal(PreparedReferences(elements=[_element(frontal, angles[:1])], spec=spec, prompt="Ada.")) is None
+
+    monkeypatch.setenv("FAL_KEY", SECRET)
+    folder = _harbor(tmp_path)
+    from movie_swarm.providers import run_test_shot
+
+    def bad_prepare(*_args, **_kwargs):
+        return alone
+
+    monkeypatch.setattr("movie_swarm.references.prepare_references", bad_prepare)
+    producer = _open(folder)
+    producer.approve_gate("generation", "approved", "ron")
+    transport = Scripted(_done(KLING_REFERENCE))
+    uploads = []
+    live = run_test_shot(
+        producer,
+        "s01-sh01",
+        live=True,
+        settings=_settings(transport, uploader=_uploader(folder, uploads)),
+        model="kling-4.0",
+        announce=lambda _text: None,
+    )
+    assert live["status"] == "refused"
+    assert "no extra angle" in live["message"]
+    assert "Nothing was sent." in live["message"]
+    assert transport.calls == []
+    assert uploads == []
+
+    dry = run_test_shot(
+        producer,
+        "s01-sh01",
+        live=False,
+        settings=_settings(Scripted([]), uploader=_uploader(folder, [])),
+        model="kling-4.0",
+        announce=lambda _text: None,
+    )
+    assert dry["status"] == "refused"
+    assert dry["sent"] is False
+    assert "no extra angle" in dry["quote"]
+    assert "Nothing was sent." in dry["message"]
+
+
+def _still(relative: str, tier: str = "character", role: str = "character face") -> ChosenReference:
+    return ChosenReference(
+        tier=tier,
+        role=role,
+        label="Ada",
+        token="",
+        index=1,
+        raw=relative,
+        relative=relative,
+        path=None,
+        url=None,
+        size=1,
+        mtime_ns=1,
+    )
+
+
+def _element(frontal: ChosenReference, angles: list[ChosenReference], label: str = "Ada") -> ChosenElement:
+    return ChosenElement(
+        tier="character",
+        role="character face",
+        label=label,
+        token="@Element1",
+        index=1,
+        frontal=frontal,
+        angles=angles,
+    )
 
 
 def _board_duration(folder: Path, seconds: str) -> None:
