@@ -10,9 +10,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
-from movie_swarm.graphics import GraphicsError, _matched_packs, build_graphics, write_guide, write_research
+from movie_swarm.graphics import _matched_packs, build_graphics, write_guide, write_research
 from movie_swarm.line_producer import LineProducer
 from movie_swarm.mentions import advertising_phrases
 from movie_swarm.paths import repo_root
@@ -176,8 +174,8 @@ def test_a_matching_pack_is_a_proposal_and_harbor_night_does_not_inherit_it(tmp_
     assert guide["fonts"]["title"]["provenance"] == "DESIGNER PROPOSAL"
     assert "SIL Open Font License 1.1" in guide["fonts"]["title"]["licensing"]
     assert {item["family"] for item in guide["fonts"]["title"]["alternates"]} == {"Sancreek"}
-    assert guide["fonts"]["credits"]["family"] == "Source Sans 3"
-    assert guide["fonts"]["credits"]["category"] == "sans-serif"
+    assert guide["fonts"]["credits"]["family"] == "Libre Baskerville"
+    assert guide["fonts"]["credits"]["category"] == "serif"
     assert guide["fonts"]["subtitles"]["family"] == "Noto Sans"
     assert guide["fonts"]["marketing"]["family"] == "Alfa Slab One"
     custom = guide["custom_title"]
@@ -193,7 +191,8 @@ def test_a_matching_pack_is_a_proposal_and_harbor_night_does_not_inherit_it(tmp_
     assert guide["surfaces"]["poster"]
     assert guide["surfaces"]["key_art"]
     assert guide["surfaces"]["credits"]
-    assert any("sans-serif" in rule["text"] for rule in guide["surfaces"]["credits"])
+    assert any("period face" in rule["text"] for rule in guide["surfaces"]["credits"])
+    assert not any("sans-serif" in rule["text"] for rule in guide["surfaces"]["credits"])
     assert "5%" in guide["layout"]["safe_area"]
     assert validate_file(production / "graphics" / "brand-guide.json").ok
     notes = (production / "graphics" / "brand-guide.md").read_text(encoding="utf-8")
@@ -201,7 +200,7 @@ def test_a_matching_pack_is_a_proposal_and_harbor_night_does_not_inherit_it(tmp_
     assert "https://" in notes
 
 
-def test_every_pack_validates_and_a_display_credits_face_is_refused(tmp_path):
+def test_every_pack_validates_and_a_credits_face_keeps_its_category(tmp_path):
     schema = load_schema("design-reference")
     folder = repo_root() / "config" / "design-references"
     packs = list(folder.glob("*.json"))
@@ -209,8 +208,8 @@ def test_every_pack_validates_and_a_display_credits_face_is_refused(tmp_path):
     for path in packs:
         errors = validate_data(json.loads(path.read_text(encoding="utf-8")), schema)
         assert errors == [], path.name
-    bad = {
-        "id": "bad-credits",
+    pack = {
+        "id": "period-credits",
         "match": {"always": True},
         "fonts": [
             {
@@ -220,16 +219,18 @@ def test_every_pack_validates_and_a_display_credits_face_is_refused(tmp_path):
                 "license_name": "SIL Open Font License 1.1",
                 "license_url": "https://example.com/ofl",
                 "source_url": "https://example.com/face",
-                "note": "Not a sans.",
+                "note": "The pack names the category.",
             }
         ],
     }
     directory = tmp_path / "packs"
     directory.mkdir()
-    (directory / "bad.json").write_text(json.dumps(bad), encoding="utf-8")
-    with pytest.raises(GraphicsError) as caught:
-        _matched_packs({}, {}, None, directory)
-    assert "sans" in str(caught.value).casefold()
+    (directory / "period.json").write_text(json.dumps(pack), encoding="utf-8")
+    matched = _matched_packs({}, {}, None, directory)
+    assert len(matched) == 1
+    font = matched[0][1]["fonts"][0]
+    assert font["family"] == "Display Only"
+    assert font["category"] == "display"
 
 
 def test_the_graphics_module_stays_offline_and_generic():

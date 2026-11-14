@@ -13,6 +13,6 @@ python3 scripts/director.py --production path/to/a-production --run phase-1 --of
 
 `research` writes `graphics/research.json`. It reads the production documents and any offline pack in `config/design-references/` whose terms the production's own genre, tone, or look already uses. A pack suggestion is labeled a designer proposal. `guide` writes `graphics/brand-guide.json` from that research and will not run without it. The guide stays a draft. `build` writes the graphic specs and will not run until Ron approves the brand guide at the graphics gate.
 
-A title card stores the words on screen apart from any design direction on the cue. Credits use a sans-serif. A featured object in the brief is carried into the guide and the key art as a story placement, not as a sale.
+A title card stores the words on screen apart from any design direction on the cue. Credits use the face the active design-reference pack names for that role. The engine does not force a category. A featured object in the brief is carried into the guide and the key art as a story placement, not as a sale.
 
 The estimate is checked against the art director allocation from the locked split. It is not charged. Offline is the default.

@@ -6,9 +6,9 @@ A 3-Minute Short Film
 
 Runtime: 3 Minutes
 
-Aspect Ratio: 2.39:1 Anamorphic
+Aspect Ratio: 2.39:1, Techniscope 35mm (2-perf)
 
-Visual Style: 16mm Ektachrome, 1967
+Visual Style: Techniscope 35mm (2-perf, 2.39:1), 1967. Leone-style sun-blasted grainy spaghetti western, pushed harder
 
 Draft 1.0 - April 2026
 
@@ -26,7 +26,7 @@ MIGUEL VEGA, 30. Mexican. Lean. Sun-darkened skin, deep lines around the eyes fr
 
 **VISUAL LANGUAGE:**
 
-Identical to The Long Road Back. 16mm Ektachrome stock. Heavy grain. Lens flare on direct sun. Warm color bleed at frame edges. Blacks are charcoal. Whites are bone. The desert palette shifts with the sun angle: high noon bleach, late afternoon amber, dusk purple. Every wide shot makes the man and machine look insignificant against the landscape. Every close shot makes the man and machine feel like the only things that exist.
+Identical to The Long Road Back. Techniscope 35mm (2-perf, 2.39:1). Leone-style sun-blasted grainy spaghetti western, pushed harder. Heavy grain. Lens flare on direct sun. Warm color bleed at frame edges. Blacks are charcoal. Whites are bone. The desert palette shifts with the sun angle: high noon bleach, late afternoon amber, dusk purple. Every wide shot makes the man and machine look insignificant against the landscape. Every close shot makes the man and machine feel like the only things that exist.
 
 **SOUND DESIGN:**
 

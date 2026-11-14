@@ -19,7 +19,7 @@ Subject: Miguel Vega, 30 years old, Mexican, lean build. Sun-darkened skin with 
 
 Wardrobe: White cotton shirt (sweat-stained at collar and under arms), brown leather vest (sun-bleached), riding goggles pushed up on forehead.
 
-Camera: Shot on 16mm Ektachrome film stock. Heavy film grain. Warm amber light from the left suggesting late afternoon desert sun. Charcoal shadows, bone highlights. Color bleed at frame edges.
+Camera: Shot on Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder. Heavy film grain. Warm amber light from the left suggesting late afternoon desert sun. Charcoal shadows, bone highlights. Color bleed at frame edges.
 
 The 4 angles:
 1. Front face, direct eye contact
@@ -41,7 +41,7 @@ Generate 4 photorealistic full-body reference images of the same man from the pr
 
 Wardrobe: White cotton shirt (sweat-stained), brown leather vest (sun-bleached), khaki pants, boots that have been resoled twice (worn leather, sole separating at left toe). Brown leather gloves worn smooth at palms. Goggles on forehead. On his left wrist, a vintage watch with a black dial on a worn brown leather strap.
 
-Camera: Shot on 16mm Ektachrome. Heavy grain. Warm amber light. Desert background — flat hardpan, distant mountains, cardon cacti.
+Camera: Shot on Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder. Heavy grain. Warm amber light. Desert background — flat hardpan, distant mountains, cardon cacti.
 
 The 4 poses:
 1. Full body front, standing, weight on one leg, relaxed but alert
@@ -69,7 +69,7 @@ Specifications: Single cylinder engine. Right-side exhaust pipe. Right-side kick
 
 Condition: Heavily used. The entire bike is coated in pale desert dust. The chrome exhaust is brown with dust. The tank, originally silver, is now the color of sand. Nothing is clean. Nothing is new. This bike has been ridden hard across desert terrain for hours.
 
-Camera: Shot on 16mm Ektachrome. Heavy grain. Warm amber light.
+Camera: Shot on Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder. Heavy grain. Warm amber light.
 
 The 4 views:
 1. Right side profile (exhaust side) — the hero shot showing the engine, exhaust, tank shape
@@ -101,7 +101,7 @@ Condition across the 4 images:
 3. Worn and scratched — the same watch with a scratched crystal, strap dark with sweat, dust in the case edges. This is the watch at the end of a long desert ride.
 4. In context — the watch on a left wrist gripping a motorcycle handlebar. The wrist is sun-darkened. The glove cuff is pulled back just enough to show the watch. Other textures in frame: leather glove, rubber grip, throttle cable, dust.
 
-Camera: Shot on 16mm Ektachrome. Heavy grain. Warm light. Macro/detail photography.
+Camera: Shot on Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder. Heavy grain. Warm light. Macro/detail photography.
 
 Period: 1967. This is a tool watch being used as a tool. Not a luxury display piece.
 ```
@@ -123,7 +123,7 @@ Photorealistic wide landscape. Baja California desert. Flat hardpan stretching t
 
 Light: Late afternoon. Low sun angle from the west. Everything is amber and ochre. Long shadows stretching east across the desert floor. Dust in the air catches the light and turns it gold. Heat shimmer on the horizon.
 
-Camera: Shot on 16mm Ektachrome film stock. Heavy grain. Warm color bleed at frame edges. Lens flare from the low sun. Blacks are charcoal. Whites are bone. Anamorphic 2.39:1 aspect ratio.
+Camera: Shot on Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder. Heavy grain. Warm color bleed at frame edges. Lens flare from the low sun. Blacks are charcoal. Whites are bone. framed 2.39:1.
 
 The landscape should feel vast and indifferent. A man could disappear here and the desert would not notice.
 ```
@@ -137,7 +137,7 @@ Photorealistic wide landscape. Same Baja California desert composition — flat 
 
 Light: Pre-dusk. The amber is deepening to bronze. Sun dropping fast. Shadows are longer and turning purple at their edges. The warmth is leaving the air. The light is beautiful and it is running out.
 
-Camera: Shot on 16mm Ektachrome. Heavy grain. Anamorphic 2.39:1. The color temperature is shifting cooler compared to the amber of late afternoon.
+Camera: Shot on Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder. Heavy grain. framed 2.39:1. The color temperature is shifting cooler compared to the amber of late afternoon.
 ```
 
 Save as: `baja-desert-bronze-predusk.png`
@@ -149,7 +149,7 @@ Photorealistic wide landscape. Same Baja California rocky wash. Same distant mou
 
 Light: The sun is touching the western ridge. The amber has cooled to bronze and rose. Shadows are purple. Fifteen minutes of usable light remain. The palette is shifting from warm to cool. Time made visible through color.
 
-Camera: Shot on 16mm Ektachrome. Heavy grain. Anamorphic 2.39:1. The color palette is noticeably cooler and more rose-tinted than the previous two conditions.
+Camera: Shot on Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder. Heavy grain. framed 2.39:1. The color palette is noticeably cooler and more rose-tinted than the previous two conditions.
 ```
 
 Save as: `baja-desert-rose-sunset.png`
@@ -161,7 +161,7 @@ Photorealistic wide landscape. Same Baja California desert. Same mountain range 
 
 Light: The sun has just disappeared below the western ridge. The amber has fully drained from the landscape. Everything is cool blue and still. Dusk. The sky retains a faint warm glow at the horizon but the land is blue-gray and quiet.
 
-Camera: Shot on 16mm Ektachrome. Heavy grain. Anamorphic 2.39:1. This is the end of the day. The end of the film.
+Camera: Shot on Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder. Heavy grain. framed 2.39:1. This is the end of the day. The end of the film.
 ```
 
 Save as: `baja-desert-blue-dusk.png`
@@ -177,9 +177,9 @@ Save as: `baja-desert-blue-dusk.png`
 ```
 Generate 2 photorealistic film frames that establish the visual style of a 1967 Baja desert motorcycle film:
 
-Style: Shot on 16mm Kodak Ektachrome film stock. Heavy film grain visible throughout. Warm color bleed at frame edges. Lens flare on direct sun. Charcoal blacks (never true black). Bone whites (never pure white). The palette is amber, ochre, bronze, and leather brown.
+Style: Shot on Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder. Heavy film grain visible throughout. Warm color bleed at frame edges. Lens flare on direct sun. Charcoal blacks (never true black). Bone whites (never pure white). The palette is amber, ochre, bronze, and leather brown.
 
-Frame 1: A lone motorcycle rider crossing a vast desert hardpan. Extreme wide shot. The rider is small against the landscape. A dust trail streams behind. Low afternoon sun from the left turning everything gold. Cardon cacti in the midground. Mountains on the horizon. Anamorphic 2.39:1 framing.
+Frame 1: A lone motorcycle rider crossing a vast desert hardpan. Extreme wide shot. The rider is small against the landscape. A dust trail streams behind. Low afternoon sun from the left turning everything gold. Cardon cacti in the midground. Mountains on the horizon. framed 2.39:1.
 
 Frame 2: Close-up of a man's weathered hands gripping motorcycle handlebars. Brown leather gloves worn smooth. Throttle cable visible. Dust on every surface. A watch barely visible on the left wrist. The textures are everything — leather, rubber, metal, dust, skin. Shallow depth of field. The background is a warm amber blur of desert.
 
