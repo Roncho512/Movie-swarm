@@ -84,6 +84,7 @@ When you're debugging why Shot 14 has the wrong lighting, you need to trace the 
 | `graphics-brand-guide.schema.json` | Fonts, palette, wordmark, layout, safe area, and the rules that trace back to that research. Each one is labeled from the production documents or as a designer proposal. |
 | `graphics-package.schema.json` | Titles, title cards, end credits, subtitle style, key art, and collateral. A title card keeps its words apart from its design direction. |
 | `design-reference.schema.json` | An offline genre and period pack. The engine matches it from the production's own words. |
+| `film-credits.schema.json` | On-screen credits and billing for one production. Placeholder lines carry a flag. Agent crew credits stay on the Line Producer record. |
 | `film-budget.schema.json` | One film's budget: total, line shares, contingency, tiers, and whether the trailer is on. |
 | `trailer-research.schema.json` | Trailer research. Each item is sourced or inferred. |
 | `spoiler-guard.schema.json` | Beats the trailer may show, and beats it must hold back. |

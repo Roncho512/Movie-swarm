@@ -186,11 +186,14 @@ def package_files(production_dir: Path) -> list[dict]:
     if notes.is_file():
         rows.append({"path": notes, "listed": "graphics/graphics.md", "label": "Graphic specs, readable copy"})
     key = data.get("key_art") or {}
-    if key.get("filename"):
+    listed_key = key.get("filename")
+    if key.get("render_status") == "external" and key.get("approved_file"):
+        listed_key = key["approved_file"]
+    if listed_key:
         rows.append(
             {
-                "path": production_dir / str(key["filename"]),
-                "listed": str(key["filename"]),
+                "path": production_dir / str(listed_key),
+                "listed": str(listed_key),
                 "label": "Designed key art. Not the frame-grab poster.",
             }
         )
@@ -526,7 +529,7 @@ def _research_document(production_dir: Path) -> dict:
     if missing:
         raise GraphicsError("Research could not cover: " + ", ".join(missing) + ".")
 
-    return {
+    document = {
         "version": "1.0.0",
         "production_id": production_dir.name,
         "items": items,
@@ -543,6 +546,10 @@ def _research_document(production_dir: Path) -> dict:
         ),
         "written_at": now(),
     }
+    spec = _pack_subtitle_spec(packs)
+    if spec is not None:
+        document["subtitle_spec"] = spec
+    return document
 
 
 def _guide_document(production_dir: Path, research: dict) -> dict:
@@ -625,6 +632,8 @@ def _guide_document(production_dir: Path, research: dict) -> dict:
         document["surfaces"] = kept
     if notes:
         document["notes"] = notes
+    if isinstance(research.get("subtitle_spec"), dict):
+        document["subtitle_spec"] = json.loads(json.dumps(research["subtitle_spec"]))
     lettering = next((item for item in items if item.get("lettering_name")), None)
     if lettering is not None:
         document["custom_title"] = {
@@ -672,46 +681,37 @@ def _graphics_document(production_dir: Path, research: dict, guide: dict) -> dic
     title = str(guide["wordmark"]["title"])
     safe = str(guide["layout"]["safe_area"])
     cards = _title_cards(production_dir, read_brief(production_dir), safe)
-    credits, credit_source = _credit_lines(production_dir)
+    end_credits = _end_credits(production_dir)
     tagline = None
     if by_id.get("logline", {}).get("basis") == "sourced":
         tagline = by_id["logline"]["text"].split(":", 1)[-1].strip().rstrip(".")
     sizes = _sizes(production_dir)
-    subtitle_color = guide["palette"][0]["value"] if guide.get("palette") else "not named"
     key_width, key_height, key_source = sizes["key"]
     document = {
         "version": "1.0.0",
         "production_id": production_dir.name,
         "guide": "graphics/brand-guide.json",
         "guide_version": str(guide.get("version") or "1.0.0"),
-        "main_title": {
-            "text": title,
-            "font": guide["fonts"]["title"]["family"],
-            "safe_area": safe,
-            "trace": "film-title",
-        },
+        "main_title": _main_title(guide, title, safe),
         "title_cards": cards,
-        "end_credits": {"source": credit_source, "lines": credits},
-        "subtitles": {
-            "timing_owner": "post-supervisor",
-            "note": "Timing stays with the Post Supervisor. This spec does not set cue times.",
-            "family": guide["fonts"]["subtitles"]["family"],
-            "color": subtitle_color,
-            "safe_area": safe,
-        },
-        "key_art": {
-            "filename": "graphics/key-art-poster.png",
-            "kind": "designed",
-            "distinct_from": "poster.png",
-            "title": title,
-            "tagline": tagline,
-            "billing_block": [f"{line['role']}: {line['name']}" for line in credits],
-            "width": key_width,
-            "height": key_height,
-            "size_source": key_source,
-            "safe_area": safe,
-            "render_status": "not-rendered",
-        },
+        "end_credits": end_credits,
+        "subtitles": _subtitle_block(guide, safe),
+        "key_art": _apply_approved_key_art(
+            production_dir,
+            {
+                "filename": "graphics/key-art-poster.png",
+                "kind": "designed",
+                "distinct_from": "poster.png",
+                "title": title,
+                "tagline": tagline,
+                "billing_block": [_credit_text(line) for line in end_credits.get("lines") or []],
+                "width": key_width,
+                "height": key_height,
+                "size_source": key_source,
+                "safe_area": safe,
+                "render_status": "not-rendered",
+            },
+        ),
         "collateral": [
             _collateral("thumbnail-16x9", "16:9", "graphics/thumbnail-16x9.png", sizes["thumbnail_16x9"], safe),
             _collateral("thumbnail-9x16", "9:16", "graphics/thumbnail-9x16.png", sizes["thumbnail_9x16"], safe),
@@ -882,7 +882,101 @@ def _style_cues(direction: str) -> list[str]:
     return found
 
 
-def _credit_lines(production_dir: Path) -> tuple[list[dict], str | None]:
+_FILM_CREDITS = "credits/film-credits.json"
+_PLACEHOLDER_MARK = "FICTIONAL PLACEHOLDER"
+_CREW_HEADING = "Made with Movie-swarm crew"
+_APPROVED_KEY_ART = "graphics/brand/key-art-poster.png"
+_GUIDE_FONT_KEYS = {
+    "title": "title",
+    "credits": "credits",
+    "subtitles": "subtitles",
+    "marketing": "marketing",
+    "subheads": "subheads",
+    "body": "body",
+    "billing": "billing",
+    "player-subtitles": "player_subtitles",
+}
+_REQUIRED_FONT_ROLES = ("title", "credits", "subtitles", "marketing")
+
+
+def _main_title(guide: dict, title: str, safe: str) -> dict:
+    font = guide["fonts"]["title"]
+    record = {
+        "text": title,
+        "font": str(font.get("family") or "not named"),
+        "safe_area": safe,
+        "trace": "film-title",
+    }
+    stand_ins = [str(item.get("family")) for item in font.get("stand_ins") or [] if item.get("family")]
+    if stand_ins:
+        record["stand_ins"] = stand_ins
+    custom = guide.get("custom_title") if isinstance(guide.get("custom_title"), dict) else {}
+    if custom.get("name") and custom.get("name") == font.get("family") and custom.get("construction"):
+        record["treatment"] = str(custom["construction"])
+    return record
+
+
+def _subtitle_block(guide: dict, safe: str) -> dict:
+    spec = guide.get("subtitle_spec") if isinstance(guide.get("subtitle_spec"), dict) else None
+    burned = spec.get("burned_in") if isinstance(spec, dict) and isinstance(spec.get("burned_in"), dict) else None
+    player = spec.get("player") if isinstance(spec, dict) and isinstance(spec.get("player"), dict) else None
+    if burned and burned.get("family"):
+        family = str(burned["family"])
+        color = str(burned.get("color") or "not named")
+    else:
+        family = str((guide.get("fonts") or {}).get("subtitles", {}).get("family") or "not named")
+        palette = guide.get("palette") or []
+        color = str(palette[0].get("value")) if palette and isinstance(palette[0], dict) else "not named"
+    block = {
+        "timing_owner": "post-supervisor",
+        "note": "Timing stays with the Post Supervisor. This spec does not set cue times.",
+        "family": family,
+        "color": color,
+        "safe_area": safe,
+    }
+    if burned:
+        block["burned_in"] = burned
+    if player:
+        block["player"] = player
+    return block
+
+
+def _apply_approved_key_art(production_dir: Path, key_art: dict) -> dict:
+    key_art["expected_approved_file"] = _APPROVED_KEY_ART
+    path = production_dir / _APPROVED_KEY_ART
+    if path.is_file() and path.stat().st_size > 0:
+        key_art["approved_file"] = _APPROVED_KEY_ART
+        key_art["render_status"] = "external"
+        key_art["note"] = "The approved key art is the file in the film folder. This build does not draw a stand-in."
+    else:
+        key_art["render_status"] = "not-rendered"
+        key_art["note"] = (
+            "The approved key art belongs at graphics/brand/key-art-poster.png in the film folder. "
+            "This build does not draw a stand-in."
+        )
+    return key_art
+
+
+def _end_credits(production_dir: Path) -> dict:
+    studio_lines, studio_source = _studio_credit_lines(production_dir)
+    film_path = production_dir / _FILM_CREDITS
+    if film_path.is_file():
+        try:
+            record = read_handoff(film_path, schema="film-credits")
+        except HandoffError as exc:
+            raise GraphicsError(str(exc)) from exc
+        block = {"source": _FILM_CREDITS, "lines": _film_credit_lines(record)}
+        if studio_lines and studio_source:
+            block["studio_crew"] = {
+                "heading": _CREW_HEADING,
+                "source": studio_source,
+                "lines": studio_lines,
+            }
+        return block
+    return {"source": studio_source, "lines": studio_lines}
+
+
+def _studio_credit_lines(production_dir: Path) -> tuple[list[dict], str | None]:
     runs = production_dir / "runs"
     if not runs.is_dir():
         return [], None
@@ -903,6 +997,62 @@ def _credit_lines(production_dir: Path) -> tuple[list[dict], str | None]:
         if role and name:
             lines.append({"role": role, "name": name})
     return lines, str(path.relative_to(production_dir))
+
+
+def _film_credit_lines(record: dict) -> list[dict]:
+    lines = []
+    company = record.get("production_company")
+    if isinstance(company, dict) and str(company.get("name") or "").strip():
+        row = {"role": "Production company", "name": str(company["name"]).strip()}
+        site = str(company.get("site") or "").strip()
+        if site:
+            row["detail"] = site
+        lines.append(row)
+    for item in record.get("billing") or []:
+        row = _person_line(item, cast=False)
+        if row:
+            lines.append(row)
+    for item in record.get("cast") or []:
+        row = _person_line(item, cast=True)
+        if row:
+            lines.append(row)
+    for item in record.get("crew") or []:
+        row = _person_line(item, cast=False)
+        if row:
+            lines.append(row)
+    return lines
+
+
+def _person_line(item: object, *, cast: bool) -> dict | None:
+    if not isinstance(item, dict):
+        return None
+    role = str(item.get("role") or "").strip()
+    name = str(item.get("name") or "").strip()
+    if not role or not name:
+        return None
+    row = {"role": role, "name": name}
+    if cast:
+        row["billing"] = "as"
+    if item.get("fictional_placeholder") is True:
+        row["fictional_placeholder"] = True
+        row["mark"] = _PLACEHOLDER_MARK
+    return row
+
+
+def _credit_text(line: dict) -> str:
+    if line.get("billing") == "as":
+        text = f"{line.get('name')} as {line.get('role')}"
+    else:
+        text = f"{line.get('role')}: {line.get('name')}"
+        if line.get("detail"):
+            text = f"{text} ({line['detail']})"
+    if line.get("mark"):
+        text = f"{text} — {line['mark']}"
+    return text
+
+
+def _credit_identity(item: dict) -> tuple[str, str, bool]:
+    return (str(item.get("role")), str(item.get("name")), bool(item.get("fictional_placeholder")))
 
 
 def _sizes(production_dir: Path) -> dict:
@@ -962,6 +1112,8 @@ def _render_placeholders(production_dir: Path, document: dict) -> None:
     targets = [document["key_art"], *document["collateral"]]
     ffmpeg = shutil.which("ffmpeg")
     for item in targets:
+        if item.get("kind") == "designed":
+            continue
         width = item.get("width")
         height = item.get("height")
         dest = production_dir / str(item["filename"])
@@ -1119,32 +1271,66 @@ def _spelling_check(production_dir: Path, data: dict) -> dict:
 def _credits_check(production_dir: Path, data: dict) -> dict:
     block = data.get("end_credits") or {}
     source = block.get("source")
-    got = [(str(item.get("role")), str(item.get("name"))) for item in block.get("lines") or [] if isinstance(item, dict)]
+    got = [
+        _credit_identity(item)
+        for item in block.get("lines") or []
+        if isinstance(item, dict) and item.get("role") and item.get("name")
+    ]
+    film = Path(str(source or "")).name == "film-credits.json"
     if not source:
         expect = []
     else:
         path = production_dir / str(source)
+        schema = "film-credits" if film else "line-producer-record"
         try:
-            record = read_handoff(path, schema="line-producer-record")
+            record = read_handoff(path, schema=schema)
         except HandoffError as exc:
             return _check("graphics-credits", str(source), "fail", str(exc))
-        expect = [
+        if film:
+            expect = [_credit_identity(item) for item in _film_credit_lines(record)]
+        else:
+            expect = [
+                (str(item.get("role")), str(item.get("name")), False)
+                for item in record.get("credits") or []
+                if isinstance(item, dict) and item.get("role") and item.get("name")
+            ]
+    if got != expect:
+        detail = (
+            "The end credits do not match the film credits file."
+            if film
+            else "The end credits do not match the Line Producer credit record."
+        )
+        return _check("graphics-credits", str(source or "graphics/graphics.json"), "fail", detail)
+    crew = block.get("studio_crew")
+    if isinstance(crew, dict):
+        crew_source = str(crew.get("source") or "")
+        try:
+            record = read_handoff(production_dir / crew_source, schema="line-producer-record")
+        except HandoffError as exc:
+            return _check("graphics-credits", crew_source or "graphics/graphics.json", "fail", str(exc))
+        got_crew = [
+            (str(item.get("role")), str(item.get("name")))
+            for item in crew.get("lines") or []
+            if isinstance(item, dict) and item.get("role") and item.get("name")
+        ]
+        expect_crew = [
             (str(item.get("role")), str(item.get("name")))
             for item in record.get("credits") or []
             if isinstance(item, dict) and item.get("role") and item.get("name")
         ]
-    if got != expect:
-        return _check(
-            "graphics-credits",
-            str(source or "graphics/graphics.json"),
-            "fail",
-            "The end credits do not match the Line Producer credit record.",
-        )
+        if got_crew != expect_crew:
+            return _check(
+                "graphics-credits",
+                crew_source or "graphics/graphics.json",
+                "fail",
+                "The studio crew credits do not match the Line Producer credit record.",
+            )
+    where = "film credits" if film else "Line Producer record"
     return _check(
         "graphics-credits",
         str(source or "graphics/graphics.json"),
         "pass",
-        f"{len(got)} credit(s) match the Line Producer record. No name was added.",
+        f"{len(got)} credit(s) match the {where}. No name was added.",
     )
 
 
@@ -1179,7 +1365,11 @@ def _safe_values(data: dict) -> list[tuple[str, object]]:
 
 def _resolution_check(production_dir: Path, data: dict) -> dict:
     targets = [data.get("key_art") or {}, *(data.get("collateral") or [])]
-    present = [item for item in targets if isinstance(item, dict) and item.get("render_status") == "present"]
+    present = [
+        item
+        for item in targets
+        if isinstance(item, dict) and item.get("render_status") in {"present", "external"}
+    ]
     if not present:
         return _check(
             "graphics-resolution",
@@ -1188,27 +1378,40 @@ def _resolution_check(production_dir: Path, data: dict) -> dict:
             "No graphic file was rendered, so resolution was not measured.",
         )
     problems = []
+    measured = 0
     for item in present:
-        path = production_dir / str(item.get("filename") or "")
+        named = item.get("approved_file") if item.get("render_status") == "external" else item.get("filename")
+        path = production_dir / str(named or "")
         width, height = _probe_size(path)
         if width is None or height is None:
+            if item.get("render_status") == "external":
+                continue
             return _check(
                 "graphics-resolution",
                 str(item.get("filename") or path.name),
                 "skipped",
                 "Resolution was not read.",
             )
+        measured += 1
+        label = str(named or item.get("filename") or path.name)
         if int(width) != int(item.get("width") or -1) or int(height) != int(item.get("height") or -1):
             problems.append(
-                f"{item.get('filename')} is {width}x{height}. The spec asks for {item.get('width')}x{item.get('height')}."
+                f"{label} is {width}x{height}. The spec asks for {item.get('width')}x{item.get('height')}."
             )
     if problems:
         return _check("graphics-resolution", "graphics/graphics.json", "fail", " ".join(problems))
+    if measured == 0:
+        return _check(
+            "graphics-resolution",
+            "graphics/graphics.json",
+            "skipped",
+            "No graphic file was measured, so resolution was not checked.",
+        )
     return _check(
         "graphics-resolution",
         "graphics/graphics.json",
         "pass",
-        f"{len(present)} graphic file(s) match the spec size.",
+        f"{measured} graphic file(s) match the spec size.",
     )
 
 
@@ -1412,6 +1615,7 @@ def _rules_fingerprint(document: dict) -> str:
         "surfaces": document.get("surfaces"),
         "notes": document.get("notes"),
         "custom_title": document.get("custom_title"),
+        "subtitle_spec": document.get("subtitle_spec"),
         "fingerprints": document.get("fingerprints"),
     }
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
@@ -1487,9 +1691,38 @@ def _guide_markdown(document: dict) -> str:
         )
         for alternate in font.get("alternates") or []:
             lines.append(f"  - alternate: {alternate.get('family')}. {alternate.get('licensing')} {_mark(alternate)}")
+        for stand_in in font.get("stand_ins") or []:
+            lines.append(
+                f"  - mockup stand-in: {stand_in.get('family')}. {stand_in.get('licensing')} {_mark(stand_in)}"
+            )
+        fallback = font.get("glyph_fallback") or {}
+        if fallback:
+            glyphs = " ".join(str(glyph) for glyph in fallback.get("glyphs") or [])
+            lines.append(
+                f"  - glyph fallback: {fallback.get('family')} for {glyphs}. "
+                f"{fallback.get('licensing')} {_mark(fallback)}"
+            )
+    if document.get("subtitle_spec"):
+        burned = document["subtitle_spec"].get("burned_in") or {}
+        player = document["subtitle_spec"].get("player") or {}
+        lines.extend(
+            [
+                "",
+                "## Subtitles",
+                "",
+                (
+                    f"Burned in: {burned.get('family')} {burned.get('weight')}, {burned.get('case')} case, "
+                    f"{burned.get('color_name')} {burned.get('color')}, {burned.get('edge')}, "
+                    f"{burned.get('position')} {burned.get('picture')}. "
+                    f"At most {burned.get('max_lines')} lines, about {burned.get('max_characters_per_line')} characters per line."
+                ),
+                f"Player files: {player.get('family')}. {player.get('note')}",
+            ]
+        )
     lines.extend(["", "## Palette", ""])
     for color in document.get("palette") or []:
-        lines.append(f"- {color.get('name')}: {color.get('value')} {_mark(color)}")
+        scope = " Print only." if color.get("scope") == "print" else ""
+        lines.append(f"- {color.get('name')}: {color.get('value')}.{scope} {_mark(color)}")
     wordmark = document.get("wordmark") or {}
     lines.extend(["", "## Wordmark", "", str(wordmark.get("title") or ""), ""])
     for rule in wordmark.get("rules") or []:
@@ -1549,21 +1782,39 @@ def _graphics_markdown(document: dict) -> str:
         for rule in key["placement_rules"]:
             lines.append(f"- {rule}")
         lines.append("")
-    credits = (document.get("end_credits") or {}).get("lines") or []
+    end = document.get("end_credits") or {}
+    credits = end.get("lines") or []
     lines.append("End credits:")
     lines.append("")
     if not credits:
-        lines.append("No Line Producer credit record. No name was added.")
+        lines.append("No credit record. No name was added.")
     for line in credits:
-        lines.append(f"- {line.get('role')}: {line.get('name')}")
+        lines.append(f"- {_credit_text(line)}")
+    crew = end.get("studio_crew") or {}
+    if crew.get("lines"):
+        lines.extend(["", f"{crew.get('heading')}:", ""])
+        for line in crew["lines"]:
+            lines.append(f"- {line.get('role')}: {line.get('name')}")
     lines.append("")
     subtitles = document.get("subtitles") or {}
     lines.append(subtitles.get("note") or "")
+    burned = subtitles.get("burned_in") or {}
+    if burned:
+        lines.append(
+            f"Burned in: {burned.get('family')} {burned.get('weight')}, {burned.get('case')} case, "
+            f"{burned.get('color_name')} {burned.get('color')}, {burned.get('edge')}, "
+            f"{burned.get('position')} {burned.get('picture')}."
+        )
+    player = subtitles.get("player") or {}
+    if player:
+        files = ", ".join(str(item) for item in player.get("files") or [])
+        lines.append(f"Player files ({files}): {player.get('family')}. {player.get('note')}")
     key = document.get("key_art") or {}
     lines.extend(
         [
             "",
             f"Key art: {key.get('filename')} ({key.get('render_status')}). Distinct from {key.get('distinct_from')}.",
+            str(key.get("note") or ""),
             "",
         ]
     )
@@ -1601,56 +1852,110 @@ def _rule(rule_id: str, text: str, item: dict) -> dict:
 
 
 def _font_roles(items: list[dict], period_item: dict) -> dict:
-    grouped = {role: [] for role in ("title", "credits", "subtitles", "marketing")}
+    grouped = {role: [] for role in _GUIDE_FONT_KEYS}
     for item in items:
         if not item.get("family") or not str(item.get("item_id") or "").startswith("font-"):
             continue
-        role = str(item["item_id"]).split("-")[1]
+        role = str(item.get("font_role") or "")
+        if role not in grouped:
+            role = str(item["item_id"]).split("-")[1]
         if role in grouped:
             grouped[role].append(item)
+    lettering = next((item for item in items if item.get("lettering_name")), None)
     fonts = {}
     for role, proposals in grouped.items():
-        if role == "title" and period_item.get("basis") == "sourced":
-            family = period_item["text"].split(":", 1)[-1].strip().rstrip(".")
-            label, reference = _label(period_item)
-            font = {
-                "family": family,
-                "licensing": "Use only the face the research names. Confirm the license before delivery.",
-                "trace": "period-type",
-                "provenance": label,
-                "reference": reference,
-            }
-            alternates = [_alternate(item) for item in proposals]
-            if alternates:
-                font["alternates"] = alternates
-            fonts[role] = font
+        built = _one_font(role, proposals, period_item, lettering)
+        key = _GUIDE_FONT_KEYS[role]
+        if built is None:
+            if role in _REQUIRED_FONT_ROLES:
+                fonts[key] = _unnamed_font(period_item)
             continue
-        if proposals:
-            primary = proposals[0]
-            label, reference = _label(primary)
-            font = {
-                "family": primary["family"],
-                "licensing": primary.get("license_name") or "The proposal names the license.",
-                "trace": primary["item_id"],
-                "provenance": label,
-                "reference": reference,
-            }
-            if primary.get("category"):
-                font["category"] = primary["category"]
-            alternates = [_alternate(item) for item in proposals[1:]]
-            if alternates:
-                font["alternates"] = alternates
-            fonts[role] = font
-            continue
+        fonts[key] = built
+    return fonts
+
+
+def _one_font(role: str, proposals: list[dict], period_item: dict, lettering: dict | None) -> dict | None:
+    stand_ins = [item for item in proposals if item.get("duty") == "mockup-stand-in"]
+    fallbacks = [item for item in proposals if item.get("duty") == "glyph-fallback"]
+    primaries = [item for item in proposals if item.get("duty") not in {"mockup-stand-in", "glyph-fallback"}]
+    if role == "title" and period_item.get("basis") == "sourced":
+        family = period_item["text"].split(":", 1)[-1].strip().rstrip(".")
         label, reference = _label(period_item)
-        fonts[role] = {
-            "family": "not named",
-            "licensing": "No license is named in the documents. Do not assume a face is free to use.",
+        font = {
+            "family": family,
+            "licensing": "Use only the face the research names. Confirm the license before delivery.",
             "trace": "period-type",
             "provenance": label,
             "reference": reference,
         }
-    return fonts
+        _attach_font_extras(font, stand_ins, fallbacks, alternates_from=primaries)
+        return font
+    if role == "title" and lettering is not None and stand_ins and not primaries:
+        label, reference = _label(lettering)
+        font = {
+            "family": str(lettering["lettering_name"]),
+            "licensing": (
+                "No font file is built. The final capitals are hand-drawn later. "
+                "Do not trace the mockup stand-ins."
+            ),
+            "trace": lettering["item_id"],
+            "provenance": label,
+            "reference": reference,
+            "stand_ins": [_alternate(item) for item in stand_ins],
+        }
+        return font
+    if not primaries:
+        return None
+    primary = primaries[0]
+    label, reference = _label(primary)
+    font = {
+        "family": primary["family"],
+        "licensing": primary.get("license_name") or "The proposal names the license.",
+        "trace": primary["item_id"],
+        "provenance": label,
+        "reference": reference,
+    }
+    if primary.get("category"):
+        font["category"] = primary["category"]
+    _attach_font_extras(font, stand_ins, fallbacks, alternates_from=primaries[1:])
+    return font
+
+
+def _attach_font_extras(font, stand_ins, fallbacks, *, alternates_from) -> None:
+    extra = [_alternate(item) for item in alternates_from]
+    if extra:
+        font["alternates"] = extra
+    if stand_ins:
+        font["stand_ins"] = [_alternate(item) for item in stand_ins]
+    fallback = next((item for item in fallbacks if item.get("fallback_glyphs")), None)
+    if fallback is not None:
+        font["glyph_fallback"] = _glyph_fallback(fallback)
+
+
+def _unnamed_font(period_item: dict) -> dict:
+    label, reference = _label(period_item)
+    return {
+        "family": "not named",
+        "licensing": "No license is named in the documents. Do not assume a face is free to use.",
+        "trace": "period-type",
+        "provenance": label,
+        "reference": reference,
+    }
+
+
+def _glyph_fallback(item: dict) -> dict:
+    label, reference = _label(item)
+    fallback = {
+        "family": item["family"],
+        "licensing": item.get("license_name") or "The proposal names the license.",
+        "provenance": label,
+        "reference": reference,
+        "trace": item["item_id"],
+        "glyphs": [str(glyph) for glyph in item.get("fallback_glyphs") or [] if str(glyph).strip()],
+    }
+    if item.get("category"):
+        fallback["category"] = item["category"]
+    return fallback
 
 
 def _alternate(item: dict) -> dict:
@@ -1706,18 +2011,28 @@ def _palette_from(items: list[dict]) -> list[dict]:
             continue
         palette.append(_swatch(item["swatch_name"], item["hex"], item))
         seen.add(item["swatch_name"].casefold())
+    for item in fills:
+        scope = item.get("swatch_scope")
+        if not scope:
+            continue
+        for color in palette:
+            if color["name"].casefold() == item["swatch_name"].casefold() and "scope" not in color:
+                color["scope"] = scope
     return palette
 
 
 def _swatch(name: str, value: str, item: dict) -> dict:
     label, reference = _label(item)
-    return {
+    swatch = {
         "name": name,
         "value": value,
         "trace": item["item_id"],
         "provenance": label,
         "reference": reference,
     }
+    if item.get("swatch_scope"):
+        swatch["scope"] = item["swatch_scope"]
+    return swatch
 
 
 def _layout_rules(by_id: dict) -> tuple[str, list[dict]]:
@@ -1855,6 +2170,14 @@ def _repo_relative(path: Path) -> str:
         return path.name
 
 
+def _pack_subtitle_spec(packs: list[tuple[Path, dict]]) -> dict | None:
+    for _path, pack in packs:
+        spec = pack.get("subtitle_spec")
+        if isinstance(spec, dict):
+            return json.loads(json.dumps(spec))
+    return None
+
+
 def _add_pack_items(add, packs: list[tuple[Path, dict]]) -> None:
     for path, pack in packs:
         relative = _repo_relative(path)
@@ -1884,6 +2207,9 @@ def _add_pack_items(add, packs: list[tuple[Path, dict]]) -> None:
                 family=family,
                 license_name=font["license_name"],
                 category=font["category"],
+                font_role=font["role"],
+                duty=font.get("duty"),
+                fallback_glyphs=list(font["fallback_glyphs"]) if font.get("fallback_glyphs") else None,
             )
         for color in pack.get("colors") or []:
             add(
@@ -1897,6 +2223,7 @@ def _add_pack_items(add, packs: list[tuple[Path, dict]]) -> None:
                 hex=color["hex"],
                 swatch_name=color["name"],
                 swatch_use=color["use"],
+                swatch_scope=color.get("scope"),
             )
         for layout in pack.get("layouts") or []:
             add(

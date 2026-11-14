@@ -1104,6 +1104,10 @@ def test_each_schema_accepts_a_minimal_document():
             "id": "sample-pack",
             "match": {"always": True},
         },
+        "film-credits.schema.json": {
+            "version": "1.0.0",
+            "billing": [{"role": "Director", "name": "A. Name"}],
+        },
         "absence-phrases.schema.json": {
             "version": "1.1.0",
             "note": "Sample.",

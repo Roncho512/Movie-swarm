@@ -57,7 +57,12 @@
         "text": { "type": "string", "minLength": 1 },
         "font": { "type": "string", "minLength": 1 },
         "safe_area": { "type": "string", "minLength": 1 },
-        "trace": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+        "trace": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "stand_ins": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "treatment": { "type": "string", "minLength": 1 }
       }
     },
     "title_card": {
@@ -79,7 +84,11 @@
       "required": ["role", "name"],
       "properties": {
         "role": { "type": "string", "minLength": 1 },
-        "name": { "type": "string", "minLength": 1 }
+        "name": { "type": "string", "minLength": 1 },
+        "detail": { "type": "string", "minLength": 1 },
+        "billing": { "type": "string", "enum": ["as"] },
+        "fictional_placeholder": { "type": "boolean" },
+        "mark": { "type": "string", "const": "FICTIONAL PLACEHOLDER" }
       }
     },
     "end_credits": {
@@ -88,6 +97,20 @@
       "required": ["source", "lines"],
       "properties": {
         "source": { "type": ["string", "null"] },
+        "lines": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/credit" }
+        },
+        "studio_crew": { "$ref": "#/$defs/studio_crew" }
+      }
+    },
+    "studio_crew": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["heading", "source", "lines"],
+      "properties": {
+        "heading": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 },
         "lines": {
           "type": "array",
           "items": { "$ref": "#/$defs/credit" }
@@ -103,7 +126,51 @@
         "note": { "type": "string", "minLength": 1 },
         "family": { "type": "string", "minLength": 1 },
         "color": { "type": "string", "minLength": 1 },
-        "safe_area": { "type": "string", "minLength": 1 }
+        "safe_area": { "type": "string", "minLength": 1 },
+        "burned_in": { "$ref": "#/$defs/burned_in" },
+        "player": { "$ref": "#/$defs/player_subtitles" }
+      }
+    },
+    "burned_in": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "weight",
+        "case",
+        "color_name",
+        "color",
+        "edge",
+        "position",
+        "picture",
+        "max_lines",
+        "max_characters_per_line"
+      ],
+      "properties": {
+        "family": { "type": "string", "minLength": 1 },
+        "weight": { "type": "string", "minLength": 1 },
+        "case": { "type": "string", "minLength": 1 },
+        "color_name": { "type": "string", "minLength": 1 },
+        "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "edge": { "type": "string", "minLength": 1 },
+        "position": { "type": "string", "minLength": 1 },
+        "picture": { "type": "string", "minLength": 1 },
+        "max_lines": { "type": "integer", "minimum": 1 },
+        "max_characters_per_line": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "player_subtitles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family", "files", "note"],
+      "properties": {
+        "family": { "type": "string", "minLength": 1 },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "enum": ["srt", "vtt"] }
+        },
+        "note": { "type": "string", "minLength": 1 }
       }
     },
     "key_art": {
@@ -136,7 +203,10 @@
         "height": { "type": ["integer", "null"], "minimum": 2 },
         "size_source": { "type": ["string", "null"] },
         "safe_area": { "type": "string", "minLength": 1 },
-        "render_status": { "type": "string", "enum": ["present", "not-rendered"] },
+        "render_status": { "type": "string", "enum": ["present", "not-rendered", "external"] },
+        "approved_file": { "type": "string", "minLength": 1 },
+        "expected_approved_file": { "type": "string", "minLength": 1 },
+        "note": { "type": "string", "minLength": 1 },
         "placement_rules": {
           "type": "array",
           "items": { "type": "string", "minLength": 1 }

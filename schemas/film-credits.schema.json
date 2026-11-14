@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "film-credits.schema.json",
+  "title": "Film credits",
+  "description": "On-screen credits and billing for one production. The names come from this file. Agent crew credits stay on the Line Producer record. A fictional placeholder is flagged on the line. The checker does not know which film this is.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "production_company": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "site": { "type": "string", "minLength": 1 }
+      }
+    },
+    "billing": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/person" }
+    },
+    "cast": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/person" }
+    },
+    "crew": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/person" }
+    }
+  },
+  "$defs": {
+    "person": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "name"],
+      "properties": {
+        "role": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "fictional_placeholder": { "type": "boolean" }
+      }
+    }
+  }
+}
