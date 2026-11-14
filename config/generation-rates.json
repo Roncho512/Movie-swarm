@@ -1,6 +1,6 @@
 {
-  "version": "1.4.0",
-  "checked_on": "2026-11-12",
+  "version": "1.5.0",
+  "checked_on": "2026-11-14",
   "assumptions": [
     "Preview and final both use the published 720p Gemini Omni 1.2 Flash rate. Google says a draft can be 360p, and it does not publish a separate 360p price.",
     "Each shot is quoted as two takes: one preview and one final.",
@@ -17,7 +17,8 @@
     "Seedance 2.0 and Seedance 2.0 fast accept duration auto, or a whole number of seconds from 4 to 15. A shot is rounded up to the next allowed second and quoted at that length. The rule was read from the fal API pages on 2026-11-12. Fast accepts 480p and 720p. Seedance 2.0 also accepts 1080p and 4k. This row still prices 720p.",
     "Kling 4.0 on fal accepts a whole number of seconds from 3 to 30, at 720p or 1080p. That duration rule was read from the fal text-to-video page on 2026-11-12. The row still has no endpoint, so a live call is refused. The per-shot multi-prompt minimum of 1 second is not the rule for this row.",
     "Gemini Omni's 3 to 15 second quote is still an assumption. Whole seconds were not verified for that model, so a length inside that range is not rounded.",
-    "Claude text prices are dollars per million tokens, read from Anthropic's pricing page on 2026-11-12. A writing quote uses the input-token estimate times the input price, plus the max output tokens times the output price. Haiku 5.5 uses the higher pair when that estimate is over 100,000 tokens. Cache writes, cache reads, batch, and fast mode are not used. The model id claude-sonnet-4-20250514 is not listed on that page, so its price is null and a live call for it is refused."
+    "Claude text prices are dollars per million tokens, read from Anthropic's pricing page on 2026-11-12. A writing quote uses the input-token estimate times the input price, plus the max output tokens times the output price. Haiku 5.5 uses the higher pair when that estimate is over 100,000 tokens. Cache writes, cache reads, batch, and fast mode are not used. The model id claude-sonnet-4-20250514 is not listed on that page, so its price is null and a live call for it is refused.",
+    "Seedance reference-to-video prices were read on 2026-11-14. Fast image references are $0.2419 per second at 720p, the same as fast text-to-video. Seedance 2.0 image references are $0.3024 per second at 720p. Text-to-video for that model stays $0.3034. A reference video is cheaper, and this engine does not send video or audio references, so that discount is not used. The quote uses the image-reference price only when the shot would send at least one image."
   ],
   "generators": [
     {
@@ -53,7 +54,19 @@
       "with_audio": true,
       "source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
       "source_date": "2026-11-10",
-      "quote": "720p with audio is $0.3034 per second. Duration is auto or a whole number from 4 to 15 seconds."
+      "quote": "720p with audio is $0.3034 per second. Duration is auto or a whole number from 4 to 15 seconds. Reference-to-video with image references is $0.3024 per second at 720p. A reference video would be $0.1814 per second. This engine sends images only.",
+      "reference_to_video": {
+        "endpoint": "bytedance/seedance-2.0/reference-to-video",
+        "usd_per_second": "0.3024",
+        "max_images": 9,
+        "max_bytes": 31457280,
+        "formats": ["jpeg", "jpg", "png", "webp", "bmp", "tif", "tiff", "gif", "heic", "heif"],
+        "image_field": "image_urls",
+        "prompt_token": "@Image",
+        "source": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video/api",
+        "price_source": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video",
+        "source_date": "2026-11-14"
+      }
     },
     {
       "model": "seedance-2.0-fast",
@@ -73,7 +86,19 @@
       "with_audio": true,
       "source": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
       "source_date": "2026-11-10",
-      "quote": "720p fast with audio is $0.2419 per second. Duration is auto or a whole number from 4 to 15 seconds. 480p and 720p are the resolutions this model accepts."
+      "quote": "720p fast with audio is $0.2419 per second. Duration is auto or a whole number from 4 to 15 seconds. 480p and 720p are the resolutions this model accepts. Reference-to-video with image references is $0.2419 per second at 720p. A reference video would be $0.1452 per second. This engine sends images only.",
+      "reference_to_video": {
+        "endpoint": "bytedance/seedance-2.0/fast/reference-to-video",
+        "usd_per_second": "0.2419",
+        "max_images": 9,
+        "max_bytes": 31457280,
+        "formats": ["jpeg", "jpg", "png", "webp", "bmp", "tif", "tiff", "gif", "heic", "heif"],
+        "image_field": "image_urls",
+        "prompt_token": "@Image",
+        "source": "https://fal.ai/models/bytedance/seedance-2.0/fast/reference-to-video/api",
+        "price_source": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video",
+        "source_date": "2026-11-14"
+      }
     },
     {
       "model": "kling-4.0",

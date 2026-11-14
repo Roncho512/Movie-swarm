@@ -254,7 +254,9 @@ Shot s01-sh01: model seedance-2.0-fast, tier better, provider fal.ai, resolution
 Production line remaining: $270.00. Film remaining: $500.00.
 ```
 
-That shot exists after the studio has written the storyboard. `--tier better` names the same model. Read the estimate. Add `--live` only after you have approved the generation gate and you mean to spend:
+That shot exists after the studio has written the storyboard. `--tier better` names the same model. Read the estimate. Add `--live` only after you have approved the generation gate and you mean to spend.
+
+When the shot has reference images and the model has a reference-to-video endpoint, the dry run adds the endpoint, the price per second, and the files that would be sent. The order is character face, then the location, then the prop, then the shot's own images. Fast image references are the same $0.2419 per second as fast text-to-video, so the dollar line above does not change. Seedance 2.0 image references are $0.3024 per second. The dry run does not upload the files and does not call fal. A live call uploads each file from the film folder and sends the URLs. A missing file is logged and skipped. A shot with no image that can be sent keeps the text-to-video quote. Face photos live in `characters/character-lock.json` in the film folder. Place photos live in `locations/location-lock.json`. Prop photos live on the locked hero props. Those files are optional. The engine does not name a film.
 
 ```bash
 python3 scripts/line-producer.py --production /tmp/harbor-night --run guide-1 --live test-shot \

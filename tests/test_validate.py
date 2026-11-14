@@ -1108,6 +1108,32 @@ def test_each_schema_accepts_a_minimal_document():
             "version": "1.0.0",
             "billing": [{"role": "Director", "name": "A. Name"}],
         },
+        "location-lock.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "status": "locked",
+            "locations": [
+                {
+                    "location_id": "dock",
+                    "name": "The dock",
+                    "locked_spec": "The place in the photograph.",
+                    "reference_images": ["locations/dock/wide.png"],
+                }
+            ],
+        },
+        "character-lock.schema.json": {
+            "version": "1.0.0",
+            "production_id": "demo",
+            "status": "locked",
+            "characters": [
+                {
+                    "character_id": "ada",
+                    "name": "Ada",
+                    "locked_spec": "The face in the photograph.",
+                    "reference_images": ["characters/ada/front.png"],
+                }
+            ],
+        },
         "absence-phrases.schema.json": {
             "version": "1.1.0",
             "note": "Sample.",

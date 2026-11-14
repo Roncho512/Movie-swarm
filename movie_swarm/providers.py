@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 import re
 import time
@@ -56,6 +57,8 @@ from movie_swarm.roles import (
     SOUND_BILLING,
     TRAILER_BILLING,
 )
+
+logger = logging.getLogger("movie_swarm.providers")
 
 FAL_QUEUE = "https://queue.fal.run"
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
@@ -108,6 +111,7 @@ class CallSettings:
     rates_path: str | Path | None = None
     price_override: float | None = None
     providers_path: str | Path | None = None
+    uploader: object | None = None
 
 
 _POLL_DEFAULTS = {
@@ -367,7 +371,12 @@ def run_provider_call(
         )
 
     row = generator_rate(load_rate_card(settings.rates_path), model) if model else None
+    prepared = _picture_references(producer, shot_id, prompt, row) if kind == "video" and shot_id else None
+    if prepared is not None and prepared.prompt:
+        prompt = prepared.prompt
     endpoint = _endpoint(kind, model, row, voice_id)
+    if prepared is not None and prepared.endpoint:
+        endpoint = prepared.endpoint
     if endpoint is None:
         if kind == "video":
             from movie_swarm.shot_model import unwired_note
@@ -392,31 +401,39 @@ def run_provider_call(
     if kind == "text":
         estimate, billed, price_note = text_estimate, None, ""
     else:
-        estimate, billed, price_note = _estimate(model, duration_seconds, settings.rates_path)
+        per_second = prepared.per_second if prepared is not None else None
+        estimate, billed, price_note = _estimate(
+            model, duration_seconds, settings.rates_path, per_second=per_second,
+        )
     if kind == "video" and row is not None:
         refusal = _video_request_refusal(model, row, duration_seconds)
         if refusal is not None:
             return _stopped("refused", refusal, shot_id=shot_id, cue_id=cue_id)
-    request_hash = _request_hash(
-        {
-            "kind": kind,
-            "stage": stage,
-            "provider": provider_name,
-            "model": model,
-            "endpoint": endpoint,
-            "prompt": prompt,
-            "system": system or "",
-            "billed_seconds": None if billed is None else str(billed),
-            "duration_seconds": None if duration_seconds is None else str(as_money(duration_seconds)),
-            "shot_id": shot_id or "",
-            "cue_id": cue_id or "",
-            "voice_id": voice_id or "",
-            "role": role or "",
-            "purpose": purpose or "",
-            "max_tokens": max_tokens or 0,
-            "aspect_ratio": aspect_ratio or "",
-        }
-    )
+    hash_body = {
+        "kind": kind,
+        "stage": stage,
+        "provider": provider_name,
+        "model": model,
+        "endpoint": endpoint,
+        "prompt": prompt,
+        "system": system or "",
+        "billed_seconds": None if billed is None else str(billed),
+        "duration_seconds": None if duration_seconds is None else str(as_money(duration_seconds)),
+        "shot_id": shot_id or "",
+        "cue_id": cue_id or "",
+        "voice_id": voice_id or "",
+        "role": role or "",
+        "purpose": purpose or "",
+        "max_tokens": max_tokens or 0,
+        "aspect_ratio": aspect_ratio or "",
+    }
+    if prepared is not None and prepared.chosen:
+        hash_body["reference_paths"] = [
+            f"{item.relative}|{'' if item.size is None else item.size}|"
+            f"{'' if item.mtime_ns is None else item.mtime_ns}"
+            for item in prepared.chosen
+        ]
+    request_hash = _request_hash(hash_body)
 
     cache = _load_cache(producer)
     cached = (cache.get("calls") or {}).get(request_hash) or {}
@@ -538,6 +555,7 @@ def run_provider_call(
                 row,
                 purpose,
                 settings,
+                prepared.chosen if prepared is not None and prepared.endpoint else None,
             )
         except HttpTimeout as exc:
             return _keep(
@@ -781,6 +799,7 @@ def llm_for_command(
 def _submit(
     kind, endpoint, key, provider_name, model, prompt, duration, voice_id,
     system, max_tokens, aspect_ratio, row, purpose, settings: CallSettings,
+    references=None,
 ):
     """Send the request.
 
@@ -811,6 +830,8 @@ def _submit(
             payload["aspect_ratio"] = aspect_ratio
         if row and row.get("with_audio") is True:
             payload["generate_audio"] = True
+        if references:
+            payload["image_urls"] = _reference_urls(references, settings)
         response = send_with_retry(
             transport,
             method="POST",
@@ -1524,18 +1545,65 @@ def _usage_dollars(payload, model: str, rates_path):
     return amount, note
 
 
-def _estimate(model: str, duration, rates_path):
+def _picture_references(producer, shot_id, prompt, row):
+    """The images for this shot. None when the shot is not on the board. Does not upload."""
+    from movie_swarm.generation import load_shots
+    from movie_swarm.references import prepare_references
+
+    shots, _source = load_shots(producer.production_dir)
+    match = [shot for shot in shots if shot.get("shot_id") == shot_id]
+    if len(match) != 1:
+        return None
+    return prepare_references(producer.production_dir, match[0], prompt or "", row)
+
+
+def _reference_urls(references, settings: CallSettings) -> list[str]:
+    """Upload local files with the fal client. A quote never reaches this."""
+    from movie_swarm.references import upload_urls
+
+    def upload(path: Path) -> str:
+        logger.info("Uploading reference %s", path.name)
+        try:
+            if settings.uploader is not None:
+                url = settings.uploader(path)
+            else:
+                url = _default_upload(path)
+        except ProviderRejected:
+            raise
+        except Exception as exc:
+            raise ProviderRejected(
+                f"The reference image could not be uploaded. {redact(str(exc))} Nothing was produced."
+            ) from exc
+        if not isinstance(url, str) or not url.startswith(("http://", "https://")):
+            raise ProviderRejected("The reference upload did not return a URL. Nothing was produced.")
+        return url
+
+    return upload_urls(references, upload)
+
+
+def _default_upload(path: Path) -> str:
+    """fal_client.upload_file. Imported here so a quote does not load the client."""
+    try:
+        import fal_client
+    except ImportError as exc:
+        raise ProviderRejected(
+            "fal-client is not installed, so the reference image was not uploaded. Nothing was produced."
+        ) from exc
+    return fal_client.upload_file(path)
+
+
+def _estimate(model: str, duration, rates_path, per_second=None):
     if not model:
         return None, None, "No model is configured for this call."
     card = load_rate_card(rates_path)
     row = generator_rate(card, model)
-    if row is None or row.get("usd_per_second") in (None, ""):
+    if row is None or (per_second in (None, "") and row.get("usd_per_second") in (None, "")):
         return None, None, f"The rate card has no published price for {model}."
     if duration is None:
         return None, None, f"The rate card prices {model} per second, and this call has no length."
     from movie_swarm.generation import _pass_cost
 
-    priced = _pass_cost({"duration_seconds": duration}, model, card)
+    priced = _pass_cost({"duration_seconds": duration}, model, card, per_second=per_second)
     if not priced["priced"]:
         return None, None, f"The rate card has no published price for {model}."
     return priced["usd"], priced["billed"], ""

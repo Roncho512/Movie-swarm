@@ -119,10 +119,16 @@ def resolve_shot_model(
 
 def format_shot_quote(producer, shot: dict, choice: dict, rates_path=None) -> str:
     """One shot's model, price, and the money still left. Nothing is spent."""
+    from movie_swarm.continuity import enforce_prompt, load_prop_lock
     from movie_swarm.generation import _pass_cost
+    from movie_swarm.references import prepare_references, quote_lines
 
     card = load_rate_card(rates_path)
-    priced = _pass_cost(shot, choice["model"], card)
+    lock = load_prop_lock(producer.production_dir)
+    enforced = enforce_prompt(shot.get("prompt") or "", shot.get("props") or [], lock)
+    row = generator_rate(card, choice["model"])
+    prepared = prepare_references(producer.production_dir, shot, enforced.prompt, row)
+    priced = _pass_cost(shot, choice["model"], card, per_second=prepared.per_second)
     duration = shot.get("duration_seconds")
     if priced["priced"]:
         cost = f"${money_number(priced['usd']):.4f}"
@@ -148,6 +154,7 @@ def format_shot_quote(producer, shot: dict, choice: dict, rates_path=None) -> st
     ]
     if choice.get("note"):
         parts.append(str(choice["note"]))
+    parts.extend(quote_lines(prepared))
     return "\n".join(parts)
 
 
