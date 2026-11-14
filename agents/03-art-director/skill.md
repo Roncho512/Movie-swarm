@@ -76,7 +76,7 @@ Generate 2-4 images that capture the overall visual feel — film stock simulati
 ## Prompt Engineering Principles
 
 1. **Be exhaustive in physical description.** Don't say "a man." Use the age, build, and clothes from the production brief.
-2. **Specify the camera.** "Shot on 16mm Ektachrome film stock, heavy grain, warm color bleed at frame edges, charcoal blacks, bone whites."
+2. **Specify the camera.** Name the stock, the grain, and the color treatment from that production's look. Do not invent a stock the look does not name.
 3. **Specify the light.** "Late afternoon amber light from the west, long shadows stretching east, dust in the air catching the light."
 4. **Include what NOT to generate.** "No helmet. No modern elements. No clean or new clothing."
 5. **Reference the period in the production brief.** Do not invent a year.

@@ -1,6 +1,6 @@
 {
   "id": "1960s-italian-spaghetti-western",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "note": "Design era of Italian western posters and title sequences from the mid-1960s, checked against the pages named on each claim. Match is the genre phrase in the production's own genre, tone, or look. The story year is not required, because the poster practice belongs to the years the films were sold, not to the year the story is set. This pack does not name a production, a vehicle, or a watch. Names are copied from the cited page. Two spellings of one poster painter are left as two citations and are not merged.",
   "match": {
     "terms": ["spaghetti western", "italian western", "western all'italiana"]
@@ -77,6 +77,13 @@
       "url": "https://www.pixartprinting.co.uk/blog/fonts-sergio-leone/"
     },
     {
+      "claim_id": "period-lettering",
+      "topic": "period",
+      "kind": "lettering",
+      "text": "Title, credits, subheads, and body follow the period lettering of these posters and title sequences. Stylogeny describes the titles as hand-lettered, huge, tightly set, and all-caps, with condensed display used at times. The smaller credit, subhead, and body lines stay in that printed habit, a serif or letterpress face, and are not set in a geometric sans. This pack does not name the metal face that was used.",
+      "url": "https://stylogeny.com/styles/italian-painted-film-poster/"
+    },
+    {
       "claim_id": "stylogeny-lettering",
       "topic": "genre",
       "kind": "lettering",
@@ -112,12 +119,12 @@
     },
     {
       "role": "credits",
-      "family": "Source Sans 3",
-      "category": "sans-serif",
+      "family": "Libre Baskerville",
+      "category": "serif",
       "license_name": "SIL Open Font License 1.1",
-      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/sourcesans3/OFL.txt",
-      "source_url": "https://fonts.google.com/specimen/Source+Sans+3",
-      "note": "Adobe's Source Sans 3, a sans-serif, copyright 2010-2020 Adobe, reserved name Source. Proposed for credits because credits are set in a sans-serif. It is not claimed to be a metal face from a 1960s credit block. The license does not apply to a document made with the font. Do not sell the font file by itself."
+      "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/librebaskerville/OFL.txt",
+      "source_url": "https://fonts.google.com/specimen/Libre+Baskerville",
+      "note": "Libre Baskerville, a serif. Proposed for credits, and for the subheads and body that follow the same period habit: a serif or letterpress face, not a geometric sans. It is a free stand-in. This pack does not claim it was the face set on a 1960s Italian credit block. The license text says its conditions do not apply to a document made with the font. Do not sell the font file by itself."
     },
     {
       "role": "subtitles",
@@ -192,6 +199,12 @@
       "surface": "credits",
       "text": "On a poster, set the billing block under the art. Locandine Best describes that position on the locandina: title and credits underneath the painted picture.",
       "url": "https://locandinebest.net/"
+    },
+    {
+      "layout_id": "credits-period-face",
+      "surface": "credits",
+      "text": "Set credits, subheads, and body in the period face this pack names for credits. Do not force a geometric sans. The title direction remains the painted pulp capitals described in this pack.",
+      "url": "https://stylogeny.com/styles/italian-painted-film-poster/"
     },
     {
       "layout_id": "credits-on-screen",

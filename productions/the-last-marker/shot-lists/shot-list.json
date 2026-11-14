@@ -11,10 +11,10 @@
       "source_block_ids": ["s01-b01"],
       "shot_type": "extreme-wide",
       "camera_movement": "static",
-      "framing_notes": "Anamorphic 2.39:1. The desert fills the entire frame. Empty. Still. Hold for 4 seconds before the dust trail appears.",
+      "framing_notes": "framed 2.39:1. The desert fills the entire frame. Empty. Still. Hold for 4 seconds before the dust trail appears.",
       "description": "Opening shot. The Baja desert. Flat hardpan stretching to mountains on the horizon. Cardon cacti. Enormous sky. Empty and still. Then a dust trail appears at the far left, moving right — tiny, a speck.",
       "target_duration_seconds": 7,
-      "generation_prompt": "Extreme wide shot of Baja California desert. 16mm Ektachrome film stock, heavy grain, warm color bleed at frame edges, anamorphic 2.39:1. Flat hardpan stretching to a mountain range on the horizon. Cardon cacti scattered like sentries. Enormous sky. Late afternoon, low sun from the west turning everything amber and ochre. Long shadows stretching east. Dust in the air catching golden light. Heat shimmer on the horizon. A tiny dust trail appears at the far left of frame, moving right — a motorcycle barely visible as a speck. The landscape dwarfs everything. Charcoal blacks, bone whites. No modern elements.",
+      "generation_prompt": "Extreme wide shot of Baja California desert. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, warm color bleed at frame edges, framed 2.39:1. Flat hardpan stretching to a mountain range on the horizon. Cardon cacti scattered like sentries. Enormous sky. Late afternoon, low sun from the west turning everything amber and ochre. Long shadows stretching east. Dust in the air catching golden light. Heat shimmer on the horizon. A tiny dust trail appears at the far left of frame, moving right — a motorcycle barely visible as a speck. The landscape dwarfs everything. Charcoal blacks, bone whites. No modern elements.",
       "negative_prompt": "No buildings, no roads, no power lines, no modern vehicles, no people in foreground.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -51,7 +51,7 @@
       "framing_notes": "Medium framing. Vega fills the center third of the frame. Desert scrolls behind him.",
       "description": "Medium tracking shot. Miguel Vega on the Triumph TR6SC. Bike coated in dust. Vega in low crouch, goggles down, white shirt dark with sweat. He has been riding for hours.",
       "target_duration_seconds": 4,
-      "generation_prompt": "Medium tracking shot of a motorcycle rider crossing Baja desert. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man, lean, sun-darkened skin, deep eye lines, riding a dusty 1965 Triumph TR6SC. He rides in a low crouch, elbows out, weight forward. Goggles down over eyes. White cotton shirt dark with sweat at collar and under arms. Brown leather vest sun-bleached. Khaki pants. The motorcycle is coated in pale desert dust — tank sand-colored, chrome exhaust brown. Late afternoon amber light from the left. Desert hardpan background with distant mountains. Camera tracks alongside at riding speed. Charcoal blacks, bone whites.",
+      "generation_prompt": "Medium tracking shot of a motorcycle rider crossing Baja desert. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. A 30-year-old Mexican man, lean, sun-darkened skin, deep eye lines, riding a dusty 1965 Triumph TR6SC. He rides in a low crouch, elbows out, weight forward. Goggles down over eyes. White cotton shirt dark with sweat at collar and under arms. Brown leather vest sun-bleached. Khaki pants. The motorcycle is coated in pale desert dust — tank sand-colored, chrome exhaust brown. Late afternoon amber light from the left. Desert hardpan background with distant mountains. Camera tracks alongside at riding speed. Charcoal blacks, bone whites.",
       "negative_prompt": "No helmet, no modern gear, no clean clothing, no second exhaust pipe.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -100,7 +100,7 @@
       "framing_notes": "Tight on hands and handlebars. Watch visible on left wrist below glove cuff for approximately 1 second. Do not reframe to feature the watch.",
       "description": "Detail shot of Vega's hands on the handlebars. Brown leather gloves worn smooth. Right hand rolls throttle. Top Time visible on left wrist below glove cuff — one detail among many textures.",
       "target_duration_seconds": 3,
-      "generation_prompt": "Extreme close-up detail shot of a man's hands gripping motorcycle handlebars. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. Brown leather gloves worn smooth at the palms. Right hand on throttle grip making small adjustments. Left hand steadying the handlebar. On the left wrist below the glove cuff, a vintage watch with black dial on worn brown leather strap — dust-caked, one detail among many. Frame full of texture: glove leather, handlebar rubber, throttle cable, dust, metal. Late afternoon amber light. Shallow depth of field. Desert background is a warm blur. The hands move with experienced confidence.",
+      "generation_prompt": "Extreme close-up detail shot of a man's hands gripping motorcycle handlebars. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. Brown leather gloves worn smooth at the palms. Right hand on throttle grip making small adjustments. Left hand steadying the handlebar. On the left wrist below the glove cuff, a vintage watch with black dial on worn brown leather strap — dust-caked, one detail among many. Frame full of texture: glove leather, handlebar rubber, throttle cable, dust, metal. Late afternoon amber light. Shallow depth of field. Desert background is a warm blur. The hands move with experienced confidence.",
       "negative_prompt": "No modern watch, no digital display, no clean gloves.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -148,7 +148,7 @@
       "framing_notes": "Camera low to the ground. Triumph enters frame left, crosses, exits frame right. Dust and pebbles spray toward camera.",
       "description": "Low angle. The Triumph passes camera at speed. Front tire kicks up sand and pebbles. Engine note rises approaching, drops receding. Dust trail lingers golden in the low sun.",
       "target_duration_seconds": 3,
-      "generation_prompt": "Low angle shot from ground level of a motorcycle passing at speed. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A dusty 1965 Triumph TR6SC crosses frame from left to right. Front tire kicks up spray of sand and pebbles toward camera. The rider is in a low crouch. Dust trail lingers in the air behind the bike, golden in the low afternoon sun. Late afternoon amber light. The bike is close and fast — a moment of kinetic energy. Desert hardpan. Charcoal shadows on the ground.",
+      "generation_prompt": "Low angle shot from ground level of a motorcycle passing at speed. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. A dusty 1965 Triumph TR6SC crosses frame from left to right. Front tire kicks up spray of sand and pebbles toward camera. The rider is in a low crouch. Dust trail lingers in the air behind the bike, golden in the low afternoon sun. Late afternoon amber light. The bike is close and fast — a moment of kinetic energy. Desert hardpan. Charcoal shadows on the ground.",
       "negative_prompt": "No second exhaust pipe, no modern motorcycle, no paved road.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -191,7 +191,7 @@
       "framing_notes": "Face fills the frame. Through goggles, eyes scan terrain. The micro-flinch at the engine skip is the key moment.",
       "description": "Close on Vega's face. Through goggles, eyes scan terrain. Steady. Then a micro-flinch — something in the engine note changed. A skip. Brief. The engine recovers. But Vega heard it. His jaw tightens.",
       "target_duration_seconds": 4,
-      "generation_prompt": "Close-up of a man's face while riding a motorcycle. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man, lean, sun-darkened skin, deep lines around the eyes. Goggles down over his eyes. Through the goggles his eyes scan the terrain ahead, steady and focused. Wind blows dust across his face. Then a subtle reaction — a micro-flinch, jaw tightening. Something he heard. Late afternoon amber light from the left, side-lighting his face. Desert background blurred behind him. Charcoal shadows on the right side of his face.",
+      "generation_prompt": "Close-up of a man's face while riding a motorcycle. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. A 30-year-old Mexican man, lean, sun-darkened skin, deep lines around the eyes. Goggles down over his eyes. Through the goggles his eyes scan the terrain ahead, steady and focused. Wind blows dust across his face. Then a subtle reaction — a micro-flinch, jaw tightening. Something he heard. Late afternoon amber light from the left, side-lighting his face. Desert background blurred behind him. Charcoal shadows on the right side of his face.",
       "negative_prompt": "No helmet, no sunglasses, no clean skin, no smiling.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -234,7 +234,7 @@
       "framing_notes": "Vega standing on pegs, navigating rocky terrain. The bike slows, sputters, dies.",
       "description": "Rocky wash terrain. Vega stands on pegs navigating uneven ground. Engine skip returns, more frequent. Engine coughs, sputters, fires unevenly, dies. Bike rolls to a stop.",
       "target_duration_seconds": 8,
-      "generation_prompt": "Medium shot of a motorcycle rider navigating a rocky desert wash. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man standing on the foot pegs of a dusty 1965 Triumph TR6SC, letting the bike move underneath him over uneven rocky terrain. Larger stones and rough ground. The bike slows — the engine sputters and coughs. The rider sits down on the seat, puts both boots on the ground as the bike rolls to a stop. Pre-dusk light — amber deepening to bronze. Shadows longer than Scene 1. The warmth is leaving the air. Distant mountains on the horizon.",
+      "generation_prompt": "Medium shot of a motorcycle rider navigating a rocky desert wash. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. A 30-year-old Mexican man standing on the foot pegs of a dusty 1965 Triumph TR6SC, letting the bike move underneath him over uneven rocky terrain. Larger stones and rough ground. The bike slows — the engine sputters and coughs. The rider sits down on the seat, puts both boots on the ground as the bike rolls to a stop. Pre-dusk light — amber deepening to bronze. Shadows longer than Scene 1. The warmth is leaving the air. Distant mountains on the horizon.",
       "negative_prompt": "No paved road, no other vehicles, no modern elements, no second exhaust pipe.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -283,7 +283,7 @@
       "framing_notes": "Tight on hands working the engine. Mechanical detail must be accurate.",
       "description": "Vega kneels beside the engine. Bare hands check fuel petcock, carburetor float bowl, spark plug wire. Pulls the plug — fouled, black with carbon, cracked porcelain insulator.",
       "target_duration_seconds": 8,
-      "generation_prompt": "Close-up of a man's bare hands working on a motorcycle engine. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. Sun-darkened hands moving over a single-cylinder engine with the familiarity of a doctor examining a patient. He checks a fuel petcock, unscrews a carburetor float bowl drain — thin fuel stream dribbles onto sand. Checks spark plug wire. Pulls the spark plug — the electrode is fouled black with carbon, the porcelain insulator has a visible hairline crack. The engine is a single-cylinder with an Amal Monobloc carburetor. Pre-dusk bronze light. Rocky ground. Brown leather gloves laid on the tank nearby.",
+      "generation_prompt": "Close-up of a man's bare hands working on a motorcycle engine. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. Sun-darkened hands moving over a single-cylinder engine with the familiarity of a doctor examining a patient. He checks a fuel petcock, unscrews a carburetor float bowl drain — thin fuel stream dribbles onto sand. Checks spark plug wire. Pulls the spark plug — the electrode is fouled black with carbon, the porcelain insulator has a visible hairline crack. The engine is a single-cylinder with an Amal Monobloc carburetor. Pre-dusk bronze light. Rocky ground. Brown leather gloves laid on the tank nearby.",
       "negative_prompt": "No modern engine, no multi-cylinder engine, no clean parts, no tools other than hands.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -326,7 +326,7 @@
       "framing_notes": "Vega stands, pushes goggles up, scans horizon. 360 degrees of nothing.",
       "description": "Vega holds the dead plug, looks at it, looks at the desert. Stands. Pushes goggles up to forehead. Scans the horizon in every direction. Nothing.",
       "target_duration_seconds": 5,
-      "generation_prompt": "Medium shot of a man standing beside a stopped motorcycle in a rocky desert wash. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man, lean, sun-darkened, wearing white cotton shirt and brown leather vest. He pushes riding goggles up onto his forehead. He scans the horizon — turning slowly. The desert stretches in every direction. No road. No marker. No other riders. Just desert and fading light. Pre-dusk bronze light. The mountains are far away. The sky is enormous. A man with a problem the desert does not care about.",
+      "generation_prompt": "Medium shot of a man standing beside a stopped motorcycle in a rocky desert wash. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. A 30-year-old Mexican man, lean, sun-darkened, wearing white cotton shirt and brown leather vest. He pushes riding goggles up onto his forehead. He scans the horizon — turning slowly. The desert stretches in every direction. No road. No marker. No other riders. Just desert and fading light. Pre-dusk bronze light. The mountains are far away. The sky is enormous. A man with a problem the desert does not care about.",
       "negative_prompt": "No other people, no buildings, no roads, no modern elements.",
       "tool_routing": {
         "primary_tool": "veo-3.1-fast",
@@ -369,7 +369,7 @@
       "framing_notes": "Vega and the Triumph small in the frame. The landscape dominates. Visual echo of the opening wide shot but now the man is still, not moving.",
       "description": "Wide shot. Vega standing beside the Triumph in the rocky wash. Small. The landscape is indifferent. The sky is enormous. A man with a problem the desert does not care about.",
       "target_duration_seconds": 4,
-      "generation_prompt": "Wide shot of a man standing beside a stopped motorcycle in a vast rocky desert wash. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. The man and motorcycle are small in the frame — the landscape dominates. Rocky terrain, distant mountain range, enormous sky. Pre-dusk bronze light, long purple-edged shadows. The man stands still. The bike is on its kickstand. The desert is indifferent. This is isolation made visible.",
+      "generation_prompt": "Wide shot of a man standing beside a stopped motorcycle in a vast rocky desert wash. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. The man and motorcycle are small in the frame — the landscape dominates. Rocky terrain, distant mountain range, enormous sky. Pre-dusk bronze light, long purple-edged shadows. The man stands still. The bike is on its kickstand. The desert is indifferent. This is isolation made visible.",
       "negative_prompt": "No other people, no buildings, no movement except wind.",
       "tool_routing": {
         "primary_tool": "veo-3.1-fast",
@@ -406,7 +406,7 @@
       "framing_notes": "Vega walks. No bike. Carries nothing. Following faint tire tracks.",
       "description": "Vega walks the desert. He has left the bike. He carries nothing. Boots crunch on rocky ground. Following faint tire tracks. Looking for any sign of the course.",
       "target_duration_seconds": 5,
-      "generation_prompt": "Medium shot of a man walking alone through a rocky desert wash. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man, lean, sun-darkened, wearing white cotton shirt, brown leather vest, khaki pants, worn boots. Goggles on forehead. He carries nothing. He walks with purpose, following faint tire tracks in the rocky ground. Camera tracks alongside at walking pace. Pre-dusk light shifting from bronze to rose. Purple shadows. The sun is touching the western ridge. Fifteen minutes of usable light remain.",
+      "generation_prompt": "Medium shot of a man walking alone through a rocky desert wash. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. A 30-year-old Mexican man, lean, sun-darkened, wearing white cotton shirt, brown leather vest, khaki pants, worn boots. Goggles on forehead. He carries nothing. He walks with purpose, following faint tire tracks in the rocky ground. Camera tracks alongside at walking pace. Pre-dusk light shifting from bronze to rose. Purple shadows. The sun is touching the western ridge. Fifteen minutes of usable light remain.",
       "negative_prompt": "No motorcycle in frame, no other people, no modern elements.",
       "tool_routing": {
         "primary_tool": "veo-3.1-fast",
@@ -449,7 +449,7 @@
       "framing_notes": "Tight on boots. The separating sole on the left boot is a key detail.",
       "description": "Detail shot. Vega's boots on the ground. Worn leather. The sole of the left boot is separating at the toe. Each step kicks up a small cloud of dust that the low sun turns pink.",
       "target_duration_seconds": 3,
-      "generation_prompt": "Detail shot at ground level of worn leather boots walking on rocky desert ground. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. The boots are old — the sole of the left boot is separating at the toe, stitching exposed. Each step kicks up a small cloud of fine dust. The low sun turns the dust clouds pink. Rocky terrain. Pre-dusk rose light. Camera tracks alongside at walking pace, staying tight on the boots and ground.",
+      "generation_prompt": "Detail shot at ground level of worn leather boots walking on rocky desert ground. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. The boots are old — the sole of the left boot is separating at the toe, stitching exposed. Each step kicks up a small cloud of fine dust. The low sun turns the dust clouds pink. Rocky terrain. Pre-dusk rose light. Camera tracks alongside at walking pace, staying tight on the boots and ground.",
       "negative_prompt": "No modern shoes, no clean boots, no paved surface.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -479,7 +479,7 @@
       "framing_notes": "Vega's POV. The cairn is 50 meters ahead. The tin arrow and AGUA text should be suggested at this distance, not legible.",
       "description": "Vega's POV. He crests a low rise and sees a cairn — a pile of stacked rocks, three feet tall. On top, a piece of tin bent into an arrow pointing right toward a canyon mouth. Scratched into the tin: AGUA.",
       "target_duration_seconds": 4,
-      "generation_prompt": "POV shot looking across rocky desert terrain at a hand-built stone cairn approximately 50 meters away. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A pile of stacked desert rocks, three feet tall, clearly built by human hands. On top, a piece of sheet metal bent into an arrow shape, pointing right toward a narrow canyon mouth in a rock face. The word AGUA scratched into the tin — rough, handmade. Pre-dusk rose light. Purple shadows. The canyon mouth is a dark narrow opening in the rock. The open desert with tire tracks continues straight ahead toward distant mountains. Two directions.",
+      "generation_prompt": "POV shot looking across rocky desert terrain at a hand-built stone cairn approximately 50 meters away. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. A pile of stacked desert rocks, three feet tall, clearly built by human hands. On top, a piece of sheet metal bent into an arrow shape, pointing right toward a narrow canyon mouth in a rock face. The word AGUA scratched into the tin — rough, handmade. Pre-dusk rose light. Purple shadows. The canyon mouth is a dark narrow opening in the rock. The open desert with tire tracks continues straight ahead toward distant mountains. Two directions.",
       "negative_prompt": "No modern signs, no painted markers, no people.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -516,7 +516,7 @@
       "framing_notes": "Close on the cairn top. The tin arrow and AGUA text fill the frame. Detail must be legible.",
       "description": "Close on the cairn. The tin arrow — a piece of a food can, cut and bent, raw metal edges visible. AGUA scratched with a nail or knife. Legible but rough. A gift from a stranger to the next stranger.",
       "target_duration_seconds": 3,
-      "generation_prompt": "Close-up of the top of a hand-built stone cairn in the desert. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. Wedged between the top stones, a piece of sheet metal cut from a tin food can, bent into an arrow shape. The raw cut metal edges are visible. The arrow points to the right. Scratched into the face of the tin with a nail or knife, the word AGUA — rough, handmade lettering. The cairn stones are weathered desert rock. Pre-dusk rose light. This was made by someone who stopped here, built this, and kept going.",
+      "generation_prompt": "Close-up of the top of a hand-built stone cairn in the desert. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. Wedged between the top stones, a piece of sheet metal cut from a tin food can, bent into an arrow shape. The raw cut metal edges are visible. The arrow points to the right. Scratched into the face of the tin with a nail or knife, the word AGUA — rough, handmade lettering. The cairn stones are weathered desert rock. Pre-dusk rose light. This was made by someone who stopped here, built this, and kept going.",
       "negative_prompt": "No modern materials, no printed text, no paint.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -546,7 +546,7 @@
       "framing_notes": "Vega at the cairn. He looks right (canyon), then ahead (open desert/course). Then glances at his wrist. Watch visible for 2 seconds.",
       "description": "Vega at the cairn. Studies it. Looks right toward the canyon. Looks ahead where tire tracks continue to mountains. Looks west at the sun on the ridge. Glances at his wrist — the Top Time. Confirmation, not discovery. Fifteen minutes of day left.",
       "target_duration_seconds": 6,
-      "generation_prompt": "Medium shot of a man standing beside a stone cairn in the desert. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man, lean, sun-darkened, white cotton shirt, brown leather vest, goggles on forehead. He studies the cairn, then looks to his right toward a narrow canyon mouth, then looks straight ahead into the open desert where tire tracks lead to distant mountains. He looks west — the sun sits on the ridge. Then a quick glance down at his left wrist — a vintage watch with black dial on brown leather strap. The gesture is quick, unsentimental. Pre-dusk rose light. Purple shadows. The sun is touching the western ridge.",
+      "generation_prompt": "Medium shot of a man standing beside a stone cairn in the desert. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. A 30-year-old Mexican man, lean, sun-darkened, white cotton shirt, brown leather vest, goggles on forehead. He studies the cairn, then looks to his right toward a narrow canyon mouth, then looks straight ahead into the open desert where tire tracks lead to distant mountains. He looks west — the sun sits on the ridge. Then a quick glance down at his left wrist — a vintage watch with black dial on brown leather strap. The gesture is quick, unsentimental. Pre-dusk rose light. Purple shadows. The sun is touching the western ridge.",
       "negative_prompt": "No modern watch, no other people, no modern elements.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -600,7 +600,7 @@
       "framing_notes": "Tight on face. The decision happens in the muscles around his eyes. Tongue on cracked lips.",
       "description": "Close on Vega's face. He is calculating odds. Tongue runs across cracked lips. The decision is visible in the muscles around his eyes. He looks at the tin arrow one more time. Then the open desert. Then he turns back toward his bike.",
       "target_duration_seconds": 5,
-      "generation_prompt": "Close-up of a weathered man's face making a decision. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man, sun-darkened skin, deep lines around the eyes. Goggles pushed up on forehead. His tongue runs across cracked, dry lips. His eyes move — calculating, weighing options. The decision happens in the muscles around his eyes. Then resolve. He turns his head slightly. Pre-dusk rose light from the west, side-lighting his face. Purple shadows on one side. This is the pivotal moment of the film.",
+      "generation_prompt": "Close-up of a weathered man's face making a decision. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. A 30-year-old Mexican man, sun-darkened skin, deep lines around the eyes. Goggles pushed up on forehead. His tongue runs across cracked, dry lips. His eyes move — calculating, weighing options. The decision happens in the muscles around his eyes. Then resolve. He turns his head slightly. Pre-dusk rose light from the west, side-lighting his face. Purple shadows on one side. This is the pivotal moment of the film.",
       "negative_prompt": "No smiling, no tears, no exaggerated expression. Subtle and internal.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -643,7 +643,7 @@
       "framing_notes": "Hands on the spark plug and a flat rock. The desert fix. Precise taps with a stone.",
       "description": "Vega back at the Triumph. Kneels. Places the fouled plug on a flat rock. Picks up a smaller stone. Taps the cracked porcelain carefully. Once. Twice. Third tap — the cracked fragment falls away. Not repaired. But the short circuit is eliminated.",
       "target_duration_seconds": 6,
-      "generation_prompt": "Close-up of a man's hands performing a delicate repair on a spark plug on a flat desert rock. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. Sun-darkened hands holding a fouled spark plug against a flat stone. He picks up a smaller stone and taps the cracked porcelain insulator carefully, precisely. A fragment of cracked porcelain falls away, exposing clean insulator underneath. The plug electrode is fouled black with carbon. Last golden light — the sun is half below the western ridge. Everything side-lit with long horizontal light. Rocky ground. This is a desert fix — not a real repair, but it might work.",
+      "generation_prompt": "Close-up of a man's hands performing a delicate repair on a spark plug on a flat desert rock. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. Sun-darkened hands holding a fouled spark plug against a flat stone. He picks up a smaller stone and taps the cracked porcelain insulator carefully, precisely. A fragment of cracked porcelain falls away, exposing clean insulator underneath. The plug electrode is fouled black with carbon. Last golden light — the sun is half below the western ridge. Everything side-lit with long horizontal light. Rocky ground. This is a desert fix — not a real repair, but it might work.",
       "negative_prompt": "No modern tools, no clean hands, no workshop setting.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -686,7 +686,7 @@
       "framing_notes": "Tight on boot on kick lever. The worn sole, exposed stitching at toe.",
       "description": "Detail shot. Boot on the kick lever. Worn sole. Exposed stitching at the toe. The lever is steel, polished smooth.",
       "target_duration_seconds": 2,
-      "generation_prompt": "Detail shot of a worn leather boot on a motorcycle kick starter lever. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. The boot sole is separating at the toe with exposed stitching. The kick lever is steel, polished smooth by a thousand kicks. Last golden side-light. The textures are everything — worn leather, polished steel, dust, stitching.",
+      "generation_prompt": "Detail shot of a worn leather boot on a motorcycle kick starter lever. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. The boot sole is separating at the toe with exposed stitching. The kick lever is steel, polished smooth by a thousand kicks. Last golden side-light. The textures are everything — worn leather, polished steel, dust, stitching.",
       "negative_prompt": "No modern boot, no electric start.",
       "tool_routing": {
         "primary_tool": "veo-3.1-fast",
@@ -716,7 +716,7 @@
       "framing_notes": "Same framing as s04-sh02. Second kick. The engine almost catches.",
       "description": "Second kick. Boot on lever again. The engine turns over, coughs, nothing.",
       "target_duration_seconds": 2,
-      "generation_prompt": "Detail shot of a worn leather boot kicking a motorcycle kick starter lever a second time. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. Same boot, same lever, same golden side-light. The kick is harder this time. The engine almost catches — a hint of ignition.",
+      "generation_prompt": "Detail shot of a worn leather boot kicking a motorcycle kick starter lever a second time. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. Same boot, same lever, same golden side-light. The kick is harder this time. The engine almost catches — a hint of ignition.",
       "negative_prompt": "No modern boot, no electric start.",
       "tool_routing": {
         "primary_tool": "veo-3.1-fast",
@@ -746,7 +746,7 @@
       "framing_notes": "Face between kicks. Breathing. Looking west. The sun is a sliver. He has minutes.",
       "description": "Close on Vega's face between kick attempts. He breathes. Looks west. The sun is a sliver above the ridge. He has minutes.",
       "target_duration_seconds": 3,
-      "generation_prompt": "Close-up of a weathered man's face in the last golden light of day. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man, sun-darkened, deep eye lines. Goggles on forehead. He breathes. Looks west. The last sliver of sun is on the ridge behind him, casting long horizontal side-light across his face. Maximum contrast — one side lit gold, the other in deep shadow. Resolve and exhaustion in equal measure.",
+      "generation_prompt": "Close-up of a weathered man's face in the last golden light of day. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. A 30-year-old Mexican man, sun-darkened, deep eye lines. Goggles on forehead. He breathes. Looks west. The last sliver of sun is on the ridge behind him, casting long horizontal side-light across his face. Maximum contrast — one side lit gold, the other in deep shadow. Resolve and exhaustion in equal measure.",
       "negative_prompt": "No smiling, no panic. Controlled intensity.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -783,7 +783,7 @@
       "framing_notes": "Third kick. Engine catches. Vega pulls goggles down, nurses throttle. Turns the handlebars RIGHT — toward the canyon. Away from the course.",
       "description": "Third kick. Hard. Engine fires, misses, fires, catches. Rough heartbeat. Vega pulls goggles down. Nurses the throttle. Looks at the open desert ahead. Then turns the handlebars right. Toward the canyon. Toward water. Away from the course.",
       "target_duration_seconds": 6,
-      "generation_prompt": "Medium shot of a man on a motorcycle that just started after a difficult kick-start. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. A 30-year-old Mexican man on a dusty 1965 Triumph TR6SC. He pulls goggles down over his eyes. Rolls the throttle gently — nursing a rough-running engine. The engine thumps unevenly, skipping beats, but alive. He looks ahead at the open desert, then deliberately turns the handlebars to the right. The bike begins to roll toward a narrow canyon mouth in the rock face. Last golden side-light. Rocky terrain. He chose survival over the race.",
+      "generation_prompt": "Medium shot of a man on a motorcycle that just started after a difficult kick-start. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. A 30-year-old Mexican man on a dusty 1965 Triumph TR6SC. He pulls goggles down over his eyes. Rolls the throttle gently — nursing a rough-running engine. The engine thumps unevenly, skipping beats, but alive. He looks ahead at the open desert, then deliberately turns the handlebars to the right. The bike begins to roll toward a narrow canyon mouth in the rock face. Last golden side-light. Rocky terrain. He chose survival over the race.",
       "negative_prompt": "No second exhaust pipe, no smooth engine sound, no modern elements.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -832,7 +832,7 @@
       "framing_notes": "Left hand on grip. Top Time visible for 1 second. Dust-caked, crystal scratched, strap dark with sweat. Then camera pulls to the wide.",
       "description": "Detail shot. Left hand on grip steadying the handlebars over loose rock. Top Time visible on wrist — dust-caked, crystal scratched, strap dark with sweat. Vibrating with the rough engine. Then Vega speaks: 'Primero llegas. Despues compites.' Barely audible under the engine.",
       "target_duration_seconds": 4,
-      "generation_prompt": "Detail shot of a man's left hand gripping a motorcycle handlebar as it rolls over loose rocky ground. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. Sun-darkened hand steadying the bars. On the left wrist, a vintage watch — dust-caked, crystal scratched, brown leather strap dark with sweat. The watch vibrates with the rough-running engine. Frame full of textures: leather, steel, dust, skin, knuckle. Last golden side-light. The camera holds on the detail for a moment, then pulls back to a wider view.",
+      "generation_prompt": "Detail shot of a man's left hand gripping a motorcycle handlebar as it rolls over loose rocky ground. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. Sun-darkened hand steadying the bars. On the left wrist, a vintage watch — dust-caked, crystal scratched, brown leather strap dark with sweat. The watch vibrates with the rough-running engine. Frame full of textures: leather, steel, dust, skin, knuckle. Last golden side-light. The camera holds on the detail for a moment, then pulls back to a wider view.",
       "negative_prompt": "No modern watch, no clean hand, no smooth road.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -880,7 +880,7 @@
       "framing_notes": "Bookend with s01-sh01. Same landscape framing. But now the motorcycle moves RIGHT toward the canyon, not left-to-right across the frame. Hold as bike becomes a speck. Guitar enters. Sun disappears. Blue dusk. Title card.",
       "description": "Extreme wide. Same framing as the opening shot. The desert. The mountains. But now the motorcycle moves right toward the canyon shadow. Engine fades. Guitar enters — three notes, nylon strings, a question. The sun disappears. Amber drains. Blue dusk. Title card: THE LAST MARKER. Fade to black.",
       "target_duration_seconds": 12,
-      "generation_prompt": "Extreme wide shot of Baja California desert — same composition as the film's opening. 16mm Ektachrome, heavy grain, anamorphic 2.39:1. Flat hardpan, mountain range on horizon, cardon cacti. A motorcycle moves to the right, toward a narrow canyon shadow in the rock face — away from the open desert, away from the course. The dust trail is thin, pink in the last light. The bike grows smaller. The engine sound fades. The sun drops below the western ridge. The amber drains from the landscape. The desert goes cool and blue and still. The motorcycle is a speck. The dust trail is a pink thread. Then blue dusk settles over everything. Title card appears: THE LAST MARKER in vintage pulp typography over the blue dusk landscape.",
+      "generation_prompt": "Extreme wide shot of Baja California desert — same composition as the film's opening. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain, framed 2.39:1. Flat hardpan, mountain range on horizon, cardon cacti. A motorcycle moves to the right, toward a narrow canyon shadow in the rock face — away from the open desert, away from the course. The dust trail is thin, pink in the last light. The bike grows smaller. The engine sound fades. The sun drops below the western ridge. The amber drains from the landscape. The desert goes cool and blue and still. The motorcycle is a speck. The dust trail is a pink thread. Then blue dusk settles over everything. Title card appears: THE LAST MARKER in vintage pulp typography over the blue dusk landscape.",
       "negative_prompt": "No modern elements, no other vehicles, no bright colors after sunset.",
       "tool_routing": {
         "primary_tool": "veo-3.1",
@@ -919,7 +919,7 @@
       "shot_ids": ["s04-sh02", "s04-sh03", "s04-sh04"],
       "tool": "seedance-2.0",
       "rationale": "Three connected shots — boot on kick lever, boot on kick lever again, face between kicks. Consistent framing, lighting, and boot detail across the sequence. Seedance multi-shot generation could produce these as connected clips with locked consistency.",
-      "combined_prompt": "A sequence of three connected shots in a rocky desert. 16mm Ektachrome, heavy grain. Last golden side-light. Shot 1: Detail of worn boot on motorcycle kick lever, kick happens, engine turns but doesn't catch. Shot 2: Same framing, second kick, engine almost catches — a cough, a hint. Shot 3: Close on the rider's face between kicks — weathered, 30, Mexican, goggles on forehead. He breathes. Looks west at the last sliver of sun. Resolve and exhaustion."
+      "combined_prompt": "A sequence of three connected shots in a rocky desert. Techniscope 35mm (2-perf, 2.39:1), sun-blasted grain pushed harder, heavy grain. Last golden side-light. Shot 1: Detail of worn boot on motorcycle kick lever, kick happens, engine turns but doesn't catch. Shot 2: Same framing, second kick, engine almost catches — a cough, a hint. Shot 3: Close on the rider's face between kicks — weathered, 30, Mexican, goggles on forehead. He breathes. Looks west at the last sliver of sun. Resolve and exhaustion."
     }
   ],
   "created_at": "2026-04-29T16:00:00Z",

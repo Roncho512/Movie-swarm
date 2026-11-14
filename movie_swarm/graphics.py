@@ -500,15 +500,6 @@ def _research_document(production_dir: Path) -> dict:
             None,
         )
     _add_pack_items(add, packs)
-    add(
-        "credits-sans",
-        "period",
-        "Credits are set in a sans-serif face.",
-        "designer-proposal",
-        "DECISIONS.md",
-        "D183",
-        reference="Ron, 2026-11-13",
-    )
     _add_placement_items(add, brief)
     _add_card_items(add, production_dir, scripts)
 
@@ -573,8 +564,6 @@ def _guide_document(production_dir: Path, research: dict) -> dict:
     image_rules = [_rule("treatment-look", f"Image treatment follows the research. {look_text}", by_id[look_trace])]
     surface_key = {"title": "title", "poster": "poster", "key-art": "key_art", "credits": "credits"}
     surfaces = {name: [] for name in surface_key.values()}
-    if "credits-sans" in by_id:
-        surfaces["credits"].append(_rule("credits-sans", by_id["credits-sans"]["text"], by_id["credits-sans"]))
     notes = []
     for item in items:
         if item["item_id"].startswith("typography-"):
@@ -1638,8 +1627,6 @@ def _font_roles(items: list[dict], period_item: dict) -> dict:
             continue
         if proposals:
             primary = proposals[0]
-            if role == "credits" and primary.get("category") != "sans-serif":
-                raise GraphicsError(f"{primary.get('family')} is not a sans-serif. Credits stay a sans-serif.")
             label, reference = _label(primary)
             font = {
                 "family": primary["family"],
@@ -1795,11 +1782,6 @@ def _matched_packs(treatment: dict, brief: dict, look: dict | None, directory: P
         errors = validate_data(data, schema)
         if errors:
             raise GraphicsError(path.name + " does not match the design reference schema. " + " ".join(errors))
-        for font in data.get("fonts") or []:
-            if font.get("role") == "credits" and font.get("category") != "sans-serif":
-                raise GraphicsError(
-                    f"{path.name} lists {font.get('family')} for credits. Credits stay a sans-serif."
-                )
         if _pack_matches(data, text, years):
             matched.append((path, data))
     return matched

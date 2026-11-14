@@ -26,7 +26,7 @@
         "film_stock": {
           "type": "string",
           "description": "Simulated film stock / look.",
-          "examples": ["16mm Ektachrome"]
+          "examples": ["35mm"]
         },
         "grain": {
           "type": "string",

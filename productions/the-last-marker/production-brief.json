@@ -7,7 +7,7 @@
   "target_runtime_seconds": 180,
   "aspect_ratio": "2.39:1",
   "visual_style": {
-    "description": "Locked 2.39:1 widescreen. Extreme wide shots cut against extreme close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Charcoal blacks, bone whites, and a day that moves from amber to bronze to rose to blue dusk.",
+    "description": "Techniscope 35mm (2-perf, 2.39:1). Leone-style sun-blasted grainy spaghetti western, pushed harder. Extreme wide shots cut against extreme close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Charcoal blacks, bone whites, and a day that moves from amber to bronze to rose to blue dusk.",
     "reference_films": ["Sergio Leone spaghetti westerns"],
     "color_palette": ["amber", "ochre", "bronze", "rose", "cool dusk blue"],
     "period": "1967"
@@ -96,7 +96,7 @@
     "The film cap is $500. Retakes count against the same cap.",
     "The story is set in Baja California in 1967.",
     "The Triumph stays a 1965 TR6SC.",
-    "The reference look is a Sergio Leone spaghetti western: extreme wides against extreme close-ups, locked 2.39:1, long holds then sharp cuts, a warm grainy 1960s film look, and a mostly still camera with slow push-ins.",
+    "The reference look is a Sergio Leone spaghetti western on Techniscope 35mm (2-perf, 2.39:1): extreme wides against extreme close-ups, long holds then sharp cuts, a sun-blasted grainy look pushed harder, and a mostly still camera with slow push-ins.",
     "The score is in the spirit of Ennio Morricone. No melody is copied.",
     "The hero props are the Triumph and the Breitling Top Time. Exhaust is locked on the right. The watch is locked on the left wrist."
   ],

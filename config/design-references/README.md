@@ -4,4 +4,4 @@ Filing recommendation: keep this folder with the other engine config, next to `c
 
 These files are offline research for Title and Graphic Design. The role reads them when it writes `graphics/research.json`. It does not call a model and it does not open a network connection. A pack applies when its match says `always`, or when one of its terms appears in that production's genre, tone, world, look name, look summary, or brief decisions. A story year narrows a pack only when the pack sets a year span.
 
-Everything a pack adds to a brand guide is a designer proposal. Ron approves or rejects it at the graphics gate. The guide stays a draft until then.
+Everything a pack adds to a brand guide is a designer proposal. Ron approves or rejects it at the graphics gate. The guide stays a draft until then. A credits face is the one the matched pack names for that role. The engine does not force that face into one category.

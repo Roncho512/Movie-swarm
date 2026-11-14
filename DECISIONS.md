@@ -1621,6 +1621,7 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Date: 2026-11-13
 - Context: Previs is approved. The graphics gate is next. A read of the film's graphics guide found a thin draft: no fonts or licenses, no title, poster, or credit layout, and no safe area. The role had been extracting only what the production documents literally name. The screenplay's title card was also being read wrong, and the brief's featured-object rules never reached the guide.
 - Decision: Ron, 2026-11-13. Fix the title-card parse and carry featured-object placement rules into graphics for any film that has them. The movie graphic designer does the job: research the time period, the genre's graphic design and posters, and period fonts and colors, and write a robust brand guide. The designer may suggest fonts and may propose a font or custom lettering for the title. Credits use a sans-serif. Proposals stay labeled for the graphics gate. The guide stays a draft until Ron approves it. No paid call is part of this phase.
+- Superseded in part: The clause "Credits use a sans-serif." is superseded by D194 (Ron, 2026-11-13). The rest of this decision stands.
 - Consequences: The choices for how the parse, the packs, the safe area, the font list, and the placement wording work are D185 through D189. Those are proposals. A Script Supervisor breakdown gate is a separate plan (D184). Spent on this step: $0.00.
 - Who decided: Ron, 2026-11-13
 
@@ -1666,7 +1667,7 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Date: 2026-11-13
 - Context: D183 allows the designer to suggest period faces and a custom title treatment. Credits must be a sans-serif. Only faces whose license allows use in a film are eligible. The pack for 1960s Italian western posters is the first one shipped.
 - Decision: For a production whose documents match that pack, the guide proposes Rye (Nicole Fally, Sorkin Type Co) as the title face, with Sancreek as an alternate display face, Source Sans 3 for credits, Noto Sans for subtitles, and Alfa Slab One for marketing. Each is under the SIL Open Font License 1.1. The license text says its conditions do not apply to a document made with the font. The font file is not sold by itself. These files are stand-ins. The pack does not claim they were the faces cut on the period posters. Painted pulp capitals are described as a custom title option and are not built. Blood red, black, warm yellow, and dusk blue are proposed with hex values the cited pages do not give. Artist names and poster facts are copied from the cited pages and are not merged where two pages spell a name differently.
-- Consequences: Ron approves or rejects the faces, the hex values, and the lettering description at the graphics gate. A credits face in any pack that is not a sans-serif is refused before research is written.
+- Consequences: Ron approves or rejects the faces, the hex values, and the lettering description at the graphics gate. The credits face named here, and the refusal of a credits face that is not a sans-serif, are superseded by D194. The title faces, the painted pulp capitals, the subtitle and marketing faces, and the color notes stay proposals.
 - Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.
 
 ## D189 — Placement rules are carried, and a sale is not
@@ -1705,3 +1706,29 @@ Choices that are already made. Each entry has the context, the decision, what fo
 - Consequences: The roadmap files this as phase 8.21, after 8.20. That number is a filing choice. It is not a start order. The offline packs from Phase 8.18 stay the path that runs today. The planned Script Supervisor / 1st AD breakdown gate (D184) stays as already listed. Spent on this step: $0.00.
 - Who decided: Ron, 2026-11-13
 
+## D193 — Techniscope 35mm for The Last Marker
+
+- Status: decided
+- Date: 2026-11-13
+- Context: The style bible stated 16mm Ektachrome. The look, the treatment, and the lookbook described a warm grainy 1960s picture and did not name that stock. Ron named a different stock in chat on 2026-11-13 at 8:28 PM CT. D191 and D192 were already recorded on `roadmap-graphics-visual-guide`, now merged to main in pull request 29, so this entry is D193.
+- Decision: Ron, 2026-11-13. The Last Marker is Techniscope 35mm (2-perf, 2.39:1), in the Leone-style sun-blasted grainy spaghetti western look, pushed harder. That stock replaces 16mm Ektachrome. The frame stays 2.39:1. The engine stays generic (D30) and does not hard-code this stock.
+- Consequences: The in-repo film copy states the new stock in the style bible, `look/look.json`, the treatment, the lookbook, the brief, the screenplay, the generation prompts, and the shot list. The wide lens line in that copy says spherical, because 2-perf Techniscope is spherical capture, framed 2.39:1. Prior gate files in `archive/` stay the record of the earlier approval. QA notes and the seedance source prompt stay records of the earlier pass. Spent on this step: $0.00.
+- Who decided: Ron, 2026-11-13
+
+## D194 — Period typography, and the sans-serif credits clause is withdrawn
+
+- Status: decided
+- Date: 2026-11-13
+- Context: D183 said credits use a sans-serif. Ron withdrew that request in chat on 2026-11-13 at 8:29 PM CT. The painted pulp capitals title direction in the western design-reference pack is a proposal and was not withdrawn.
+- Decision: Ron, 2026-11-13. Forget the sans-serif credits request. Typography for the film — title, credits, subheads, and body — is period-accurate to classic 1960s spaghetti westerns. The sans-serif credits clause in D183 is superseded. The rest of D183 stands. Credits follow the period typography of the active design-reference pack. The engine does not force a category. Painted pulp capitals remain the title direction, and that direction is still a proposal.
+- Consequences: The western pack proposes Libre Baskerville, a serif stand-in, for credits, subheads, and body. It does not claim that file was the metal face on a 1960s credit block. Painted pulp capitals stay a description and are not a built font. Subtitles stay the pack's readability proposal. A film whose documents match no pack does not receive an invented credits face. D188's credits face and its refusal of any other category are superseded by this decision. Spent on this step: $0.00.
+- Who decided: Ron, 2026-11-13
+
+## D195 — Visual brand guide drafts stay outside the repo
+
+- Status: proposed
+- Date: 2026-11-14
+- Context: A designer collaborator is producing visual brand guide drafts for review. Those drafts are not a decision Ron recorded in the 8:28 PM or 8:29 PM CT notes. D191, now on main, plans the visual brand guide PDF and says Beautiful 3 is producing the first such PDF by hand. D192 plans live designer research and leaves it off. This entry records the hand drafts. It does not change D191 or D192.
+- Decision: Record that visual brand guide drafts v1 through v4 are being produced outside this repo by a designer collaborator, and that v4 is in progress. Do not add the PDFs to the repo.
+- Consequences: The roadmap says the same thing, beside the planned PDF in D191. No PDF is committed. This entry is a proposal. Ron has not accepted or rejected it.
+- Who decided: Cursor cloud agent. Proposed. Ron has not accepted or rejected this.

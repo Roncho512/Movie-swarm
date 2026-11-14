@@ -41,8 +41,8 @@ Three minutes. Almost no dialogue. Pure visual storytelling.
 | **Runtime** | 3 minutes |
 | **Scenes** | 4 |
 | **Dialogue** | 1 line (5 words, Spanish) |
-| **Aspect Ratio** | 2.39:1 Anamorphic |
-| **Visual Style** | 16mm Ektachrome, 1967 |
+| **Aspect Ratio** | 2.39:1, Techniscope 35mm (2-perf) |
+| **Visual Style** | Techniscope 35mm (2-perf, 2.39:1), 1967. Leone-style sun-blasted grainy spaghetti western, pushed harder |
 | **Cuts** | ~18-22 |
 
 ## Characters

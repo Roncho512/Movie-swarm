@@ -99,7 +99,7 @@ Baja California, 1967. Ron locked the year at 1967. The Triumph remains a 1965 m
 
 ## Camera, lens, and film stock
 
-Locked 2.39:1 widescreen. Extreme wide shots cut against extreme close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Charcoal blacks, bone whites, and a day that moves from amber to bronze to rose to blue dusk.
+Techniscope 35mm (2-perf, 2.39:1). Leone-style sun-blasted grainy spaghetti western, pushed harder. Extreme wide shots cut against extreme close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Charcoal blacks, bone whites, and a day that moves from amber to bronze to rose to blue dusk.
 
 ## Hero props
 
@@ -121,7 +121,7 @@ Reference images: (slot empty — add multi-angle refs when they exist)
 
 ## Reference lookbook
 
-- **Sergio Leone spaghetti westerns.** Take: Locked 2.39:1 widescreen. Extreme wide shots cut against extreme close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Charcoal blacks, bone whites, and a day that moves from amber to bronze to rose to blue dusk.
+- **Sergio Leone spaghetti westerns.** Take: Techniscope 35mm (2-perf, 2.39:1). Leone-style sun-blasted grainy spaghetti western, pushed harder. Extreme wide shots cut against extreme close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Charcoal blacks, bone whites, and a day that moves from amber to bronze to rose to blue dusk.
 - **Ennio Morricone, spirit only.** Take: A score in that spirit. Do not copy a melody.
 
 ## Action and stunt beats
@@ -169,7 +169,7 @@ Proposed stage split:
 
 - The draft theme is "Arrive first. Winning can wait". The feeling it aims for is "The audience should feel how small the rider is, then the shock of the engine dying, then the quiet relief of a choice to live". Lock that, or replace it?
 - The draft calls the tone "Sparse, tense, and sun-bleached. A Sergio Leone spaghetti western played as a quiet desert survival story" and the genre "western". Lock this, or tell me what to change?
-- The lookbook currently takes: Sergio Leone spaghetti westerns (Locked 2.39:1 widescreen. Extreme wide shots cut against extreme close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Warm sun-bleached 1960s film look, with grain. Charcoal blacks, bone whites, and a day that moves from amber to bronze to rose to blue dusk.); Ennio Morricone, spirit only (A score in that spirit. Do not copy a melody.). Is each 'what to take' right? Add or cut references in your answer.
+- The lookbook currently takes: Sergio Leone spaghetti westerns (Techniscope 35mm (2-perf, 2.39:1). Leone-style sun-blasted grainy spaghetti western, pushed harder. Extreme wide shots cut against extreme close-ups. Long tense holds, then sharp cuts. Mostly a still camera, with slow push-ins. Charcoal blacks, bone whites, and a day that moves from amber to bronze to rose to blue dusk.); Ennio Morricone, spirit only (A score in that spirit. Do not copy a melody.). Is each 'what to take' right? Add or cut references in your answer.
 - Miguel Vega is the protagonist. The draft arc is: He wants to finish the race, but in the end water (life) is more important. (He chooses life over winning.) Lock it, or replace it?
 - What should the audience not know yet? Name it. The answer is saved on the scenes it matches, and on the last scene.
 - Action beats in the draft: Three kicks on the Triumph. The engine fails, teases, then catches rough. The kick starter is on the right in the screenplay. He taps the cracked spark-plug porcelain with a stone so the plug might fire. It is a field fix, not a repair. Are these the beats you want? Is there anything a stunt pass must lock before generation?
